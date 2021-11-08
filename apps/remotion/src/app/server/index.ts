@@ -28,7 +28,7 @@ let webpackBundling = bundle(bundlePath, undefined, {
                 ...current.resolve,
                 alias: {
                     ...current.resolve?.alias,
-                    '@streamlux-saas/templates': templatePath
+                    '@pulsebanner/templates': templatePath
                 }
             }
         }

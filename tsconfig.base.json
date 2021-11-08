@@ -16,7 +16,7 @@
         "esModuleInterop": true,
         "baseUrl": ".",
         "paths": {
-            "@streamlux-saas/templates": ["libs/templates/src/index.ts"]
+            "@pulsebanner/templates": ["libs/templates/src/index.ts"]
         },
         "allowSyntheticDefaultImports": true
     },

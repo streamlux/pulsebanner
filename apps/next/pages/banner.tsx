@@ -4,7 +4,7 @@ import React from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
 import { Player } from '@remotion/player';
-import { TwitchStream } from '@streamlux-saas/templates';
+import { TwitchStream } from '@pulsebanner/templates';
 
 export default function Page() {
     const { data, mutate } = useSWR<Banner>('banner', async () => (await fetch('/api/banner')).json());

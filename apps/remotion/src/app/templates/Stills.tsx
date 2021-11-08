@@ -1,10 +1,10 @@
 import React from 'react';
 import { AnyComponent, Still, StillProps } from 'remotion';
-import { TwitchStream } from '@streamlux-saas/templates';
+import { TwitchStream } from '@pulsebanner/templates';
 
 type Awaited<T> = T extends PromiseLike<infer U> ? U : T
 
-type Templates = Awaited<typeof import('@streamlux-saas/templates')>;
+type Templates = Awaited<typeof import('@pulsebanner/templates')>;
 
 type TemplateName = keyof Templates;
 type TemplateProps = {
@@ -13,7 +13,7 @@ type TemplateProps = {
 
 const getTemplate: (name: TemplateName) => () => Promise<{
     default: AnyComponent<any>;
-}> = (name: TemplateName) => async () => ({ default: (await import('@streamlux-saas/templates'))[name] });
+}> = (name: TemplateName) => async () => ({ default: (await import('@pulsebanner/templates'))[name] });
 
 
 type Template<T extends TemplateName> = {
