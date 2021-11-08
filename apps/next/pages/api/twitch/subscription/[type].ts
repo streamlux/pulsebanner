@@ -34,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             },
             transport: {
                 method: 'webhook',
-                callback: `https://saas.streamlux.com/api/twitch/notification/${type}/${twitchUserId}`,
+                callback: `https://${process.env.APP_DOMAIN}/api/twitch/notification/${type}/${twitchUserId}`,
                 secret: process.env.EVENTSUB_SECRET,
             },
         };
