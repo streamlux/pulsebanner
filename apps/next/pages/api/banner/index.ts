@@ -1,11 +1,11 @@
 import prisma from '../../../util/ssr/prisma';
 import { createAuthApiHandler } from '../../../util/ssr/createApiHandler';
-import { getAccounts } from '../../../util/getAccounts';
 import { Account } from '@prisma/client';
 import Twitter from 'twitter-lite';
 
 const handler = createAuthApiHandler();
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function fetchBanner(account: Account): Promise<string> {
     const client = new Twitter({
         consumer_key: process.env.TWITTER_ID,
@@ -29,11 +29,7 @@ async function fetchBanner(account: Account): Promise<string> {
 }
 
 handler.post(async (req, res) => {
-    const accounts = await getAccounts(req.session);
-    const twitterAccount: Account = accounts['twitter'];
-
     const templateId: string = req.query.templateId as string;
-    const fetchImage: boolean = req.query.fetchImage === 'true';
 
     // Create or update existing banner with url and templateId
     await prisma.banner.upsert({
@@ -42,11 +38,9 @@ handler.post(async (req, res) => {
         },
         create: {
             userId: req.session.userId,
-            originalImage: await fetchBanner(twitterAccount),
             templateId: templateId ?? '',
         },
         update: {
-            originalImage: fetchImage ? await fetchBanner(twitterAccount) : undefined, // undefined means do nothing (aka don't update), null actually updates it to null
             templateId,
         },
     });
@@ -62,8 +56,7 @@ handler.get(async (req, res) => {
         },
         select: {
             enabled: true,
-            templateId: true,
-            originalImage: true,
+            templateId: true
         },
     });
 

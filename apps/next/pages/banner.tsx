@@ -44,7 +44,6 @@ export default function Page() {
                 inputProps={{
                     text: 'hello world',
                     thumbnailUrl: 'https://static-cdn.jtvnw.net/previews-ttv/live_user_teampgp-440x248.jpg',
-                    backgroundUrl: data?.originalImage ?? undefined,
                 }}
                 component={TwitchStream}
                 durationInFrames={1}

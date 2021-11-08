@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAdmin } from '../../util/hooks/useAdmin';
 import { Box, Heading, SimpleGrid } from '@chakra-ui/react';
-import { Database } from '../../modules/admin/database';
+import { Database } from '../../modules/admin/Database';
 import { Webhooks } from '../../modules/admin/Webhooks';
 
 export default function Page() {
