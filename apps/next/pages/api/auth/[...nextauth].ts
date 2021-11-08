@@ -133,6 +133,7 @@ export default NextAuth({
             session.user['role'] = user.role;
             session.userId = user.id;
             session.user['id'] = user.id;
+            session.role = user.role;
             session.accounts = {};
             accounts.forEach(async (account) => {
                 if (account.provider === 'twitch' && account.expires_at > Date.now()) {
