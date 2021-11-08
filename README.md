@@ -21,7 +21,7 @@ _* May need to prefix command with `npx`. You can remove the need for npx by pro
 
 ## Local testing with Twitch webhooks
 
-Note: This requires twitch-cli repo to be installed
+Note: This requires twitch-cli repo to be installed https://github.com/twitchdev/twitch-cli
 
  - To test stream is online event (streamup) run following command
     - ./twitch event trigger streamup -F http://localhost:4200/api/twitch/notification/${twitter-id-here} --secret="${secret-here}"
