@@ -1,7 +1,31 @@
 import { AppNextApiRequest } from '../../../../middlewares/auth';
 import { NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
-import { getAccounts } from '../../../../util/getAccounts';
+import axios from 'axios';
+import { TwitterClient } from 'twitter-api-client';
+import { env } from 'process';
+
+export async function getBanner(oauth_token: string, oauth_token_secret: string, providerAccountId: string): Promise<string> {
+    const client = new TwitterClient({
+        apiKey: process.env.TWITTER_ID,
+        apiSecret: process.env.TWITTER_SECRET,
+        accessToken: oauth_token,
+        accessTokenSecret: oauth_token_secret,
+    });
+    let imageUrl: string = undefined;
+    try {
+        const response = await client.accountsAndUsers.usersProfileBanner({
+            user_id: providerAccountId,
+        });
+        imageUrl = response.sizes['1500x500'].url;
+        console.log('imageUrl: ', imageUrl);
+    } catch (e) {
+        console.log('User does not have a banner setup: ', e);
+        imageUrl = 'empty';
+    }
+
+    return imageUrl;
+}
 
 export default async function handler(req: AppNextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
@@ -16,24 +40,36 @@ export default async function handler(req: AppNextApiRequest, res: NextApiRespon
 
     const userId: string = req.query.userId as string;
 
+    // these db calls exact same as streamdown, should be extracted later
     const bannerEntry = await prisma.banner?.findFirst({
         where: {
             userId: userId,
         },
     });
 
-    console.log('bannerEntry: ', bannerEntry);
+    const twitterInfo = await prisma.account?.findFirst({
+        where: {
+            userId,
+        },
+        select: {
+            oauth_token: true,
+            oauth_token_secret: true,
+            providerAccountId: true,
+        },
+    });
 
-    if (bannerEntry === null) {
-        return res.status(400).send('Could not find banner entry for user');
+    if (bannerEntry === null || twitterInfo === null) {
+        return res.status(400).send('Could not find banner entry or token info for user');
     }
 
-    // update banner entry to template
-    const accounts = await getAccounts(req.session);
+    // call twitter api to get imageUrl and convert to base64
+    const bannerUrl = await getBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
+    console.log('bannerUrl: ', bannerUrl);
 
-    // hit endpoint sending it the template id
-    // return the imageUrl or base64 encoded image
-    // call updateBanner function and return if it was successful
+    // store the current banner in s3
+    await axios.put(`${env.NEXTAUTH_URL}/api/digitalocean/upload/${userId}?imageUrl=${bannerUrl}`);
 
-    return res.status(501).send('Not implemented');
+    // call server with templateId to get the template
+
+    return res.status(501).send('Implement template retrieval');
 }
