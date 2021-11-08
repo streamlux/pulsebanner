@@ -22,30 +22,6 @@
                 }
             }
         },
-        "deps": {
-            "executor": "@nrwl/node:build",
-            "outputs": ["{options.outputPath}"],
-            "options": {
-                "outputPath": "dist/temp",
-                "generatePackageJson": true,
-                "main": "apps/remotion/src/app/server/index.ts",
-                "tsConfig": "apps/remotion/tsconfig.app.json",
-                "assets": ["apps/remotion/src/assets"]
-            },
-            "configurations": {
-                "production": {
-                    "optimization": true,
-                    "extractLicenses": true,
-                    "inspect": false,
-                    "fileReplacements": [
-                        {
-                            "replace": "apps/remotion/src/environments/environment.ts",
-                            "with": "apps/remotion/src/environments/environment.prod.ts"
-                        }
-                    ]
-                }
-            }
-        },
         "serve": {
             "executor": "@nrwl/node:execute",
             "options": {

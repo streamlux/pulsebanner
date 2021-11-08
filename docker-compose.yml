@@ -1,5 +1,6 @@
 # docker compose for local development
 # Simply starts a postgres database and adminer instance on localhost
+# If you're running this for the first time, make sure you push the prisma schema and seed the database
 
 version: '3.1'
 

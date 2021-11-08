@@ -1,4 +1,4 @@
-name: remotion image ci
+name: Build remotion server
 
 on:
   push:
@@ -37,10 +37,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 'Generate package.json'
-        run: npx nx run remotion:deps
-
-      - name: 'Copy files to dist'
+      - name: 'Build remotion app'
         run: npx nx run remotion:build
 
       -
@@ -51,4 +48,4 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            "ghcr.io/streamlux/remotion-server:latest"
+            "ghcr.io/streamlux/pulsebanner-remotion:latest"
