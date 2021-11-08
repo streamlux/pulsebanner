@@ -1,0 +1,11 @@
+{
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/*.code-search": true,
+        "dist": true,
+        "prisma/migrations": true,
+        "apps/next-e2e": true,
+        "tools": true
+    }
+}
