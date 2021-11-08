@@ -24,7 +24,7 @@ import NextLink from 'next/link';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import styles from './header.module.css';
 import React from 'react';
-import { HamburgerIcon, SunIcon } from '@chakra-ui/icons';
+import { HamburgerIcon, MoonIcon, SunIcon } from '@chakra-ui/icons';
 import { useRouter } from 'next/router';
 import { useAdmin } from '../util/hooks/useAdmin';
 
@@ -67,50 +67,44 @@ export default function Header() {
                         </Center>
                     </HStack>
                     <Spacer />
-                    <Center zIndex={10}>
-                        <IconButton size="md" aria-label="Toggle theme" icon={<SunIcon />} onClick={toggleColorMode}>
+                    <Flex experimental_spaceX="2">
+                        <IconButton size="md" aria-label="Toggle theme" icon={colorMode === 'dark' ? <SunIcon /> : <MoonIcon />} onClick={toggleColorMode}>
                             Toggle {colorMode === 'light' ? 'Dark' : 'Light'}
                         </IconButton>
-                    </Center>
                     {!session && (
-                        <Flex>
-                            <Spacer />
-                            <Button
-                                as={Link}
-                                href={`/api/auth/signin`}
-                                className={styles.buttonPrimary}
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    signIn('twitter');
-                                }}
-                            >
-                                Sign in
-                            </Button>
-                        </Flex>
+                        <Button
+                            as={Link}
+                            href={`/api/auth/signin`}
+                            className={styles.buttonPrimary}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                signIn('twitter');
+                            }}
+                        >
+                            Sign in
+                        </Button>
                     )}
                     {session && (
-                        <Flex experimental_spaceX="2">
-                            <Spacer />
-                            <Menu>
-                                <MenuButton aria-label="Options" icon={<HamburgerIcon />} variant="outline">
-                                    <Avatar name={session.user.name} src={session.user.image} />
-                                </MenuButton>
-                                <Portal>
-                                    <MenuList>
-                                        <NextLink href="/account" passHref>
-                                            <MenuItem>Account</MenuItem>
+                        <Menu>
+                            <MenuButton aria-label="Options" icon={<HamburgerIcon />} variant="outline">
+                                <Avatar name={session.user.name} src={session.user.image} />
+                            </MenuButton>
+                            <Portal>
+                                <MenuList>
+                                    <NextLink href="/account" passHref>
+                                        <MenuItem>Account</MenuItem>
+                                    </NextLink>
+                                    <MenuItem onClick={() => signOut({ redirect: false })}>Sign out</MenuItem>
+                                    {isAdmin && (
+                                        <NextLink href="/admin" passHref>
+                                            <MenuItem>Admin</MenuItem>
                                         </NextLink>
-                                        <MenuItem onClick={() => signOut({ redirect: false })}>Sign out</MenuItem>
-                                        {isAdmin && (
-                                            <NextLink href="/admin" passHref>
-                                                <MenuItem>Admin</MenuItem>
-                                            </NextLink>
-                                        )}
-                                    </MenuList>
-                                </Portal>
-                            </Menu>
-                        </Flex>
+                                    )}
+                                </MenuList>
+                            </Portal>
+                        </Menu>
                     )}
+                    </Flex>
                 </Flex>
             </Box>
         </header>

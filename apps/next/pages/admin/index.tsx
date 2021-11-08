@@ -1,23 +1,18 @@
-import React, { useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import React from 'react';
 import { useAdmin } from '../../util/hooks/useAdmin';
-import { Box, Button, Heading } from '@chakra-ui/react';
+import { Box, Heading, SimpleGrid } from '@chakra-ui/react';
+import { Database } from '../../modules/admin/Database';
+import { Webhooks } from '../../modules/admin/Webhooks';
 
 export default function Page() {
-    const { data: session } = useSession({ required: true }) as any;
     useAdmin({ required: true });
     return (
-        <Box>
-            <Heading>{session ? session?.user?.role : ''}</Heading>
-            <Button
-                onClick={() => {
-                    fetch('/api/admin/seed', {
-                        method: 'POST',
-                    });
-                }}
-            >
-                Seed database
-            </Button>
+        <Box mt="8">
+            <Heading>Admin dashboard</Heading>
+            <SimpleGrid columns={2} spacing={10} my="8">
+                <Database />
+                <Webhooks />
+            </SimpleGrid>
         </Box>
     );
 }

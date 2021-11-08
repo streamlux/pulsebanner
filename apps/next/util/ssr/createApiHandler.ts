@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import nc, { ErrorHandler } from 'next-connect';
 
 import auth, { AppNextApiRequest } from '../../middlewares/auth';
+import admin from '../../middlewares/admin';
 
 export const onError: ErrorHandler<NextApiRequest, NextApiResponse> = (err, req, res, next) => {
     console.log(err);
@@ -23,3 +24,11 @@ export const createAuthApiHandler = () =>
     nc<AppNextApiRequest, NextApiResponse>({
         onError,
     }).use(auth);
+
+/**
+ * Next.js API route handler that requires a session. Adds the session to the request object.
+ */
+export const createAdminApiHandler = () =>
+nc<AppNextApiRequest, NextApiResponse>({
+    onError,
+}).use(admin);

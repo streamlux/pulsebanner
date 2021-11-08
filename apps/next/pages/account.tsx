@@ -75,6 +75,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
     const session = await getSession(context);
     const subscription = await prisma.subscription.findFirst({
         where: {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             userId: (session?.user as any)?.userId,
             status: {
                 in: ['active', 'trialing'],
