@@ -14,4 +14,6 @@
 9. Verify by viewing the newly created rows in the products table. [Adminer link](http://localhost:8080/?pgsql=db&username=postgres&db=mydb&ns=public&select=products)
 10. Run `nx run next:serve` *
 
+Note: Running locally on windows inside of wsl may cause issues with spawning a local server. Running `Get-Service LxssManager | Restart-Service` 
+
 _* May need to prefix command with `npx`. You can remove the need for npx by properly setting up your path._
