@@ -4,7 +4,11 @@ import useSWR from 'swr';
 import { Panel } from './Panel';
 
 export const Webhooks: React.FC = () => {
-    const { data: webhooks, isValidating: loading } = useSWR('/twitch/subscription', async () => (await fetch('/api/twitch/subscription')).json(), {
+    const {
+        data: webhooks,
+        isValidating: loading,
+        error,
+    } = useSWR('/twitch/subscription', async () => (await fetch('/api/twitch/subscription')).json(), {
         revalidateOnMount: false,
         revalidateOnFocus: false,
     });
@@ -14,9 +18,15 @@ export const Webhooks: React.FC = () => {
     return (
         <Panel name="Webhooks">
             <Box experimental_spaceY="2">
+                {error && (
+                    <>
+                        <Text>Error loading webhooks</Text>
+                        <Code>{JSON.stringify(error)}</Code>
+                    </>
+                )}
                 <Text>
                     Total webhook subscriptions: {loading && 'Loading...'}
-                    {!loading && (webhooks?.subscriptions?.length ?? 'Error')}
+                    {!loading && (webhooks?.subscriptions?.length ?? 'No webhooks')}
                 </Text>
                 <Button onClick={toggle}>{showRaw ? 'Hide raw' : 'Show raw'}</Button>
                 {showRaw && (
