@@ -9,7 +9,6 @@ export const Webhooks: React.FC = () => {
         isValidating: loading,
         error,
     } = useSWR('/twitch/subscription', async () => (await fetch('/api/twitch/subscription')).json(), {
-        revalidateOnMount: false,
         revalidateOnFocus: false,
     });
 
