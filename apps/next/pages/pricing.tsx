@@ -3,7 +3,26 @@ import type { GetServerSideProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Box, Button, ButtonGroup, Heading, Link, List, Text, Wrap, WrapItem, ListItem, ListIcon, Center, chakra, Container, HStack, VStack, SimpleGrid } from '@chakra-ui/react';
+import {
+    Box,
+    Button,
+    ButtonGroup,
+    Heading,
+    Link,
+    List,
+    Text,
+    Wrap,
+    WrapItem,
+    ListItem,
+    ListIcon,
+    Center,
+    chakra,
+    Container,
+    HStack,
+    VStack,
+    SimpleGrid,
+    Flex,
+} from '@chakra-ui/react';
 import { CheckIcon } from '@chakra-ui/icons';
 
 import getStripe from '../util/getStripe';
@@ -72,10 +91,12 @@ const Page: NextPage<Props> = ({ products }) => {
 
     return (
         <div className="bg-white">
-            <VStack>
-                <Container centerContent maxW="container.lg">
-                    <Heading size="xl">Pricing</Heading>
-                    <Text>Start building for free, then add a site plan to go live. Account plans unlock additional features.</Text>
+            <VStack spacing="8">
+                <Container centerContent maxW="container.lg" experimental_spaceY="4">
+                    <Heading size="2xl" textAlign="center">
+                        The easiest way to attract more viewers for your stream
+                    </Heading>
+                    <Text fontSize="xl">Start building for free, then add a site plan to go live. Account plans unlock additional features.</Text>
                 </Container>
                 <Center>
                     <ButtonGroup isAttached>
@@ -99,13 +120,15 @@ const Page: NextPage<Props> = ({ products }) => {
                             return (
                                 <WrapItem key={product.name}>
                                     <Box rounded="md" p="4" experimental_spaceY="2">
-                                        <Heading size="sm">{product.name}</Heading>
-                                        <Text fontSize="2xl" fontWeight="extrabold" lineHeight="tight">
-                                            {`$${price.unitAmount / 100}`}
-                                            <Text as={chakra.span} fontSize="sm" fontWeight="normal">
-                                                /mo
+                                        <Flex direction="row" justify="space-between" alignItems="center">
+                                            <Heading size="sm">{product.name}</Heading>
+                                            <Text fontSize="2xl" fontWeight="extrabold" lineHeight="tight">
+                                                {`$${price.unitAmount / 100}`}
+                                                <Text as={chakra.span} fontSize="sm" fontWeight="normal">
+                                                    /mo
+                                                </Text>
                                             </Text>
-                                        </Text>
+                                        </Flex>
                                         <Text>{product.description ?? 'Missing description'}</Text>
 
                                         <Button onClick={() => handlePricingClick(price.id)}>Join {product.name}</Button>

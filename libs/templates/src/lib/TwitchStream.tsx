@@ -33,23 +33,25 @@ export const TwitchStream: React.FC<{
                     <div
                         style={{
                             maxWidth: '33%',
-                            margin: 16,
+                            margin: '0.4em',
                             zIndex: 10,
                             background: 'rgb(145, 71, 255)',
-                            border: '0.5rem solid rgb(145, 71, 255)',
+                            border: '0.4em solid rgb(145, 71, 255)',
                         }}
                     >
                         <div
                             style={{
                                 fontFamily: 'Inter',
                                 background: 'red',
-                                borderRadius: '5px',
+                                borderRadius: '0.2em',
                                 color: 'white',
                                 width: 'min-content',
                                 height: 'min-content',
-                                padding: '2px 6px 2px 5px',
+                                padding: '0.1em',
+                                textAlign: 'center',
                                 position: 'absolute',
-                                margin: '8px',
+                                margin: '0.5em',
+                                fontSize: '0.6em',
                                 zIndex: 120,
                             }}
                         >
