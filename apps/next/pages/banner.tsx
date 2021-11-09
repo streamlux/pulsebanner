@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Heading, Image } from '@chakra-ui/react';
+import { Button, ButtonGroup, Center, Heading, VStack } from '@chakra-ui/react';
 import { Banner } from '@prisma/client';
 import React from 'react';
 import useSWR from 'swr';
@@ -29,28 +29,32 @@ export default function Page() {
 
     return (
         <>
-            <Heading>Banner setup</Heading>
-            <ButtonGroup>
-                <Button onClick={async () => await refreshBanner()} disabled={!data}>
-                    Refresh banner
-                </Button>
-                <Button onClick={async () => await upsertBanner()}>Setup banner</Button>
-                <Button onClick={async () => await toggle()} disabled={!data}>
-                    {data && data.enabled ? 'Turn off live banner' : 'Turn on live banner'}
-                </Button>
-            </ButtonGroup>
-            <pre>{data ? JSON.stringify(data, null, 4) : 'No banner'}</pre>
-            <Player
-                inputProps={{
-                    text: 'hello world',
-                    thumbnailUrl: 'https://static-cdn.jtvnw.net/previews-ttv/live_user_teampgp-440x248.jpg',
-                }}
-                component={TwitchStream}
-                durationInFrames={1}
-                compositionWidth={1000}
-                compositionHeight={333}
-                fps={1}
-            />
+            <Center>
+                <VStack spacing="8">
+                    <Heading>Banner setup</Heading>
+                    <ButtonGroup>
+                        <Button onClick={async () => await upsertBanner()}>Setup banner</Button>
+                        <Button onClick={async () => await toggle()} disabled={!data}>
+                            {data && data.enabled ? 'Turn off live banner' : 'Turn on live banner'}
+                        </Button>
+                    </ButtonGroup>
+                    <pre>{data ? JSON.stringify(data, null, 4) : 'No banner'}</pre>
+                </VStack>
+            </Center>
+            <Center>
+                <Player
+                    inputProps={{
+                        text: 'hello world',
+                        thumbnailUrl: 'https://static-cdn.jtvnw.net/previews-ttv/live_user_teampgp-440x248.jpg',
+                    }}
+                    component={TwitchStream}
+                    durationInFrames={1}
+                    compositionWidth={1500}
+                    compositionHeight={500}
+                    fps={1}
+                    style={{ width: '75%', fontSize: '28px' }}
+                />
+            </Center>
         </>
     );
 }

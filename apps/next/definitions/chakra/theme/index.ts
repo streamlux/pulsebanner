@@ -18,12 +18,29 @@ const config: ThemeConfig = {
     useSystemColorMode: false,
 };
 
+
+
 const overrides = {
     ...styles,
     colors,
     fontSizes,
 };
 
-const theme = extendTheme(overrides, { config });
+const theme = extendTheme(overrides, { config }, {
+    colors: {
+        twitch: {
+            50: '#9146FF',
+            100: '#9146FF',
+            200: '#9146FF',
+            300: '#9146FF',
+            400: '#9146FF',
+            500: '#9146FF',
+            600: '#9146FF',
+            700: '#9146FF',
+            800: '#9146FF',
+            900: '#9146FF',
+        }
+    }
+});
 
 export default theme;

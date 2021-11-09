@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, chakra, Container, Flex } from '@chakra-ui/react';
+import { Box, Center, chakra, Container, Flex } from '@chakra-ui/react';
 import Header from './header';
 import Footer from './footer';
 
@@ -9,11 +9,11 @@ export default function Layout({ children }) {
             <Box as={chakra.header}>
                 <Header />
             </Box>
-            <Container as={chakra.main} flex="1" centerContent maxW={['full', 'container.xl']}>
-                <Flex direction="column" w="full">
+            <Flex as={chakra.main} flex="1" px={['2', '8', '16', '36']} w="100vw">
+                <Box w="full" pt="20">
                     {children}
-                </Flex>
-            </Container>
+                </Box>
+            </Flex>
             <Box as={chakra.footer}>
                 <Footer />
             </Box>
