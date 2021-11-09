@@ -30,7 +30,7 @@ Note: This requires twitch-cli repo to be installed https://github.com/twitchdev
 
 ## Local Remotion setup for WSL
 
-####If you are dumb enough to do this on windows inside of wsl (like me) here is the steps
+If you are dumb enough to do this on windows inside of wsl (like me) here is the steps
 
 1. Follow these instructions to install ffmpeg and all additional requirements for linux https://www.remotion.dev/docs/#additional-step-for-linux-users
 2. Install chromium-browser in wsl `sudo apt-get install chromium-browser`
