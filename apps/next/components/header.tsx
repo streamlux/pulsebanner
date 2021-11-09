@@ -43,67 +43,60 @@ export default function Header() {
                 <style>{`.nojs-show { opacity: 1; top: 0; }`}</style>
             </noscript>
             <Box className={styles.signedInStatus}>
-                <Flex className={`nojs-show ${!session && loading ? styles.loading : styles.loaded}`} bg="purple.400" p={['2', '4']}>
+                <Flex h="16" className={`nojs-show ${!session && loading ? styles.loading : styles.loaded}`} p={['2', '4']} alignItems="center">
+                    <Wrap spacing={['2', '12']}>
+                        <WrapItem>
+                            <NextLink href="/" passHref>
+                                <Link>Home</Link>
+                            </NextLink>
+                        </WrapItem>
+                        <WrapItem>
+                            <NextLink href="/banner" passHref>
+                                <Link>Banner</Link>
+                            </NextLink>
+                        </WrapItem>
+                        <WrapItem>
+                            <NextLink href="/pricing" passHref>
+                                <Link>Pricing</Link>
+                            </NextLink>
+                        </WrapItem>
+                    </Wrap>
                     <Spacer />
-                    <HStack w="full" color="white" zIndex={10}>
-                        <Center w="full">
-                            <Wrap spacing={['2', '12']}>
-                                <WrapItem>
-                                    <NextLink href="/" passHref>
-                                        <Link>Home</Link>
-                                    </NextLink>
-                                </WrapItem>
-                                <WrapItem>
-                                    <NextLink href="/banner" passHref>
-                                        <Link>Banner</Link>
-                                    </NextLink>
-                                </WrapItem>
-                                <WrapItem>
-                                    <NextLink href="/pricing" passHref>
-                                        <Link>Pricing</Link>
-                                    </NextLink>
-                                </WrapItem>
-                            </Wrap>
-                        </Center>
-                    </HStack>
-                    <Spacer />
-                    <Flex experimental_spaceX="2">
+                    <Flex experimental_spaceX="2" alignItems="center">
                         <IconButton size="md" aria-label="Toggle theme" icon={colorMode === 'dark' ? <SunIcon /> : <MoonIcon />} onClick={toggleColorMode}>
                             Toggle {colorMode === 'light' ? 'Dark' : 'Light'}
                         </IconButton>
-                    {!session && (
-                        <Button
-                            as={Link}
-                            href={`/api/auth/signin`}
-                            className={styles.buttonPrimary}
-                            onClick={(e) => {
-                                e.preventDefault();
-                                signIn('twitter');
-                            }}
-                        >
-                            Sign in
-                        </Button>
-                    )}
-                    {session && (
-                        <Menu>
-                            <MenuButton aria-label="Options" icon={<HamburgerIcon />} variant="outline">
-                                <Avatar name={session.user.name} src={session.user.image} />
-                            </MenuButton>
-                            <Portal>
-                                <MenuList>
-                                    <NextLink href="/account" passHref>
-                                        <MenuItem>Account</MenuItem>
-                                    </NextLink>
-                                    <MenuItem onClick={() => signOut({ redirect: false })}>Sign out</MenuItem>
-                                    {isAdmin && (
-                                        <NextLink href="/admin" passHref>
-                                            <MenuItem>Admin</MenuItem>
+                        {!session && (
+                            <Button
+                                as={Link}
+                                href={`/api/auth/signin`}
+                                className={styles.buttonPrimary}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    signIn('twitter');
+                                }}
+                            >
+                                Sign in
+                            </Button>
+                        )}
+                        {session && (
+                            <Menu>
+                                <Avatar as={MenuButton} name={session.user.name} src={session.user.image} showBorder={[]} />
+                                <Portal>
+                                    <MenuList>
+                                        <NextLink href="/account" passHref>
+                                            <MenuItem>Account</MenuItem>
                                         </NextLink>
-                                    )}
-                                </MenuList>
-                            </Portal>
-                        </Menu>
-                    )}
+                                        <MenuItem onClick={() => signOut({ redirect: false })}>Sign out</MenuItem>
+                                        {isAdmin && (
+                                            <NextLink href="/admin" passHref>
+                                                <MenuItem>Admin</MenuItem>
+                                            </NextLink>
+                                        )}
+                                    </MenuList>
+                                </Portal>
+                            </Menu>
+                        )}
                     </Flex>
                 </Flex>
             </Box>
