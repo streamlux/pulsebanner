@@ -30,7 +30,7 @@ import styles from './header.module.css';
 import React from 'react';
 import { MoonIcon, SunIcon } from '@chakra-ui/icons';
 import { useAdmin } from '../util/hooks/useAdmin';
-import favicon from '@next/public/favicon.png';
+import favicon from '@app/public/favicon.png';
 import { FaTwitter } from 'react-icons/fa';
 
 // The approach used in this component shows how to built a sign in and sign out

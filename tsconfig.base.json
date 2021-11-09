@@ -22,7 +22,7 @@
             "@pulsebanner/templates": [
                 "libs/templates/src/index.ts"
             ],
-            "@next/*": [
+            "@app/*": [
                 "apps/next/*"
             ]
         },

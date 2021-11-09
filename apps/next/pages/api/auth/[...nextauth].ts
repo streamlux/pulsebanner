@@ -2,9 +2,9 @@ import NextAuth from 'next-auth';
 import TwitchProvider from 'next-auth/providers/twitch';
 import TwitterProvider from 'next-auth/providers/twitter';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import { getSecondsSinceEpoch } from '@next/util/common';
-import { refreshAccessToken } from '@next/util/twitch/refreshAccessToken';
-import prisma from '@next/util/ssr/prisma';
+import { getSecondsSinceEpoch } from '@app/util/common';
+import { refreshAccessToken } from '@app/util/twitch/refreshAccessToken';
+import prisma from '@app/util/ssr/prisma';
 
 // File contains options and hooks for next-auth, the authentication package
 // we are using to handle signup, signin, etc.
