@@ -91,7 +91,7 @@ export default function Header() {
                 >
                     <SimpleGrid columns={breakpointValue.gridColumns} spacing={breakpointValue.gridSpacing} h="100%" maxH="100%" w="full">
                         <Box maxH="10">
-                            <LinkBox h="full">
+                            <LinkBox h="full" w="min">
                                 <HStack height="100%">
                                     <Image alt="PulseBanner logo" src={favicon.src} height="10" width="10" />
                                     <Heading size="md" as={chakra.p}>
