@@ -107,7 +107,7 @@ export default function Header() {
                                 <Wrap spacing={['2', '4', '8', '12']}>
                                     <WrapItem>
                                         <NextLink href="/features" passHref>
-                                            <Link>{breakpoint}</Link>
+                                            <Link>Features</Link>
                                         </NextLink>
                                     </WrapItem>
                                     <WrapItem>
