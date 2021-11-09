@@ -6,3 +6,10 @@ export const timestampToDate = (t?: number) => {
     }
     return new Date(t * 1000);
 };
+
+/**
+ * @returns Seconds since epoch.
+ */
+export function getSecondsSinceEpoch(): number {
+    return Math.floor(Date.now() / 1000);
+}

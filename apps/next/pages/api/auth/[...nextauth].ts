@@ -2,50 +2,14 @@ import NextAuth from 'next-auth';
 import TwitchProvider from 'next-auth/providers/twitch';
 import TwitterProvider from 'next-auth/providers/twitter';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import { PrismaClient } from '.prisma/client';
+import { getSecondsSinceEpoch } from '@next/util/common';
+import { refreshAccessToken } from '@next/util/twitch/refreshAccessToken';
 
-async function refreshAccessToken(refreshToken) {
-    try {
-        const url =
-            'https://id.twitch.tv/oauth2/token?' +
-            new URLSearchParams({
-                client_id: process.env.TWITCH_CLIENT_ID,
-                client_secret: process.env.TWITCH_CLIENT_SECRET,
-                grant_type: 'refresh_token',
-                refresh_token: refreshToken,
-            });
-
-        const response = await fetch(url, {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            method: 'POST',
-        });
-
-        const refreshedTokens = await response.json();
-
-        if (!response.ok) {
-            throw refreshedTokens;
-        }
-
-        return {
-            ...refreshedTokens,
-            expires_at: Date.now() + refreshedTokens.expires_in * 1000,
-            refresh_token: refreshedTokens.refresh_token ?? refreshToken, // Fall back to old refresh token
-        };
-    } catch (error) {
-        console.log(error);
-
-        return {
-            error: 'RefreshAccessTokenError',
-        };
-    }
-}
-
+// File contains options and hooks for next-auth, the authentication package
+// we are using to handle signup, signin, etc.
 // For more information on each option (and a full list of options) go to
 // https://next-auth.js.org/configuration/options
 
-const prisma = new PrismaClient();
 export default NextAuth({
     adapter: PrismaAdapter(prisma),
     // https://next-auth.js.org/configuration/providers
@@ -124,6 +88,8 @@ export default NextAuth({
         // async signIn({ user, account, profile, email, credentials }) { return true },
         // async redirect({ url, baseUrl }) { return baseUrl },
         // async session({ session, token, user }) { return session },
+        // async jwt({ token, user, account, profile, isNewUser }) { return token },
+        // Use this session callback to add custom information to the session. Ex: role
         async session({ session, token, user }) {
             const accounts = await prisma.account.findMany({
                 where: {
@@ -136,28 +102,33 @@ export default NextAuth({
             session.role = user.role;
             session.accounts = {};
             accounts.forEach(async (account) => {
-                if (account.provider === 'twitch' && account.expires_at > Date.now()) {
-                    console.log('refreshing twitch token');
-                    const data = await refreshAccessToken(account.refresh_token);
+                if (account.provider === 'twitch') {
+                    // Check if twitch access token is expired
+                    if (account.expires_at <= getSecondsSinceEpoch()) {
+                        // Use the refresh token to request a new access token from twitch
+                        const data = await refreshAccessToken(account.refresh_token);
 
-                    await prisma.account.update({
-                        where: {
-                            id: account.id,
-                        },
-                        data: {
-                            access_token: data.access_token,
-                            refresh_token: data.refresh_token,
-                            expires_at: data.expires_at,
-                            token_type: data.token_type,
-                            scope: data.scope,
-                        },
-                    });
+                        // update the access token and other token details in the database
+                        await prisma.account.update({
+                            where: {
+                                id: account.id,
+                            },
+                            data: {
+                                access_token: data.access_token,
+                                refresh_token: data.refresh_token,
+                                expires_at: data.expires_at,
+                                token_type: data.token_type,
+                                scope: data.scope,
+                            },
+                        });
+                    }
                 }
+
+                // Boolean specifying if the user has connected this account or not
                 session.accounts[account.provider] = true;
             });
             return session;
-        },
-        // async jwt({ token, user, account, profile, isNewUser }) { return token }
+        }
     },
 
     // Events are useful for logging

@@ -21,6 +21,9 @@
         "paths": {
             "@pulsebanner/templates": [
                 "libs/templates/src/index.ts"
+            ],
+            "@next/*": [
+                "apps/next/*"
             ]
         },
         "allowSyntheticDefaultImports": true
