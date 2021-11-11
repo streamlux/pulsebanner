@@ -1,10 +1,12 @@
 import { Button, ButtonGroup, Center, Heading, VStack } from '@chakra-ui/react';
-import { Banner } from '@prisma/client';
+import type { Banner } from '@prisma/client';
 import React from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
-import { Player } from '@remotion/player';
 import { TwitchStream } from '@pulsebanner/templates';
+import dynamic from 'next/dynamic';
+
+const DynamicPlayer = dynamic(async () => (await import('@remotion/player')).Player);
 
 export default function Page() {
     const { data, mutate } = useSWR<Banner>('banner', async () => (await fetch('/api/banner')).json());
@@ -42,7 +44,7 @@ export default function Page() {
                 </VStack>
             </Center>
             <Center>
-                <Player
+                <DynamicPlayer
                     inputProps={{
                         text: 'hello world',
                         thumbnailUrl: 'https://static-cdn.jtvnw.net/previews-ttv/live_user_teampgp-440x248.jpg',

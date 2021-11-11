@@ -30,7 +30,7 @@ import styles from './header.module.css';
 import React from 'react';
 import { MoonIcon, SunIcon } from '@chakra-ui/icons';
 import { useAdmin } from '../util/hooks/useAdmin';
-import favicon from '@app/public/favicon.png';
+import favicon from '@app/public/favicon.webp';
 import { FaTwitter } from 'react-icons/fa';
 
 // The approach used in this component shows how to built a sign in and sign out
@@ -93,7 +93,7 @@ export default function Header() {
                         <Box maxH="10">
                             <LinkBox h="full" w="min">
                                 <HStack height="100%">
-                                    <Image alt="PulseBanner logo" src={favicon.src} height="10" width="10" />
+                                    <Image alt="PulseBanner logo" src={favicon.src} height="40px" width="40px" />
                                     <Heading size="md" as={chakra.p}>
                                         <NextLink href="/" passHref>
                                             <LinkOverlay href="/">PulseBanner</LinkOverlay>
