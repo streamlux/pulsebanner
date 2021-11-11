@@ -8,6 +8,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import favicon from '../public/favicon.png';
 import { DefaultSeo } from 'next-seo';
+import seoOptions from '@app/util/seo/next-seo.config';
 
 // Use of the <SessionProvider> is now mandatory to allow components that call
 // `useSession()` anywhere in your application to access the `session` object.
@@ -21,7 +22,7 @@ export default function App({ Component, pageProps }) {
                 <link rel="apple-touch-icon" href={favicon.src} />
             </Head>
             {/* https://github.com/garmeeh/next-seo */}
-            <DefaultSeo title="PulseBanner - Twitter live banner for Twitch" description="Easily attract more viewers to your stream from Twitch." />
+            <DefaultSeo {...seoOptions} />
             <SessionProvider session={pageProps.session}>
                 <ChakraProvider theme={theme}>
                     {/* {router.pathname === '/' ? (
