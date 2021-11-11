@@ -1,4 +1,4 @@
-import { Box, Button, Center, Code, Container, Flex, Heading, HStack, Spacer, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, Center, Heading, Spacer, VStack } from '@chakra-ui/react';
 import React from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { FaTwitch, FaTwitter, FaCheck } from 'react-icons/fa';

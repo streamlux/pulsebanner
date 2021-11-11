@@ -3,26 +3,7 @@ import type { GetServerSideProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useState } from 'react';
-import {
-    Box,
-    Button,
-    ButtonGroup,
-    Heading,
-    Link,
-    List,
-    Text,
-    Wrap,
-    WrapItem,
-    ListItem,
-    ListIcon,
-    Center,
-    chakra,
-    Container,
-    HStack,
-    VStack,
-    SimpleGrid,
-    Flex,
-} from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, Heading, List, Text, WrapItem, ListItem, ListIcon, Center, chakra, Container, VStack, SimpleGrid, Flex } from '@chakra-ui/react';
 import { CheckIcon } from '@chakra-ui/icons';
 
 import getStripe from '../util/getStripe';

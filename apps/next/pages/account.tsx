@@ -1,11 +1,10 @@
 import React from 'react';
-import { Box, Button, Center, Text } from '@chakra-ui/react';
+import { Button } from '@chakra-ui/react';
 import { Subscription } from '@prisma/client';
 import type { GetServerSideProps, NextPage } from 'next';
 import Link from 'next/link';
-import { getSession, useSession } from 'next-auth/react';
+import { getSession } from 'next-auth/react';
 import prisma from '../util/ssr/prisma';
-import { session } from 'passport';
 
 type Props = {
     subscription: Subscription | null;

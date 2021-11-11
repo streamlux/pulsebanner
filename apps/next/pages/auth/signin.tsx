@@ -1,8 +1,5 @@
-import { Box, Button, ButtonGroup, Code, Heading, Image, Text } from '@chakra-ui/react';
-import { Banner } from '@prisma/client';
+import { Box, Button } from '@chakra-ui/react';
 import React from 'react';
-import useSWR from 'swr';
-import axios from 'axios';
 import { signIn } from 'next-auth/react';
 
 export default function Page() {

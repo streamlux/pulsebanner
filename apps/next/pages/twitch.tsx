@@ -1,7 +1,6 @@
 import { Button, ButtonGroup } from '@chakra-ui/button';
 import { Heading } from '@chakra-ui/layout';
 import axios from 'axios';
-import useSWR from 'swr';
 
 export default function Page() {
     // toggle this
