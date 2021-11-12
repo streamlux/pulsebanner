@@ -4,6 +4,7 @@ import NextCors from 'nextjs-cors';
 import axios from 'axios';
 import { TwitterClient } from 'twitter-api-client';
 import { env } from 'process';
+import { BannerResponseCode, updateBanner } from '../streamdown/[userId]';
 
 export async function getBanner(oauth_token: string, oauth_token_secret: string, providerAccountId: string): Promise<string> {
     const client = new TwitterClient({
@@ -20,7 +21,7 @@ export async function getBanner(oauth_token: string, oauth_token_secret: string,
         imageUrl = response.sizes['1500x500'].url;
         console.log('imageUrl: ', imageUrl);
     } catch (e) {
-        console.log('User does not have a banner setup: ', e);
+        console.log('User does not have a banner setup. Will save empty for later: ', e);
         imageUrl = 'empty';
     }
 
@@ -70,6 +71,10 @@ export default async function handler(req: AppNextApiRequest, res: NextApiRespon
     await axios.put(`${env.NEXTAUTH_URL}/api/digitalocean/upload/${userId}?imageUrl=${bannerUrl}`);
 
     // call server with templateId to get the template
+    const response = await axios.post(`${env.REMOTION_URL}/getTemplate`, { tester: 123, thumbnailUrl: 'sample.com', twitchInfo: 'tester' });
+    const base64Image = response.data;
 
-    return res.status(501).send('Implement template retrieval');
+    // post this base64 image to twitter
+    const bannerStatus: BannerResponseCode = await updateBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, base64Image);
+    return bannerStatus === 200 ? res.status(200).send('Set banner to given template') : res.status(400).send('Unable to set banner to original image');
 }
