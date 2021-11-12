@@ -39,8 +39,3 @@ jobs:
               env:
                   INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
-
-            - uses: addnab/docker-run-action@v3
-              with:
-                  image: 'ghcr.io/streamlux/pulsebanner:${GITHUB_REF##*/}'
-                  run: 'npm start'
