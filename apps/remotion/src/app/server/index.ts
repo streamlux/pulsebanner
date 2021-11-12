@@ -12,6 +12,7 @@ import { helpText } from './help-text';
 import { getImageType, getMimeType } from './image-types';
 import { getImageHash } from './make-hash';
 import { sendFile } from './send-file';
+import imageToBase64 from 'image-to-base64';
 
 dotenv.config();
 
@@ -27,12 +28,14 @@ let webpackBundling = bundle(bundlePath, undefined, {
                 ...current.resolve,
                 alias: {
                     ...current.resolve?.alias,
-                    '@pulsebanner/templates': templatePath
-                }
-            }
-        }
-    }
+                    '@pulsebanner/templates': templatePath,
+                },
+            },
+        };
+    },
 });
+
+app.use(express.json());
 
 const tmpDir = fs.promises.mkdtemp(path.join(os.tmpdir(), 'remotion-'));
 
@@ -109,8 +112,7 @@ app.get(
                 onError: (err) => {
                     reject(err);
                 },
-                envVariables: {
-                }
+                envVariables: {},
             })
                 .then((res) => resolve(res))
                 .catch((err) => reject(err));
@@ -119,6 +121,72 @@ app.get(
         await sendFile(res, fs.createReadStream(output));
         // await saveToCache(hash, await fs.promises.readFile(output));
         await fs.promises.unlink(output);
+    })
+);
+
+type TemplateRequestBody = {
+    templateId: string;
+    thumbnailUrl: string;
+    twitchInfo: string;
+};
+
+/**
+ * Format for what we are going to pass in
+ * Req Body
+ * TemplateId, Thumbnail URL, Twitch info
+ */
+// api call (POST) to here sending the required information
+app.post(
+    '/getTemplate',
+    handler(async (req, res) => {
+        const requestBody = req.body;
+        console.log('requestBody: ', requestBody);
+
+        // this will not be hard coded once we know the arriving information
+        const imageFormat = 'png';
+        const compName = 'twitch';
+        const inputProps = req.query;
+
+        res.set('content-type', getMimeType(imageFormat));
+
+        // Calculate a unique identifier for our image,
+        // if it exists, return it from cache
+        const hash = getImageHash(
+            JSON.stringify({
+                compName,
+                imageFormat,
+                inputProps,
+            })
+        );
+
+        if (await isInCache(hash)) {
+            const file = await getFromCache(hash);
+            // return sendFile(res, file);
+        }
+
+        const output = path.join(await tmpDir, hash);
+
+        const webpackBundle = await webpackBundling;
+        const composition = await getComp(compName, inputProps);
+        await new Promise<void>((resolve, reject) => {
+            renderStill({
+                composition,
+                webpackBundle,
+                output,
+                inputProps,
+                imageFormat,
+                onError: (err) => {
+                    reject(err);
+                },
+                envVariables: {},
+            })
+                .then((res) => resolve(res))
+                .catch((err) => reject(err));
+        });
+
+        const imageBase64 = fs.readFileSync(output, { encoding: 'base64' });
+
+        res.send(imageBase64);
     })
 );
 

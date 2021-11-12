@@ -1,10 +1,9 @@
-import { getAccounts } from '../../../../util/getAccounts';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from 'next-auth/react';
 import NextCors from 'nextjs-cors';
 import axios from 'axios';
 import { ClientCredentialsAuthProvider } from 'twitch-auth';
 import { Account } from '@prisma/client';
+import { getAccountsById } from '../../../../util/getAccountsById';
 
 const authProvider = new ClientCredentialsAuthProvider(process.env.TWITCH_CLIENT_ID, process.env.TWITCH_CLIENT_SECRET);
 
@@ -19,40 +18,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
     });
 
-    const session = await getSession({ req });
+    const userId: string = req.query.userId as string;
 
-    if (session) {
-        const type: string = req.query.type as string;
-        const accounts = await getAccounts(session);
-        const twitchAccount: Account = accounts['twitch'];
-        const twitchUserId = twitchAccount.providerAccountId;
-        const reqBody = {
-            type,
-            version: '1',
-            condition: {
-                broadcaster_user_id: twitchUserId,
-            },
-            transport: {
-                method: 'webhook',
-                callback: `https://${process.env.APP_DOMAIN}/api/twitch/notification/${type}/${twitchUserId}`,
-                secret: process.env.EVENTSUB_SECRET,
-            },
-        };
+    const type: string = req.query.type as string;
+    const accounts = await getAccountsById(userId);
+    const twitchAccount: Account = accounts['twitch'];
 
-        const token = await authProvider.getAccessToken();
+    const twitchUserId = twitchAccount.providerAccountId;
+    const reqBody = {
+        type,
+        version: '1',
+        condition: {
+            broadcaster_user_id: twitchUserId,
+        },
+        transport: {
+            method: 'webhook',
+            callback: `https://${process.env.APP_DOMAIN}/api/twitch/notification/${type}/${userId}`,
+            secret: process.env.EVENTSUB_SECRET,
+        },
+    };
 
-        await axios.post('https://api.twitch.tv/helix/eventsub/subscriptions', reqBody, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Client-ID': process.env.TWITCH_CLIENT_ID,
-                Authorization: `Bearer ${token.accessToken}`,
-            },
-        });
+    const token = await authProvider.getAccessToken();
 
-        // res.status(200).json({ accounts });
-        res.send(201);
-    } else {
-        // res.status(401);
-        res.send(401);
-    }
+    await axios.post('https://api.twitch.tv/helix/eventsub/subscriptions', reqBody, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Client-ID': process.env.TWITCH_CLIENT_ID,
+            Authorization: `Bearer ${token.accessToken}`,
+        },
+    });
+
+    res.send(201);
 }
