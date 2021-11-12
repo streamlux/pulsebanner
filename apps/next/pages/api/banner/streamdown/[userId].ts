@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 import axios from 'axios';
 import { env } from 'process';
-import { BannerResponseCode, updateBanner } from '@app/util/twitter/bannerHelpers';
+import { TwitterResponseCode, updateBanner } from '@app/util/twitter/twitterHelpers';
 import { getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -36,6 +36,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // add check for if it is 'empty' string, then we just set back to default (remove the current banner)
 
-    const bannerStatus: BannerResponseCode = await updateBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, response.data);
+    const bannerStatus: TwitterResponseCode = await updateBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, response.data);
     return bannerStatus === 200 ? res.status(200).send('Set banner back to original image') : res.status(400).send('Unable to set banner to original image');
 }
