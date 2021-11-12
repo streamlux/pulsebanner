@@ -1,34 +1,11 @@
-import { AppNextApiRequest } from '../../../../middlewares/auth';
-import { NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 import axios from 'axios';
-import { TwitterClient } from 'twitter-api-client';
 import { env } from 'process';
-import { BannerResponseCode, updateBanner } from '../streamdown/[userId]';
+import { BannerResponseCode, updateBanner, getBanner } from '../../../../util/twitter/bannerHelpers';
+import { getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
 
-export async function getBanner(oauth_token: string, oauth_token_secret: string, providerAccountId: string): Promise<string> {
-    const client = new TwitterClient({
-        apiKey: process.env.TWITTER_ID,
-        apiSecret: process.env.TWITTER_SECRET,
-        accessToken: oauth_token,
-        accessTokenSecret: oauth_token_secret,
-    });
-    let imageUrl: string = undefined;
-    try {
-        const response = await client.accountsAndUsers.usersProfileBanner({
-            user_id: providerAccountId,
-        });
-        imageUrl = response.sizes['1500x500'].url;
-        console.log('imageUrl: ', imageUrl);
-    } catch (e) {
-        console.log('User does not have a banner setup. Will save empty for later: ', e);
-        imageUrl = 'empty';
-    }
-
-    return imageUrl;
-}
-
-export default async function handler(req: AppNextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
     // nextjs-cors uses the cors package, so we invite you to check the documentation https://github.com/expressjs/cors
     await NextCors(req, res, {
@@ -41,23 +18,9 @@ export default async function handler(req: AppNextApiRequest, res: NextApiRespon
 
     const userId: string = req.query.userId as string;
 
-    // these db calls exact same as streamdown, should be extracted later
-    const bannerEntry = await prisma.banner?.findFirst({
-        where: {
-            userId: userId,
-        },
-    });
+    const bannerEntry = await getBannerEntry(userId);
 
-    const twitterInfo = await prisma.account?.findFirst({
-        where: {
-            userId,
-        },
-        select: {
-            oauth_token: true,
-            oauth_token_secret: true,
-            providerAccountId: true,
-        },
-    });
+    const twitterInfo = await getTwitterInfo(userId, true);
 
     if (bannerEntry === null || twitterInfo === null) {
         return res.status(400).send('Could not find banner entry or token info for user');
