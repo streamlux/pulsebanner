@@ -82,7 +82,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const featureMapping = response.data as FeatureMapTypes;
             // conditional code to be called if it is an enable or disable event
             if (featureMapping.featureMap.tweet) {
-                // call the tweet endpoint
+                if (streamStatus === 'stream.online') {
+                    await axios.post(`${env.NEXTAUTH_URL}/api/tweet/streamup/${userId}`);
+                }
             }
             if (featureMapping.featureMap.banner) {
                 if (streamStatus === 'stream.online') {
