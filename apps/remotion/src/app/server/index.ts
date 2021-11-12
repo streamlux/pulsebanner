@@ -12,7 +12,6 @@ import { helpText } from './help-text';
 import { getImageType, getMimeType } from './image-types';
 import { getImageHash } from './make-hash';
 import { sendFile } from './send-file';
-import imageToBase64 from 'image-to-base64';
 
 dotenv.config();
 

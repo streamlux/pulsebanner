@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
-import S3 from 'aws-sdk/clients/s3';
 import { env } from 'process';
 import imageToBase64 from 'image-to-base64';
+import { createS3 } from '@app/util/database/s3ClientHelper';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
@@ -15,13 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
     });
 
-    const s3 = new S3({
-        endpoint: env.DO_SPACE_ENDPOINT,
-        credentials: {
-            accessKeyId: env.DO_ACCESS_KEY,
-            secretAccessKey: env.DO_SECRET,
-        },
-    });
+    const s3 = createS3(env.DO_SPACE_ENDPOINT, env.DO_ACCESS_KEY, env.DO_SECRET);
 
     const userId: string = req.query.userId as string;
     const imageUrl: string = req.query.imageUrl as string;
