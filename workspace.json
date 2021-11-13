@@ -4,7 +4,9 @@
         "next": "apps/next",
         "next-e2e": "apps/next-e2e",
         "remotion": "apps/remotion",
-        "templates": "libs/templates"
+        "remotion-components": "libs/remotion/components",
+        "remotion-forms": "libs/remotion/forms",
+        "remotion-templates": "libs/remotion/templates"
     },
     "cli": {
         "defaultCollection": "@nrwl/nest"

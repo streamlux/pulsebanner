@@ -15,8 +15,8 @@
         "forceConsistentCasingInFileNames": true
     },
     "paths": {
-        "@pulsebanner/templates": [
-            "libs/templates/src/index"
+        "@pulsebanner/remotion/components": [
+            "libs/remotion/components/src/index.ts"
         ]
     }
 }

@@ -1,29 +1,12 @@
-import {
-    Alert,
-    AlertIcon,
-    background,
-    Box,
-    Button,
-    ButtonGroup,
-    Center,
-    Container,
-    Flex,
-    Heading,
-    HStack,
-    SimpleGrid,
-    Spacer,
-    Text,
-    useColorModeValue,
-    VStack,
-} from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, Center, Container, Heading, HStack, SimpleGrid, VStack } from '@chakra-ui/react';
 import type { Banner } from '@prisma/client';
 import React, { useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
-import { Composer, Backgrounds, Foregrounds } from '@pulsebanner/templates';
+import { Composer } from '@pulsebanner/remotion/components';
+import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
 import dynamic from 'next/dynamic';
 import { FaPlay, FaStop } from 'react-icons/fa';
-import { kMaxLength } from 'buffer';
 import { Player } from '@remotion/player';
 import { AnyComponent } from 'remotion';
 
@@ -50,8 +33,8 @@ export default function Page() {
         });
     };
 
-    const [bgId, setBgId] = useState<keyof typeof Backgrounds>('CSSBackground');
-    const [fgId, setFgId] = useState<keyof typeof Foregrounds>('TwitchStream');
+    const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>('CSSBackground');
+    const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>('TwitchStream');
     const [bgProps, setBgProps] = useState({} as any);
 
     return (
@@ -75,13 +58,13 @@ export default function Page() {
                 <Heading fontSize="xl">Backgrounds</Heading>
 
                 <SimpleGrid columns={2} spacing="4" py="2">
-                    {Object.entries(Backgrounds).map(([key, background]) => (
+                    {Object.entries(BackgroundTemplates).map(([key, background]) => (
                         <Box key={key}>
-                            <Button onClick={() => setBgId(key as keyof typeof Backgrounds)}>Use {background.default.name}</Button>
+                            <Button onClick={() => setBgId(key as keyof typeof BackgroundTemplates)}>Use {background.name}</Button>
 
                             <Player
                                 inputProps={undefined}
-                                component={background.default.component as AnyComponent<any>}
+                                component={background.component as AnyComponent<any>}
                                 durationInFrames={1}
                                 compositionWidth={1500}
                                 compositionHeight={500}
@@ -94,14 +77,14 @@ export default function Page() {
                 </SimpleGrid>
                 <Heading fontSize="xl">Styles</Heading>
                 <SimpleGrid columns={2} spacing="4" py="2">
-                    {Object.entries(Foregrounds).map(([key, foreground]) => (
+                    {Object.entries(ForegroundTemplates).map(([key, foreground]) => (
                         <Box key={key}>
-                            <Button onClick={() => setFgId(key as keyof typeof Foregrounds)}>Use {foreground.default.name}</Button>
+                            <Button onClick={() => setFgId(key as keyof typeof ForegroundTemplates)}>Use {foreground.name}</Button>
 
                             <Player
                                 inputProps={{
                                     backgroundId: bgId,
-                                    foregroundId: key as keyof typeof Foregrounds,
+                                    foregroundId: key as keyof typeof ForegroundTemplates,
                                     backgroundProps: {},
                                     foregroundProps: {},
                                 }}
@@ -121,7 +104,7 @@ export default function Page() {
                     inputProps={{
                         backgroundId: bgId,
                         foregroundId: fgId,
-                        backgroundProps: { ...Backgrounds[bgId].default.defaultProps, ...bgProps },
+                        backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
                         foregroundProps: {},
                     }}
                     component={Composer}
@@ -145,7 +128,7 @@ export default function Page() {
                 </Center>
 
                 <Center>
-                    {Backgrounds[bgId].default.form({
+                    {BackgroundTemplates[bgId].form({
                         setProps: setBgProps,
                         props: bgProps,
                     })}

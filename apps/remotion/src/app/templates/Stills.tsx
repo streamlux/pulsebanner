@@ -1,4 +1,4 @@
-import { Composer, Backgrounds, Foregrounds } from '@pulsebanner/templates';
+import { Composer, BackgroundComponents, ForegroundComponents } from '@pulsebanner/remotion/components';
 import React from 'react';
 import { Still } from 'remotion';
 

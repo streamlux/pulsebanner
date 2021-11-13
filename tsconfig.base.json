@@ -10,26 +10,19 @@
         "importHelpers": true,
         "target": "es2015",
         "module": "commonjs",
-        "lib": [
-            "es2017",
-            "dom"
-        ],
+        "lib": ["es2017", "dom"],
         "skipLibCheck": true,
         "skipDefaultLibCheck": true,
         "esModuleInterop": true,
         "baseUrl": ".",
         "paths": {
-            "@pulsebanner/templates": [
-                "libs/templates/src/index.ts"
-            ],
-            "@app/*": [
-                "apps/next/*"
-            ]
+            "@app/*": ["apps/next/*"],
+            "@pulsebanner/remotion/components": ["libs/remotion/components/src/index.ts"],
+            "@pulsebanner/remotion/forms": ["libs/remotion/forms/src/index.ts"],
+            "@pulsebanner/remotion/templates": ["libs/remotion/templates/src/index.ts"],
+            "@pulsebanner/templates": ["libs/templates/src/index.ts"]
         },
         "allowSyntheticDefaultImports": true
     },
-    "exclude": [
-        "node_modules",
-        "tmp"
-    ]
+    "exclude": ["node_modules", "tmp"]
 }
