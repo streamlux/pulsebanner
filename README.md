@@ -13,6 +13,7 @@
 8. Run `prisma db seed` *
 9. Verify by viewing the newly created rows in the products table. [Adminer link](http://localhost:8080/?pgsql=db&username=postgres&db=mydb&ns=public&select=products)
 10. Run `nx run next:serve` *
+11. Run `nx run remotion:serve` to start the remotion server *
 
 Note: Running locally on windows inside of wsl may cause issues with spawning a local server. Running `Get-Service LxssManager | Restart-Service` 
 
@@ -43,4 +44,4 @@ If it is just a problem with chromium not being installed, follow this tutorial 
 7. `sudo daemonize /usr/bin/unshare --fork --pid --mount-proc /lib/systemd/systemd --system-unit=basic.target`
 8. This has installed snap on your wsl system, verify running `snap version`
 9. `sudo snap install chromium`
-10. Good to start the server, nx run remotion:serve
+10. Good to start the server, `nx run remotion:serve`

@@ -1,52 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
-import { TwitterClient } from 'twitter-api-client';
 import axios from 'axios';
 import { env } from 'process';
-
-export type BannerResponseCode = 200 | 400;
-
-// pass it the banner so we can just upload the base64 or image url directly
-export async function updateBanner(oauth_token: string, oauth_token_secret: string, bannerBase64: string): Promise<BannerResponseCode> {
-    const client = new TwitterClient({
-        apiKey: process.env.TWITTER_ID,
-        apiSecret: process.env.TWITTER_SECRET,
-        accessToken: oauth_token,
-        accessTokenSecret: oauth_token_secret,
-    });
-
-    // We store empty string if user did not have an existing banner
-    if (bannerBase64 === 'empty') {
-        try {
-            await client.accountsAndUsers.accountRemoveProfileBanner();
-        } catch (e) {
-            console.log('error: ', e);
-            return 400;
-        }
-    } else {
-        try {
-            await client.accountsAndUsers.accountUpdateProfileBanner({
-                banner: bannerBase64,
-            });
-        } catch (e) {
-            if ('errors' in e) {
-                // Twitter API error
-                if (e.errors[0].code === 88)
-                    // rate limit exceeded
-                    console.log('Rate limit will reset on', new Date(e._headers.get('x-rate-limit-reset') * 1000));
-                // some other kind of error, e.g. read-only API trying to POST
-                else console.log('Other error');
-            } else {
-                // non-API error, e.g. network problem or invalid JSON in response
-                console.log('Non api error');
-            }
-            console.log('failed to update banner');
-            return 400;
-        }
-    }
-    console.log('success updating banner');
-    return 200;
-}
+import { TwitterResponseCode, updateBanner } from '@app/util/twitter/twitterHelpers';
+import { getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
@@ -61,23 +18,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const userId: string = req.query.userId as string;
 
-    const bannerEntry = await prisma.banner?.findFirst({
-        where: {
-            userId: userId,
-        },
-    });
+    const bannerEntry = await getBannerEntry(userId);
 
-    const tokenInfo = await prisma.account?.findFirst({
-        where: {
-            userId,
-        },
-        select: {
-            oauth_token: true,
-            oauth_token_secret: true,
-        },
-    });
+    const twitterInfo = await getTwitterInfo(userId);
 
-    if (bannerEntry === null || tokenInfo === null) {
+    if (bannerEntry === null || twitterInfo === null) {
         return res.status(400).send('Could not find banner entry or token info for user');
     }
 
@@ -91,6 +36,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // add check for if it is 'empty' string, then we just set back to default (remove the current banner)
 
-    const bannerStatus: BannerResponseCode = await updateBanner(tokenInfo.oauth_token, tokenInfo.oauth_token_secret, response.data);
+    const bannerStatus: TwitterResponseCode = await updateBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, response.data);
     return bannerStatus === 200 ? res.status(200).send('Set banner back to original image') : res.status(400).send('Unable to set banner to original image');
 }

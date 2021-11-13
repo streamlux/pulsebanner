@@ -74,22 +74,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log(req.body.event);
         const streamStatus = req.body.subscription.type;
 
-        const featureName = param[0];
+        const userId = param[0];
 
         // get the features that are enabled
-        const response = await axios.get(`${env.NEXTAUTH_URL}/api/feature/${featureName}`);
+        const response = await axios.get(`${env.NEXTAUTH_URL}/api/feature/${userId}`);
         if (response.status === 200) {
             const featureMapping = response.data as FeatureMapTypes;
             // conditional code to be called if it is an enable or disable event
             if (featureMapping.featureMap.tweet) {
-                // call the tweet endpoint
+                if (streamStatus === 'stream.online') {
+                    await axios.post(`${env.NEXTAUTH_URL}/api/tweet/streamup/${userId}`);
+                }
             }
             if (featureMapping.featureMap.banner) {
                 if (streamStatus === 'stream.online') {
-                    await axios.post(`${env.NEXTAUTH_URL}/api/banner/streamup/${featureName}`);
+                    await axios.post(`${env.NEXTAUTH_URL}/api/banner/streamup/${userId}`);
                 }
                 if (streamStatus === 'stream.offline') {
-                    await axios.post(`${env.NEXTAUTH_URL}/api/banner/streamdown/${featureName}`);
+                    await axios.post(`${env.NEXTAUTH_URL}/api/banner/streamdown/${userId}`);
                 }
             }
         }

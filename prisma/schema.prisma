@@ -75,8 +75,8 @@ model Banner {
     userId String @unique(map: "banners_user_id_unique") @map("user_id")
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    enabled       Boolean @default(false)
-    templateId    String  @map("template_id")
+    enabled    Boolean @default(false)
+    templateId String  @map("template_id")
 
     @@map("banners")
 }
@@ -88,8 +88,19 @@ model Tweet {
 
     template String  @map("template")
     enabled  Boolean @default(false)
+    Twitch   Twitch?
 
     @@map("tweets")
+}
+
+// particular to twitch
+model Twitch {
+    id     String @id @default(cuid())
+    userId String @unique(map: "twitch_user_id_unique") @map("user_id")
+    tweet  Tweet  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    streamUrl String?
+    tweetInfo String? // Needs to be enforced to 280 character limit
 }
 
 // Stripe models
