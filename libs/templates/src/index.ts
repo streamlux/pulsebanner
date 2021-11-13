@@ -1,2 +1,3 @@
-export * from './lib/HelloWorld';
-export * from './lib/TwitchStream';
+export * from './lib/compositions/Composer';
+export * as Backgrounds from './lib/backgrounds';
+export * as Foregrounds from './lib/foregrounds';

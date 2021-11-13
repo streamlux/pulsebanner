@@ -4,6 +4,7 @@ import { Box, Center, Heading, SimpleGrid } from '@chakra-ui/react';
 import { Database } from '../../modules/admin/Database';
 import { Webhooks } from '../../modules/admin/Webhooks';
 import { Session } from '../../modules/admin/Session';
+import { Banner } from '../../modules/admin/Banner';
 
 export default function Page() {
     useAdmin({ required: true });
@@ -17,6 +18,7 @@ export default function Page() {
                     <Database />
                     <Webhooks />
                     <Session />
+                    <Banner />
                 </SimpleGrid>
             </Center>
         </Box>

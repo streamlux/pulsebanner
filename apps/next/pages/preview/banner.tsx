@@ -51,7 +51,7 @@ export default function Page() {
     };
 
     const [bgId, setBgId] = useState<keyof typeof Backgrounds>('CSSBackground');
-    const [fgId, setFgId] = useState<keyof typeof Foregrounds>('ImLive');
+    const [fgId, setFgId] = useState<keyof typeof Foregrounds>('TwitchStream');
     const [bgProps, setBgProps] = useState({} as any);
 
     return (
@@ -72,6 +72,51 @@ export default function Page() {
                 </Heading>
             </HStack>
             <Box w="full" p="4" bg="gray.700" rounded="md">
+                <Heading fontSize="xl">Backgrounds</Heading>
+
+                <SimpleGrid columns={2} spacing="4" py="2">
+                    {Object.entries(Backgrounds).map(([key, background]) => (
+                        <Box key={key}>
+                            <Button onClick={() => setBgId(key as keyof typeof Backgrounds)}>Use {background.default.name}</Button>
+
+                            <Player
+                                inputProps={undefined}
+                                component={background.default.component as AnyComponent<any>}
+                                durationInFrames={1}
+                                compositionWidth={1500}
+                                compositionHeight={500}
+                                fps={1}
+                                key={key}
+                                style={{ width: '100%', maxWidth: '1000px', fontSize: '28px' }}
+                            />
+                        </Box>
+                    ))}
+                </SimpleGrid>
+                <Heading fontSize="xl">Styles</Heading>
+                <SimpleGrid columns={2} spacing="4" py="2">
+                    {Object.entries(Foregrounds).map(([key, foreground]) => (
+                        <Box key={key}>
+                            <Button onClick={() => setFgId(key as keyof typeof Foregrounds)}>Use {foreground.default.name}</Button>
+
+                            <Player
+                                inputProps={{
+                                    backgroundId: bgId,
+                                    foregroundId: key as keyof typeof Foregrounds,
+                                    backgroundProps: {},
+                                    foregroundProps: {},
+                                }}
+                                component={Composer}
+                                durationInFrames={1}
+                                compositionWidth={1500}
+                                compositionHeight={500}
+                                fps={1}
+                                key={key}
+                                style={{ width: '100%', maxWidth: '1000px', fontSize: '28px' }}
+                            />
+                        </Box>
+                    ))}
+                </SimpleGrid>
+
                 <Player
                     inputProps={{
                         backgroundId: bgId,
@@ -84,7 +129,7 @@ export default function Page() {
                     compositionWidth={1500}
                     compositionHeight={500}
                     fps={1}
-                    style={{ width: '100%', maxWidth: '1000px', fontSize: '28px', maxHeight: '500px' }}
+                    style={{ width: '100%', maxWidth: '1000px', fontSize: '28px' }}
                 />
 
                 <Center>
