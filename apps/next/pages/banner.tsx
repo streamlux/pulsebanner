@@ -3,8 +3,6 @@ import type { Banner } from '@prisma/client';
 import React, { useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
-import { BackgroundForms, ForegroundForms } from '@pulsebanner/remotion/forms';
-import { BackgroundComponents, ForegroundComponents } from '@pulsebanner/remotion/components';
 import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
 import { Composer } from '@pulsebanner/remotion/components';
 import dynamic from 'next/dynamic';
@@ -37,6 +35,7 @@ export default function Page() {
     const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>('CSSBackground');
     const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>('TwitchStream');
     const [bgProps, setBgProps] = useState({} as any);
+    const Form = BackgroundTemplates[bgId].form;
 
     return (
         <Container centerContent maxW="container.lg" experimental_spaceY="4">
@@ -84,10 +83,7 @@ export default function Page() {
                 </Center>
 
                 <Center>
-                    {BackgroundTemplates[bgId].form({
-                        setProps: setBgProps,
-                        props: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
-                    })}
+                    <Form setProps={setBgProps} props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }} />
                 </Center>
             </Box>
         </Container>

@@ -10,16 +10,6 @@ export const CSSBackground: LayerForm<typeof BackgroundComponents.CSSBackground>
                 <Code as={chakra.pre}>{JSON.stringify(props.style, null, 4)}</Code>
                 <FormHelperText>Enter a URL to an image to use.</FormHelperText>
             </FormControl>
-            <FormControl id="url">
-                <FormLabel>CSS Background</FormLabel>
-                <Code as={chakra.pre}>{JSON.stringify(props.style, null, 4)}</Code>
-                <FormHelperText>Enter a URL to an image to use.</FormHelperText>
-            </FormControl>
-            <FormControl id="url">
-                <FormLabel>CSS Background</FormLabel>
-                <Code as={chakra.pre}>{JSON.stringify(props.style, null, 4)}</Code>
-                <FormHelperText>Enter a URL to an image to use.</FormHelperText>
-            </FormControl>
         </Box>
     );
 };
