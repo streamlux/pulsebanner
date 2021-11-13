@@ -28,7 +28,8 @@ const ImLive: React.FC<ImLiveProps> = ({ thumbnailUrl = 'https://static-cdn.jtvn
                         }}
                     >
                         <Img
-                            src={arrow?.src ?? arrow}
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            src={typeof arrow === 'string' ? arrow : (arrow as any).src}
                             style={{
                                 transform: 'scaleX(-1) rotate(180deg)',
                             }}
