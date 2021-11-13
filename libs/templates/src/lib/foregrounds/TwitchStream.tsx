@@ -1,7 +1,8 @@
 import React from 'react';
 import { Img } from 'remotion';
-import { ImageBackground } from './backgrounds/ImageBackground';
-import { CSSBackground } from './backgrounds/CSSBackground';
+import { ImageBackground } from '../backgrounds';
+import { CSSBackground } from '../backgrounds';
+import { Layer } from '../Layer';
 import './fonts.module.css';
 
 const colorStyle: React.CSSProperties = {
@@ -10,16 +11,15 @@ const colorStyle: React.CSSProperties = {
     background: 'linear-gradient(to right, #b149ff 0%, #00ffff 100%)',
 };
 
-export const TwitchStream: React.FC<{
+type TwitchStreamProps = {
     text?: string;
-    backgroundColor?: string;
     backgroundUrl?: string;
     thumbnailUrl: string;
-}> = ({ backgroundUrl, thumbnailUrl, text }) => {
+};
+
+const TwitchStream: React.FC<TwitchStreamProps> = ({ backgroundUrl, thumbnailUrl = 'https://static-cdn.jtvnw.net/previews-ttv/live_user_moistcr1tikal-440x248.jpg', text }) => {
     return (
         <div style={{ width: '100%', height: '100%' }}>
-            {backgroundUrl && <ImageBackground src={backgroundUrl} />}
-            {!backgroundUrl && <CSSBackground style={colorStyle} />}
             <div style={{ display: 'flex', height: '100%', width: '100%', alignItems: 'center' }}>
                 <div
                     style={{
@@ -74,3 +74,13 @@ export const TwitchStream: React.FC<{
         </div>
     );
 };
+
+export default {
+    component: TwitchStream,
+    defaultProps: {
+        thumbnailUrl: 'https://static-cdn.jtvnw.net/previews-ttv/live_user_moistcr1tikal-440x248.jpg',
+    },
+    form: () => <p>hellos</p>,
+    name: 'Twitch stream',
+    description: 'Twitch stream description',
+} as Layer<typeof TwitchStream>;
