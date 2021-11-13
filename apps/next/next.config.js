@@ -1,16 +1,23 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const withNx = require('@nrwl/next/plugins/with-nx');
 
-
-
 /**
- * @type {import('@nrwl/next/plugins/with-nx').WithNxOptions}
+ * @type {import('next').NextConfig}
  **/
 const nextConfig = {
     nx: {
         // Set this to true if you would like to to use SVGR
         // See: https://github.com/gregberge/svgr
         svgr: false,
+    },
+
+    webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+
+
+        config.watchOptions = {};
+
+        // Important: return the modified config
+        return config;
     },
 };
 

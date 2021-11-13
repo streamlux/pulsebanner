@@ -1,31 +1,15 @@
-import {
-    Alert,
-    AlertIcon,
-    background,
-    Box,
-    Button,
-    ButtonGroup,
-    Center,
-    Container,
-    Flex,
-    Heading,
-    HStack,
-    SimpleGrid,
-    Spacer,
-    Text,
-    useColorModeValue,
-    VStack,
-} from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, Center, Container, Heading, HStack, VStack } from '@chakra-ui/react';
 import type { Banner } from '@prisma/client';
 import React, { useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
-import { Composer, Backgrounds, Foregrounds } from '@pulsebanner/templates';
+import { BackgroundForms, ForegroundForms } from '@pulsebanner/remotion/forms';
+import { BackgroundComponents, ForegroundComponents } from '@pulsebanner/remotion/components';
+import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
+import { Composer } from '@pulsebanner/remotion/components';
 import dynamic from 'next/dynamic';
 import { FaPlay, FaStop } from 'react-icons/fa';
-import { kMaxLength } from 'buffer';
 import { Player } from '@remotion/player';
-import { AnyComponent } from 'remotion';
 
 const DynamicPlayer = dynamic(async () => (await import('@remotion/player')).Player);
 
@@ -50,8 +34,8 @@ export default function Page() {
         });
     };
 
-    const [bgId, setBgId] = useState<keyof typeof Backgrounds>('CSSBackground');
-    const [fgId, setFgId] = useState<keyof typeof Foregrounds>('ImLive');
+    const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>('CSSBackground');
+    const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>('TwitchStream');
     const [bgProps, setBgProps] = useState({} as any);
 
     return (
@@ -76,7 +60,7 @@ export default function Page() {
                     inputProps={{
                         backgroundId: bgId,
                         foregroundId: fgId,
-                        backgroundProps: { ...Backgrounds[bgId].default.defaultProps, ...bgProps },
+                        backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
                         foregroundProps: {},
                     }}
                     component={Composer}
@@ -100,9 +84,9 @@ export default function Page() {
                 </Center>
 
                 <Center>
-                    {Backgrounds[bgId].default.form({
+                    {BackgroundTemplates[bgId].form({
                         setProps: setBgProps,
-                        props: bgProps,
+                        props: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
                     })}
                 </Center>
             </Box>

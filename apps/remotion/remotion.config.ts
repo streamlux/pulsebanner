@@ -6,7 +6,7 @@ dotenv.config({
     path: '../../.env'
 });
 
-const templatePath = path.resolve(process.cwd(), 'libs/templates/src/index');
+const templatePath = path.resolve(process.cwd(), 'libs/remotion/components/src/index');
 console.log('templatePath', templatePath);
 Config.Rendering.setImageFormat('png');
 Config.Output.setOverwriteOutput(true);
@@ -17,7 +17,7 @@ Config.Bundling.overrideWebpackConfig((current) => {
             ...current.resolve,
             alias: {
                 ...current.resolve?.alias,
-                '@pulsebanner/templates': templatePath
+                '@pulsebanner/remotion/components': templatePath
             }
         }
     }

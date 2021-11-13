@@ -18,7 +18,7 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 8000;
 const bundlePath = path.join(__dirname, '../templates/index.tsx');
-const templatePath = path.resolve(__dirname, process.env.NODE_ENV !== 'development' ? '../components/index' : '../../../../../libs/templates/src/index');
+const templatePath = path.resolve(__dirname, process.env.NODE_ENV !== 'development' ? '../components/index' : '../../../../../libs/remotion/components/src/index');
 let webpackBundling = bundle(bundlePath, undefined, {
     webpackOverride: (current) => {
         return {
@@ -27,7 +27,7 @@ let webpackBundling = bundle(bundlePath, undefined, {
                 ...current.resolve,
                 alias: {
                     ...current.resolve?.alias,
-                    '@pulsebanner/templates': templatePath,
+                    '@pulsebanner/remotion/components': templatePath,
                 },
             },
         };
@@ -215,3 +215,5 @@ app.post('/bundle', (req, res) => {
 
 app.listen(port);
 console.log(helpText(Number(port)));
+console.info('Server template path: ', templatePath);
+
