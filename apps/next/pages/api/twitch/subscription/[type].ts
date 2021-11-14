@@ -18,35 +18,39 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
     });
 
-    const userId: string = req.query.userId as string;
+    try {
+        const userId: string = req.query.userId as string;
+        const type: string = req.query.type as string;
+        const accounts = await getAccountsById(userId);
+        console.log('accounts: ', JSON.stringify(accounts));
+        const twitchAccount: Account = accounts['twitch'];
 
-    const type: string = req.query.type as string;
-    const accounts = await getAccountsById(userId);
-    const twitchAccount: Account = accounts['twitch'];
+        const twitchUserId = twitchAccount.providerAccountId;
+        const reqBody = {
+            type,
+            version: '1',
+            condition: {
+                broadcaster_user_id: twitchUserId,
+            },
+            transport: {
+                method: 'webhook',
+                callback: `https://${process.env.APP_DOMAIN}/api/twitch/notification/${type}/${userId}`,
+                secret: process.env.EVENTSUB_SECRET,
+            },
+        };
 
-    const twitchUserId = twitchAccount.providerAccountId;
-    const reqBody = {
-        type,
-        version: '1',
-        condition: {
-            broadcaster_user_id: twitchUserId,
-        },
-        transport: {
-            method: 'webhook',
-            callback: `https://${process.env.APP_DOMAIN}/api/twitch/notification/${type}/${userId}`,
-            secret: process.env.EVENTSUB_SECRET,
-        },
-    };
+        const token = await authProvider.getAccessToken();
 
-    const token = await authProvider.getAccessToken();
+        await axios.post('https://api.twitch.tv/helix/eventsub/subscriptions', reqBody, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Client-ID': process.env.TWITCH_CLIENT_ID,
+                Authorization: `Bearer ${token.accessToken}`,
+            },
+        });
 
-    await axios.post('https://api.twitch.tv/helix/eventsub/subscriptions', reqBody, {
-        headers: {
-            'Content-Type': 'application/json',
-            'Client-ID': process.env.TWITCH_CLIENT_ID,
-            Authorization: `Bearer ${token.accessToken}`,
-        },
-    });
-
-    res.send(201);
+        res.status(201).send(`Success for type: ${type}`);
+    } catch (e) {
+        res.status(400).send(`Error creating webhook: ${e}`);
+    }
 }

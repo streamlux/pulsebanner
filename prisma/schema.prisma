@@ -101,6 +101,8 @@ model Twitch {
 
     streamUrl String?
     tweetInfo String? // Needs to be enforced to 280 character limit
+
+    @@map("twitch")
 }
 
 // Stripe models
