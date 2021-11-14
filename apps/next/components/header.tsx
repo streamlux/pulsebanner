@@ -31,7 +31,7 @@ import React from 'react';
 import { MoonIcon, SunIcon } from '@chakra-ui/icons';
 import { useAdmin } from '../util/hooks/useAdmin';
 import favicon from '@app/public/favicon.webp';
-import { FaTwitter } from 'react-icons/fa';
+import { FaTwitch, FaTwitter } from 'react-icons/fa';
 
 // The approach used in this component shows how to built a sign in and sign out
 // component that works on pages which support both client and server side
@@ -104,7 +104,7 @@ export default function Header() {
                         </Box>
                         {!breakpointValue.mobile && (
                             <Center id="nav-links" fontSize="lg">
-                                <Wrap spacing={['2', '4', '8', '12']}>
+                                <Wrap spacing={['2', '4', '8', '10']}>
                                     <WrapItem>
                                         <NextLink href="/features" passHref>
                                             <Link>Features</Link>
@@ -118,6 +118,11 @@ export default function Header() {
                                     <WrapItem>
                                         <NextLink href="/pricing" passHref>
                                             <Link>Pricing</Link>
+                                        </NextLink>
+                                    </WrapItem>
+                                    <WrapItem>
+                                        <NextLink href="/twitch" passHref>
+                                            <Link>Twitch Webhooks</Link>
                                         </NextLink>
                                     </WrapItem>
                                 </Wrap>

@@ -80,6 +80,9 @@ export default function Page() {
                             </Button>
                         </ButtonGroup>
                     </VStack>
+                    <VStack spacing="8">
+                        <Button>Enable feature</Button>
+                    </VStack>
                 </Center>
 
                 <Center>
