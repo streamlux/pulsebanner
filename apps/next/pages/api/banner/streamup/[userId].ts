@@ -5,6 +5,13 @@ import { env } from 'process';
 import { TwitterResponseCode, updateBanner, getBanner } from '../../../../util/twitter/twitterHelpers';
 import { getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
 
+type TemplateRequestBody = {
+    foregroundId: string;
+    backgroundId: string;
+    foregroundProps: JSON;
+    backgroundProps: JSON;
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
     // nextjs-cors uses the cors package, so we invite you to check the documentation https://github.com/expressjs/cors
@@ -28,13 +35,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // call twitter api to get imageUrl and convert to base64
     const bannerUrl = await getBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
-    console.log('bannerUrl: ', bannerUrl);
 
     // store the current banner in s3
     await axios.put(`${env.NEXTAUTH_URL}/api/digitalocean/upload/${userId}?imageUrl=${bannerUrl}`);
 
+    // get the banner info saved in Banner table
+
+    // construct template object
+    const templateObj: TemplateRequestBody = {
+        backgroundId: 'CSSBackground',
+        foregroundId: 'ImLive',
+        foregroundProps: {} as JSON,
+        backgroundProps: {} as JSON,
+    };
+
     // pass in the bannerEntry info
-    const response = await axios.post(`${env.REMOTION_URL}/getTemplate`, { tester: 123, thumbnailUrl: 'sample.com', twitchInfo: 'tester' });
+    const response = await axios.post(`${env.REMOTION_URL}/getTemplate`, templateObj);
     const base64Image = response.data;
 
     // post this base64 image to twitter

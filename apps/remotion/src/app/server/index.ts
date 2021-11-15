@@ -6,7 +6,6 @@ import rateLimit from 'express-rate-limit';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { getFromCache, isInCache } from './cache';
 import { handler } from './handler';
 import { helpText } from './help-text';
 import { getImageType, getMimeType } from './image-types';
@@ -71,6 +70,8 @@ app.use(
     })
 );
 
+// NOTE: This get endpoint will be removed/should be taken out when we don't need for testing
+
 // The image is rendered when /[CompositionName].[imageformat] is called.
 // Props are passed via query string.
 app.get(
@@ -91,11 +92,6 @@ app.get(
                 inputProps,
             })
         );
-
-        if (await isInCache(hash)) {
-            const file = await getFromCache(hash);
-            // return sendFile(res, file);
-        }
 
         const output = path.join(await tmpDir, hash);
 
@@ -123,12 +119,6 @@ app.get(
     })
 );
 
-type TemplateRequestBody = {
-    templateId: string;
-    thumbnailUrl: string;
-    twitchInfo: string;
-};
-
 /**
  * Format for what we are going to pass in
  * Req Body
@@ -141,10 +131,10 @@ app.post(
         const requestBody = req.body;
         console.log('requestBody: ', requestBody);
 
-        // this will not be hard coded once we know the arriving information
+        // hard coded info as we only use one composition composer and generate different templates from there by passing the different props
         const imageFormat = 'png';
-        const compName = 'twitch';
-        const inputProps = req.query;
+        const compName = 'pulsebanner';
+        const inputProps = req.body;
 
         res.set('content-type', getMimeType(imageFormat));
 
@@ -157,11 +147,6 @@ app.post(
                 inputProps,
             })
         );
-
-        if (await isInCache(hash)) {
-            const file = await getFromCache(hash);
-            // return sendFile(res, file);
-        }
 
         const output = path.join(await tmpDir, hash);
 
@@ -216,4 +201,3 @@ app.post('/bundle', (req, res) => {
 app.listen(port);
 console.log(helpText(Number(port)));
 console.info('Server template path: ', templatePath);
-

@@ -75,8 +75,11 @@ model Banner {
     userId String @unique(map: "banners_user_id_unique") @map("user_id")
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    enabled    Boolean @default(false)
-    templateId String  @map("template_id")
+    enabled         Boolean @default(false)
+    foregroundId    String
+    backgroundId    String
+    backgroundProps Json
+    foregroundProps Json
 
     @@map("banners")
 }
