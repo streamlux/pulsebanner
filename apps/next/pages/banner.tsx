@@ -5,11 +5,8 @@ import useSWR from 'swr';
 import axios from 'axios';
 import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
 import { Composer } from '@pulsebanner/remotion/components';
-import dynamic from 'next/dynamic';
 import { FaPlay, FaStop } from 'react-icons/fa';
 import { Player } from '@remotion/player';
-
-const DynamicPlayer = dynamic(async () => (await import('@remotion/player')).Player);
 
 export default function Page() {
     const { data, mutate } = useSWR<Banner>('banner', async () => (await fetch('/api/banner')).json());
