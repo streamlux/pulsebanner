@@ -18,6 +18,7 @@ const app = express();
 const port = process.env.PORT || 8000;
 const bundlePath = path.join(__dirname, '../templates/index.tsx');
 const templatePath = path.resolve(__dirname, process.env.NODE_ENV !== 'development' ? '../components/index' : '../../../../../libs/remotion/components/src/index');
+
 let webpackBundling = bundle(bundlePath, undefined, {
     webpackOverride: (current) => {
         return {
@@ -158,6 +159,7 @@ app.post(
                 webpackBundle,
                 output,
                 inputProps,
+                quality: 100,
                 imageFormat,
                 onError: (err) => {
                     reject(err);
@@ -179,7 +181,20 @@ app.get('/comps', async (req, res) => {
 });
 
 app.get('/bundle', async (req, res) => {
-    webpackBundling = bundle(bundlePath);
+    webpackBundling = bundle(bundlePath, undefined, {
+        webpackOverride: (current) => {
+            return {
+                ...current,
+                resolve: {
+                    ...current.resolve,
+                    alias: {
+                        ...current.resolve?.alias,
+                        '@pulsebanner/remotion/components': templatePath,
+                    },
+                },
+            };
+        },
+    });
 
     webpackBundling.then(() => {
         console.log('Done bundling.');
