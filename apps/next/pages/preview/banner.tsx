@@ -87,6 +87,7 @@ export default function Page() {
                                     foregroundId: key as keyof typeof ForegroundTemplates,
                                     backgroundProps: {},
                                     foregroundProps: {},
+                                    watermark: true,
                                 }}
                                 component={Composer}
                                 durationInFrames={1}
@@ -106,6 +107,7 @@ export default function Page() {
                         foregroundId: fgId,
                         backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
                         foregroundProps: {},
+                        watermark: true,
                     }}
                     component={Composer}
                     durationInFrames={1}
