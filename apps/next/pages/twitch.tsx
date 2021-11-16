@@ -56,6 +56,7 @@ export default function Page() {
                     {enabled ? `Disable PulseBanner` : `Enable PulseBanner`}
                 </Button>
                 <Button onClick={async () => getExistingWebhooks()}>Existing webhooks</Button>
+                <Button onClick={async () => removeWebhook()}>Remove webhooks</Button>
             </ButtonGroup>
         </>
     );

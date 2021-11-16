@@ -1,4 +1,4 @@
-import { Box, Button, Center, Heading, Spacer, VStack } from '@chakra-ui/react';
+import { Box, Button, Center, Container, Heading, Spacer, VStack, Text } from '@chakra-ui/react';
 import React from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { FaTwitch, FaTwitter, FaCheck } from 'react-icons/fa';
@@ -8,11 +8,19 @@ export default function Page() {
     const { data: session } = useSession({ required: false }) as any;
 
     return (
-        <Center>
+        <VStack spacing="16">
             <Box>
-                <VStack spacing="16">
-                    <Heading>Connect accounts</Heading>
-                    <Spacer />
+                <VStack>
+                    <Container centerContent maxW="container.lg" experimental_spaceY="4">
+                        <Heading size="2xl" textAlign="center">
+                            Twitter banner that updates automatically when you stream
+                        </Heading>
+                        <Text fontSize="xl">Start building for free, then add a site plan to go live. Account plans unlock additional features.</Text>
+                    </Container>
+                </VStack>
+            </Box>
+            <Center>
+                <Box>
                     <VStack>
                         <Button onClick={() => signIn('twitter')} colorScheme="twitter" leftIcon={<FaTwitter />} rightIcon={session?.accounts?.twitter ? <FaCheck /> : undefined}>
                             Connect to Twitter
@@ -21,8 +29,8 @@ export default function Page() {
                             Connect to Twitch
                         </Button>
                     </VStack>
-                </VStack>
-            </Box>
-        </Center>
+                </Box>
+            </Center>
+        </VStack>
     );
 }

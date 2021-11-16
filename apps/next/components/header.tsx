@@ -87,9 +87,9 @@ export default function Header() {
                     px={['2', '2', '4', '4']}
                     alignItems="center"
                     justify="space-evenly"
-                    w={['full', 'full', 'full', '75vw']}
+                    w={['full', 'full', 'full', '70vw']}
                 >
-                    <SimpleGrid columns={breakpointValue.gridColumns} spacing={breakpointValue.gridSpacing} h="100%" maxH="100%" w="full">
+                    <Flex justifyContent="space-between" h="100%" maxH="100%" w="full">
                         <Box maxH="10">
                             <LinkBox h="full" w="min">
                                 <HStack height="100%">
@@ -118,11 +118,6 @@ export default function Header() {
                                     <WrapItem>
                                         <NextLink href="/pricing" passHref>
                                             <Link>Pricing</Link>
-                                        </NextLink>
-                                    </WrapItem>
-                                    <WrapItem>
-                                        <NextLink href="/twitch" passHref>
-                                            <Link>Twitch Webhooks</Link>
                                         </NextLink>
                                     </WrapItem>
                                 </Wrap>
@@ -173,7 +168,7 @@ export default function Header() {
                                 </Menu>
                             )}
                         </Flex>
-                    </SimpleGrid>
+                    </Flex>
                 </Flex>
             </Center>
             {breakpointValue.mobile && (

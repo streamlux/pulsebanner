@@ -14,9 +14,11 @@ import {
     ModalBody,
     ModalCloseButton,
     useDisclosure,
+    ButtonGroup,
 } from '@chakra-ui/react';
 import useSWR from 'swr';
 import { Panel } from './Panel';
+import axios from 'axios';
 
 export const Webhooks: React.FC = () => {
     const {
@@ -26,6 +28,10 @@ export const Webhooks: React.FC = () => {
     } = useSWR('/twitch/subscription', async () => (await fetch('/api/twitch/subscription')).json(), {
         revalidateOnFocus: false,
     });
+
+    const removeWebhook = async () => {
+        const response = await axios.delete('/api/twitch/subscription');
+    };
 
     const [showRaw, { toggle }] = useBoolean();
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -43,7 +49,10 @@ export const Webhooks: React.FC = () => {
                     Total webhook subscriptions: {loading && 'Loading...'}
                     {!loading && (webhooks?.subscriptions?.length ?? 'No webhooks')}
                 </Text>
-                <Button onClick={onOpen}>Show raw</Button>
+                <ButtonGroup>
+                    <Button onClick={async () => removeWebhook()}>Delete webhooks</Button>
+                    <Button onClick={onOpen}>Show raw</Button>
+                </ButtonGroup>
                 {showRaw && (
                     <Code as={chakra.pre} overflowX="scroll" maxW="100%">
                         {!loading && JSON.stringify(webhooks, null, 2)}
