@@ -50,7 +50,7 @@ export default function Page() {
         <Container centerContent maxW="container.lg" experimental_spaceY="4">
             <Flex w="full" flexDirection="row" justifyContent="space-between">
                 <Heading fontSize="3xl" alignSelf="end">
-                    Banner preview
+                    Setup Twitch live banner
                 </Heading>
 
                 <VStack>
@@ -87,25 +87,44 @@ export default function Page() {
                     style={{ width: '100%', maxWidth: '1500px', maxHeight: '500px' }}
                 />
 
-                <Center>
-                    <Box p="4" my="4" rounded="md" bg="whiteAlpha.100">
-                        <Heading fontSize="3xl">Banner settings</Heading>
-                        <Flex justifyContent="space-between" p="2">
-                            <Checkbox colorScheme="purple" defaultIsChecked size="lg">
-                                Show watermark
-                            </Checkbox>
-                            <Button onClick={upsertBanner}>Save settings</Button>
-                        </Flex>
-                        <VStack spacing="8">
-                            <FgForm setProps={setFgProps} props={{ ...ForegroundTemplates[fgId].defaultProps, ...fgProps }} />
-                            <Form setProps={setBgProps} props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }} />
-                        </VStack>
-                        <Flex justifyContent="space-between" p="2">
-                            <Spacer />
-                            <Button onClick={upsertBanner}>Save settings</Button>
-                        </Flex>
-                    </Box>
-                </Center>
+                <Box p="4" my="4" rounded="md" bg="whiteAlpha.100" w="full">
+                    <Heading fontSize="3xl">Banner settings</Heading>
+                    <Flex justifyContent="space-between" p="2">
+                        <Checkbox colorScheme="purple" defaultIsChecked size="lg">
+                            Show watermark
+                        </Checkbox>
+                        <Button onClick={upsertBanner}>Save settings</Button>
+                    </Flex>
+                    <VStack spacing="8">
+                        <FgForm setProps={setFgProps} props={{ ...ForegroundTemplates[fgId].defaultProps, ...fgProps }} />
+                        <Form setProps={setBgProps} props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }} />
+                    </VStack>
+                    <Flex justifyContent="space-between" p="2">
+                        <Checkbox colorScheme="purple" defaultIsChecked size="lg">
+                            Show watermark
+                        </Checkbox>
+                        <Button onClick={upsertBanner}>Save settings</Button>
+                    </Flex>
+                </Box>
+                <Flex w="full" flexDirection="row" justifyContent="space-between">
+                    <Spacer />
+
+                    <VStack>
+                        <Button
+                            colorScheme={data && data.enabled ? 'red' : 'green'}
+                            justifySelf="flex-end"
+                            disabled={!data}
+                            leftIcon={data && data.enabled ? <FaStop /> : <FaPlay />}
+                            px="8"
+                            onClick={toggle}
+                        >
+                            {data && data.enabled ? 'Turn off live banner' : 'Turn on live banner'}
+                        </Button>
+                        <Heading fontSize="lg" w="full" textAlign="center">
+                            {data && data.enabled ? 'Your banner is enabled.' : 'Live banner not enabled.'}
+                        </Heading>
+                    </VStack>
+                </Flex>
             </Box>
         </Container>
     );

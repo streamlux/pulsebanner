@@ -1,6 +1,5 @@
-import { Box, Button, FormControl, FormHelperText, FormLabel, Heading, Input } from '@chakra-ui/react';
+import { Box, FormControl, FormLabel, Input, Select } from '@chakra-ui/react';
 import { ForegroundComponents } from '@pulsebanner/remotion/components';
-import { useState } from 'react';
 import { LayerForm } from '../LayerForm';
 
 export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, setProps }) => {
@@ -15,6 +14,13 @@ export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, s
                     }}
                     defaultValue={props.text}
                 />
+            </FormControl>
+            <FormControl id="fontColor" w="fit-content">
+                <FormLabel>Text color</FormLabel>
+                <Select placeholder="Select option" value={props.fontColor} onChange={(e) => setProps({ ...props, fontColor: e.target.value })}>
+                    <option value="black">Black</option>
+                    <option value="white">White</option>
+                </Select>
             </FormControl>
         </Box>
     );
