@@ -13,6 +13,7 @@ export const RemotionVideo: React.FC = () => {
                     backgroundProps: {},
                     foregroundId: 'ImLive',
                     foregroundProps: {},
+                    watermark: true,
                 }}
                 height={500}
                 width={1500}

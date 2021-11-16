@@ -6,16 +6,15 @@ import arrow from '../../assets/arrow.jpeg';
 
 type ImLiveProps = {
     text?: string;
-    backgroundUrl?: string;
     thumbnailUrl: string;
 };
 
-export const ImLive: React.FC<ImLiveProps> = ({ thumbnailUrl = 'https://static-cdn.jtvnw.net/previews-ttv/live_user_moistcr1tikal-440x248.jpg' }) => {
+export const ImLive: React.FC<ImLiveProps> = ({ thumbnailUrl = 'https://static-cdn.jtvnw.net/previews-ttv/live_user_moistcr1tikal-440x248.jpg', text }) => {
     return (
         <div style={{ width: '100%', height: '100%', overflow: 'scroll', fontFamily: 'Inter' }}>
             <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'end' }}>
                 <div style={{ width: '100%', alignItems: 'flex-end' }}>
-                    <h1 style={{ color: 'black', fontSize: '86px', width: '100%', textAlign: 'center', alignItems: 'flex-end', margin: 0 }}>I'm live!</h1>
+                    <h1 style={{ color: 'black', fontSize: '86px', width: '100%', textAlign: 'center', alignItems: 'flex-end', margin: 0 }}>{text}</h1>
                 </div>
                 <div style={{ display: 'flex', width: '100%', height: 'min', alignItems: 'bottom', justifyContent: 'flex-end', justifyItems: 'baseline' }}>
                     <div

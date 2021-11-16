@@ -29,7 +29,6 @@ async function fetchBanner(account: Account): Promise<string> {
 }
 
 handler.post(async (req, res) => {
-    const templateId: string = req.query.templateId as string;
 
     // Create or update existing banner with url and templateId
     await prisma.banner.upsert({
@@ -38,10 +37,16 @@ handler.post(async (req, res) => {
         },
         create: {
             userId: req.session.userId,
-            templateId: templateId ?? '',
+            backgroundId: req.body.backgroundId,
+            foregroundId: req.body.foregroundId,
+            backgroundProps: req.body.backgroundProps,
+            foregroundProps: req.body.foregroundProps
         },
         update: {
-            templateId,
+            backgroundId: req.body.backgroundId,
+            foregroundId: req.body.foregroundId,
+            backgroundProps: req.body.backgroundProps,
+            foregroundProps: req.body.foregroundProps
         },
     });
 
@@ -56,7 +61,10 @@ handler.get(async (req, res) => {
         },
         select: {
             enabled: true,
-            templateId: true
+            backgroundId: true,
+            backgroundProps: true,
+            foregroundId: true,
+            foregroundProps: true
         },
     });
 

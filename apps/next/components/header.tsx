@@ -106,7 +106,7 @@ export default function Header() {
                             <Center id="nav-links" fontSize="lg">
                                 <Wrap spacing={['2', '4', '8', '10']}>
                                     <WrapItem>
-                                        <NextLink href="/features" passHref>
+                                        <NextLink href="/" passHref>
                                             <Link>Features</Link>
                                         </NextLink>
                                     </WrapItem>
