@@ -64,8 +64,10 @@ CREATE TABLE "banners" (
     "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "enabled" BOOLEAN NOT NULL DEFAULT false,
-    "template_id" TEXT NOT NULL,
-    "original_image" TEXT NOT NULL,
+    "foregroundId" TEXT NOT NULL,
+    "backgroundId" TEXT NOT NULL,
+    "backgroundProps" JSONB NOT NULL,
+    "foregroundProps" JSONB NOT NULL,
 
     CONSTRAINT "banners_pkey" PRIMARY KEY ("id")
 );
@@ -78,6 +80,16 @@ CREATE TABLE "tweets" (
     "enabled" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "tweets_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "twitch" (
+    "id" TEXT NOT NULL,
+    "user_id" TEXT NOT NULL,
+    "streamUrl" TEXT,
+    "tweetInfo" TEXT,
+
+    CONSTRAINT "twitch_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -163,6 +175,9 @@ CREATE UNIQUE INDEX "banners_user_id_unique" ON "banners"("user_id");
 CREATE UNIQUE INDEX "tweets_user_id_unique" ON "tweets"("user_id");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "twitch_user_id_unique" ON "twitch"("user_id");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "customers_user_id_unique" ON "customers"("user_id");
 
 -- CreateIndex
@@ -179,6 +194,9 @@ ALTER TABLE "banners" ADD CONSTRAINT "banners_user_id_fkey" FOREIGN KEY ("user_i
 
 -- AddForeignKey
 ALTER TABLE "tweets" ADD CONSTRAINT "tweets_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "twitch" ADD CONSTRAINT "twitch_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "tweets"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "customers" ADD CONSTRAINT "customers_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

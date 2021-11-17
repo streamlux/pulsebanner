@@ -1,6 +1,6 @@
 {
-    "root": "libs/remotion/forms",
-    "sourceRoot": "libs/remotion/forms/src",
+    "root": "libs/remotion/preview",
+    "sourceRoot": "libs/remotion/preview/src",
     "projectType": "library",
     "tags": [],
     "targets": {
@@ -8,14 +8,14 @@
             "executor": "@nrwl/linter:eslint",
             "outputs": ["{options.outputFile}"],
             "options": {
-                "lintFilePatterns": ["libs/remotion/forms/**/*.{ts,tsx,js,jsx}"]
+                "lintFilePatterns": ["libs/remotion/preview/**/*.{ts,tsx,js,jsx}"]
             }
         },
         "test": {
             "executor": "@nrwl/jest:jest",
-            "outputs": ["coverage/libs/remotion/forms"],
+            "outputs": ["coverage/libs/remotion/preview"],
             "options": {
-                "jestConfig": "libs/remotion/forms/jest.config.js",
+                "jestConfig": "libs/remotion/preview/jest.config.js",
                 "passWithNoTests": true
             }
         }
