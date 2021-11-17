@@ -95,8 +95,8 @@ export default function Header() {
                                 <HStack height="100%">
                                     <Image alt="PulseBanner logo" src={favicon.src} height="40px" width="40px" />
                                     <Heading size="md" as={chakra.p}>
-                                        <NextLink href="/" passHref>
-                                            <LinkOverlay href="/">PulseBanner</LinkOverlay>
+                                        <NextLink href="/banner" passHref>
+                                            <LinkOverlay href="/banner">PulseBanner</LinkOverlay>
                                         </NextLink>
                                     </Heading>
                                 </HStack>
@@ -105,11 +105,11 @@ export default function Header() {
                         {!breakpointValue.mobile && (
                             <Center id="nav-links" fontSize="lg">
                                 <Wrap spacing={['2', '4', '8', '10']}>
-                                    <WrapItem>
+                                    {/* <WrapItem>
                                         <NextLink href="/" passHref>
                                             <Link>Features</Link>
                                         </NextLink>
-                                    </WrapItem>
+                                    </WrapItem> */}
                                     <WrapItem>
                                         <NextLink href="/banner" passHref>
                                             <Link>Banner</Link>
@@ -174,11 +174,11 @@ export default function Header() {
             {breakpointValue.mobile && (
                 <Center id="nav-links" fontSize="lg">
                     <Wrap spacing={['8', '16', '20', '24']}>
-                        <WrapItem>
+                        {/* <WrapItem>
                             <NextLink href="/features" passHref>
                                 <Link>Features</Link>
                             </NextLink>
-                        </WrapItem>
+                        </WrapItem> */}
                         <WrapItem>
                             <NextLink href="/banner" passHref>
                                 <Link>Banner</Link>
