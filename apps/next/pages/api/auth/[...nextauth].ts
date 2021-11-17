@@ -88,6 +88,12 @@ export default NextAuth({
     callbacks: {
         // async signIn({ user, account, profile, email, credentials }) { return true },
         // async redirect({ url, baseUrl }) { return baseUrl },
+        redirect({ url, baseUrl }) {
+            if (url.startsWith(baseUrl)) return url
+            // Allows relative callback URLs
+            else if (url.startsWith("/")) return new URL(url, baseUrl).toString()
+            return baseUrl
+        },
         // async session({ session, token, user }) { return session },
         // async jwt({ token, user, account, profile, isNewUser }) { return token },
         // Use this session callback to add custom information to the session. Ex: role
