@@ -56,6 +56,6 @@ jobs:
               with:
                   context: "dist/apps/remotion"
                   platforms: linux/amd64
-                  push: false
+                  push: true
                   tags: ${{ steps.meta.outputs.tags }}
                   labels: ${{ steps.meta.outputs.labels }}

@@ -25,44 +25,14 @@ jobs:
                   # generate Docker tags based on the following events/attributes
                   tags: |
                       type=sha,prefix={{branch}}-,priority=10000
-                      type=sha
-                      type=schedule
-                      type=ref,event=branch
-                      type=ref,event=pr
-                      type=semver,pattern={{version}}
-                      type=semver,pattern={{major}}.{{minor}}
-                      type=semver,pattern={{major}}
 
             - name: Setup node
               uses: actions/setup-node@v2
               with:
                   node-version: "16"
 
-            - name: Login to GitHub Container Registry
-              uses: docker/login-action@v1
-              with:
-                  registry: ghcr.io
-                  username: ${{ github.actor }}
-                  password: ${{ secrets.GITHUB_TOKEN }}
-
             - name: Install and cache dependencies
               uses: bahmutov/npm-install@v1
-
-            - name: "nx run next:make:ci"
-              run: npx nx run next:make:ci
-              env:
-                  INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
-
-            - name: Build and push
-              uses: docker/build-push-action@v2
-              with:
-                  file: "apps/next/Dockerfile"
-                  context: "."
-                  platforms: linux/amd64
-                  push: true
-                  tags: ${{ steps.meta.outputs.tags }}
-                  labels: ${{ steps.meta.outputs.labels }}
 
             - name: "prisma migrate deploy"
               run: npx prisma migrate deploy
