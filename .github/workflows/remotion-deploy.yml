@@ -1,4 +1,4 @@
-name: Build remotion server
+name: Deploy Remotion server
 
 on:
     push:
