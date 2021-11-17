@@ -27,15 +27,13 @@ jobs:
             - name: Docker meta
               id: meta
               uses: docker/metadata-action@v3
-              env:
-                  _BRANCH_NAME: ${{ steps.normalize.normalized }}
               with:
                   # list of Docker images to use as base name for tags
                   images: |
                       ghcr.io/streamlux/pulsebanner-next
                   # generate Docker tags based on the following events/attributes
                   tags: |
-                      type=sha,prefix=$_BRANCH_NAME-
+                      type=sha,prefix=${{ steps.normalize.normalized }}-
 
             - name: Setup node
               uses: actions/setup-node@v2
@@ -103,15 +101,13 @@ jobs:
             - name: Docker meta
               id: meta
               uses: docker/metadata-action@v3
-              env:
-                  _BRANCH_NAME: ${{ steps.normalize.normalized }}
               with:
                   # list of Docker images to use as base name for tags
                   images: |
                       ghcr.io/streamlux/pulsebanner-remotion
                   # generate Docker tags based on the following events/attributes
                   tags: |
-                      type=sha,prefix=$_BRANCH_NAME-
+                      type=sha,prefix=${{ steps.normalize.normalized }}-
 
             - name: Setup node
               uses: actions/setup-node@v2
