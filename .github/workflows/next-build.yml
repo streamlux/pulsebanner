@@ -12,7 +12,7 @@ on:
 
 jobs:
     deploy_next:
-        name: Docker build
+        name: Build and deploy Next.js app
         runs-on: ubuntu-latest
         environment: Staging
         steps:
@@ -31,7 +31,7 @@ jobs:
 
             - name: Debug
               run: echo ${{ env.BRANCH_NAME }}
-              
+
             # https://github.com/docker/build-push-action/blob/master/docs/advanced/tags-labels.md
             - name: Docker meta
               id: meta
@@ -95,6 +95,7 @@ jobs:
                   IMAGE_NAME: ${{ fromJson(steps.meta.outputs.json).tags[0] }}
               run: "caprover deploy --caproverUrl=$APP_URL --imageName=$IMAGE_NAME --appName=$APP_NAME"
     deploy_remotion:
+        name: Build and deploy Remotion server
         environment: Staging
         runs-on: ubuntu-latest
         needs: deploy_next
@@ -102,9 +103,18 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v2
 
-            - name: Normalize branch name
-              id: normalize
-              uses: Slidem/branch-name-normalizer@v1.0.0
+            - name: Get branch name (merge)
+              if: github.event_name != 'pull_request'
+              shell: bash
+              run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
+
+            - name: Get branch name (pull request)
+              if: github.event_name == 'pull_request'
+              shell: bash
+              run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
+
+            - name: Debug
+              run: echo ${{ env.BRANCH_NAME }}
 
             # https://github.com/docker/build-push-action/blob/master/docs/advanced/tags-labels.md
             - name: Docker meta
@@ -116,7 +126,7 @@ jobs:
                       ghcr.io/streamlux/pulsebanner-remotion
                   # generate Docker tags based on the following events/attributes
                   tags: |
-                      type=sha,prefix=${{ steps.normalize.outputs.normalized }}-
+                      type=sha,prefix=${{ env.BRANCH_NAME }}-
 
             - name: Setup node
               uses: actions/setup-node@v2
