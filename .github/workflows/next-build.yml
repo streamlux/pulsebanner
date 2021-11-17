@@ -80,4 +80,4 @@ jobs:
                   APP_URL: ${{ secrets.CAPROVER_URL }}
                   APP_NAME: ${{ secrets.NEXT_APP_NAME }}
                   IMAGE_NAME: ${{ fromJson(steps.meta.outputs.json).tags[0] }}
-              run: "caprover deploy --caproverUrl='$APP_URL' --imageName='$IMAGE_NAME' --appName='$APP_NAME'"
+              run: "caprover deploy --caproverUrl=$APP_URL --imageName=$IMAGE_NAME --appName=$APP_NAME"
