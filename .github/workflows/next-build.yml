@@ -42,7 +42,7 @@ jobs:
                       ghcr.io/streamlux/pulsebanner-next
                   # generate Docker tags based on the following events/attributes
                   tags: |
-                      type=sha,prefix=${{ env._BRANCH_NAME }}-
+                      type=sha,prefix=${{ env.BRANCH_NAME }}-
 
             - name: Setup node
               uses: actions/setup-node@v2
