@@ -147,7 +147,7 @@ jobs:
                   password: ${{ secrets.GITHUB_TOKEN }}
 
             - name: "Install ts-node"
-              run: npm i ts-node
+              run: npm i -g ts-node
 
             - name: "Build remotion app"
               run: npx ts-node apps/remotion/scripts/build.ts
