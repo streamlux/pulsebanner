@@ -1,14 +1,45 @@
 import { Price, PriceInterval, Product, Subscription } from '@prisma/client';
 import type { GetServerSideProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
-import { useSession } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Box, Button, ButtonGroup, Heading, List, Text, WrapItem, ListItem, ListIcon, Center, chakra, Container, VStack, SimpleGrid, Flex } from '@chakra-ui/react';
-import { CheckIcon } from '@chakra-ui/icons';
+import {
+    Box,
+    Button,
+    ButtonGroup,
+    Heading,
+    List,
+    Text,
+    WrapItem,
+    ListItem,
+    ListIcon,
+    Center,
+    chakra,
+    Container,
+    VStack,
+    SimpleGrid,
+    Flex,
+    useDisclosure,
+    Modal,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalHeader,
+    ModalOverlay,
+    Switch,
+    FormControl,
+    FormLabel,
+    ScaleFade,
+    HStack,
+    Img,
+} from '@chakra-ui/react';
+import { ArrowRightIcon, CheckIcon } from '@chakra-ui/icons';
+
+import favicon from '@app/public/favicon.webp';
 
 import getStripe from '../util/getStripe';
 import prisma from '../util/ssr/prisma';
-import Layout from '../components/layout';
+import { FaTwitter, FaCheck, FaTwitch, FaArrowRight } from 'react-icons/fa';
 
 type Props = {
     products: (Product & { prices: Price[] })[];
@@ -16,10 +47,32 @@ type Props = {
 
 const Page: NextPage<Props> = ({ products }) => {
     const [subscription, setSubscription] = useState<Subscription>();
-    const { status } = useSession();
-    const router = useRouter();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { status, data: session } = useSession({ required: false }) as any;
 
-    const [billingInterval, setBillingInterval] = useState<PriceInterval>('month');
+    const router = useRouter();
+    const { modal } = router.query;
+
+    const { isOpen, onOpen, onClose } = useDisclosure();
+
+    useEffect(() => {
+        if (modal === 'true') {
+            if (session && (!session?.accounts?.twitch || !session?.accounts?.twitter)) {
+                onOpen();
+            }
+            router.replace(router.pathname);
+        }
+    }, [modal, router, onOpen, session, onClose]);
+
+    const ensureSignUp = useCallback(() => {
+        if (session?.accounts?.twitch && session?.accounts?.twitter) {
+            return true;
+        }
+        onOpen();
+        return false;
+    }, [session, onOpen]);
+
+    const [billingInterval, setBillingInterval] = useState<PriceInterval>('year');
 
     const sortProductsByPrice = (
         products: (Product & {
@@ -43,99 +96,190 @@ const Page: NextPage<Props> = ({ products }) => {
 
     const handlePricingClick = useCallback(
         async (priceId: string) => {
-            if (status !== 'authenticated') {
-                return router.push('/api/auth/signin');
+            if (ensureSignUp()) {
+                if (subscription) {
+                    return router.push('/account');
+                }
+
+                const res = await fetch('/api/stripe/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'content-type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        price: priceId,
+                    }),
+                });
+
+                const data = await res.json();
+
+                const stripe = await getStripe();
+                stripe?.redirectToCheckout({ sessionId: data.sessionId });
             }
-
-            if (subscription) {
-                return router.push('/account');
-            }
-
-            const res = await fetch('/api/stripe/create-checkout-session', {
-                method: 'POST',
-                headers: {
-                    'content-type': 'application/json',
-                },
-                body: JSON.stringify({
-                    price: priceId,
-                }),
-            });
-
-            const data = await res.json();
-
-            const stripe = await getStripe();
-
-            stripe?.redirectToCheckout({ sessionId: data.sessionId });
         },
-        [status, router, subscription]
+        [router, subscription, ensureSignUp]
+    );
+
+    const AnnualBillingControl = (
+        <FormControl display="flex" alignItems="center">
+            <FormLabel htmlFor="billingInterval" my="0" experimental_spaceX={4}>
+                <Text as={chakra.span}>Annual billing</Text>
+                <Text as={chakra.span} color="black" fontWeight="semibold" bg="green.200" p="1" px="2" rounded="md">
+                    Two months free!
+                </Text>
+            </FormLabel>
+            <Switch
+                id="billingInterval"
+                size="lg"
+                colorScheme="green"
+                isChecked={billingInterval === 'year'}
+                onChange={(v) => {
+                    setBillingInterval(billingInterval === 'year' ? 'month' : 'year');
+                }}
+            />
+        </FormControl>
     );
 
     return (
-        <div className="bg-white">
-            <VStack spacing="8">
-                <Container centerContent maxW="container.lg" experimental_spaceY="4">
+        <>
+            <Modal onClose={onClose} size={'xl'} isOpen={isOpen}>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Sign up</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody pb="12">
+                        <VStack>
+                            <Button
+                                onClick={
+                                    session?.accounts?.twitter
+                                        ? undefined
+                                        : () =>
+                                              signIn('twitter', {
+                                                  callbackUrl: router.pathname + '?modal=true',
+                                              })
+                                }
+                                colorScheme="twitter"
+                                leftIcon={<FaTwitter />}
+                                rightIcon={session?.accounts?.twitter ? <FaCheck /> : undefined}
+                            >
+                                Connect to Twitter
+                            </Button>
+                            {session && (
+                                <Button
+                                    onClick={() =>
+                                        signIn('twitch', {
+                                            callbackUrl: router.pathname,
+                                        })
+                                    }
+                                    colorScheme="twitch"
+                                    leftIcon={<FaTwitch />}
+                                    rightIcon={session?.accounts?.twitch ? <FaCheck /> : undefined}
+                                >
+                                    Connect to Twitch
+                                </Button>
+                            )}
+                        </VStack>
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
+            <VStack spacing="16">
+                <Container centerContent maxW="container.lg" experimental_spaceY="6">
                     <Heading size="2xl" textAlign="center">
-                        The easiest way to attract more viewers for your stream
+                        Easily get more stream views with
                     </Heading>
-                    <Text fontSize="xl">Start building for free, then add a site plan to go live. Account plans unlock additional features.</Text>
+                    <Box maxH="10">
+                        <HStack height="100%">
+                            <Img alt="PulseBanner logo" src={favicon.src} height="64px" width="64px" />
+                            <Heading size="2xl" as={chakra.p}>
+                                PulseBanner
+                            </Heading>
+                        </HStack>
+                    </Box>
                 </Container>
-                <Center>
-                    <ButtonGroup isAttached>
-                        <Button onClick={() => setBillingInterval('month')} isActive={billingInterval === 'month'}>
-                            Monthly billing
-                        </Button>
-                        <Button onClick={() => setBillingInterval('year')} isActive={billingInterval === 'year'}>
-                            Yearly billing
-                        </Button>
-                    </ButtonGroup>
-                </Center>
+                <Center>{AnnualBillingControl}</Center>
                 <Center>
                     <SimpleGrid columns={[1, 2]} spacing="4">
                         {sortProductsByPrice(products).map((product) => {
                             const price: Price = product?.prices?.find((one: Price) => one.interval === billingInterval);
-
-                            if (!price) {
+                            const monthlyPrice: Price = product?.prices.find((one: Price) => one.interval === 'month');
+                            if (!price || !monthlyPrice) {
                                 return null;
                             }
 
                             return (
                                 <WrapItem key={product.name}>
-                                    <Box rounded="md" p="4" experimental_spaceY="2">
-                                        <Flex direction="row" justify="space-between" alignItems="center">
-                                            <Heading size="sm">{product.name}</Heading>
-                                            <Text fontSize="2xl" fontWeight="extrabold" lineHeight="tight">
-                                                {`$${price.unitAmount / 100}`}
-                                                <Text as={chakra.span} fontSize="sm" fontWeight="normal">
-                                                    /mo
-                                                </Text>
-                                            </Text>
-                                        </Flex>
-                                        <Text>{product.description ?? 'Missing description'}</Text>
+                                    <Box rounded="md" p="4" experimental_spaceY="8">
+                                        <Box>
+                                            <Flex direction="row" justify="space-between" alignItems="center">
+                                                <VStack alignItems="start" spacing={0}>
+                                                    <Heading size="md">{product.name}</Heading>
+                                                    <Text>{product.description ?? 'Missing description'}</Text>
+                                                </VStack>
 
-                                        <Button onClick={() => handlePricingClick(price.id)}>Join {product.name}</Button>
+                                                <VStack spacing={0}>
+                                                    <Text fontSize="2xl" fontWeight="extrabold" lineHeight="tight">
+                                                        <HStack>
+                                                            {billingInterval === 'month' && (
+                                                                <Text as={chakra.span} bg="green.200" px="1" py="0.5" rounded="md" color="black">
+                                                                    {`$${(price.unitAmount / 100).toFixed(2)}`}
+                                                                </Text>
+                                                            )}
+                                                            {billingInterval === 'year' && (
+                                                                <>
+                                                                    <Text as={chakra.span} bg="green.200" px="1" py="0.5" rounded="md" color="black">
+                                                                        {`$${(price.unitAmount / 100 / (billingInterval === 'year' ? 12 : 1)).toFixed(2)}`}
+                                                                    </Text>
+                                                                    <Text as="s">{`$${monthlyPrice.unitAmount / 100}`}</Text>
+                                                                </>
+                                                            )}
+                                                        </HStack>
+                                                    </Text>
+                                                    {billingInterval === 'year' && (
+                                                        <ScaleFade initialScale={0.9} in={billingInterval === 'year'}>
+                                                            <Text fontSize="xs">per month{billingInterval === 'year' ? ', billed annually' : ''}</Text>
+                                                        </ScaleFade>
+                                                    )}
+                                                    {billingInterval === 'month' && (
+                                                        <ScaleFade initialScale={0.9} in={billingInterval === 'month'}>
+                                                            <Text fontSize="xs">per month</Text>
+                                                        </ScaleFade>
+                                                    )}
+                                                </VStack>
+                                            </Flex>
+                                        </Box>
 
-                                        <Heading size="md">{"What's included"}</Heading>
-                                        <List>
-                                            {[
-                                                'Lorem ipsum dolor sit amet consectetur adipisicing elit.',
-                                                'Cum repellendus libero non expedita quam eligendi',
-                                                'a deserunt beatae debitis culpa asperiores ipsum facilis,',
-                                                'excepturi reiciendis accusantium nemo quos id facere!',
-                                            ].map((feature) => (
-                                                <ListItem key={feature}>
-                                                    <ListIcon color="green.200" as={CheckIcon} />
-                                                    {feature}
-                                                </ListItem>
-                                            ))}
-                                        </List>
+                                        <Box>
+                                            <Button fontWeight="bold" onClick={() => handlePricingClick(price.id)} colorScheme="green" rightIcon={<FaArrowRight />}>
+                                                Buy {product.name}
+                                            </Button>
+                                        </Box>
+
+                                        <Box>
+                                            <Heading size="md">{"What's included"}</Heading>
+                                            <List>
+                                                {[
+                                                    'Lorem ipsum dolor sit amet consectetur adipisicing elit.',
+                                                    'Cum repellendus libero non expedita quam eligendi',
+                                                    'a deserunt beatae debitis culpa asperiores ipsum facilis,',
+                                                    'excepturi reiciendis accusantium nemo quos id facere!',
+                                                ].map((feature) => (
+                                                    <ListItem key={feature}>
+                                                        <ListIcon color="green.200" as={CheckIcon} />
+                                                        {feature}
+                                                    </ListItem>
+                                                ))}
+                                            </List>
+                                        </Box>
                                     </Box>
                                 </WrapItem>
                             );
                         })}
                     </SimpleGrid>
                 </Center>
+                <Center>{AnnualBillingControl}</Center>
+                <Text fontSize="md">Prices in USD. VAT may apply. Membership is tied to one Twitter account.</Text>
             </VStack>
-        </div>
+        </>
     );
 };
 
