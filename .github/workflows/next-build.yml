@@ -64,3 +64,47 @@ jobs:
                   push: true
                   tags: ${{ steps.meta.outputs.tags }}
                   labels: ${{ steps.meta.outputs.labels }}
+    deploy:
+        name: Deploy
+        needs: build
+        environment: Staging
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+
+            # https://github.com/docker/build-push-action/blob/master/docs/advanced/tags-labels.md
+            - name: Docker meta
+              id: meta
+              uses: docker/metadata-action@v3
+              with:
+                  # list of Docker images to use as base name for tags
+                  images: |
+                      ghcr.io/streamlux/pulsebanner-remotion
+                  # generate Docker tags based on the following events/attributes
+                  tags: |
+                      type=sha,prefix={{branch}}-,priority=10000
+
+            - name: Setup node
+              uses: actions/setup-node@v2
+              with:
+                  node-version: "16"
+
+            - name: Install and cache dependencies
+              uses: bahmutov/npm-install@v1
+
+            - name: "prisma migrate deploy"
+              run: npx prisma migrate deploy
+              env:
+                  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+            - name: "Deploy to Caprover"
+              uses: addnab/docker-run-action@v3
+              env:
+                  CAPROVER_APP_TOKEN: ${{ secrets.NEXT_CAPROVER_APP_TOKEN }}
+                  APP_URL: ${{ secrets.CAPROVER_URL }}
+                  APP_NAME: ${{ secrets.NEXT_APP_NAME }}
+                  IMAGE_NAME: ${{ fromJson(steps.meta.outputs.json).tags[0] }}
+              with:
+                  image: caprover/cli-caprover:v2.2.3
+                  run: "caprover deploy --caproverUrl $CAPROVER_URL --imageName $IMAGE_NAME --appName $APP_NAME"
