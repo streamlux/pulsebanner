@@ -33,7 +33,7 @@ jobs:
                       ghcr.io/streamlux/pulsebanner-next
                   # generate Docker tags based on the following events/attributes
                   tags: |
-                      type=sha,prefix=${{ steps.normalize.normalized }}-
+                      type=sha,prefix=${{ steps.normalize.outputs.normalized }}-
 
             - name: Setup node
               uses: actions/setup-node@v2
@@ -107,7 +107,7 @@ jobs:
                       ghcr.io/streamlux/pulsebanner-remotion
                   # generate Docker tags based on the following events/attributes
                   tags: |
-                      type=sha,prefix=${{ steps.normalize.normalized }}-
+                      type=sha,prefix=${{ steps.normalize.outputs.normalized }}-
 
             - name: Setup node
               uses: actions/setup-node@v2
