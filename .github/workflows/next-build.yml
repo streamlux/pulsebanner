@@ -71,14 +71,13 @@ jobs:
               env:
                   DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
+            - name: "Install caprover-cli"
+              run: npm install -g caprover
+
             - name: "Deploy to Caprover"
-              uses: addnab/docker-run-action@v3
               env:
                   CAPROVER_APP_TOKEN: ${{ secrets.NEXT_CAPROVER_APP_TOKEN }}
                   APP_URL: ${{ secrets.CAPROVER_URL }}
                   APP_NAME: ${{ secrets.NEXT_APP_NAME }}
                   IMAGE_NAME: ${{ fromJson(steps.meta.outputs.json).tags[0] }}
-              with:
-                  image: caprover/cli-caprover:v2.2.3
-                  registry: docker.io
-                  run: "caprover deploy --caproverUrl $CAPROVER_URL --imageName $IMAGE_NAME --appName $APP_NAME"
+              run: "caprover deploy --caproverUrl $CAPROVER_URL --imageName $IMAGE_NAME --appName $APP_NAME"
