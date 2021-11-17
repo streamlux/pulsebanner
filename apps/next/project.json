@@ -6,29 +6,19 @@
         "make": {
             "executor": "@nrwl/workspace:run-commands",
             "options": {
-                "commands": [
-                    "npx prisma generate",
-                    "nx run next:build:production",
-                    "nx run next:docker"
-                ],
+                "commands": ["npx prisma generate", "nx run next:build:production", "nx run next:docker"],
                 "cwd": ".",
                 "parallel": false
             },
             "configurations": {
                 "ci": {
-                    "commands": [
-                        "npx prisma generate",
-                        "nx run next:build:production",
-                        "nx run next:docker:ci"
-                    ]
+                    "commands": ["npx prisma generate", "nx run next:build:production", "nx run next:docker:ci"]
                 }
             }
         },
         "build": {
             "executor": "@nrwl/next:build",
-            "outputs": [
-                "{options.outputPath}"
-            ],
+            "outputs": ["{options.outputPath}"],
             "options": {
                 "buildLibsFromSource": true,
                 "root": "apps/next",
@@ -56,12 +46,8 @@
             "executor": "@nx-tools/nx-docker:build",
             "options": {
                 "file": "apps/next/Dockerfile",
-                "tags": [
-                    "streamlux/saas-next:latest"
-                ],
-                "platforms": [
-                    "linux/amd64"
-                ]
+                "tags": ["streamlux/saas-next:latest"],
+                "platforms": ["linux/amd64"]
             },
             "configurations": {
                 "ci": {
@@ -69,14 +55,8 @@
                     "no_cache": true,
                     "meta": {
                         "enabled": true,
-                        "images": [
-                            "ghcr.io/streamlux/pulsebanner-next"
-                        ],
-                        "tags": [
-                            "type=ref,event=branch",
-                            "type=ref,event=pr",
-                            "type=semver,pattern={{version}}"
-                        ]
+                        "images": ["ghcr.io/streamlux/pulsebanner-next"],
+                        "tags": ["type=ref,event=branch", "type=ref,event=pr", "type=semver,pattern={{version}}"]
                     }
                 }
             }
@@ -89,9 +69,7 @@
         },
         "test": {
             "executor": "@nrwl/jest:jest",
-            "outputs": [
-                "coverage/apps/next"
-            ],
+            "outputs": ["coverage/apps/next"],
             "options": {
                 "jestConfig": "apps/next/jest.config.js",
                 "passWithNoTests": true
@@ -99,13 +77,9 @@
         },
         "lint": {
             "executor": "@nrwl/linter:eslint",
-            "outputs": [
-                "{options.outputFile}"
-            ],
+            "outputs": ["{options.outputFile}"],
             "options": {
-                "lintFilePatterns": [
-                    "apps/next/**/*.{ts,tsx,js,jsx}"
-                ]
+                "lintFilePatterns": ["apps/next/**/*.{ts,tsx,js,jsx}"]
             }
         }
     },

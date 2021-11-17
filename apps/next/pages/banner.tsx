@@ -6,7 +6,7 @@ import axios from 'axios';
 import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
 import { Composer } from '@pulsebanner/remotion/components';
 import { FaPlay, FaStop } from 'react-icons/fa';
-import { Player } from '@remotion/player';
+import { RemotionPreview } from '@pulsebanner/remotion/preview';
 
 export default function Page() {
     const { data, mutate } = useSWR<Banner>('banner', async () => (await fetch('/api/banner')).json());
@@ -68,21 +68,17 @@ export default function Page() {
             </Flex>
 
             <Box w="full" rounded="md">
-                <Player
-                    inputProps={{
-                        backgroundId: bgId,
-                        foregroundId: fgId,
-                        backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
-                        foregroundProps: { ...ForegroundTemplates[fgId].defaultProps, ...fgProps },
-                        watermark: true,
-                    }}
-                    component={Composer}
-                    durationInFrames={1}
-                    compositionWidth={1500}
-                    compositionHeight={500}
-                    fps={1}
-                    style={{ width: '100%', maxWidth: '1500px', maxHeight: '500px' }}
-                />
+                <RemotionPreview compositionHeight={500} compositionWidth={1500}>
+                    <Composer
+                        {...{
+                            backgroundId: bgId,
+                            foregroundId: fgId,
+                            backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
+                            foregroundProps: { ...ForegroundTemplates[fgId].defaultProps, ...fgProps },
+                            watermark: true,
+                        }}
+                    />
+                </RemotionPreview>
 
                 <Box p="4" my="4" rounded="md" bg="whiteAlpha.100" w="full">
                     <Heading fontSize="3xl">Banner settings</Heading>

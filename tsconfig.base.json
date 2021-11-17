@@ -19,6 +19,8 @@
             "@app/*": ["apps/next/*"],
             "@pulsebanner/remotion/components": ["libs/remotion/components/src/index.ts"],
             "@pulsebanner/remotion/forms": ["libs/remotion/forms/src/index.ts"],
+            "@pulsebanner/remotion/player": ["libs/remotion/player/src/index.ts"],
+            "@pulsebanner/remotion/preview": ["libs/remotion/preview/src/index.ts"],
             "@pulsebanner/remotion/templates": ["libs/remotion/templates/src/index.ts"],
             "@pulsebanner/templates": ["libs/templates/src/index.ts"]
         },
