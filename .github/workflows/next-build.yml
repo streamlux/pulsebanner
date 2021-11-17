@@ -22,12 +22,14 @@ jobs:
             - name: Normalize branch name
               id: normalize
               uses: Slidem/branch-name-normalizer@v1.0.0
-              
+
             - name: Testing
+              env:
+                  _BRANCH_NAME: ${{ steps.normalize.outputs.normalized }}
               run: |
-                  "echo ${{ steps.normalize.outputs.normalized }}"
-                  "echo "_BRANCH_NAME=${{ steps.normalize.outputs.normalized }}" >> $GITHUB_ENV"
-                  
+                  "echo $_BRANCH_NAME"
+                  "echo "_BRANCH_NAME=${{ env._BRANCH_NAME }}" >> $GITHUB_ENV"
+
             # https://github.com/docker/build-push-action/blob/master/docs/advanced/tags-labels.md
             - name: Docker meta
               id: meta
