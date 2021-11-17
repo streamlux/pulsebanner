@@ -59,3 +59,14 @@ jobs:
                   push: true
                   tags: ${{ steps.meta.outputs.tags }}
                   labels: ${{ steps.meta.outputs.labels }}
+
+            - name: "Install caprover-cli"
+              run: npm install -g caprover
+
+            - name: "Deploy to Caprover"
+              env:
+                  CAPROVER_APP_TOKEN: ${{ secrets.REMOTION_CAPROVER_APP_TOKEN }}
+                  APP_URL: ${{ secrets.CAPROVER_URL }}
+                  APP_NAME: ${{ secrets.REMOTION_APP_NAME }}
+                  IMAGE_NAME: ${{ fromJson(steps.meta.outputs.json).tags[0] }}
+              run: "caprover deploy --caproverUrl='$CAPROVER_URL' --imageName='$IMAGE_NAME' --appName='$APP_NAME'"
