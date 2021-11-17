@@ -58,7 +58,8 @@ jobs:
             - name: Build and push
               uses: docker/build-push-action@v2
               with:
-                  context: "apps/next"
+                  file: "apps/next/Dockerfile"
+                  context: "."
                   platforms: linux/amd64
                   push: false
                   tags: ${{ steps.meta.outputs.tags }}
