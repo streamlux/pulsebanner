@@ -1,5 +1,5 @@
 name: Build Remotion server
-
+# This workflow is triggered on pushes to the repository.
 on:
     # Trigger the workflow on push or pull request,
     # but only for the main branch
@@ -12,6 +12,7 @@ on:
 
 jobs:
     build:
+        environment: Staging
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
