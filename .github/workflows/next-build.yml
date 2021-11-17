@@ -70,9 +70,6 @@ jobs:
         environment: Staging
         runs-on: ubuntu-latest
         steps:
-            - name: Checkout
-              uses: actions/checkout@v2
-
             # https://github.com/docker/build-push-action/blob/master/docs/advanced/tags-labels.md
             - name: Docker meta
               id: meta
@@ -107,4 +104,5 @@ jobs:
                   IMAGE_NAME: ${{ fromJson(steps.meta.outputs.json).tags[0] }}
               with:
                   image: caprover/cli-caprover:v2.2.3
+                  registry: docker.io
                   run: "caprover deploy --caproverUrl $CAPROVER_URL --imageName $IMAGE_NAME --appName $APP_NAME"
