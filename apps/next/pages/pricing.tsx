@@ -4,7 +4,6 @@ import { useRouter } from 'next/router';
 import { signIn, useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-    Box,
     Button,
     Heading,
     Text,
@@ -22,12 +21,7 @@ import {
     ModalHeader,
     ModalOverlay,
     Switch,
-    FormControl,
-    FormLabel,
-    Img,
-    Badge,
     Tag,
-    ScaleFade,
     Flex,
     Link,
 } from '@chakra-ui/react';
@@ -194,11 +188,7 @@ const Page: NextPage<Props> = ({ products }) => {
             <VStack spacing="16">
                 <Container centerContent maxW="container.lg" experimental_spaceY="6">
                     <Heading size="2xl" textAlign="center">
-                        Automatically{' '}
-                        <Text as={chakra.span} style={{ background: 'linear-gradient(0deg,#a7affa 22%,transparent 0)' }}>
-                            attract viewers
-                        </Text>{' '}
-                        to your stream
+                        Automatically attract viewers to your stream
                     </Heading>
                 </Container>
                 <Center>{AnnualBillingControl}</Center>
@@ -209,7 +199,6 @@ const Page: NextPage<Props> = ({ products }) => {
                         ))}
                     </SimpleGrid>
                 </Center>
-                <Center>{AnnualBillingControl}</Center>
                 <Text fontSize="md">Prices in USD. VAT may apply. Membership is tied to one Twitter account.</Text>
             </VStack>
         </>
