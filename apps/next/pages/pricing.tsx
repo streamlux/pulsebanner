@@ -1,14 +1,43 @@
 import { Price, PriceInterval, Product, Subscription } from '@prisma/client';
 import type { GetServerSideProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
-import { useSession } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Box, Button, ButtonGroup, Heading, List, Text, WrapItem, ListItem, ListIcon, Center, chakra, Container, VStack, SimpleGrid, Flex } from '@chakra-ui/react';
-import { CheckIcon } from '@chakra-ui/icons';
+import {
+    Box,
+    Button,
+    Heading,
+    Text,
+    Center,
+    chakra,
+    Container,
+    VStack,
+    SimpleGrid,
+    HStack,
+    useDisclosure,
+    Modal,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalHeader,
+    ModalOverlay,
+    Switch,
+    FormControl,
+    FormLabel,
+    Img,
+    Badge,
+    Tag,
+    ScaleFade,
+    Flex,
+    Link,
+} from '@chakra-ui/react';
+
+import favicon from '@app/public/favicon.webp';
 
 import getStripe from '../util/getStripe';
 import prisma from '../util/ssr/prisma';
-import Layout from '../components/layout';
+import { FaTwitter, FaCheck, FaTwitch } from 'react-icons/fa';
+import { ProductCard } from '@app/components/pricing/ProductCard';
 
 type Props = {
     products: (Product & { prices: Price[] })[];
@@ -16,10 +45,32 @@ type Props = {
 
 const Page: NextPage<Props> = ({ products }) => {
     const [subscription, setSubscription] = useState<Subscription>();
-    const { status } = useSession();
-    const router = useRouter();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { status, data: session } = useSession({ required: false }) as any;
 
-    const [billingInterval, setBillingInterval] = useState<PriceInterval>('month');
+    const router = useRouter();
+    const { modal } = router.query;
+
+    const { isOpen, onOpen, onClose } = useDisclosure();
+
+    useEffect(() => {
+        if (modal === 'true') {
+            if (session && (!session?.accounts?.twitch || !session?.accounts?.twitter)) {
+                onOpen();
+            }
+            router.replace(router.pathname);
+        }
+    }, [modal, router, onOpen, session, onClose]);
+
+    const ensureSignUp = useCallback(() => {
+        if (session?.accounts?.twitch && session?.accounts?.twitter) {
+            return true;
+        }
+        onOpen();
+        return false;
+    }, [session, onOpen]);
+
+    const [billingInterval, setBillingInterval] = useState<PriceInterval>('year');
 
     const sortProductsByPrice = (
         products: (Product & {
@@ -43,102 +94,131 @@ const Page: NextPage<Props> = ({ products }) => {
 
     const handlePricingClick = useCallback(
         async (priceId: string) => {
-            if (status !== 'authenticated') {
-                return router.push('/api/auth/signin');
+            if (ensureSignUp()) {
+                if (subscription) {
+                    return router.push('/account');
+                }
+
+                const res = await fetch('/api/stripe/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'content-type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        price: priceId,
+                    }),
+                });
+
+                const data = await res.json();
+
+                const stripe = await getStripe();
+                stripe?.redirectToCheckout({ sessionId: data.sessionId });
             }
-
-            if (subscription) {
-                return router.push('/account');
-            }
-
-            const res = await fetch('/api/stripe/create-checkout-session', {
-                method: 'POST',
-                headers: {
-                    'content-type': 'application/json',
-                },
-                body: JSON.stringify({
-                    price: priceId,
-                }),
-            });
-
-            const data = await res.json();
-
-            const stripe = await getStripe();
-
-            stripe?.redirectToCheckout({ sessionId: data.sessionId });
         },
-        [status, router, subscription]
+        [router, subscription, ensureSignUp]
+    );
+
+    const AnnualBillingControl = (
+        <HStack display="flex" alignItems="center" spacing={4} fontSize="lg">
+            <Switch
+                id="billingInterval"
+                size="lg"
+                colorScheme="green"
+                isChecked={billingInterval === 'year'}
+                onChange={(v) => {
+                    setBillingInterval(billingInterval === 'year' ? 'month' : 'year');
+                }}
+            />
+
+            <Text style={{ WebkitTextStrokeWidth: billingInterval === 'year' ? '0.75px' : '0.25px' }} as={chakra.span}>
+                Yearly billing
+            </Text>
+            <Tag size="md" variant="solid" background="green.200" color="black">
+                Two months free!
+            </Tag>
+        </HStack>
     );
 
     return (
-        <div className="bg-white">
-            <VStack spacing="8">
-                <Container centerContent maxW="container.lg" experimental_spaceY="4">
+        <>
+            <Modal onClose={onClose} size={'xl'} isOpen={isOpen}>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>
+                        <Center>Almost there!</Center>
+                        <Center>Connect to Twitter to continue.</Center>
+                    </ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody minH="32" h="32" pb="4">
+                        <Flex h="full" direction="column" justifyContent="space-between">
+                            <VStack grow={1}>
+                                <Button
+                                    onClick={
+                                        session?.accounts?.twitter
+                                            ? undefined
+                                            : () =>
+                                                  signIn('twitter', {
+                                                      callbackUrl: router.pathname + '?modal=true',
+                                                  })
+                                    }
+                                    colorScheme="twitter"
+                                    leftIcon={<FaTwitter />}
+                                    rightIcon={session?.accounts?.twitter ? <FaCheck /> : undefined}
+                                >
+                                    Connect to Twitter
+                                </Button>
+                                {session && (
+                                    <Button
+                                        onClick={() =>
+                                            signIn('twitch', {
+                                                callbackUrl: router.pathname,
+                                            })
+                                        }
+                                        colorScheme="twitch"
+                                        leftIcon={<FaTwitch />}
+                                        rightIcon={session?.accounts?.twitch ? <FaCheck /> : undefined}
+                                    >
+                                        Connect to Twitch
+                                    </Button>
+                                )}
+                            </VStack>
+                            <Center>
+                                <Text fontSize="sm">
+                                    {'By signing up, you agree to our'} <Link>Terms</Link> and <Link>Privacy Policy</Link>
+                                </Text>
+                            </Center>
+                        </Flex>
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
+            <VStack spacing="16">
+                <Container centerContent maxW="container.lg" experimental_spaceY="6">
                     <Heading size="2xl" textAlign="center">
-                        The easiest way to attract more viewers for your stream
+                        Automatically{' '}
+                        <Text as={chakra.span} style={{ background: 'linear-gradient(0deg,#a7affa 22%,transparent 0)' }}>
+                            attract viewers
+                        </Text>{' '}
+                        to your stream
                     </Heading>
-                    <Text fontSize="xl">Start building for free, then add a site plan to go live. Account plans unlock additional features.</Text>
                 </Container>
-                <Center>
-                    <ButtonGroup isAttached>
-                        <Button onClick={() => setBillingInterval('month')} isActive={billingInterval === 'month'}>
-                            Monthly billing
-                        </Button>
-                        <Button onClick={() => setBillingInterval('year')} isActive={billingInterval === 'year'}>
-                            Yearly billing
-                        </Button>
-                    </ButtonGroup>
-                </Center>
+                <Center>{AnnualBillingControl}</Center>
                 <Center>
                     <SimpleGrid columns={[1, 2]} spacing="4">
-                        {sortProductsByPrice(products).map((product) => {
-                            const price: Price = product?.prices?.find((one: Price) => one.interval === billingInterval);
-
-                            if (!price) {
-                                return null;
-                            }
-
-                            return (
-                                <WrapItem key={product.name}>
-                                    <Box rounded="md" p="4" experimental_spaceY="2">
-                                        <Flex direction="row" justify="space-between" alignItems="center">
-                                            <Heading size="sm">{product.name}</Heading>
-                                            <Text fontSize="2xl" fontWeight="extrabold" lineHeight="tight">
-                                                {`$${price.unitAmount / 100}`}
-                                                <Text as={chakra.span} fontSize="sm" fontWeight="normal">
-                                                    /mo
-                                                </Text>
-                                            </Text>
-                                        </Flex>
-                                        <Text>{product.description ?? 'Missing description'}</Text>
-
-                                        <Button onClick={() => handlePricingClick(price.id)}>Join {product.name}</Button>
-
-                                        <Heading size="md">{"What's included"}</Heading>
-                                        <List>
-                                            {[
-                                                'Lorem ipsum dolor sit amet consectetur adipisicing elit.',
-                                                'Cum repellendus libero non expedita quam eligendi',
-                                                'a deserunt beatae debitis culpa asperiores ipsum facilis,',
-                                                'excepturi reiciendis accusantium nemo quos id facere!',
-                                            ].map((feature) => (
-                                                <ListItem key={feature}>
-                                                    <ListIcon color="green.200" as={CheckIcon} />
-                                                    {feature}
-                                                </ListItem>
-                                            ))}
-                                        </List>
-                                    </Box>
-                                </WrapItem>
-                            );
-                        })}
+                        {sortProductsByPrice(products).map((product) => (
+                            <ProductCard key={product.id} product={product} billingInterval={billingInterval} handlePricingClick={handlePricingClick} />
+                        ))}
                     </SimpleGrid>
                 </Center>
+                <Center>{AnnualBillingControl}</Center>
+                <Text fontSize="md">Prices in USD. VAT may apply. Membership is tied to one Twitter account.</Text>
             </VStack>
-        </div>
+        </>
     );
 };
 
+// Since we export getServerSideProps method in this file, it means this page will be rendered on the server
+// aka this page is server-side rendered
+// This method is run on the server, then the return value is passed in as props to the component above
 export const getServerSideProps: GetServerSideProps<Props> = async (context) => {
     const products = await prisma.product.findMany({
         where: {
