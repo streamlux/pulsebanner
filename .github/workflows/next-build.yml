@@ -148,6 +148,9 @@ jobs:
                   username: ${{ github.repository_owner }}
                   password: ${{ secrets.GITHUB_TOKEN }}
 
+            - name: Install and cache dependencies
+              uses: bahmutov/npm-install@v1
+
             - name: "Install ts-node"
               run: npm i -g ts-node
 
