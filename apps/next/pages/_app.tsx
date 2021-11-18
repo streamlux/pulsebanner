@@ -5,6 +5,7 @@ import theme from '../definitions/chakra/theme';
 import React from 'react';
 import Layout from '../components/layout';
 import { useRouter } from 'next/router';
+import Script from 'next/script';
 import Head from 'next/head';
 import favicon from '../public/favicon.png';
 import { DefaultSeo } from 'next-seo';
@@ -21,6 +22,7 @@ export default function App({ Component, pageProps }) {
                 <link rel="shortcut icon" sizes="192x192" href={favicon.src} />
                 <link rel="apple-touch-icon" href={favicon.src} />
             </Head>
+            <Script key="umami" strategy="afterInteractive" data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID} src={process.env.NEXT_PUBLIC_UMAMI_SRC} />
             {/* https://github.com/garmeeh/next-seo */}
             <DefaultSeo {...seoOptions} />
             <SessionProvider session={pageProps.session}>

@@ -69,6 +69,8 @@ jobs:
               env:
                   INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+                  NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${{ secrets.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}
+                  NEXT_PUBLIC_UMAMI_SRC: ${{ secrets.NEXT_PUBLIC_UMAMI_SRC }}
 
             - name: Build and push
               uses: docker/build-push-action@v2
@@ -145,6 +147,9 @@ jobs:
                   registry: ghcr.io
                   username: ${{ github.repository_owner }}
                   password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Install and cache dependencies
+              uses: bahmutov/npm-install@v1
 
             - name: "Install ts-node"
               run: npm i -g ts-node
