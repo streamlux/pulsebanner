@@ -23,6 +23,9 @@
                 ],
                 "@nrwl/nx/enforce-module-boundaries": [
                     "off"
+                ],
+                "@typescript-eslint/no-explicit-any": [
+                    "off"
                 ]
             }
         },
