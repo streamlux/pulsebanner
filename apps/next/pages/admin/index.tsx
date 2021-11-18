@@ -5,16 +5,18 @@ import { Database } from '../../modules/admin/Database';
 import { Webhooks } from '../../modules/admin/Webhooks';
 import { Session } from '../../modules/admin/Session';
 import { Banner } from '../../modules/admin/Banner';
+import { QuickLinks } from '@app/modules/admin/QuickLinks';
 
 export default function Page() {
     useAdmin({ required: true });
     return (
-        <Box mt="8" w="full">
+        <Box w="full">
             <Center>
                 <Heading>Admin dashboard</Heading>
             </Center>
-            <Center>
-                <SimpleGrid columns={2} spacing={10} my="8">
+            <Center p="8">
+                <SimpleGrid columns={[1, 2]} spacing={[4, 8]}>
+                    <QuickLinks />
                     <Database />
                     <Webhooks />
                     <Session />

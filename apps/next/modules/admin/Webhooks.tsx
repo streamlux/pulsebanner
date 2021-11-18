@@ -10,11 +10,12 @@ import {
     ModalOverlay,
     ModalContent,
     ModalHeader,
-    ModalFooter,
     ModalBody,
     ModalCloseButton,
     useDisclosure,
     ButtonGroup,
+    Stack,
+    Spinner,
 } from '@chakra-ui/react';
 import useSWR from 'swr';
 import { Panel } from './Panel';
@@ -46,12 +47,14 @@ export const Webhooks: React.FC = () => {
                     </>
                 )}
                 <Text>
-                    Total webhook subscriptions: {loading && 'Loading...'}
+                    Total webhook subscriptions: {loading && <Spinner size="sm" />}
                     {!loading && (webhooks?.subscriptions?.length ?? 'No webhooks')}
                 </Text>
-                <ButtonGroup>
-                    <Button onClick={async () => removeWebhook()}>Delete webhooks</Button>
-                    <Button onClick={onOpen}>Show raw</Button>
+                <ButtonGroup w="full">
+                    <Stack direction={['column', 'row']} w="full">
+                        <Button onClick={async () => removeWebhook()}>Delete webhooks</Button>
+                        <Button onClick={onOpen}>Show raw</Button>
+                    </Stack>
                 </ButtonGroup>
                 {showRaw && (
                     <Code as={chakra.pre} overflowX="scroll" maxW="100%">

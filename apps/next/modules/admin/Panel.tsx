@@ -1,13 +1,16 @@
 import React from 'react';
 import { Box, Heading } from '@chakra-ui/react';
+import { Card } from '@app/components/Card';
 
 interface PanelProps {
     name: string;
 }
 
 export const Panel: React.FC<PanelProps> = ({ name, children }) => (
-    <Box border="1px" borderColor="GrayText" borderRadius="md" p="4" experimental_spaceY="2" h="min" w="lg">
-        <Heading size="md">{name}</Heading>
-        {children}
-    </Box>
+    <Card>
+        <Box experimental_spaceY="2" h="min" w="full">
+            <Heading size="md">{name}</Heading>
+            {children}
+        </Box>
+    </Card>
 );
