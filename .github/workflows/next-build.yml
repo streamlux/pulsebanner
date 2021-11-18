@@ -50,6 +50,20 @@ jobs:
               with:
                   node-version: "16"
 
+            - name: Install and cache dependencies
+              uses: bahmutov/npm-install@v1
+
+            - name: Lint Next.js app
+              run: npx nx run next:lint
+
+            - name: "nx run next:make:ci"
+              run: npx nx run next:make:ci
+              env:
+                  INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+                  NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${{ secrets.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}
+                  NEXT_PUBLIC_UMAMI_SRC: ${{ secrets.NEXT_PUBLIC_UMAMI_SRC }}
+
             - name: Set up QEMU
               uses: docker/setup-qemu-action@v1
             - name: Set up Docker Buildx
@@ -60,17 +74,6 @@ jobs:
                   registry: ghcr.io
                   username: ${{ github.repository_owner }}
                   password: ${{ secrets.GITHUB_TOKEN }}
-
-            - name: Install and cache dependencies
-              uses: bahmutov/npm-install@v1
-
-            - name: "nx run next:make:ci"
-              run: npx nx run next:make:ci
-              env:
-                  INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
-                  NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${{ secrets.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}
-                  NEXT_PUBLIC_UMAMI_SRC: ${{ secrets.NEXT_PUBLIC_UMAMI_SRC }}
 
             - name: Build and push
               uses: docker/build-push-action@v2
@@ -137,6 +140,12 @@ jobs:
               with:
                   node-version: "16"
 
+            - name: Install and cache dependencies
+              uses: bahmutov/npm-install@v1
+
+            - name: Lint Remotion server
+              run: npx nx run remotion:lint
+
             - name: Set up QEMU
               uses: docker/setup-qemu-action@v1
             - name: Set up Docker Buildx
@@ -147,9 +156,6 @@ jobs:
                   registry: ghcr.io
                   username: ${{ github.repository_owner }}
                   password: ${{ secrets.GITHUB_TOKEN }}
-
-            - name: Install and cache dependencies
-              uses: bahmutov/npm-install@v1
 
             - name: "Install ts-node"
               run: npm i -g ts-node
