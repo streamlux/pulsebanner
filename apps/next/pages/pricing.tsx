@@ -6,19 +6,14 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
     Box,
     Button,
-    ButtonGroup,
     Heading,
-    List,
     Text,
-    WrapItem,
-    ListItem,
-    ListIcon,
     Center,
     chakra,
     Container,
     VStack,
     SimpleGrid,
-    Flex,
+    HStack,
     useDisclosure,
     Modal,
     ModalBody,
@@ -29,17 +24,20 @@ import {
     Switch,
     FormControl,
     FormLabel,
-    ScaleFade,
-    HStack,
     Img,
+    Badge,
+    Tag,
+    ScaleFade,
+    Flex,
+    Link,
 } from '@chakra-ui/react';
-import { ArrowRightIcon, CheckIcon } from '@chakra-ui/icons';
 
 import favicon from '@app/public/favicon.webp';
 
 import getStripe from '../util/getStripe';
 import prisma from '../util/ssr/prisma';
-import { FaTwitter, FaCheck, FaTwitch, FaArrowRight } from 'react-icons/fa';
+import { FaTwitter, FaCheck, FaTwitch } from 'react-icons/fa';
+import { ProductCard } from '@app/components/pricing/ProductCard';
 
 type Props = {
     products: (Product & { prices: Price[] })[];
@@ -121,13 +119,7 @@ const Page: NextPage<Props> = ({ products }) => {
     );
 
     const AnnualBillingControl = (
-        <FormControl display="flex" alignItems="center">
-            <FormLabel htmlFor="billingInterval" my="0" experimental_spaceX={4}>
-                <Text as={chakra.span}>Annual billing</Text>
-                <Text as={chakra.span} color="black" fontWeight="semibold" bg="green.200" p="1" px="2" rounded="md">
-                    Two months free!
-                </Text>
-            </FormLabel>
+        <HStack display="flex" alignItems="center" spacing={4} fontSize="lg">
             <Switch
                 id="billingInterval"
                 size="lg"
@@ -137,7 +129,14 @@ const Page: NextPage<Props> = ({ products }) => {
                     setBillingInterval(billingInterval === 'year' ? 'month' : 'year');
                 }}
             />
-        </FormControl>
+
+            <Text style={{ WebkitTextStrokeWidth: billingInterval === 'year' ? '0.75px' : '0.25px' }} as={chakra.span}>
+                Yearly billing
+            </Text>
+            <Tag size="md" variant="solid" background="green.200" color="black">
+                Two months free!
+            </Tag>
+        </HStack>
     );
 
     return (
@@ -145,135 +144,69 @@ const Page: NextPage<Props> = ({ products }) => {
             <Modal onClose={onClose} size={'xl'} isOpen={isOpen}>
                 <ModalOverlay />
                 <ModalContent>
-                    <ModalHeader>Sign up</ModalHeader>
+                    <ModalHeader>
+                        <Center>Almost there!</Center>
+                        <Center>Connect to Twitter to continue.</Center>
+                    </ModalHeader>
                     <ModalCloseButton />
-                    <ModalBody pb="12">
-                        <VStack>
-                            <Button
-                                onClick={
-                                    session?.accounts?.twitter
-                                        ? undefined
-                                        : () =>
-                                              signIn('twitter', {
-                                                  callbackUrl: router.pathname + '?modal=true',
-                                              })
-                                }
-                                colorScheme="twitter"
-                                leftIcon={<FaTwitter />}
-                                rightIcon={session?.accounts?.twitter ? <FaCheck /> : undefined}
-                            >
-                                Connect to Twitter
-                            </Button>
-                            {session && (
+                    <ModalBody minH="32" h="32" pb="4">
+                        <Flex h="full" direction="column" justifyContent="space-between">
+                            <VStack grow={1}>
                                 <Button
-                                    onClick={() =>
-                                        signIn('twitch', {
-                                            callbackUrl: router.pathname,
-                                        })
+                                    onClick={
+                                        session?.accounts?.twitter
+                                            ? undefined
+                                            : () =>
+                                                  signIn('twitter', {
+                                                      callbackUrl: router.pathname + '?modal=true',
+                                                  })
                                     }
-                                    colorScheme="twitch"
-                                    leftIcon={<FaTwitch />}
-                                    rightIcon={session?.accounts?.twitch ? <FaCheck /> : undefined}
+                                    colorScheme="twitter"
+                                    leftIcon={<FaTwitter />}
+                                    rightIcon={session?.accounts?.twitter ? <FaCheck /> : undefined}
                                 >
-                                    Connect to Twitch
+                                    Connect to Twitter
                                 </Button>
-                            )}
-                        </VStack>
+                                {session && (
+                                    <Button
+                                        onClick={() =>
+                                            signIn('twitch', {
+                                                callbackUrl: router.pathname,
+                                            })
+                                        }
+                                        colorScheme="twitch"
+                                        leftIcon={<FaTwitch />}
+                                        rightIcon={session?.accounts?.twitch ? <FaCheck /> : undefined}
+                                    >
+                                        Connect to Twitch
+                                    </Button>
+                                )}
+                            </VStack>
+                            <Center>
+                                <Text fontSize="sm">
+                                    {'By signing up, you agree to our'} <Link>Terms</Link> and <Link>Privacy Policy</Link>
+                                </Text>
+                            </Center>
+                        </Flex>
                     </ModalBody>
                 </ModalContent>
             </Modal>
             <VStack spacing="16">
                 <Container centerContent maxW="container.lg" experimental_spaceY="6">
                     <Heading size="2xl" textAlign="center">
-                        Easily get more stream views with
+                        Automatically{' '}
+                        <Text as={chakra.span} style={{ background: 'linear-gradient(0deg,#a7affa 22%,transparent 0)' }}>
+                            attract viewers
+                        </Text>{' '}
+                        to your stream
                     </Heading>
-                    <Box maxH="10">
-                        <HStack height="100%">
-                            <Img alt="PulseBanner logo" src={favicon.src} height="64px" width="64px" />
-                            <Heading size="2xl" as={chakra.p}>
-                                PulseBanner
-                            </Heading>
-                        </HStack>
-                    </Box>
                 </Container>
                 <Center>{AnnualBillingControl}</Center>
                 <Center>
                     <SimpleGrid columns={[1, 2]} spacing="4">
-                        {sortProductsByPrice(products).map((product) => {
-                            const price: Price = product?.prices?.find((one: Price) => one.interval === billingInterval);
-                            const monthlyPrice: Price = product?.prices.find((one: Price) => one.interval === 'month');
-                            if (!price || !monthlyPrice) {
-                                return null;
-                            }
-
-                            return (
-                                <WrapItem key={product.name}>
-                                    <Box rounded="md" p="4" experimental_spaceY="8">
-                                        <Box>
-                                            <Flex direction="row" justify="space-between" alignItems="center">
-                                                <VStack alignItems="start" spacing={0}>
-                                                    <Heading size="md">{product.name}</Heading>
-                                                    <Text>{product.description ?? 'Missing description'}</Text>
-                                                </VStack>
-
-                                                <VStack spacing={0}>
-                                                    <Text fontSize="2xl" fontWeight="extrabold" lineHeight="tight">
-                                                        <HStack>
-                                                            {billingInterval === 'month' && (
-                                                                <Text as={chakra.span} bg="green.200" px="1" py="0.5" rounded="md" color="black">
-                                                                    {`$${(price.unitAmount / 100).toFixed(2)}`}
-                                                                </Text>
-                                                            )}
-                                                            {billingInterval === 'year' && (
-                                                                <>
-                                                                    <Text as={chakra.span} bg="green.200" px="1" py="0.5" rounded="md" color="black">
-                                                                        {`$${(price.unitAmount / 100 / (billingInterval === 'year' ? 12 : 1)).toFixed(2)}`}
-                                                                    </Text>
-                                                                    <Text as="s">{`$${monthlyPrice.unitAmount / 100}`}</Text>
-                                                                </>
-                                                            )}
-                                                        </HStack>
-                                                    </Text>
-                                                    {billingInterval === 'year' && (
-                                                        <ScaleFade initialScale={0.9} in={billingInterval === 'year'}>
-                                                            <Text fontSize="xs">per month{billingInterval === 'year' ? ', billed annually' : ''}</Text>
-                                                        </ScaleFade>
-                                                    )}
-                                                    {billingInterval === 'month' && (
-                                                        <ScaleFade initialScale={0.9} in={billingInterval === 'month'}>
-                                                            <Text fontSize="xs">per month</Text>
-                                                        </ScaleFade>
-                                                    )}
-                                                </VStack>
-                                            </Flex>
-                                        </Box>
-
-                                        <Box>
-                                            <Button fontWeight="bold" onClick={() => handlePricingClick(price.id)} colorScheme="green" rightIcon={<FaArrowRight />}>
-                                                Buy {product.name}
-                                            </Button>
-                                        </Box>
-
-                                        <Box>
-                                            <Heading size="md">{"What's included"}</Heading>
-                                            <List>
-                                                {[
-                                                    'Lorem ipsum dolor sit amet consectetur adipisicing elit.',
-                                                    'Cum repellendus libero non expedita quam eligendi',
-                                                    'a deserunt beatae debitis culpa asperiores ipsum facilis,',
-                                                    'excepturi reiciendis accusantium nemo quos id facere!',
-                                                ].map((feature) => (
-                                                    <ListItem key={feature}>
-                                                        <ListIcon color="green.200" as={CheckIcon} />
-                                                        {feature}
-                                                    </ListItem>
-                                                ))}
-                                            </List>
-                                        </Box>
-                                    </Box>
-                                </WrapItem>
-                            );
-                        })}
+                        {sortProductsByPrice(products).map((product) => (
+                            <ProductCard key={product.id} product={product} billingInterval={billingInterval} handlePricingClick={handlePricingClick} />
+                        ))}
                     </SimpleGrid>
                 </Center>
                 <Center>{AnnualBillingControl}</Center>
@@ -283,6 +216,9 @@ const Page: NextPage<Props> = ({ products }) => {
     );
 };
 
+// Since we export getServerSideProps method in this file, it means this page will be rendered on the server
+// aka this page is server-side rendered
+// This method is run on the server, then the return value is passed in as props to the component above
 export const getServerSideProps: GetServerSideProps<Props> = async (context) => {
     const products = await prisma.product.findMany({
         where: {

@@ -21,7 +21,6 @@ import {
     chakra,
     LinkBox,
     LinkOverlay,
-    SimpleGrid,
     useBreakpoint,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
@@ -31,7 +30,7 @@ import React from 'react';
 import { MoonIcon, SunIcon } from '@chakra-ui/icons';
 import { useAdmin } from '../util/hooks/useAdmin';
 import favicon from '@app/public/favicon.webp';
-import { FaTwitch, FaTwitter } from 'react-icons/fa';
+import { FaTwitter } from 'react-icons/fa';
 
 // The approach used in this component shows how to built a sign in and sign out
 // component that works on pages which support both client and server side
