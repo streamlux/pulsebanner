@@ -21,6 +21,8 @@ import useSWR from 'swr';
 import { Panel } from './Panel';
 import axios from 'axios';
 
+axios.defaults.baseURL = process.env.NEXTAUTH_URL;
+
 export const Webhooks: React.FC = () => {
     const {
         data: webhooks,
@@ -47,7 +49,7 @@ export const Webhooks: React.FC = () => {
                     </>
                 )}
                 <Text>
-                    Total webhook subscriptions: {loading && <Spinner size="sm" />}
+                    Total webhook subscriptions: {loading && '...'}
                     {!loading && (webhooks?.subscriptions?.length ?? 'No webhooks')}
                 </Text>
                 <ButtonGroup w="full">

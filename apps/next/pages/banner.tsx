@@ -28,10 +28,12 @@ import { RemotionPreview } from '@pulsebanner/remotion/preview';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 
+const bannerEndpoint = '/api/features/banner';
+
 export default function Page() {
     const { data: session } = useSession({ required: false }) as any;
 
-    const { data, mutate } = useSWR<Banner>('banner', async () => (await fetch('/api/banner')).json());
+    const { data, mutate } = useSWR<Banner>('banner', async () => (await fetch(bannerEndpoint)).json());
     const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>((data?.backgroundId as keyof typeof BackgroundTemplates) ?? 'CSSBackground');
     const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>((data?.foregroundId as keyof typeof ForegroundTemplates) ?? 'ImLive');
     const [bgProps, setBgProps] = useState(data?.backgroundProps ?? ({} as any));
@@ -71,7 +73,7 @@ export default function Page() {
     const saveSettings = async () => {
         // ensure user is signed up before saving settings
         if (ensureSignUp()) {
-            const response = await axios.post('/api/banner', {
+            const response = await axios.post(bannerEndpoint, {
                 foregroundId: fgId,
                 backgroundId: bgId,
                 backgroundProps: bgProps,
@@ -84,7 +86,7 @@ export default function Page() {
     const toggle = async () => {
         // ensure user is signed up before enabling banner
         if (ensureSignUp()) {
-            await axios.put('/api/banner');
+            await axios.put(bannerEndpoint);
             mutate({
                 ...data,
                 enabled: !data.enabled,

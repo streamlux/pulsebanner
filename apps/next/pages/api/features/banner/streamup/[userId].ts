@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 import axios from 'axios';
 import { env } from 'process';
-import { TwitterResponseCode, updateBanner, getBanner } from '../../../../util/twitter/twitterHelpers';
+import { TwitterResponseCode, updateBanner, getBanner } from '@app/util/twitter/twitterHelpers';
 import { getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
 
 type TemplateRequestBody = {
@@ -55,5 +55,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // post this base64 image to twitter
     const bannerStatus: TwitterResponseCode = await updateBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, base64Image);
-    return bannerStatus === 200 ? res.status(200).send('Set banner to given template') : res.status(400).send('Unable to set banner to original image');
+    return bannerStatus === 200 ? res.status(200).send('Set banner to given template') : res.status(400).send('Unable to set banner');
 }
