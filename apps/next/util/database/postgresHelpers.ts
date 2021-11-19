@@ -1,4 +1,5 @@
-import { Banner, Tweet } from '.prisma/client';
+import { Banner, Tweet } from '@prisma/client';
+import prisma from '../ssr/prisma';
 
 export type PostgresTwitterInfo = {
     oauth_token: string;

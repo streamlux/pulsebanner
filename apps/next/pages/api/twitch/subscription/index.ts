@@ -5,7 +5,7 @@ import NextCors from 'nextjs-cors';
 import axios from 'axios';
 import { ClientCredentialsAuthProvider } from 'twitch-auth';
 import { Account } from '@prisma/client';
-import { GetSubscriptionsResponse } from '../twitch';
+import { GetSubscriptionsResponse } from '@app/types/twitch';
 
 const authProvider = new ClientCredentialsAuthProvider(process.env.TWITCH_CLIENT_ID, process.env.TWITCH_CLIENT_SECRET);
 

@@ -5,7 +5,7 @@ import useSWR from 'swr';
 import type { Banner as BannerType } from '@prisma/client';
 
 export const Banner: React.FC = () => {
-    const { data } = useSWR<BannerType>('banner', async () => (await fetch('/api/banner')).json());
+    const { data } = useSWR<BannerType>('banner', async () => (await fetch('/api/features/banner')).json());
 
     return (
         <Panel name="Banner details">
