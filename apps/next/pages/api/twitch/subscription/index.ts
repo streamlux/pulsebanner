@@ -2,10 +2,10 @@ import { getAccounts } from '../../../../util/getAccounts';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSession } from 'next-auth/react';
 import NextCors from 'nextjs-cors';
-import axios from 'axios';
 import { ClientCredentialsAuthProvider } from 'twitch-auth';
 import { Account } from '@prisma/client';
 import { GetSubscriptionsResponse } from '@app/types/twitch';
+import { twitchAxios } from '@app/util/axios';
 
 const authProvider = new ClientCredentialsAuthProvider(process.env.TWITCH_CLIENT_ID, process.env.TWITCH_CLIENT_SECRET);
 
@@ -28,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const token = await authProvider.getAccessToken();
 
-        const response = await axios.get<GetSubscriptionsResponse>('https://api.twitch.tv/helix/eventsub/subscriptions', {
+        const response = await twitchAxios.get<GetSubscriptionsResponse>('/helix/eventsub/subscriptions', {
             headers: {
                 'Client-ID': process.env.TWITCH_CLIENT_ID,
                 Authorization: `Bearer ${token.accessToken}`,
@@ -45,7 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
         } else if (req.method === 'DELETE') {
             userSubscriptions.forEach(async (webhook) => {
-                await axios.delete(`https://api.twitch.tv/helix/eventsub/subscriptions?id=${webhook.id}`, {
+                await twitchAxios.delete(`/helix/eventsub/subscriptions?id=${webhook.id}`, {
                     headers: {
                         'Client-ID': process.env.TWITCH_CLIENT_ID,
                         Authorization: `Bearer ${token.accessToken}`,

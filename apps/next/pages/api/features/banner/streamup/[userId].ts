@@ -1,10 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
-import axios from 'axios';
-import { env } from 'process';
 import { TwitterResponseCode, updateBanner, getBanner } from '@app/util/twitter/twitterHelpers';
 import { getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
-import { localAxios } from '@app/util/axios';
+import { localAxios, remotionAxios } from '@app/util/axios';
 
 type TemplateRequestBody = {
     foregroundId: string;
@@ -44,14 +42,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // construct template object
     const templateObj: TemplateRequestBody = {
-        backgroundId: 'CSSBackground',
-        foregroundId: 'ImLive',
-        foregroundProps: {} as JSON,
-        backgroundProps: {} as JSON,
+        backgroundId: bannerEntry.backgroundId,
+        foregroundId: bannerEntry.foregroundId,
+        foregroundProps: JSON.parse(bannerEntry.foregroundProps.toString()),
+        backgroundProps: JSON.parse(bannerEntry.backgroundProps.toString()),
     };
 
     // pass in the bannerEntry info
-    const response = await axios.post(`${env.REMOTION_URL}/getTemplate`, templateObj);
+    const response = await remotionAxios.post('/getTemplate', templateObj);
     const base64Image = response.data;
 
     // post this base64 image to twitter

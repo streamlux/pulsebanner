@@ -15,7 +15,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
     });
 
-
     const userId: string = req.query.userId as string;
     const imageUrl: string = req.query.imageUrl as string;
 

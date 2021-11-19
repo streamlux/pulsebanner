@@ -4,7 +4,6 @@ import { updateTwitchSubscriptions } from '@app/services/updateTwitchSubscriptio
 
 const handler = createAuthApiHandler();
 
-
 // Create or update existing banner with url and templateId
 handler.post(async (req, res) => {
     await prisma.banner.upsert({

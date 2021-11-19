@@ -10,8 +10,7 @@ export type FeatureMapTypes = {
     };
 };
 
-// const handler = createApiHandler({ route: '/api/features/:userId' });
-const handler = createApiHandler();
+const handler = createApiHandler({ route: '/api/features/:userId' });
 
 handler.get(async (req, res) => {
     const userId: string = req.query.userId as string;
