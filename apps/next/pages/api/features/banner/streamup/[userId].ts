@@ -4,6 +4,7 @@ import axios from 'axios';
 import { env } from 'process';
 import { TwitterResponseCode, updateBanner, getBanner } from '@app/util/twitter/twitterHelpers';
 import { getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
+import { localAxios } from '@app/util/axios';
 
 type TemplateRequestBody = {
     foregroundId: string;
@@ -37,7 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const bannerUrl = await getBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
 
     // store the current banner in s3
-    await axios.put(`${env.NEXTAUTH_URL}/api/digitalocean/upload/${userId}?imageUrl=${bannerUrl}`);
+    await localAxios.put(`/api/storage/upload/${userId}?imageUrl=${bannerUrl}`);
 
     // get the banner info saved in Banner table
 

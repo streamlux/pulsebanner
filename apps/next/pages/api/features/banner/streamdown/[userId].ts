@@ -1,9 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
-import axios from 'axios';
-import { env } from 'process';
 import { TwitterResponseCode, updateBanner } from '@app/util/twitter/twitterHelpers';
 import { getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
+import { localAxios } from '@app/util/axios';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
@@ -27,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // query the original banner image from the db
-    const response = await axios.get(`${env.NEXTAUTH_URL}/api/digitalocean/download/${userId}`);
+    const response = await localAxios.get(`/api/storage/download/${userId}`);
     if (response.status === 200) {
         console.log('Found user in db and got image');
     } else {
