@@ -8,6 +8,13 @@ export class TwitchSubscriptionService {
         return (await TwitchClientAuthService.getAuthProvider().getAccessToken()).accessToken;
     }
 
+    /**
+     * Create a Twitch EventSub subscription
+     *
+     * @param userId PulseBanner user userId
+     * @param type EventSub subscription type
+     * @param twitchUserId Twitch userId`Account.providerId`
+     */
     public async createOne(userId: string, type: string, twitchUserId: string) {
         const reqBody = {
             type,
@@ -31,6 +38,10 @@ export class TwitchSubscriptionService {
         });
     }
 
+    /**
+     * Delete a subscription
+     * @param subscriptionId Subscription to delete
+     */
     public async deleteOne(subscriptionId: string): Promise<void> {
         await twitchAxios.delete(`/helix/eventsub/subscriptions?id=${subscriptionId}`, {
             headers: {
