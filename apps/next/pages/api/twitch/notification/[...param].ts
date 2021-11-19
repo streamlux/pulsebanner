@@ -2,8 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 import crypto from 'crypto';
 import bodyParser from 'body-parser';
-import axios from 'axios';
-import { Features } from '../../features/[userId]';
+import { Features } from '@app/services/FeaturesService';
+import { localAxios } from '@app/util/axios';
 
 type VerificationBody = {
     challenge: string;
@@ -71,16 +71,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const userId = param[0];
 
         // get the features that are enabled
-        const response = await axios.get<Features[]>(`/api/features/${userId}`);
+        const response = await localAxios.get<Features[]>(`/api/features/${userId}`);
         if (response.status === 200) {
             const enabledFeatures = response.data;
 
             enabledFeatures.forEach(async (feature: Features) => {
                 if (streamStatus === 'stream.online') {
-                    await axios.post(`/api/features/${feature}/streamup/${userId}`);
+                    await localAxios.post(`/api/features/${feature}/streamup/${userId}`);
                 }
                 if (streamStatus === 'stream.offline') {
-                    await axios.post(`/api/features/${feature}/streamdown/${userId}`);
+                    await localAxios.post(`/api/features/${feature}/streamdown/${userId}`);
                 }
             });
         }
