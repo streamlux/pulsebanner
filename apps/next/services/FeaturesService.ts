@@ -4,6 +4,10 @@ export type Features = keyof Pick<Prisma.UserInclude, 'banner' | 'tweet'>;
 const features: Features[] = ['banner', 'tweet'];
 
 export class FeaturesService {
+    /**
+     * @param userId
+     * @returns A list containing the features the user has enabled.
+     */
     public static async listEnabled(userId: string): Promise<Features[]> {
 
 
