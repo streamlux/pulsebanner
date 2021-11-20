@@ -13,6 +13,7 @@ import {
     ModalOverlay,
     Spacer,
     useBoolean,
+    useDisclosure,
     VStack,
 } from '@chakra-ui/react';
 import type { Banner } from '@prisma/client';
@@ -26,6 +27,7 @@ import { RemotionPreview } from '@pulsebanner/remotion/preview';
 import { signIn } from 'next-auth/react';
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
+import { PaymentModal } from '@app/components/pricing/PaymentModal';
 
 const bannerEndpoint = '/api/features/banner';
 
@@ -35,6 +37,7 @@ export default function Page() {
     const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>((data?.foregroundId as keyof typeof ForegroundTemplates) ?? 'ImLive');
     const [bgProps, setBgProps] = useState(data?.backgroundProps ?? ({} as any));
     const [fgProps, setFgProps] = useState(data?.foregroundProps ?? ({} as any));
+    const [payment, setPayment] = useState(false);
 
     useEffect(() => {
         setBgId((data?.backgroundId as keyof typeof BackgroundTemplates) ?? 'CSSBackground');
@@ -75,6 +78,8 @@ export default function Page() {
 
     const Form = BackgroundTemplates[bgId].form;
     const FgForm = ForegroundTemplates[fgId].form;
+
+    const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
 
     return (
         <>
@@ -118,7 +123,15 @@ export default function Page() {
                     <Box p="4" my="4" rounded="md" bg="whiteAlpha.100" w="full">
                         <Heading fontSize="3xl">Banner settings</Heading>
                         <Flex justifyContent="space-between" p="2">
-                            <Checkbox colorScheme="purple" defaultIsChecked size="lg">
+                            <Checkbox
+                                colorScheme="purple"
+                                isChecked={true}
+                                size="lg"
+                                onChange={(e) => {
+                                    e.preventDefault();
+                                    pricingToggle();
+                                }}
+                            >
                                 Show watermark
                             </Checkbox>
                             <Button onClick={saveSettings}>Save settings</Button>
@@ -128,7 +141,15 @@ export default function Page() {
                             <Form setProps={setBgProps} props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }} />
                         </VStack>
                         <Flex justifyContent="space-between" p="2">
-                            <Checkbox colorScheme="purple" defaultIsChecked size="lg">
+                            <Checkbox
+                                colorScheme="purple"
+                                isChecked={true}
+                                size="lg"
+                                onChange={(e) => {
+                                    e.preventDefault();
+                                    pricingToggle();
+                                }}
+                            >
                                 Show watermark
                             </Checkbox>
                             <Button onClick={saveSettings}>Save settings</Button>
@@ -155,6 +176,7 @@ export default function Page() {
                     </Flex>
                 </Box>
             </Container>
+            <PaymentModal isOpen={pricingIsOpen} onClose={pricingClose} />
         </>
     );
 }
