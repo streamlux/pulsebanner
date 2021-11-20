@@ -5,7 +5,6 @@
         "start": "ts-node app/server/index.ts"
     },
     "dependencies": {
-        "@aws-sdk/client-s3": "^3.25.0",
         "@remotion/bundler": "^2.3.0",
         "@remotion/cli": "^2.3.0",
         "@remotion/eslint-config": "^2.3.0",
