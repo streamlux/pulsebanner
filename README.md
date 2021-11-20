@@ -24,10 +24,23 @@ _* May need to prefix command with `npx`. You can remove the need for npx by pro
 
 Note: This requires twitch-cli repo to be installed https://github.com/twitchdev/twitch-cli
 
- - To test stream is online event (streamup) run following command
-    - ./twitch event trigger streamup -F http://localhost:4200/api/twitch/notification/${twitter-id-here} --secret="${secret-here}"
- - To test stream is offline event (streamdown) run following command
-    - ./twitch event trigger streamdown -F http://localhost:4200/api/twitch/notification/${twitter-id-here} --secret="${secret-here}"
+To test stream is online event (streamup) run following command
+
+```
+twitch event verify-subscription streamup -F http://localhost:4200/api/twitch/notification/${twitter-id-here} -s helloWorld
+```
+
+```
+twitch event trigger streamup -F http://localhost:4200/api/twitch/notification/${twitter-id-here} --secret="${secret-here}"
+```
+ 
+To test stream is offline event (streamdown) run following command
+
+```
+twitch event trigger streamdown -F http://localhost:4200/api/twitch/notification/${twitter-id-here} --secret="${secret-here}"
+```
+
+https://dev.twitch.tv/docs/eventsub/handling-webhook-events#using-the-cli-to-test-your-handler
 
 ## Local Remotion setup for WSL
 

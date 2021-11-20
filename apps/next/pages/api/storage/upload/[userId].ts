@@ -15,13 +15,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
     });
 
-    const s3 = createS3(env.DO_SPACE_ENDPOINT, env.DO_ACCESS_KEY, env.DO_SECRET);
-
     const userId: string = req.query.userId as string;
     const imageUrl: string = req.query.imageUrl as string;
 
     const imageBase64 = imageUrl === 'empty' ? 'empty' : await imageToBase64(imageUrl);
 
+    const s3 = createS3(env.DO_SPACE_ENDPOINT, env.DO_ACCESS_KEY, env.DO_SECRET);
     s3.upload({ Bucket: 'pulsebanner', Key: userId, Body: imageBase64 }, null, (err, _data) => {
         if (err) {
             console.log('error: ', err);
@@ -29,5 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
     });
 
-    res.status(200).send('Success');
+    console.log(`Uploaded image ${imageUrl}.`);
+
+    res.status(201).end();
 }

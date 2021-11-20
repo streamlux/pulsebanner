@@ -112,6 +112,7 @@ export default NextAuth({
                 if (account.provider === 'twitch') {
                     // Check if twitch access token is expired
                     if (account.expires_at <= getSecondsSinceEpoch()) {
+                        console.log('refreshing access token');
                         // Use the refresh token to request a new access token from twitch
                         const data = await refreshAccessToken(account.refresh_token);
 

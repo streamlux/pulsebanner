@@ -1,5 +1,6 @@
 import { bundle } from '@remotion/bundler';
 import { getCompositions, renderStill } from '@remotion/renderer';
+import { openBrowser } from '@remotion/renderer/dist/open-browser';
 import dotenv from 'dotenv';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
@@ -11,6 +12,13 @@ import { helpText } from './help-text';
 import { getImageType, getMimeType } from './image-types';
 import { getImageHash } from './make-hash';
 import { sendFile } from './send-file';
+import { Browser } from 'puppeteer-core';
+
+let browser: Browser | undefined;
+const getBrowser = async (): Promise<Browser> => {
+    browser ||= await openBrowser('chrome');
+    return browser as Browser;
+}
 
 dotenv.config();
 
@@ -129,6 +137,7 @@ app.get(
 app.post(
     '/getTemplate',
     handler(async (req, res) => {
+        const startMs = Date.now();
         const requestBody = req.body;
         console.log('requestBody: ', requestBody);
 
@@ -152,14 +161,15 @@ app.post(
         const output = path.join(await tmpDir, hash);
 
         const webpackBundle = await webpackBundling;
+        const puppeteerInstance = await getBrowser();
         const composition = await getComp(compName, inputProps);
         await new Promise<void>((resolve, reject) => {
             renderStill({
+                puppeteerInstance,
                 composition,
                 webpackBundle,
                 output,
                 inputProps,
-                quality: 100,
                 imageFormat,
                 onError: (err) => {
                     reject(err);
@@ -170,7 +180,12 @@ app.post(
                 .catch((err) => reject(err));
         });
 
+        console.log(output);
         const imageBase64 = fs.readFileSync(output, { encoding: 'base64' });
+
+        const endMs = Date.now();
+
+        console.log(`Done rendering in ${endMs - startMs}ms`);
 
         res.send(imageBase64);
     })

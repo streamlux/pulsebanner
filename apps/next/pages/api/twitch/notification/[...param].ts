@@ -2,9 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 import crypto from 'crypto';
 import bodyParser from 'body-parser';
-import axios from 'axios';
-import { env } from 'process';
-import { FeatureMapTypes } from '../../feature/[userId]';
+import { Features } from '@app/services/FeaturesService';
+import { localAxios } from '@app/util/axios';
 
 type VerificationBody = {
     challenge: string;
@@ -46,9 +45,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     );
 
     const param = req.query.param as string[];
-    console.log(`POST - Notification: ${param.join(', ')}`);
-    // console.log(req.headers);
-    console.log(req.body);
 
     const messageSignature = req.headers['Twitch-Eventsub-Message-Signature'.toLowerCase()] as string;
     const messageId = req.headers['Twitch-Eventsub-Message-Id'.toLowerCase()] as string;
@@ -58,16 +54,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log('Request verification failed.');
         res.status(403).send('Forbidden'); // Reject requests with invalid signatures
         res.end();
+        return;
     }
 
     const messageType: MessageType = req.headers['Twitch-Eventsub-Message-Type'.toLowerCase()] as MessageType;
 
     if (messageType === MessageType.Verification) {
-        console.log('verifying webhook...');
         const challenge: string = (req.body as VerificationBody).challenge;
-        console.log('challenge: ', challenge);
         res.send(challenge);
         res.end();
+        return;
     }
 
     if (messageType === MessageType.Notification) {
@@ -77,27 +73,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const userId = param[0];
 
         // get the features that are enabled
-        const response = await axios.get(`${env.NEXTAUTH_URL}/api/feature/${userId}`);
+        const response = await localAxios.get<{ enabled: Features[] }>(`/api/features/${userId}`);
         if (response.status === 200) {
-            const featureMapping = response.data as FeatureMapTypes;
-            // conditional code to be called if it is an enable or disable event
-            if (featureMapping.featureMap.tweet) {
+            const features = response.data;
+
+            features.enabled.forEach(async (feature: Features) => {
                 if (streamStatus === 'stream.online') {
-                    await axios.post(`${env.NEXTAUTH_URL}/api/tweet/streamup/${userId}`);
-                }
-            }
-            if (featureMapping.featureMap.banner) {
-                if (streamStatus === 'stream.online') {
-                    await axios.post(`${env.NEXTAUTH_URL}/api/banner/streamup/${userId}`);
+                    await localAxios.post(`/api/features/${feature}/streamup/${userId}`);
                 }
                 if (streamStatus === 'stream.offline') {
-                    await axios.post(`${env.NEXTAUTH_URL}/api/banner/streamdown/${userId}`);
+                    await localAxios.post(`/api/features/${feature}/streamdown/${userId}`);
                 }
-            }
+            });
         }
 
         res.status(200);
         res.end();
+        return;
     }
 }
 

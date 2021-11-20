@@ -1,15 +1,15 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
-import axios from 'axios';
-import { env } from 'process';
-import { TwitterResponseCode, updateBanner, getBanner } from '../../../../util/twitter/twitterHelpers';
+import { TwitterResponseCode, updateBanner, getBanner } from '@app/util/twitter/twitterHelpers';
 import { getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
+import { localAxios, remotionAxios } from '@app/util/axios';
+import { Prisma } from '@prisma/client';
 
 type TemplateRequestBody = {
     foregroundId: string;
     backgroundId: string;
-    foregroundProps: JSON;
-    backgroundProps: JSON;
+    foregroundProps: Record<string, unknown>;
+    backgroundProps: Record<string, unknown>;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -37,23 +37,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const bannerUrl = await getBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
 
     // store the current banner in s3
-    await axios.put(`${env.NEXTAUTH_URL}/api/digitalocean/upload/${userId}?imageUrl=${bannerUrl}`);
+    await localAxios.put(`/api/storage/upload/${userId}?imageUrl=${bannerUrl}`);
 
     // get the banner info saved in Banner table
 
     // construct template object
     const templateObj: TemplateRequestBody = {
-        backgroundId: 'CSSBackground',
-        foregroundId: 'ImLive',
-        foregroundProps: {} as JSON,
-        backgroundProps: {} as JSON,
+        backgroundId: bannerEntry.backgroundId ?? 'CSSBackground',
+        foregroundId: bannerEntry.foregroundId ?? 'ImLive',
+        foregroundProps: bannerEntry.foregroundProps as Prisma.JsonObject ?? {},
+        backgroundProps: bannerEntry.backgroundProps as Prisma.JsonObject ?? {},
     };
 
     // pass in the bannerEntry info
-    const response = await axios.post(`${env.REMOTION_URL}/getTemplate`, templateObj);
+    const response = await remotionAxios.post('/getTemplate', templateObj, {
+
+    });
     const base64Image = response.data;
 
     // post this base64 image to twitter
     const bannerStatus: TwitterResponseCode = await updateBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, base64Image);
-    return bannerStatus === 200 ? res.status(200).send('Set banner to given template') : res.status(400).send('Unable to set banner to original image');
+    return bannerStatus === 200 ? res.status(200).send('Set banner to given template') : res.status(400).send('Unable to set banner');
 }
