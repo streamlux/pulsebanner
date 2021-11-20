@@ -30,20 +30,40 @@ handler.post(async (req, res) => {
 
 // Get banner
 handler.get(async (req, res) => {
-    const banner = await prisma.banner.findFirst({
-        where: {
-            userId: req.session.userId,
-        },
-        select: {
-            enabled: true,
-            backgroundId: true,
-            backgroundProps: true,
-            foregroundId: true,
-            foregroundProps: true
-        },
-    });
+    const userId = req.session.userId;
+    try {
+        const banner = await prisma.banner.findUnique({
+            where: {
+                userId
+            },
+            select: {
+                enabled: true,
+                backgroundId: true,
+                backgroundProps: true,
+                foregroundId: true,
+                foregroundProps: true
+            },
+            rejectOnNotFound: true
+        });
+        res.status(200).json(banner);
+    } catch (e) {
 
-    res.json(banner);
+        const banner = await prisma.banner.create({
+            data: {
+                backgroundId: 'CSSBackground',
+                foregroundId: 'ImLive',
+                backgroundProps: {},
+                foregroundProps: {},
+                user: {
+                    connect: {
+                        id: userId
+                    }
+                }
+            }
+        })
+
+        res.status(201).json(banner);
+    }
 });
 
 // Delete banner

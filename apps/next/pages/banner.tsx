@@ -16,7 +16,7 @@ import {
     VStack,
 } from '@chakra-ui/react';
 import type { Banner } from '@prisma/client';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
 import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
@@ -29,25 +29,28 @@ import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 
 const bannerEndpoint = '/api/features/banner';
 
+const defaultFgId: keyof typeof ForegroundTemplates = 'ImLive';
+const defaultBgId: keyof typeof BackgroundTemplates = 'CSSBackground';
+
 export default function Page() {
-    const { data, mutate, isValidating } = useSWR<Banner>('banner', async () => (await fetch(bannerEndpoint)).json());
+    const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch();
+    const { data, mutate, isValidating } = useSWR<Banner>(session ? 'banner' : null, async () => (await fetch(bannerEndpoint)).json());
+
+    useEffect(() => {
+        setBgId((data?.backgroundId as keyof typeof BackgroundTemplates) ?? defaultBgId);
+        setFgId((data?.foregroundId as keyof typeof ForegroundTemplates) ?? defaultFgId);
+        setBgProps(data?.backgroundProps ?? BackgroundTemplates[defaultBgId].defaultProps);
+        setFgProps(data?.foregroundProps ?? ForegroundTemplates[defaultFgId].defaultProps);
+    }, [data]);
+
     const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>((data?.backgroundId as keyof typeof BackgroundTemplates) ?? 'CSSBackground');
     const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>((data?.foregroundId as keyof typeof ForegroundTemplates) ?? 'ImLive');
     const [bgProps, setBgProps] = useState(data?.backgroundProps ?? ({} as any));
     const [fgProps, setFgProps] = useState(data?.foregroundProps ?? ({} as any));
 
-    useEffect(() => {
-        setBgId((data?.backgroundId as keyof typeof BackgroundTemplates) ?? 'CSSBackground');
-        setFgId((data?.foregroundId as keyof typeof ForegroundTemplates) ?? 'ImLive');
-        setBgProps(data?.backgroundProps ?? {});
-        setFgProps(data?.foregroundProps ?? {});
-    }, [data]);
-
-    const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch();
-
     const [isToggling, { on, off }] = useBoolean(false);
 
-    const saveSettings = async () => {
+    const saveSettings = useCallback(async () => {
         // ensure user is signed up before saving settings
         if (ensureSignUp()) {
             const response = await axios.post(bannerEndpoint, {
@@ -58,7 +61,7 @@ export default function Page() {
             });
             mutate();
         }
-    };
+    }, [bgId, fgId, bgProps, fgProps, mutate, ensureSignUp]);
 
     const toggle = async () => {
         // ensure user is signed up before enabling banner
