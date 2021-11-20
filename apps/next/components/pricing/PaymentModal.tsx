@@ -55,14 +55,14 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         <Modal isOpen={isOpen} onClose={onClose} size="5xl">
             <ModalOverlay />
-            <ModalContent alignContent="center">
+            <ModalContent alignContent="center" pb="6">
                 <ModalHeader>
                     <Center>Looking for something more? Purchase now!</Center>
                 </ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
-                    <Center>{AnnualBillingControl}</Center>
-                    <VStack>
+                    <VStack spacing={8}>
+                        <Center>{AnnualBillingControl}</Center>
                         <Center>
                             <SimpleGrid columns={[1, 2]} spacing="4">
                                 {sortProductsByPrice(data).map((product) => (
@@ -71,17 +71,8 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
                                 ))}
                             </SimpleGrid>
                         </Center>
-                        <Text fontSize="md">Prices in USD. VAT may apply. Membership is tied to one Twitter account.</Text>
                     </VStack>
                 </ModalBody>
-                <Center>
-                    <HStack spacing={4}>
-                        <Button onClick={() => router.push('/pricing')}>Pricing Page</Button>
-                        <Button colorScheme="red" onClick={() => onClose()}>
-                            Close
-                        </Button>
-                    </HStack>
-                </Center>
             </ModalContent>
         </Modal>
     );

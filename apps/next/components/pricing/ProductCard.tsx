@@ -29,7 +29,7 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
 
                         <VStack spacing={0}>
                             <Text fontSize="2xl" fontWeight="extrabold" lineHeight="tight" w="full">
-                                <Stack direction={['column', 'row']} alignItems={['end', 'center']} w="full">
+                                <Stack direction={['column', 'row']} alignItems={['center', 'center']} w="full" spacing={[0, 2]}>
                                     {billingInterval === 'month' && (
                                         <Text as={chakra.span} bg="green.200" px="1" py="0.5" rounded="md" color="black">
                                             {`$${(price.unitAmount / 100).toFixed(2)}`}
@@ -45,16 +45,22 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
                                     )}
                                 </Stack>
                             </Text>
-                            {billingInterval === 'year' && (
-                                <ScaleFade initialScale={0.9} in={billingInterval === 'year'}>
-                                    <Text fontSize="xs">per month{billingInterval === 'year' ? ', billed annually' : ''}</Text>
-                                </ScaleFade>
-                            )}
-                            {billingInterval === 'month' && (
-                                <ScaleFade initialScale={0.9} in={billingInterval === 'month'}>
-                                    <Text fontSize="xs">per month</Text>
-                                </ScaleFade>
-                            )}
+                            <Box w="full">
+                                {billingInterval === 'year' && (
+                                    <ScaleFade initialScale={0.9} in={billingInterval === 'year'}>
+                                        <Text fontSize="xs" w={['90px', 'full']} textAlign="right" pr={['2', 0]}>
+                                            per month{billingInterval === 'year' ? ', billed annually' : ''}
+                                        </Text>
+                                    </ScaleFade>
+                                )}
+                                {billingInterval === 'month' && (
+                                    <ScaleFade initialScale={0.9} in={billingInterval === 'month'}>
+                                        <Text fontSize="xs" textAlign="right" pr={['2', 0]}>
+                                            per month
+                                        </Text>
+                                    </ScaleFade>
+                                )}
+                            </Box>
                         </VStack>
                     </Flex>
                 </Box>

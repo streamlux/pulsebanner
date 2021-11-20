@@ -9,7 +9,7 @@ export const CSSBackground: LayerForm<typeof BackgroundComponents.CSSBackground>
     const [color2, setColor2] = useState('#aabbcc');
     return (
         <Box>
-            <SimpleGrid columns={2} spacing={9}>
+            <SimpleGrid columns={[1, 2]} spacing={9}>
                 <FormControl>
                     <FormLabel>Left color</FormLabel>
                     <HexColorPicker

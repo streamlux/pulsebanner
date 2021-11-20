@@ -13,6 +13,7 @@ import {
     ModalOverlay,
     Spacer,
     useBoolean,
+    useDisclosure,
     VStack,
 } from '@chakra-ui/react';
 import type { Banner } from '@prisma/client';
@@ -122,10 +123,17 @@ export default function Page() {
                     <Box p="4" my="4" rounded="md" bg="whiteAlpha.100" w="full">
                         <Heading fontSize="3xl">Banner settings</Heading>
                         <Flex justifyContent="space-between" p="2">
-                            <Checkbox colorScheme="purple" defaultIsChecked size="lg">
+                            <Checkbox
+                                colorScheme="purple"
+                                isChecked={true}
+                                size="lg"
+                                onChange={(e) => {
+                                    e.preventDefault();
+                                    pricingToggle();
+                                }}
+                            >
                                 Show watermark
                             </Checkbox>
-                            <Button onClick={() => pricingToggle()}>Test payment modal</Button>
                             <Button onClick={saveSettings}>Save settings</Button>
                         </Flex>
                         <VStack spacing="8">
@@ -133,7 +141,15 @@ export default function Page() {
                             <Form setProps={setBgProps} props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }} />
                         </VStack>
                         <Flex justifyContent="space-between" p="2">
-                            <Checkbox colorScheme="purple" defaultIsChecked size="lg">
+                            <Checkbox
+                                colorScheme="purple"
+                                isChecked={true}
+                                size="lg"
+                                onChange={(e) => {
+                                    e.preventDefault();
+                                    pricingToggle();
+                                }}
+                            >
                                 Show watermark
                             </Checkbox>
                             <Button onClick={saveSettings}>Save settings</Button>
