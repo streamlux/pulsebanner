@@ -159,7 +159,6 @@ app.post(
                 webpackBundle,
                 output,
                 inputProps,
-                quality: 100,
                 imageFormat,
                 onError: (err) => {
                     reject(err);
@@ -170,6 +169,7 @@ app.post(
                 .catch((err) => reject(err));
         });
 
+        console.log(output);
         const imageBase64 = fs.readFileSync(output, { encoding: 'base64' });
 
         res.send(imageBase64);

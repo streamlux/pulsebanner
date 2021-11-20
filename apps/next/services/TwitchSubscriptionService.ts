@@ -1,6 +1,8 @@
 import { Subscription } from "@app/types/twitch";
 import { twitchAxios } from "@app/util/axios";
+import { exec } from "child_process";
 import { TwitchClientAuthService } from "./TwitchClientAuthService";
+import { execa } from 'execa';
 
 export class TwitchSubscriptionService {
 
@@ -36,6 +38,23 @@ export class TwitchSubscriptionService {
                 Authorization: `Bearer ${await this.getAccessToken()}`,
             },
         });
+
+        if (process.env.NODE_ENV === 'development') {
+            try {
+                console.log('Sending Webhook challenge request via twitch-cli...\n');
+                const args = `event verify-subscription streamup -F ${process.env.NEXTAUTH_URL}/api/twitch/notification/${userId} -s ${process.env.EVENTSUB_SECRET}`
+                const { stdout } = await execa('twitch', args.split(' '));
+                if (stdout.includes('Invalid')) {
+                    console.error('Error handling challenge request made my twitch-cli');
+                    console.error(stdout);
+                    console.log();
+                }
+                console.log(stdout);
+
+            } catch (e) {
+                console.error('Error running twitch-cli', e);
+            }
+        }
     }
 
     /**

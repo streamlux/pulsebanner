@@ -26,12 +26,11 @@ import {
     Link,
 } from '@chakra-ui/react';
 
-import favicon from '@app/public/favicon.webp';
-
 import getStripe from '../util/getStripe';
 import prisma from '../util/ssr/prisma';
-import { FaTwitter, FaCheck, FaTwitch } from 'react-icons/fa';
+import { FaTwitter, FaCheck } from 'react-icons/fa';
 import { ProductCard } from '@app/components/pricing/ProductCard';
+import { trackEvent } from '@app/util/umami/trackEvent';
 
 type Props = {
     products: (Product & { prices: Price[] })[];
@@ -43,18 +42,9 @@ const Page: NextPage<Props> = ({ products }) => {
     const { status, data: session } = useSession({ required: false }) as any;
 
     const router = useRouter();
-    const { modal } = router.query;
+    const { modal, priceId } = router.query;
 
     const { isOpen, onOpen, onClose } = useDisclosure();
-
-    useEffect(() => {
-        if (modal === 'true') {
-            if (session && (!session?.accounts?.twitch || !session?.accounts?.twitter)) {
-                onOpen();
-            }
-            router.replace(router.pathname);
-        }
-    }, [modal, router, onOpen, session, onClose]);
 
     const ensureSignUp = useCallback(() => {
         if (session?.accounts?.twitch && session?.accounts?.twitter) {
@@ -88,6 +78,11 @@ const Page: NextPage<Props> = ({ products }) => {
 
     const handlePricingClick = useCallback(
         async (priceId: string) => {
+            router.push({
+                query: {
+                    priceId,
+                },
+            });
             if (ensureSignUp()) {
                 if (subscription) {
                     return router.push('/account');
@@ -112,10 +107,23 @@ const Page: NextPage<Props> = ({ products }) => {
         [router, subscription, ensureSignUp]
     );
 
+    useEffect(() => {
+        if (modal === 'true') {
+            if (session && !session?.accounts?.twitter) {
+                onOpen();
+            }
+            router.replace(router.pathname);
+            if (priceId) {
+                handlePricingClick(priceId as string);
+            }
+        }
+    }, [modal, router, onOpen, session, onClose, handlePricingClick, priceId]);
+
     const AnnualBillingControl = (
         <HStack display="flex" alignItems="center" spacing={4} fontSize="lg">
             <Switch
                 id="billingInterval"
+                className={trackEvent('click', 'billing-interval-switch')}
                 size="lg"
                 colorScheme="green"
                 isChecked={billingInterval === 'year'}
@@ -147,34 +155,27 @@ const Page: NextPage<Props> = ({ products }) => {
                         <Flex h="full" direction="column" justifyContent="space-between">
                             <VStack grow={1}>
                                 <Button
-                                    onClick={
-                                        session?.accounts?.twitter
-                                            ? undefined
-                                            : () =>
-                                                  signIn('twitter', {
-                                                      callbackUrl: router.pathname + '?modal=true',
-                                                  })
-                                    }
+                                    onClick={() => {
+                                        if (session?.accounts?.twitter) {
+                                            return;
+                                        }
+                                        console.log(router);
+                                        const url = new window.URL(window.location.href);
+                                        console.log('url', url);
+                                        url.searchParams.append('modal', 'true');
+
+                                        console.log(url.pathname + url.search);
+
+                                        signIn('twitter', {
+                                            callbackUrl: url.pathname + url.search,
+                                        });
+                                    }}
                                     colorScheme="twitter"
                                     leftIcon={<FaTwitter />}
                                     rightIcon={session?.accounts?.twitter ? <FaCheck /> : undefined}
                                 >
                                     Connect to Twitter
                                 </Button>
-                                {session && (
-                                    <Button
-                                        onClick={() =>
-                                            signIn('twitch', {
-                                                callbackUrl: router.pathname,
-                                            })
-                                        }
-                                        colorScheme="twitch"
-                                        leftIcon={<FaTwitch />}
-                                        rightIcon={session?.accounts?.twitch ? <FaCheck /> : undefined}
-                                    >
-                                        Connect to Twitch
-                                    </Button>
-                                )}
                             </VStack>
                             <Center>
                                 <Text fontSize="sm">

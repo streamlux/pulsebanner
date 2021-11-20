@@ -1,8 +1,6 @@
 import {
-    BackgroundProps,
     Box,
     Button,
-    Center,
     Checkbox,
     Container,
     Flex,
@@ -14,7 +12,7 @@ import {
     ModalHeader,
     ModalOverlay,
     Spacer,
-    useDisclosure,
+    useBoolean,
     VStack,
 } from '@chakra-ui/react';
 import type { Banner } from '@prisma/client';
@@ -25,15 +23,14 @@ import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/
 import { Composer } from '@pulsebanner/remotion/components';
 import { FaCheck, FaPlay, FaStop, FaTwitch, FaTwitter } from 'react-icons/fa';
 import { RemotionPreview } from '@pulsebanner/remotion/preview';
-import { signIn, useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
+import { signIn } from 'next-auth/react';
+import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
+import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 
 const bannerEndpoint = '/api/features/banner';
 
 export default function Page() {
-    const { data: session } = useSession({ required: false }) as any;
-
-    const { data, mutate } = useSWR<Banner>('banner', async () => (await fetch(bannerEndpoint)).json());
+    const { data, mutate, isValidating } = useSWR<Banner>('banner', async () => (await fetch(bannerEndpoint)).json());
     const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>((data?.backgroundId as keyof typeof BackgroundTemplates) ?? 'CSSBackground');
     const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>((data?.foregroundId as keyof typeof ForegroundTemplates) ?? 'ImLive');
     const [bgProps, setBgProps] = useState(data?.backgroundProps ?? ({} as any));
@@ -46,29 +43,9 @@ export default function Page() {
         setFgProps(data?.foregroundProps ?? {});
     }, [data]);
 
-    // Logic to handle the modal that once opened, helps a user sign up with twitter and connect to twitch
+    const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch();
 
-    const router = useRouter();
-    const { modal } = router.query;
-
-    const { isOpen, onOpen, onClose } = useDisclosure();
-
-    useEffect(() => {
-        if (modal === 'true') {
-            if (session && (!session?.accounts?.twitch || !session?.accounts?.twitter)) {
-                onOpen();
-            }
-            router.replace('/banner');
-        }
-    }, [modal, router, onOpen, session, onClose]);
-
-    const ensureSignUp = () => {
-        if (session?.accounts?.twitch && session?.accounts?.twitter) {
-            return true;
-        }
-        onOpen();
-        return false;
-    };
+    const [isToggling, { on, off }] = useBoolean(false);
 
     const saveSettings = async () => {
         // ensure user is signed up before saving settings
@@ -86,7 +63,9 @@ export default function Page() {
     const toggle = async () => {
         // ensure user is signed up before enabling banner
         if (ensureSignUp()) {
+            on();
             await axios.put(bannerEndpoint);
+            off();
             mutate({
                 ...data,
                 enabled: !data.enabled,
@@ -99,46 +78,7 @@ export default function Page() {
 
     return (
         <>
-            <Modal onClose={onClose} size={'xl'} isOpen={isOpen}>
-                <ModalOverlay />
-                <ModalContent>
-                    <ModalHeader>Sign up</ModalHeader>
-                    <ModalCloseButton />
-                    <ModalBody pb="12">
-                        <VStack>
-                            <Button
-                                onClick={
-                                    session?.accounts?.twitter
-                                        ? undefined
-                                        : () =>
-                                              signIn('twitter', {
-                                                  callbackUrl: '/banner?modal=true',
-                                              })
-                                }
-                                colorScheme="twitter"
-                                leftIcon={<FaTwitter />}
-                                rightIcon={session?.accounts?.twitter ? <FaCheck /> : undefined}
-                            >
-                                Connect to Twitter
-                            </Button>
-                            {session && (
-                                <Button
-                                    onClick={() =>
-                                        signIn('twitch', {
-                                            callbackUrl: '/banner',
-                                        })
-                                    }
-                                    colorScheme="twitch"
-                                    leftIcon={<FaTwitch />}
-                                    rightIcon={session?.accounts?.twitch ? <FaCheck /> : undefined}
-                                >
-                                    Connect to Twitch
-                                </Button>
-                            )}
-                        </VStack>
-                    </ModalBody>
-                </ModalContent>
-            </Modal>
+            <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} />
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
                 <Flex w="full" flexDirection="row" justifyContent="space-between">
                     <Heading fontSize="3xl" alignSelf="end">
@@ -149,6 +89,7 @@ export default function Page() {
                         <Button
                             colorScheme={data && data.enabled ? 'red' : 'green'}
                             justifySelf="flex-end"
+                            isLoading={isToggling}
                             leftIcon={data && data.enabled ? <FaStop /> : <FaPlay />}
                             px="8"
                             onClick={toggle}
@@ -200,9 +141,9 @@ export default function Page() {
                             <Button
                                 colorScheme={data && data.enabled ? 'red' : 'green'}
                                 justifySelf="flex-end"
-                                disabled={!data}
                                 leftIcon={data && data.enabled ? <FaStop /> : <FaPlay />}
                                 px="8"
+                                isLoading={isToggling}
                                 onClick={toggle}
                             >
                                 {data && data.enabled ? 'Turn off live banner' : 'Turn on live banner'}

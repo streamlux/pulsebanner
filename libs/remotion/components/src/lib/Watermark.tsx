@@ -15,11 +15,19 @@ export const Watermark: React.FC = () => (
                 height: '32px',
             }}
         >
-            <div style={{ fontSize: '18px', fontFamily: 'Inter', display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '2px' }}>
-                <span style={{ paddingRight: '3px' }}>
-                    <Img height={24} width={24} src={'http://pulsebanner.com/logo.webp'} />
-                </span>{' '}
-                <span style={{ color: 'black' }}>PulseBanner.com</span>
+            <div
+                style={{
+                    fontSize: '24px',
+                    fontFamily: 'Inter',
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyItems: 'center',
+                    padding: '0px 6px 0px 6px',
+                    color: 'black',
+                }}
+            >
+                <span>Twitch live banner by PulseBanner.com</span>
             </div>
         </div>
     </AbsoluteFill>

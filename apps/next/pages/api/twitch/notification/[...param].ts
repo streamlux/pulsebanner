@@ -54,6 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log('Request verification failed.');
         res.status(403).send('Forbidden'); // Reject requests with invalid signatures
         res.end();
+        return;
     }
 
     const messageType: MessageType = req.headers['Twitch-Eventsub-Message-Type'.toLowerCase()] as MessageType;
@@ -62,6 +63,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const challenge: string = (req.body as VerificationBody).challenge;
         res.send(challenge);
         res.end();
+        return;
     }
 
     if (messageType === MessageType.Notification) {
@@ -71,11 +73,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const userId = param[0];
 
         // get the features that are enabled
-        const response = await localAxios.get<Features[]>(`/api/features/${userId}`);
+        const response = await localAxios.get<{ enabled: Features[] }>(`/api/features/${userId}`);
         if (response.status === 200) {
-            const enabledFeatures = response.data;
+            const features = response.data;
 
-            enabledFeatures.forEach(async (feature: Features) => {
+            features.enabled.forEach(async (feature: Features) => {
                 if (streamStatus === 'stream.online') {
                     await localAxios.post(`/api/features/${feature}/streamup/${userId}`);
                 }
@@ -87,6 +89,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         res.status(200);
         res.end();
+        return;
     }
 }
 
