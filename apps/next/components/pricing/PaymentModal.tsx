@@ -1,8 +1,11 @@
-import { Price, Product } from '.prisma/client';
-import { useDisclosure } from '@chakra-ui/hooks';
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay } from '@chakra-ui/modal';
-import { useState } from 'react';
+import { Price, PriceInterval, Product } from '.prisma/client';
+import { HStack, SimpleGrid, VStack } from '@chakra-ui/layout';
+import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay } from '@chakra-ui/modal';
+import { Button, Center, chakra, Switch, Tag, Text } from '@chakra-ui/react';
+import router from 'next/router';
+import React, { useState } from 'react';
 import useSWR from 'swr';
+import { ProductCard } from './ProductCard';
 
 type Props = {
     isOpen: boolean;
@@ -10,22 +13,75 @@ type Props = {
 };
 
 export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
-    type PricingProps = {
-        products: (Product & { prices: Price[] })[];
-    };
+    // type PricingProps = {
+    //     products: (Product & { prices: Price[] })[];
+    // };
     // useSWR call to local endpoint
-    const { data } = useSWR<PricingProps>('pricing', async () => (await fetch('/api/pricing/plans')).json());
+    const { data } = useSWR<any>('pricing', async () => (await fetch('/api/pricing/plans')).json());
+    const [billingInterval, setBillingInterval] = useState<PriceInterval>('year');
 
-    console.log('data: ', data);
+    if (data === undefined) {
+        return <></>;
+    }
+
+    const sortProductsByPrice = (
+        products: (Product & {
+            prices: Price[];
+        })[]
+    ) => products.sort((a, b) => a?.prices?.find((one) => one.interval === billingInterval)?.unitAmount - b?.prices?.find((one) => one.interval === billingInterval)?.unitAmount);
+
+    const AnnualBillingControl = (
+        <HStack display="flex" alignItems="center" spacing={4} fontSize="lg">
+            <Switch
+                id="billingInterval"
+                size="lg"
+                colorScheme="green"
+                isChecked={billingInterval === 'year'}
+                onChange={(v) => {
+                    setBillingInterval(billingInterval === 'year' ? 'month' : 'year');
+                }}
+            />
+
+            <Text style={{ WebkitTextStrokeWidth: billingInterval === 'year' ? '0.75px' : '0.25px' }} as={chakra.span}>
+                Yearly billing
+            </Text>
+            <Tag size="md" variant="solid" background="green.200" color="black">
+                Two months free!
+            </Tag>
+        </HStack>
+    );
 
     return (
         // eslint-disable-next-line @typescript-eslint/no-empty-function
-        <Modal isOpen={isOpen} onClose={onClose} size="xl">
+        <Modal isOpen={isOpen} onClose={onClose} size="5xl">
             <ModalOverlay />
-            <ModalContent>
-                <ModalHeader>Modal Title</ModalHeader>
-                <ModalBody>Body</ModalBody>
-                <ModalFooter>footer</ModalFooter>
+            <ModalContent alignContent="center">
+                <ModalHeader>
+                    <Center>Looking for something more? Purchase now!</Center>
+                </ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <Center>{AnnualBillingControl}</Center>
+                    <VStack>
+                        <Center>
+                            <SimpleGrid columns={[1, 2]} spacing="4">
+                                {sortProductsByPrice(data).map((product) => (
+                                    // eslint-disable-next-line @typescript-eslint/no-empty-function
+                                    <ProductCard key={product.id} product={product} billingInterval={billingInterval} handlePricingClick={() => router.push('/pricing')} />
+                                ))}
+                            </SimpleGrid>
+                        </Center>
+                        <Text fontSize="md">Prices in USD. VAT may apply. Membership is tied to one Twitter account.</Text>
+                    </VStack>
+                </ModalBody>
+                <Center>
+                    <HStack spacing={4}>
+                        <Button onClick={() => router.push('/pricing')}>Pricing Page</Button>
+                        <Button colorScheme="red" onClick={() => onClose()}>
+                            Close
+                        </Button>
+                    </HStack>
+                </Center>
             </ModalContent>
         </Modal>
     );
