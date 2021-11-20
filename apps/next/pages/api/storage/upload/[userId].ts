@@ -28,5 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
     });
 
-    res.status(200).send('Success');
+    console.log(`Uploaded image ${imageUrl}.`);
+
+    res.status(201).end();
 }

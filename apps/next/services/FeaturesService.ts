@@ -10,7 +10,6 @@ export class FeaturesService {
      */
     public static async listEnabled(userId: string): Promise<Features[]> {
 
-
         const user = await prisma.user?.findFirst({
             where: {
                 id: userId,

@@ -31,7 +31,7 @@ export const ImLive: React.FC<ImLiveProps> = ({ thumbnailUrl = 'https://static-c
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             src={typeof arrow === 'string' ? arrow : (arrow as any).src}
                             style={{
-                                transform: 'scaleX(-1) rotate(180deg)',
+                                transform: 'scaleX(-1) rotate(180deg) translate(0%, 10%)',
                                 filter: fontColor === 'white' ? 'brightness(0) invert(1)' : '',
                             }}
                         />

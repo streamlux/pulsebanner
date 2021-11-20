@@ -4,7 +4,6 @@ import { Account } from '@prisma/client';
 import { getAccountsById } from '@app/util/getAccountsById';
 import { TwitchSubscriptionService } from '@app/services/TwitchSubscriptionService';
 
-
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
     // nextjs-cors uses the cors package, so we invite you to check the documentation https://github.com/expressjs/cors
@@ -29,6 +28,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
             const twitchSubscriptionService = new TwitchSubscriptionService();
             await twitchSubscriptionService.createOne(userId, type, twitchUserId);
+
             res.status(201).send(`Success for type: ${type}`);
         } catch (e) {
             res.status(400).send(`Error creating webhook: ${e}`);
