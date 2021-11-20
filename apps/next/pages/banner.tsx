@@ -27,6 +27,7 @@ import { FaCheck, FaPlay, FaStop, FaTwitch, FaTwitter } from 'react-icons/fa';
 import { RemotionPreview } from '@pulsebanner/remotion/preview';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
+import { PaymentModal } from '@app/components/pricing/PaymentModal';
 
 export default function Page() {
     const { data: session } = useSession({ required: false }) as any;
@@ -36,6 +37,7 @@ export default function Page() {
     const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>((data?.foregroundId as keyof typeof ForegroundTemplates) ?? 'ImLive');
     const [bgProps, setBgProps] = useState(data?.backgroundProps ?? ({} as any));
     const [fgProps, setFgProps] = useState(data?.foregroundProps ?? ({} as any));
+    const [payment, setPayment] = useState(false);
 
     useEffect(() => {
         setBgId((data?.backgroundId as keyof typeof BackgroundTemplates) ?? 'CSSBackground');
@@ -94,6 +96,8 @@ export default function Page() {
 
     const Form = BackgroundTemplates[bgId].form;
     const FgForm = ForegroundTemplates[fgId].form;
+
+    const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
 
     return (
         <>
@@ -178,6 +182,7 @@ export default function Page() {
                             <Checkbox colorScheme="purple" defaultIsChecked size="lg">
                                 Show watermark
                             </Checkbox>
+                            <Button onClick={() => pricingToggle()}>Test payment modal</Button>
                             <Button onClick={saveSettings}>Save settings</Button>
                         </Flex>
                         <VStack spacing="8">
@@ -212,6 +217,7 @@ export default function Page() {
                     </Flex>
                 </Box>
             </Container>
+            <PaymentModal isOpen={pricingIsOpen} onClose={pricingClose} />
         </>
     );
 }
