@@ -1,6 +1,5 @@
 import { Subscription } from "@app/types/twitch";
 import { twitchAxios } from "@app/util/axios";
-import { exec } from "child_process";
 import { TwitchClientAuthService } from "./TwitchClientAuthService";
 import { execa } from 'execa';
 
