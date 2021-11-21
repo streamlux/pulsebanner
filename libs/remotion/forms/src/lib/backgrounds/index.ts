@@ -1,3 +1,3 @@
 export * from './ImageBackground.form';
 export * from './GradientBackground.form';
-export * from './SolidBackground.form';
+export * from './ColorBackground.form';

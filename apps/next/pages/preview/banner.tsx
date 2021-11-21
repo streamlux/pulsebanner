@@ -1,4 +1,4 @@
-import { Box, Button, ButtonGroup, Center, Container, Heading, HStack, SimpleGrid, VStack } from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, Center, Container, Heading, HStack, SimpleGrid } from '@chakra-ui/react';
 import type { Banner } from '@prisma/client';
 import React, { useState } from 'react';
 import useSWR from 'swr';
@@ -6,8 +6,6 @@ import axios from 'axios';
 import { Composer } from '@pulsebanner/remotion/components';
 import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
 import { FaPlay, FaStop } from 'react-icons/fa';
-import { Player } from '@remotion/player';
-import { AnyComponent } from 'remotion';
 import { RemotionPreview } from '@pulsebanner/remotion/preview';
 
 export default function Page() {

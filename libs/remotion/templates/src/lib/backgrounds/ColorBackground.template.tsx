@@ -2,11 +2,11 @@ import { BackgroundComponents } from '@pulsebanner/remotion/components';
 import { BackgroundForms } from '@pulsebanner/remotion/forms';
 import { Layer } from '../Layer';
 
-export const SolidBackground: Layer<typeof BackgroundComponents.SolidBackground> = {
+export const ColorBackground: Layer<typeof BackgroundComponents.ColorBackground> = {
     name: 'Color',
     description: 'Make your background a solid color',
-    component: BackgroundComponents.SolidBackground,
-    form: BackgroundForms.SolidBackground,
+    component: BackgroundComponents.ColorBackground,
+    form: BackgroundForms.ColorBackground,
     defaultProps: {
         color: '#b149ff',
     },

@@ -3,7 +3,7 @@ import { BackgroundComponents } from '@pulsebanner/remotion/components';
 import { LayerForm } from '../LayerForm';
 import { HexColorPicker } from 'react-colorful';
 
-export const SolidBackground: LayerForm<typeof BackgroundComponents.SolidBackground> = ({ props, setProps }) => {
+export const ColorBackground: LayerForm<typeof BackgroundComponents.ColorBackground> = ({ props, setProps }) => {
     return (
         <Box>
             <SimpleGrid columns={[1, 2]} spacing={9}>

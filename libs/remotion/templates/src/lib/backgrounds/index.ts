@@ -1,3 +1,3 @@
-export * from './ImageBackground.template';
+export * from './ColorBackground.template';
 export * from './GradientBackground.template';
-export * from './SolidBackground.template';
+export * from './ImageBackground.template';

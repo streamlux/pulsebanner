@@ -1,11 +1,11 @@
 import React from 'react';
 import { CSSBackground } from './CSSBackground.component';
 
-type SolidBackgroundProps = {
+type ColorBackgroundProps = {
     color: string;
 };
 
-export const SolidBackground: React.FC<SolidBackgroundProps> = ({ color, children }) => (
+export const ColorBackground: React.FC<ColorBackgroundProps> = ({ color, children }) => (
     <CSSBackground
         style={{
             background: color,
