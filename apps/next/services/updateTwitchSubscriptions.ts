@@ -1,9 +1,8 @@
 import { TwitchSubscriptionStatus } from "@app/types/twitch";
-import { localAxios } from "@app/util/axios";
 import { getAccountsById } from "@app/util/getAccountsById";
 import { listSubscriptions } from "@app/util/twitch/listSubscriptions";
 import { Account } from "@prisma/client";
-import { Features } from "./FeaturesService";
+import { Features, FeaturesService } from "./FeaturesService";
 import { TwitchSubscriptionService } from "./TwitchSubscriptionService";
 
 const streamUpAndDown = ['stream.online', 'stream.offline'];
@@ -65,9 +64,8 @@ export async function updateTwitchSubscriptions(userId: string): Promise<void> {
  */
 async function getSubscriptionTypes(userId: string): Promise<string[]> {
     const subscriptionTypes: Record<string, boolean> = {};
-    const response = await localAxios.get<{ enabled: Features[] }>(`/api/features/${userId}`);
-    const features = response.data;
-    features.enabled.forEach((feature) => {
+    const enabledFeatures: string[] = await FeaturesService.listEnabled(userId);
+    enabledFeatures.forEach((feature) => {
         featureSubscriptionTypes[feature].forEach((type) => subscriptionTypes[type] = true);
     });
 

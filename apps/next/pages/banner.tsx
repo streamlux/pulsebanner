@@ -76,6 +76,10 @@ export default function Page() {
 
     const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
 
+    const showPricing = () => {
+        pricingToggle();
+    };
+
     return (
         <>
             <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} />
@@ -142,8 +146,8 @@ export default function Page() {
                             <Button onClick={saveSettings}>Save settings</Button>
                         </Flex>
                         <VStack spacing="8">
-                            <FgForm setProps={setFgProps} props={{ ...ForegroundTemplates[fgId].defaultProps, ...fgProps }} />
-                            <Form setProps={setBgProps} props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }} />
+                            <FgForm setProps={setFgProps} props={{ ...ForegroundTemplates[fgId].defaultProps, ...fgProps }} showPricing={showPricing} />
+                            <Form setProps={setBgProps} props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }} showPricing={showPricing} />
                         </VStack>
                         <Flex justifyContent="space-between" p="2">
                             <Checkbox

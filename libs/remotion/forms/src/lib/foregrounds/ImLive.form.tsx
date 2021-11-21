@@ -1,13 +1,15 @@
-import { Box, FormControl, FormLabel, Input, Select } from '@chakra-ui/react';
+import { Box, Checkbox, FormControl, FormLabel, Input, Select, VStack } from '@chakra-ui/react';
 import { ForegroundComponents } from '@pulsebanner/remotion/components';
 import { LayerForm } from '../LayerForm';
 
-export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, setProps }) => {
+export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, setProps, showPricing }) => {
     return (
-        <Box w="full">
+        <Box w="full" experimental_spaceY={2}>
             <FormControl id="email" w="full">
                 <FormLabel>Text</FormLabel>
                 <Input
+                    maxLength={36}
+                    maxWidth="xs"
                     type="text"
                     onChange={(e) => {
                         setProps({ ...props, text: e.target.value });
@@ -22,6 +24,17 @@ export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, s
                     <option value="white">White</option>
                 </Select>
             </FormControl>
+            <Checkbox
+                p="2"
+                colorScheme="purple"
+                isChecked={props.arrow}
+                size="lg"
+                onChange={(e) => {
+                    setProps({ ...props, arrow: !props.arrow });
+                }}
+            >
+                Show arrow
+            </Checkbox>
         </Box>
     );
 };
