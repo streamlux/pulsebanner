@@ -135,8 +135,7 @@ export default function Page() {
                                 >
                                     Show watermark
                                 </Checkbox>
-                                <Button colorScheme="teal" variant="ghost" onClick={() => pricingToggle()}>
-                                    <StarIcon />
+                                <Button leftIcon={<StarIcon />} colorScheme="teal" variant="ghost" onClick={() => pricingToggle()}>
                                     Premium
                                 </Button>
                             </HStack>
