@@ -12,6 +12,7 @@ import {
     ModalFooter,
     ModalHeader,
     ModalOverlay,
+    Text,
     useToast,
 } from '@chakra-ui/react';
 import axios from 'axios';
@@ -35,7 +36,7 @@ export const NewsletterModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 </ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
-                    <Center>Get notified about updates, new features, and more!</Center>
+                    <Text pb="4">Get notified about updates, new features, and more!</Text>
                     <FormControl id="email" isRequired>
                         <FormLabel>Email address</FormLabel>
                         <Input placeholder="example@domain.com" type="email" onChange={(value) => setEmail(value.target.value)} />
@@ -58,9 +59,6 @@ export const NewsletterModal: React.FC<Props> = ({ isOpen, onClose }) => {
                             }}
                         >
                             Sign up
-                        </Button>
-                        <Button colorScheme="red" variant="solid" onClick={() => onClose()}>
-                            Cancel
                         </Button>
                     </HStack>
                 </ModalFooter>
