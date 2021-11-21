@@ -13,10 +13,6 @@ type Props = {
 };
 
 export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
-    // type PricingProps = {
-    //     products: (Product & { prices: Price[] })[];
-    // };
-    // useSWR call to local endpoint
     const { data } = useSWR<any>('pricing', async () => (await fetch('/api/pricing/plans')).json());
     const [billingInterval, setBillingInterval] = useState<PriceInterval>('year');
 
