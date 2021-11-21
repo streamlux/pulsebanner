@@ -193,8 +193,8 @@ const Page: NextPage<Props> = ({ products }) => {
                     </Heading>
                 </Container>
                 <Center>{AnnualBillingControl}</Center>
-                <Center>
-                    <SimpleGrid columns={[1, 2]} spacing="4">
+                <Center w={['auto', 'auto', 'auto', '5xl']}>
+                    <SimpleGrid columns={[1, 1, 1, 2]} spacing="4" w="full">
                         {sortProductsByPrice(products).map((product) => (
                             <ProductCard key={product.id} product={product} billingInterval={billingInterval} handlePricingClick={handlePricingClick} />
                         ))}

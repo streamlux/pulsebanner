@@ -1,6 +1,7 @@
 import { Box, BoxProps, useColorModeValue } from '@chakra-ui/react';
+import React from 'react';
 
-export const Card: React.FC = ({ children }) => {
+export const Card: React.FC<{ props: BoxProps }> = ({ children, props }) => {
     const styles = useColorModeValue<BoxProps>(
         {
             border: '1px solid',
@@ -12,7 +13,7 @@ export const Card: React.FC = ({ children }) => {
     );
 
     return (
-        <Box rounded="md" p="4" experimental_spaceY="8" {...styles}>
+        <Box rounded="md" p="4" experimental_spaceY="8" {...styles} {...props}>
             {children}
         </Box>
     );
