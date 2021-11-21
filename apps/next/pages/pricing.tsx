@@ -47,7 +47,7 @@ const Page: NextPage<Props> = ({ products }) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
 
     const ensureSignUp = useCallback(() => {
-        if (session?.accounts?.twitch && session?.accounts?.twitter) {
+        if (session?.accounts?.twitter) {
             return true;
         }
         onOpen();
