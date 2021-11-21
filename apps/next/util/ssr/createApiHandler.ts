@@ -28,7 +28,7 @@ export const createApiHandler = <T extends NextApiRequest>(cors?: CorsOptions) =
             await NextCors(req, res, {
                 // Options
                 // methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-                methods: cors.methods,
+                ...cors.methods ? { methods: cors.methods } : {},
                 origin: cors.origin ?? true,
                 optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
             });

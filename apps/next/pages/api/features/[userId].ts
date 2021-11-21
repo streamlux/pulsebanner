@@ -14,8 +14,13 @@ const handler = createApiHandler({ route: '/api/features/:userId' });
 
 handler.get(async (req, res) => {
     const userId: string = req.query.userId as string;
-    const enabled = await FeaturesService.listEnabled(userId);
-    return res.status(200).json({ enabled });
+    try {
+        const enabled = await FeaturesService.listEnabled(userId);
+        return res.status(200).json({ enabled });
+    } catch (e) {
+        console.error('Error listing enabled features.');
+        res.status(500).end();
+    }
 });
 
 export default handler;

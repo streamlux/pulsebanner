@@ -10,14 +10,15 @@ export class FeaturesService {
      */
     public static async listEnabled(userId: string): Promise<Features[]> {
 
-        const user = await prisma.user?.findFirst({
+        const user = await prisma.user.findUnique({
             where: {
                 id: userId,
             },
             include: {
                 banner: true,
                 tweet: true
-            }
+            },
+            rejectOnNotFound: true
         });
 
         const enabledFeatures: Features[] = [];

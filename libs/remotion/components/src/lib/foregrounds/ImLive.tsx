@@ -2,22 +2,28 @@ import React from 'react';
 import { Img } from 'remotion';
 import { LayerComponent } from '../LayerComponent';
 import './fonts.module.css';
-import arrow from '../../assets/arrow.jpeg';
+import arrowImg from '../../assets/arrow.jpeg';
 
 type ImLiveProps = {
     text?: string;
     thumbnailUrl: string;
     fontColor?: string;
+    arrow: boolean;
 };
 
-export const ImLive: React.FC<ImLiveProps> = ({ thumbnailUrl = 'https://static-cdn.jtvnw.net/previews-ttv/live_user_moistcr1tikal-440x248.jpg', text, fontColor = 'black' }) => {
+export const ImLive: React.FC<ImLiveProps> = ({
+    thumbnailUrl = 'https://static-cdn.jtvnw.net/previews-ttv/live_user_moistcr1tikal-440x248.jpg',
+    text,
+    fontColor = 'black',
+    arrow = true,
+}) => {
     return (
         <div style={{ width: '100%', height: '100%', overflow: 'scroll', fontFamily: 'Inter' }}>
             <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'end' }}>
-                <div style={{ width: '100%', alignItems: 'flex-end' }}>
+                <div style={{ width: '100%', alignItems: 'flex-end', paddingTop: '4px' }}>
                     <h1 style={{ color: fontColor, fontSize: '86px', width: '100%', textAlign: 'center', alignItems: 'flex-end', margin: 0 }}>{text}</h1>
                 </div>
-                <div style={{ display: 'flex', width: '100%', height: 'min', alignItems: 'bottom', justifyContent: 'flex-end', justifyItems: 'baseline' }}>
+                <div style={{ display: 'flex', width: '100%', height: 'min', alignItems: 'bottom', justifyContent: 'flex-end' }}>
                     <div
                         style={{
                             display: 'flex',
@@ -27,14 +33,16 @@ export const ImLive: React.FC<ImLiveProps> = ({ thumbnailUrl = 'https://static-c
                             width: '100%',
                         }}
                     >
-                        <Img
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            src={typeof arrow === 'string' ? arrow : (arrow as any).src}
-                            style={{
-                                transform: 'scaleX(-1) rotate(180deg) translate(0%, 10%)',
-                                filter: fontColor === 'white' ? 'brightness(0) invert(1)' : '',
-                            }}
-                        />
+                        {arrow && (
+                            <Img
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                src={typeof arrowImg === 'string' ? arrowImg : (arrowImg as any).src}
+                                style={{
+                                    transform: 'scaleX(-1) rotate(180deg) translate(0%, 10%)',
+                                    filter: fontColor === 'white' ? 'brightness(0) invert(1)' : '',
+                                }}
+                            />
+                        )}
 
                         <div
                             style={{

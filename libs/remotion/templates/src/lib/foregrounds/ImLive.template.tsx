@@ -7,6 +7,7 @@ export const ImLive: Layer<typeof ForegroundComponents.ImLive> = {
     defaultProps: {
         thumbnailUrl: 'https://static-cdn.jtvnw.net/previews-ttv/live_user_moistcr1tikal-440x248.jpg',
         text: "I'm live on Twitch!",
+        arrow: true,
     },
     name: 'Live stream',
     description: 'Twitch stream description',
