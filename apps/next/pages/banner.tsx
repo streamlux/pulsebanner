@@ -1,22 +1,5 @@
-import {
-    Box,
-    Button,
-    Checkbox,
-    Container,
-    Flex,
-    Heading,
-    Modal,
-    ModalBody,
-    ModalCloseButton,
-    ModalContent,
-    ModalHeader,
-    ModalOverlay,
-    Spacer,
-    useBoolean,
-    useDisclosure,
-    VStack,
-} from '@chakra-ui/react';
-import type { Banner } from '@prisma/client';
+import { Badge, Box, Button, Checkbox, Container, Flex, Heading, HStack, Spacer, useBoolean, useDisclosure, VStack } from '@chakra-ui/react';
+import type { Banner, Subscription } from '@prisma/client';
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
@@ -28,6 +11,7 @@ import { signIn } from 'next-auth/react';
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 import { PaymentModal } from '@app/components/pricing/PaymentModal';
+import { StarIcon } from '@chakra-ui/icons';
 
 const bannerEndpoint = '/api/features/banner';
 
@@ -37,7 +21,18 @@ export default function Page() {
     const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>((data?.foregroundId as keyof typeof ForegroundTemplates) ?? 'ImLive');
     const [bgProps, setBgProps] = useState(data?.backgroundProps ?? ({} as any));
     const [fgProps, setFgProps] = useState(data?.foregroundProps ?? ({} as any));
-    const [payment, setPayment] = useState(false);
+    const [watermark, setWatermark] = useState(true);
+
+    // call subscription endpoint here to get back their status. 3 statuses: free (obj is null), personal, professional
+    const { data: subscriptionStatus } = useSWR<any>('subscription', async () => await (await fetch('/api/user/subscription')).json());
+
+    const availableForAccount = (subscriptionStatus: Subscription): boolean => {
+        if (subscriptionStatus === undefined || subscriptionStatus[0] === undefined) {
+            return false;
+        }
+        // add additional checks when we are actually offering stuff for professional
+        return true;
+    };
 
     useEffect(() => {
         setBgId((data?.backgroundId as keyof typeof BackgroundTemplates) ?? 'CSSBackground');
@@ -115,7 +110,7 @@ export default function Page() {
                                 foregroundId: fgId,
                                 backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
                                 foregroundProps: { ...ForegroundTemplates[fgId].defaultProps, ...fgProps },
-                                watermark: true,
+                                watermark: availableForAccount(subscriptionStatus) ? watermark : true,
                             }}
                         />
                     </RemotionPreview>
@@ -123,17 +118,28 @@ export default function Page() {
                     <Box p="4" my="4" rounded="md" bg="whiteAlpha.100" w="full">
                         <Heading fontSize="3xl">Banner settings</Heading>
                         <Flex justifyContent="space-between" p="2">
-                            <Checkbox
-                                colorScheme="purple"
-                                isChecked={true}
-                                size="lg"
-                                onChange={(e) => {
-                                    e.preventDefault();
-                                    pricingToggle();
-                                }}
-                            >
-                                Show watermark
-                            </Checkbox>
+                            <HStack>
+                                <Checkbox
+                                    colorScheme="purple"
+                                    defaultChecked={watermark}
+                                    isChecked={availableForAccount(subscriptionStatus) ? watermark : true}
+                                    size="lg"
+                                    onChange={(e) => {
+                                        e.preventDefault();
+                                        if (availableForAccount(subscriptionStatus) === false) {
+                                            pricingToggle();
+                                        } else {
+                                            setWatermark(!watermark);
+                                        }
+                                    }}
+                                >
+                                    Show watermark
+                                </Checkbox>
+                                <Button colorScheme="teal" variant="ghost" onClick={() => pricingToggle()}>
+                                    <StarIcon />
+                                    Premium
+                                </Button>
+                            </HStack>
                             <Button onClick={saveSettings}>Save settings</Button>
                         </Flex>
                         <VStack spacing="8">

@@ -13,7 +13,8 @@ export const Composer: React.FC<{
     return (
         <div style={{ width: '100%', height: '100%' }}>
             {Backgrounds[backgroundId]({ ...backgroundProps, children: Foregrounds[foregroundId](foregroundProps) })}
-            <Watermark />
+            {/* eslint-disable-next-line react/jsx-no-useless-fragment */}
+            {watermark ? <Watermark /> : <></>}
         </div>
     );
 };
