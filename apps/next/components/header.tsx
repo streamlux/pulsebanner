@@ -22,6 +22,7 @@ import {
     LinkBox,
     LinkOverlay,
     useBreakpoint,
+    useDisclosure,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { signIn, signOut, useSession } from 'next-auth/react';
@@ -31,6 +32,8 @@ import { MoonIcon, SunIcon } from '@chakra-ui/icons';
 import { useAdmin } from '../util/hooks/useAdmin';
 import favicon from '@app/public/logo.webp';
 import { FaTwitter } from 'react-icons/fa';
+import { AiOutlineMail } from 'react-icons/ai';
+import { NewsletterModal } from './newsletter/NewsletterModal';
 
 // The approach used in this component shows how to built a sign in and sign out
 // component that works on pages which support both client and server side
@@ -72,125 +75,137 @@ export default function Header() {
         'base'
     );
 
+    // for newsletter modal
+    const { isOpen, onOpen, onClose, onToggle } = useDisclosure();
+
     return (
-        <header>
-            <noscript>
-                <style>{`.nojs-show { opacity: 1; top: 0; }`}</style>
-            </noscript>
-            <Center w="full" className={styles.signedInStatus}>
-                <Flex
-                    h="16"
-                    maxH="16"
-                    className={`nojs-show ${!session && loading ? styles.loading : styles.loaded}`}
-                    p={['2', '2', '4', '4']}
-                    px={['2', '2', '4', '4']}
-                    alignItems="center"
-                    justify="space-evenly"
-                    w={['full', 'full', 'full', '70vw']}
-                >
-                    <Flex justifyContent="space-between" h="100%" maxH="100%" w="full">
-                        <Box maxH="10">
-                            <LinkBox h="full" w="min">
-                                <HStack height="100%">
-                                    <Image alt="PulseBanner logo" src={favicon.src} height="40px" width="40px" />
-                                    <Heading size="md" as={chakra.p}>
-                                        <NextLink href="/banner" passHref>
-                                            <LinkOverlay href="/banner">PulseBanner</LinkOverlay>
-                                        </NextLink>
-                                    </Heading>
-                                </HStack>
-                            </LinkBox>
-                        </Box>
-                        {!breakpointValue.mobile && (
-                            <Center id="nav-links" fontSize="lg">
-                                <Wrap spacing={['2', '4', '8', '10']}>
-                                    {/* <WrapItem>
+        <>
+            <NewsletterModal isOpen={isOpen} onClose={onClose} />
+            <header>
+                <noscript>
+                    <style>{`.nojs-show { opacity: 1; top: 0; }`}</style>
+                </noscript>
+                <Center w="full" className={styles.signedInStatus}>
+                    <Flex
+                        h="16"
+                        maxH="16"
+                        className={`nojs-show ${!session && loading ? styles.loading : styles.loaded}`}
+                        p={['2', '2', '4', '4']}
+                        px={['2', '2', '4', '4']}
+                        alignItems="center"
+                        justify="space-evenly"
+                        w={['full', 'full', 'full', '70vw']}
+                    >
+                        <Flex justifyContent="space-between" h="100%" maxH="100%" w="full">
+                            <Box maxH="10">
+                                <LinkBox h="full" w="min">
+                                    <HStack height="100%">
+                                        <Image alt="PulseBanner logo" src={favicon.src} height="40px" width="40px" />
+                                        <Heading size="md" as={chakra.p}>
+                                            <NextLink href="/banner" passHref>
+                                                <LinkOverlay href="/banner">PulseBanner</LinkOverlay>
+                                            </NextLink>
+                                        </Heading>
+                                    </HStack>
+                                </LinkBox>
+                            </Box>
+                            {!breakpointValue.mobile && (
+                                <Center id="nav-links" fontSize="lg">
+                                    <Wrap spacing={['2', '4', '8', '10']}>
+                                        {/* <WrapItem>
                                         <NextLink href="/" passHref>
                                             <Link>Features</Link>
                                         </NextLink>
                                     </WrapItem> */}
-                                    <WrapItem>
-                                        <NextLink href="/banner" passHref>
-                                            <Link>Banner</Link>
-                                        </NextLink>
-                                    </WrapItem>
-                                    <WrapItem>
-                                        <NextLink href="/pricing" passHref>
-                                            <Link>Pricing</Link>
-                                        </NextLink>
-                                    </WrapItem>
-                                </Wrap>
-                            </Center>
-                        )}
-
-                        <Flex experimental_spaceX="2" alignItems="center" justifySelf="flex-end">
-                            <IconButton
-                                size={breakpoint === 'base' ? 'sm' : 'md'}
-                                aria-label="Toggle theme"
-                                icon={colorMode === 'dark' ? <SunIcon /> : <MoonIcon />}
-                                onClick={toggleColorMode}
-                            >
-                                Toggle {colorMode === 'light' ? 'Dark' : 'Light'}
-                            </IconButton>
-                            {!session && (
-                                <Button
-                                    as={Link}
-                                    href={`/api/auth/signin`}
-                                    className={styles.buttonPrimary}
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        signIn('twitter');
-                                    }}
-                                    size={breakpoint === 'base' ? 'sm' : 'md'}
-                                    colorScheme="twitter"
-                                    leftIcon={<FaTwitter />}
-                                >
-                                    Sign in
-                                </Button>
-                            )}
-                            {session && (
-                                <Menu>
-                                    <Avatar as={MenuButton} name={session.user.name} src={session.user.image} />
-                                    <Portal>
-                                        <MenuList>
-                                            <NextLink href="/account" passHref>
-                                                <MenuItem>Account</MenuItem>
+                                        <WrapItem>
+                                            <NextLink href="/banner" passHref>
+                                                <Link>Banner</Link>
                                             </NextLink>
-                                            <MenuItem onClick={() => signOut({ redirect: false })}>Sign out</MenuItem>
-                                            {isAdmin && (
-                                                <NextLink href="/admin" passHref>
-                                                    <MenuItem>Admin</MenuItem>
-                                                </NextLink>
-                                            )}
-                                        </MenuList>
-                                    </Portal>
-                                </Menu>
+                                        </WrapItem>
+                                        <WrapItem>
+                                            <NextLink href="/pricing" passHref>
+                                                <Link>Pricing</Link>
+                                            </NextLink>
+                                        </WrapItem>
+                                    </Wrap>
+                                </Center>
                             )}
+
+                            <Flex experimental_spaceX="2" alignItems="center" justifySelf="flex-end">
+                                {breakpointValue.mobile && <IconButton onClick={() => onToggle()} aria-label="Newsletter" title="Newsletter" icon={<AiOutlineMail />} />}
+                                {!breakpointValue.mobile && (
+                                    <Button onClick={() => onToggle()} leftIcon={<AiOutlineMail />}>
+                                        Newsletter
+                                    </Button>
+                                )}
+                                <IconButton
+                                    size={breakpoint === 'base' ? 'sm' : 'md'}
+                                    aria-label="Toggle theme"
+                                    icon={colorMode === 'dark' ? <SunIcon /> : <MoonIcon />}
+                                    onClick={toggleColorMode}
+                                >
+                                    Toggle {colorMode === 'light' ? 'Dark' : 'Light'}
+                                </IconButton>
+                                {!session && (
+                                    <Button
+                                        as={Link}
+                                        href={`/api/auth/signin`}
+                                        className={styles.buttonPrimary}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            signIn('twitter');
+                                        }}
+                                        size={breakpoint === 'base' ? 'sm' : 'md'}
+                                        colorScheme="twitter"
+                                        leftIcon={<FaTwitter />}
+                                    >
+                                        Sign in
+                                    </Button>
+                                )}
+                                {session && (
+                                    <Menu>
+                                        <Avatar as={MenuButton} name={session.user.name} src={session.user.image} />
+                                        <Portal>
+                                            <MenuList>
+                                                <NextLink href="/account" passHref>
+                                                    <MenuItem>Account</MenuItem>
+                                                </NextLink>
+                                                <MenuItem onClick={() => signOut({ redirect: false })}>Sign out</MenuItem>
+                                                {isAdmin && (
+                                                    <NextLink href="/admin" passHref>
+                                                        <MenuItem>Admin</MenuItem>
+                                                    </NextLink>
+                                                )}
+                                            </MenuList>
+                                        </Portal>
+                                    </Menu>
+                                )}
+                            </Flex>
                         </Flex>
                     </Flex>
-                </Flex>
-            </Center>
-            {breakpointValue.mobile && (
-                <Center id="nav-links" fontSize="lg">
-                    <Wrap spacing={['8', '16', '20', '24']}>
-                        {/* <WrapItem>
+                </Center>
+                {breakpointValue.mobile && (
+                    <Center id="nav-links" fontSize="lg">
+                        <Wrap spacing={['8', '16', '20', '24']}>
+                            {/* <WrapItem>
                             <NextLink href="/features" passHref>
                                 <Link>Features</Link>
                             </NextLink>
                         </WrapItem> */}
-                        <WrapItem>
-                            <NextLink href="/banner" passHref>
-                                <Link>Banner</Link>
-                            </NextLink>
-                        </WrapItem>
-                        <WrapItem>
-                            <NextLink href="/pricing" passHref>
-                                <Link>Pricing</Link>
-                            </NextLink>
-                        </WrapItem>
-                    </Wrap>
-                </Center>
-            )}
-        </header>
+                            <WrapItem>
+                                <NextLink href="/banner" passHref>
+                                    <Link>Banner</Link>
+                                </NextLink>
+                            </WrapItem>
+                            <WrapItem>
+                                <NextLink href="/pricing" passHref>
+                                    <Link>Pricing</Link>
+                                </NextLink>
+                            </WrapItem>
+                        </Wrap>
+                    </Center>
+                )}
+            </header>
+        </>
     );
 }
