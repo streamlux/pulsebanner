@@ -31,14 +31,14 @@ export const NewsletterModal: React.FC<Props> = ({ isOpen, onClose }) => {
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>
-                    <Center>Subscribe to Newsletter</Center>
+                    <Center>PulseBanner Newsletter</Center>
                 </ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
-                    <Center>Get notified about upcoming updates, new features, and more!</Center>
+                    <Center>Get notified about updates, new features, and more!</Center>
                     <FormControl id="email" isRequired>
                         <FormLabel>Email address</FormLabel>
-                        <Input placeholder="email" type="email" onChange={(value) => setEmail(value.target.value)} />
+                        <Input placeholder="example@domain.com" type="email" onChange={(value) => setEmail(value.target.value)} />
                     </FormControl>
                 </ModalBody>
                 <ModalFooter>
