@@ -3,7 +3,7 @@ import { BackgroundForms } from '@pulsebanner/remotion/forms';
 import { Layer } from '../Layer';
 
 export const ImageBackground: Layer<typeof BackgroundComponents.ImageBackground> = {
-    name: 'Image background',
+    name: 'Image',
     description: 'Use any image as a background',
     component: BackgroundComponents.ImageBackground,
     form: BackgroundForms.ImageBackground,
