@@ -1,13 +1,35 @@
-import { Badge, Box, Button, Checkbox, Container, Flex, Heading, HStack, Spacer, useBoolean, useDisclosure, VStack } from '@chakra-ui/react';
+import {
+    Box,
+    Button,
+    Checkbox,
+    Container,
+    Flex,
+    FormControl,
+    FormLabel,
+    Heading,
+    HStack,
+    IconButton,
+    Select,
+    Spacer,
+    Stack,
+    Tab,
+    TabList,
+    TabPanel,
+    TabPanels,
+    Tabs,
+    useBoolean,
+    useBreakpoint,
+    useDisclosure,
+    VStack,
+} from '@chakra-ui/react';
 import type { Banner, Subscription } from '@prisma/client';
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
 import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
 import { Composer } from '@pulsebanner/remotion/components';
-import { FaCheck, FaPlay, FaStop, FaTwitch, FaTwitter } from 'react-icons/fa';
+import { FaPlay, FaStop } from 'react-icons/fa';
 import { RemotionPreview } from '@pulsebanner/remotion/preview';
-import { signIn } from 'next-auth/react';
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 import { PaymentModal } from '@app/components/pricing/PaymentModal';
@@ -17,11 +39,13 @@ const bannerEndpoint = '/api/features/banner';
 
 export default function Page() {
     const { data, mutate, isValidating } = useSWR<Banner>('banner', async () => (await fetch(bannerEndpoint)).json());
-    const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>((data?.backgroundId as keyof typeof BackgroundTemplates) ?? 'CSSBackground');
+    const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>((data?.backgroundId as keyof typeof BackgroundTemplates) ?? 'GradientBackground');
     const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>((data?.foregroundId as keyof typeof ForegroundTemplates) ?? 'ImLive');
     const [bgProps, setBgProps] = useState(data?.backgroundProps ?? ({} as any));
     const [fgProps, setFgProps] = useState(data?.foregroundProps ?? ({} as any));
     const [watermark, setWatermark] = useState(true);
+
+    const breakpoint = useBreakpoint();
 
     // call subscription endpoint here to get back their status. 3 statuses: free (obj is null), personal, professional
     const { data: subscriptionStatus } = useSWR<any>('subscription', async () => await (await fetch('/api/user/subscription')).json());
@@ -35,7 +59,7 @@ export default function Page() {
     };
 
     useEffect(() => {
-        setBgId((data?.backgroundId as keyof typeof BackgroundTemplates) ?? 'CSSBackground');
+        setBgId((data?.backgroundId as keyof typeof BackgroundTemplates) ?? 'GradientBackground');
         setFgId((data?.foregroundId as keyof typeof ForegroundTemplates) ?? 'ImLive');
         setBgProps(data?.backgroundProps ?? {});
         setFgProps(data?.foregroundProps ?? {});
@@ -62,6 +86,7 @@ export default function Page() {
         // ensure user is signed up before enabling banner
         if (ensureSignUp()) {
             on();
+            await saveSettings();
             await axios.put(bannerEndpoint);
             off();
             mutate({
@@ -106,7 +131,7 @@ export default function Page() {
                     </VStack>
                 </Flex>
 
-                <Box w="full" rounded="md">
+                <Flex w="full" rounded="md" direction="column">
                     <RemotionPreview compositionHeight={500} compositionWidth={1500}>
                         <Composer
                             {...{
@@ -119,51 +144,71 @@ export default function Page() {
                         />
                     </RemotionPreview>
 
-                    <Box p="4" my="4" rounded="md" bg="whiteAlpha.100" w="full">
-                        <Heading fontSize="3xl">Banner settings</Heading>
-                        <Flex justifyContent="space-between" p="2">
-                            <HStack>
-                                <Checkbox
-                                    colorScheme="purple"
-                                    defaultChecked={watermark}
-                                    isChecked={availableForAccount(subscriptionStatus) ? watermark : true}
-                                    size="lg"
-                                    onChange={(e) => {
-                                        e.preventDefault();
-                                        if (availableForAccount(subscriptionStatus) === false) {
-                                            pricingToggle();
-                                        } else {
-                                            setWatermark(!watermark);
-                                        }
-                                    }}
-                                >
-                                    Show watermark
-                                </Checkbox>
-                                <Button leftIcon={<StarIcon />} colorScheme="teal" variant="ghost" onClick={() => pricingToggle()}>
-                                    Premium
-                                </Button>
-                            </HStack>
-                            <Button onClick={saveSettings}>Save settings</Button>
-                        </Flex>
-                        <VStack spacing="8">
-                            <FgForm setProps={setFgProps} props={{ ...ForegroundTemplates[fgId].defaultProps, ...fgProps }} showPricing={showPricing} />
-                            <Form setProps={setBgProps} props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }} showPricing={showPricing} />
-                        </VStack>
-                        <Flex justifyContent="space-between" p="2">
+                    <Flex grow={1} p="4" my="4" rounded="md" bg="whiteAlpha.100" w="full" direction="column" minH="lg">
+                        <Tabs colorScheme="purple" flexGrow={1}>
+                            <TabList>
+                                <Tab>Banner</Tab>
+                                <Tab>Background</Tab>
+                            </TabList>
+
+                            <TabPanels flexGrow={1}>
+                                <TabPanel>
+                                    <FgForm setProps={setFgProps} props={{ ...ForegroundTemplates[fgId].defaultProps, ...fgProps }} showPricing={showPricing} />
+                                </TabPanel>
+                                <TabPanel>
+                                    <FormControl id="country">
+                                        <FormLabel>Background type</FormLabel>
+                                        <Select
+                                            value={bgId}
+                                            w="xs"
+                                            onChange={(e) => {
+                                                setBgId(e.target.value as keyof typeof BackgroundTemplates);
+                                            }}
+                                        >
+                                            {Object.entries(BackgroundTemplates).map(([key, value]) => (
+                                                <option key={key} value={key}>
+                                                    {value.name}
+                                                </option>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+
+                                    <Form setProps={setBgProps} props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }} showPricing={showPricing} />
+                                </TabPanel>
+                                <TabPanel>
+                                    <p>three!</p>
+                                </TabPanel>
+                            </TabPanels>
+                        </Tabs>
+                        <HStack p="2">
                             <Checkbox
                                 colorScheme="purple"
-                                isChecked={true}
+                                defaultChecked={watermark}
+                                isChecked={availableForAccount(subscriptionStatus) ? watermark : true}
                                 size="lg"
                                 onChange={(e) => {
                                     e.preventDefault();
-                                    pricingToggle();
+                                    if (availableForAccount(subscriptionStatus) === false) {
+                                        pricingToggle();
+                                    } else {
+                                        setWatermark(!watermark);
+                                    }
                                 }}
                             >
                                 Show watermark
                             </Checkbox>
+                            {breakpoint === 'base' && <IconButton w="min" aria-label="Premium" icon={<StarIcon />} colorScheme="teal" variant="ghost" />}
+                            {breakpoint !== 'base' && (
+                                <Button leftIcon={<StarIcon />} colorScheme="teal" variant="ghost" onClick={() => pricingToggle()}>
+                                    Premium
+                                </Button>
+                            )}
+                        </HStack>
+                        <Flex justifyContent="space-between" direction={['column', 'row']}>
+                            <Spacer />
                             <Button onClick={saveSettings}>Save settings</Button>
                         </Flex>
-                    </Box>
+                    </Flex>
                     <Flex w="full" flexDirection="row" justifyContent="space-between">
                         <Spacer />
 
@@ -183,8 +228,9 @@ export default function Page() {
                             </Heading>
                         </VStack>
                     </Flex>
-                </Box>
+                </Flex>
             </Container>
+
             <PaymentModal isOpen={pricingIsOpen} onClose={pricingClose} />
         </>
     );

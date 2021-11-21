@@ -1,27 +1,21 @@
-import { Box, chakra, Code, FormControl, FormHelperText, FormLabel, SimpleGrid } from '@chakra-ui/react';
+import { Box, FormControl, FormLabel, SimpleGrid } from '@chakra-ui/react';
 import { BackgroundComponents } from '@pulsebanner/remotion/components';
 import { LayerForm } from '../LayerForm';
 import { HexColorPicker } from 'react-colorful';
 import { useState } from 'react';
 
-export const CSSBackground: LayerForm<typeof BackgroundComponents.CSSBackground> = ({ props, setProps }) => {
-    const [color, setColor] = useState('#aabbcc');
-    const [color2, setColor2] = useState('#aabbcc');
+export const GradientBackground: LayerForm<typeof BackgroundComponents.GradientBackground> = ({ props, setProps }) => {
     return (
         <Box>
             <SimpleGrid columns={[1, 2]} spacing={9}>
                 <FormControl>
                     <FormLabel>Left color</FormLabel>
                     <HexColorPicker
-                        color={color2}
+                        color={props.leftColor}
                         onChange={(newColor) => {
-                            setColor2(newColor);
                             setProps({
                                 ...props,
-                                style: {
-                                    ...props.style,
-                                    background: `linear-gradient(to right, ${color2} 0%, ${color} 100%)`,
-                                },
+                                leftColor: newColor,
                             });
                         }}
                     />
@@ -29,15 +23,11 @@ export const CSSBackground: LayerForm<typeof BackgroundComponents.CSSBackground>
                 <FormControl>
                     <FormLabel>Right color</FormLabel>
                     <HexColorPicker
-                        color={color}
+                        color={props.rightColor}
                         onChange={(newColor) => {
-                            setColor(newColor);
                             setProps({
                                 ...props,
-                                style: {
-                                    ...props.style,
-                                    background: `linear-gradient(to right, ${color2} 0%, ${color} 100%)`,
-                                },
+                                rightColor: newColor,
                             });
                         }}
                     />

@@ -23,6 +23,7 @@ import {
     LinkOverlay,
     useBreakpoint,
     useDisclosure,
+    Spacer,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { signIn, signOut, useSession } from 'next-auth/react';
@@ -32,7 +33,7 @@ import { MoonIcon, SunIcon } from '@chakra-ui/icons';
 import { useAdmin } from '../util/hooks/useAdmin';
 import favicon from '@app/public/logo.webp';
 import { FaTwitter } from 'react-icons/fa';
-import { AiOutlineMail } from 'react-icons/ai';
+import { MdEmail } from 'react-icons/md';
 import { NewsletterModal } from './newsletter/NewsletterModal';
 
 // The approach used in this component shows how to built a sign in and sign out
@@ -96,8 +97,8 @@ export default function Header() {
                         justify="space-evenly"
                         w={['full', 'full', 'full', '70vw']}
                     >
-                        <Flex justifyContent="space-between" h="100%" maxH="100%" w="full">
-                            <Box maxH="10">
+                        <Flex h="100%" maxH="100%" w="full">
+                            <HStack maxH="10" w="200px">
                                 <LinkBox h="full" w="min">
                                     <HStack height="100%">
                                         <Image alt="PulseBanner logo" src={favicon.src} height="40px" width="40px" />
@@ -108,15 +109,10 @@ export default function Header() {
                                         </Heading>
                                     </HStack>
                                 </LinkBox>
-                            </Box>
+                            </HStack>
                             {!breakpointValue.mobile && (
                                 <Center id="nav-links" fontSize="lg">
                                     <Wrap spacing={['2', '4', '8', '10']}>
-                                        {/* <WrapItem>
-                                        <NextLink href="/" passHref>
-                                            <Link>Features</Link>
-                                        </NextLink>
-                                    </WrapItem> */}
                                         <WrapItem>
                                             <NextLink href="/banner" passHref>
                                                 <Link>Banner</Link>
@@ -131,11 +127,13 @@ export default function Header() {
                                 </Center>
                             )}
 
+                            <Spacer />
+
                             <Flex experimental_spaceX="2" alignItems="center" justifySelf="flex-end">
-                                {breakpointValue.mobile && <IconButton onClick={() => onToggle()} aria-label="Newsletter" title="Newsletter" icon={<AiOutlineMail />} />}
+                                {breakpointValue.mobile && <IconButton onClick={() => onToggle()} aria-label="Newsletter" title="Newsletter" icon={<MdEmail />} />}
                                 {!breakpointValue.mobile && (
-                                    <Button onClick={() => onToggle()} leftIcon={<AiOutlineMail />}>
-                                        Newsletter
+                                    <Button onClick={() => onToggle()} leftIcon={<MdEmail />}>
+                                        Subscribe for updates
                                     </Button>
                                 )}
                                 <IconButton

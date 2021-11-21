@@ -1,27 +1,18 @@
-import { Box, Button, ButtonGroup, Center, Container, Heading, HStack, SimpleGrid, VStack } from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, Center, Container, Heading, HStack, SimpleGrid } from '@chakra-ui/react';
 import type { Banner } from '@prisma/client';
 import React, { useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
 import { Composer } from '@pulsebanner/remotion/components';
 import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
-import dynamic from 'next/dynamic';
 import { FaPlay, FaStop } from 'react-icons/fa';
-import { Player } from '@remotion/player';
-import { AnyComponent } from 'remotion';
-
-const DynamicPlayer = dynamic(async () => (await import('@remotion/player')).Player);
+import { RemotionPreview } from '@pulsebanner/remotion/preview';
 
 export default function Page() {
     const { data, mutate } = useSWR<Banner>('banner', async () => (await fetch('/api/banner')).json());
 
     const upsertBanner = async () => {
         const response = await axios.post('/api/banner?templateId=123');
-        mutate();
-    };
-
-    const refreshBanner = async () => {
-        const response = await axios.post('/api/banner?fetchImage=true');
         mutate();
     };
 
@@ -33,9 +24,10 @@ export default function Page() {
         });
     };
 
-    const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>('CSSBackground');
+    const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>('GradientBackground');
     const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>('TwitchStream');
     const [bgProps, setBgProps] = useState({} as any);
+    const [fgProps, setFgProps] = useState({} as any);
 
     return (
         <Container centerContent maxW="container.lg" experimental_spaceY="4">
@@ -61,17 +53,19 @@ export default function Page() {
                     {Object.entries(BackgroundTemplates).map(([key, background]) => (
                         <Box key={key}>
                             <Button onClick={() => setBgId(key as keyof typeof BackgroundTemplates)}>Use {background.name}</Button>
-
-                            <Player
-                                inputProps={undefined}
-                                component={background.component as AnyComponent<any>}
-                                durationInFrames={1}
-                                compositionWidth={1500}
-                                compositionHeight={500}
-                                fps={1}
-                                key={key}
-                                style={{ width: '100%', maxWidth: '1000px', fontSize: '28px' }}
-                            />
+                            <Box w="sm">
+                                <RemotionPreview compositionHeight={500} compositionWidth={1500}>
+                                    <Composer
+                                        {...{
+                                            backgroundId: key as keyof typeof BackgroundTemplates,
+                                            foregroundId: fgId,
+                                            backgroundProps: { ...BackgroundTemplates[key as keyof typeof BackgroundTemplates].defaultProps, ...bgProps },
+                                            foregroundProps: { ...ForegroundTemplates[fgId].defaultProps, ...fgProps },
+                                            watermark: true,
+                                        }}
+                                    />
+                                </RemotionPreview>
+                            </Box>
                         </Box>
                     ))}
                 </SimpleGrid>
@@ -80,55 +74,34 @@ export default function Page() {
                     {Object.entries(ForegroundTemplates).map(([key, foreground]) => (
                         <Box key={key}>
                             <Button onClick={() => setFgId(key as keyof typeof ForegroundTemplates)}>Use {foreground.name}</Button>
-
-                            <Player
-                                inputProps={{
-                                    backgroundId: bgId,
-                                    foregroundId: key as keyof typeof ForegroundTemplates,
-                                    backgroundProps: {},
-                                    foregroundProps: {},
-                                    watermark: true,
-                                }}
-                                component={Composer}
-                                durationInFrames={1}
-                                compositionWidth={1500}
-                                compositionHeight={500}
-                                fps={1}
-                                key={key}
-                                style={{ width: '100%', maxWidth: '1000px', fontSize: '28px' }}
-                            />
+                            <Box w="sm">
+                                <RemotionPreview compositionHeight={500} compositionWidth={1500}>
+                                    <Composer
+                                        {...{
+                                            backgroundId: bgId,
+                                            foregroundId: key as keyof typeof ForegroundTemplates,
+                                            backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
+                                            foregroundProps: { ...ForegroundTemplates[key as keyof typeof ForegroundTemplates].defaultProps, ...fgProps },
+                                            watermark: true,
+                                        }}
+                                    />
+                                </RemotionPreview>
+                            </Box>
                         </Box>
                     ))}
                 </SimpleGrid>
 
-                <Player
-                    inputProps={{
-                        backgroundId: bgId,
-                        foregroundId: fgId,
-                        backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
-                        foregroundProps: {},
-                        watermark: true,
-                    }}
-                    component={Composer}
-                    durationInFrames={1}
-                    compositionWidth={1500}
-                    compositionHeight={500}
-                    fps={1}
-                    style={{ width: '100%', maxWidth: '1000px', fontSize: '28px' }}
-                />
-
-                <Center>
-                    <VStack spacing="8">
-                        <Heading>Banner setup</Heading>
-                        <ButtonGroup>
-                            <Button onClick={async () => await upsertBanner()}>Setup banner</Button>
-                            <Button onClick={async () => await toggle()} disabled={!data}>
-                                {data && data.enabled ? 'Turn off live banner' : 'Turn on live banner'}
-                            </Button>
-                        </ButtonGroup>
-                    </VStack>
-                </Center>
-
+                <RemotionPreview compositionHeight={500} compositionWidth={1500}>
+                    <Composer
+                        {...{
+                            backgroundId: bgId,
+                            foregroundId: fgId,
+                            backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
+                            foregroundProps: { ...ForegroundTemplates[fgId].defaultProps, ...fgProps },
+                            watermark: true,
+                        }}
+                    />
+                </RemotionPreview>
                 <Center>
                     {BackgroundTemplates[bgId].form({
                         setProps: setBgProps,
