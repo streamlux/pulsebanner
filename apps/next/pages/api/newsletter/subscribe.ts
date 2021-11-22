@@ -21,6 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         'https://www.getrevue.co/api/v2/subscribers',
         {
             email: req.body.email,
+            double_opt_in: false,
         },
         {
             headers: { Authorization: `Bearer ${env.REVUE_API_KEY}` },

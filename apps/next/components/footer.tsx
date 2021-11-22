@@ -9,14 +9,18 @@ export default function Footer() {
             <Center>
                 <ul className={styles.navItems}>
                     <li className={styles.navItem}>
-                        <Link href="https://twitter.com/pulsebanner">Twitter</Link>
+                        <Link isExternal={true} href="https://twitter.com/pulsebanner">
+                            Twitter
+                        </Link>
                     </li>
                     <li className={styles.navItem}>
-                        <Link href="https://github.com/streamlux/pulsebanner">GitHub</Link>
+                        <NextLink href="/privacy">
+                            <Link>Privacy</Link>
+                        </NextLink>
                     </li>
                     <li className={styles.navItem}>
-                        <NextLink href="/policy">
-                            <Link>Policy</Link>
+                        <NextLink href="/terms">
+                            <Link>Terms of Use</Link>
                         </NextLink>
                     </li>
                 </ul>

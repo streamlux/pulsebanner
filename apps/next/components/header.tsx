@@ -77,7 +77,7 @@ export default function Header() {
     );
 
     // for newsletter modal
-    const { isOpen, onOpen, onClose, onToggle } = useDisclosure();
+    const { isOpen, onClose, onToggle } = useDisclosure();
 
     return (
         <>
