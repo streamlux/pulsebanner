@@ -12,7 +12,6 @@ import {
     IconButton,
     Select,
     Spacer,
-    Stack,
     Tab,
     TabList,
     TabPanel,
@@ -22,9 +21,8 @@ import {
     useBreakpoint,
     useDisclosure,
     VStack,
-    Wrap,
 } from '@chakra-ui/react';
-import type { Banner, Subscription } from '@prisma/client';
+import type { Banner } from '@prisma/client';
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
@@ -38,13 +36,15 @@ import { PaymentModal } from '@app/components/pricing/PaymentModal';
 import { StarIcon } from '@chakra-ui/icons';
 
 const bannerEndpoint = '/api/features/banner';
+const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
+const defaultBackground: keyof typeof BackgroundTemplates = 'GradientBackground';
 
 export default function Page() {
     const { data, mutate } = useSWR<Banner>('banner', async () => (await fetch(bannerEndpoint)).json());
-    const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>((data?.backgroundId as keyof typeof BackgroundTemplates) ?? 'GradientBackground');
-    const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>((data?.foregroundId as keyof typeof ForegroundTemplates) ?? 'ImLive');
-    const [bgProps, setBgProps] = useState(data?.backgroundProps ?? ({} as any));
-    const [fgProps, setFgProps] = useState(data?.foregroundProps ?? ({} as any));
+    const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>((data?.backgroundId as keyof typeof BackgroundTemplates) ?? defaultBackground);
+    const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>((data?.foregroundId as keyof typeof ForegroundTemplates) ?? defaultForeground);
+    const [bgProps, setBgProps] = useState(data?.backgroundProps ?? (BackgroundTemplates[defaultBackground].defaultProps as any));
+    const [fgProps, setFgProps] = useState(data?.foregroundProps ?? (ForegroundTemplates[defaultForeground].defaultProps as any));
     const [watermark, setWatermark] = useState(true);
 
     const breakpoint = useBreakpoint();
@@ -61,8 +61,8 @@ export default function Page() {
     };
 
     useEffect(() => {
-        setBgId((data?.backgroundId as keyof typeof BackgroundTemplates) ?? 'GradientBackground');
-        setFgId((data?.foregroundId as keyof typeof ForegroundTemplates) ?? 'ImLive');
+        setBgId((data?.backgroundId as keyof typeof BackgroundTemplates) ?? defaultBackground);
+        setFgId((data?.foregroundId as keyof typeof ForegroundTemplates) ?? defaultForeground);
         setBgProps(data?.backgroundProps ?? {});
         setFgProps(data?.foregroundProps ?? {});
         if (subscriptionStatus === undefined || subscriptionStatus[0] === undefined) {
