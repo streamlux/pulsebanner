@@ -7,21 +7,25 @@ import arrowImg from '../../assets/arrow.jpeg';
 type ImLiveProps = {
     text?: string;
     thumbnailUrl: string;
-    fontColor?: string;
+    fontColor: string;
     arrow: boolean;
+    showText: boolean;
+    thumbnailBorderColor: string;
 };
 
 export const ImLive: React.FC<ImLiveProps> = ({
     thumbnailUrl = 'https://static-cdn.jtvnw.net/previews-ttv/live_user_moistcr1tikal-440x248.jpg',
     text,
     fontColor = 'black',
+    thumbnailBorderColor = 'rgb(145, 71, 255)',
     arrow = true,
+    showText = true,
 }) => {
     return (
         <div style={{ width: '100%', height: '100%', overflow: 'scroll', fontFamily: 'Inter' }}>
             <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'end' }}>
                 <div style={{ width: '100%', alignItems: 'flex-end', paddingTop: '4px' }}>
-                    <h1 style={{ color: fontColor, fontSize: '86px', width: '100%', textAlign: 'center', alignItems: 'flex-end', margin: 0 }}>{text}</h1>
+                    {showText && <h1 style={{ color: fontColor, fontSize: '86px', width: '100%', textAlign: 'center', alignItems: 'flex-end', margin: 0 }}>{text}</h1>}
                 </div>
                 <div style={{ display: 'flex', width: '100%', height: 'min', alignItems: 'bottom', justifyContent: 'flex-end' }}>
                     <div
@@ -39,7 +43,7 @@ export const ImLive: React.FC<ImLiveProps> = ({
                                 src={typeof arrowImg === 'string' ? arrowImg : (arrowImg as any).src}
                                 style={{
                                     transform: 'scaleX(-1) rotate(180deg) translate(0%, 10%)',
-                                    filter: fontColor === 'white' ? 'brightness(0) invert(1)' : '',
+                                    filter: fontColor === '#ffffff' ? 'brightness(0) invert(1)' : '',
                                 }}
                             />
                         )}
@@ -48,8 +52,8 @@ export const ImLive: React.FC<ImLiveProps> = ({
                             style={{
                                 maxWidth: '33%',
                                 margin: '0.4em',
-                                background: 'rgb(145, 71, 255)',
-                                border: '0.4em solid rgb(145, 71, 255)',
+                                background: thumbnailBorderColor,
+                                border: `0.4em solid ${thumbnailBorderColor}`,
                                 alignItems: 'flex-end',
                             }}
                         >

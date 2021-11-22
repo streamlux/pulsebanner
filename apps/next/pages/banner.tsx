@@ -1,6 +1,7 @@
 import {
     Box,
     Button,
+    Center,
     Checkbox,
     Container,
     Flex,
@@ -21,6 +22,7 @@ import {
     useBreakpoint,
     useDisclosure,
     VStack,
+    Wrap,
 } from '@chakra-ui/react';
 import type { Banner, Subscription } from '@prisma/client';
 import React, { useEffect, useState } from 'react';
@@ -38,7 +40,7 @@ import { StarIcon } from '@chakra-ui/icons';
 const bannerEndpoint = '/api/features/banner';
 
 export default function Page() {
-    const { data, mutate, isValidating } = useSWR<Banner>('banner', async () => (await fetch(bannerEndpoint)).json());
+    const { data, mutate } = useSWR<Banner>('banner', async () => (await fetch(bannerEndpoint)).json());
     const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>((data?.backgroundId as keyof typeof BackgroundTemplates) ?? 'GradientBackground');
     const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>((data?.foregroundId as keyof typeof ForegroundTemplates) ?? 'ImLive');
     const [bgProps, setBgProps] = useState(data?.backgroundProps ?? ({} as any));
@@ -50,9 +52,9 @@ export default function Page() {
     // call subscription endpoint here to get back their status. 3 statuses: free (obj is null), personal, professional
     const { data: subscriptionStatus } = useSWR<any>('subscription', async () => await (await fetch('/api/user/subscription')).json());
 
-    const availableForAccount = (subscriptionStatus: Subscription): boolean => {
+    const availableForAccount = (): boolean => {
         if (subscriptionStatus === undefined || subscriptionStatus[0] === undefined) {
-            return false;
+            return true;
         }
         // add additional checks when we are actually offering stuff for professional
         return true;
@@ -63,7 +65,12 @@ export default function Page() {
         setFgId((data?.foregroundId as keyof typeof ForegroundTemplates) ?? 'ImLive');
         setBgProps(data?.backgroundProps ?? {});
         setFgProps(data?.foregroundProps ?? {});
-    }, [data]);
+        if (subscriptionStatus === undefined || subscriptionStatus[0] === undefined) {
+            setWatermark(true);
+        } else {
+            setWatermark(false);
+        }
+    }, [data, subscriptionStatus]);
 
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch();
 
@@ -101,50 +108,59 @@ export default function Page() {
 
     const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
 
-    const showPricing = () => {
-        pricingToggle();
+    const showPricing: (force?: boolean) => boolean = (force?: boolean) => {
+        if (!availableForAccount() || force) {
+            pricingToggle();
+            return false;
+        }
+        return true;
     };
+
+    const EnableButton = (
+        <VStack>
+            <Button
+                colorScheme={data && data.enabled ? 'red' : 'green'}
+                justifySelf="flex-end"
+                isLoading={isToggling}
+                leftIcon={data && data.enabled ? <FaStop /> : <FaPlay />}
+                px="8"
+                onClick={toggle}
+            >
+                {data && data.enabled ? 'Turn off live banner' : 'Turn on live banner'}
+            </Button>
+            <Heading fontSize="lg" w="full" textAlign="center">
+                {data && data.enabled ? 'Your banner is enabled.' : 'Live banner not enabled.'}
+            </Heading>
+        </VStack>
+    );
 
     return (
         <>
             <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} />
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
-                <Flex w="full" flexDirection="row" justifyContent="space-between">
-                    <Heading fontSize="3xl" alignSelf="end">
+                <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between">
+                    <Heading fontSize={['2xl', '3xl']} alignSelf={['center', 'end']}>
                         Setup Twitch live banner
                     </Heading>
-
-                    <VStack>
-                        <Button
-                            colorScheme={data && data.enabled ? 'red' : 'green'}
-                            justifySelf="flex-end"
-                            isLoading={isToggling}
-                            leftIcon={data && data.enabled ? <FaStop /> : <FaPlay />}
-                            px="8"
-                            onClick={toggle}
-                        >
-                            {data && data.enabled ? 'Turn off live banner' : 'Turn on live banner'}
-                        </Button>
-                        <Heading fontSize="lg" w="full" textAlign="center">
-                            {data && data.enabled ? 'Your banner is enabled.' : 'Live banner not enabled.'}
-                        </Heading>
-                    </VStack>
+                    {EnableButton}
                 </Flex>
 
                 <Flex w="full" rounded="md" direction="column">
-                    <RemotionPreview compositionHeight={500} compositionWidth={1500}>
-                        <Composer
-                            {...{
-                                backgroundId: bgId,
-                                foregroundId: fgId,
-                                backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
-                                foregroundProps: { ...ForegroundTemplates[fgId].defaultProps, ...fgProps },
-                                watermark: availableForAccount(subscriptionStatus) ? watermark : true,
-                            }}
-                        />
-                    </RemotionPreview>
+                    <Center>
+                        <RemotionPreview compositionHeight={500} compositionWidth={1500}>
+                            <Composer
+                                {...{
+                                    backgroundId: bgId,
+                                    foregroundId: fgId,
+                                    backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
+                                    foregroundProps: { ...ForegroundTemplates[fgId].defaultProps, ...fgProps },
+                                    watermark: availableForAccount() ? watermark : true,
+                                }}
+                            />
+                        </RemotionPreview>
+                    </Center>
 
-                    <Flex grow={1} p="4" my="4" rounded="md" bg="whiteAlpha.100" w="full" direction="column" minH="lg">
+                    <Flex grow={1} p="4" my="4" rounded="md" bg="whiteAlpha.100" w="full" direction="column" minH="xl">
                         <Tabs colorScheme="purple" flexGrow={1}>
                             <TabList>
                                 <Tab>Banner</Tab>
@@ -160,7 +176,7 @@ export default function Page() {
                                         <FormLabel>Background type</FormLabel>
                                         <Select
                                             value={bgId}
-                                            w="xs"
+                                            w="fit-content"
                                             onChange={(e) => {
                                                 setBgId(e.target.value as keyof typeof BackgroundTemplates);
                                             }}
@@ -172,23 +188,21 @@ export default function Page() {
                                             ))}
                                         </Select>
                                     </FormControl>
-
-                                    <Form setProps={setBgProps} props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }} showPricing={showPricing} />
-                                </TabPanel>
-                                <TabPanel>
-                                    <p>three!</p>
+                                    <Box py="4">
+                                        <Form setProps={setBgProps} props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }} showPricing={showPricing} />
+                                    </Box>
                                 </TabPanel>
                             </TabPanels>
                         </Tabs>
-                        <HStack p="2">
+                        <HStack px="6">
                             <Checkbox
                                 colorScheme="purple"
                                 defaultChecked={watermark}
-                                isChecked={availableForAccount(subscriptionStatus) ? watermark : true}
+                                isChecked={availableForAccount() ? watermark : true}
                                 size="lg"
                                 onChange={(e) => {
                                     e.preventDefault();
-                                    if (availableForAccount(subscriptionStatus) === false) {
+                                    if (availableForAccount() === false) {
                                         pricingToggle();
                                     } else {
                                         setWatermark(!watermark);
@@ -197,36 +211,27 @@ export default function Page() {
                             >
                                 Show watermark
                             </Checkbox>
-                            {breakpoint === 'base' && <IconButton w="min" aria-label="Premium" icon={<StarIcon />} colorScheme="teal" variant="ghost" />}
-                            {breakpoint !== 'base' && (
-                                <Button leftIcon={<StarIcon />} colorScheme="teal" variant="ghost" onClick={() => pricingToggle()}>
-                                    Premium
-                                </Button>
-                            )}
+                            <Box>
+                                {breakpoint === 'base' && (
+                                    <IconButton w="min" aria-label="Premium" icon={<StarIcon />} colorScheme="teal" variant="ghost" onClick={() => pricingToggle()} />
+                                )}
+                                {breakpoint !== 'base' && (
+                                    <Button leftIcon={<StarIcon />} colorScheme="teal" variant="ghost" onClick={() => pricingToggle()}>
+                                        Premium
+                                    </Button>
+                                )}
+                            </Box>
                         </HStack>
                         <Flex justifyContent="space-between" direction={['column', 'row']}>
                             <Spacer />
-                            <Button onClick={saveSettings}>Save settings</Button>
+                            <Button my="2" onClick={saveSettings}>
+                                Save settings
+                            </Button>
                         </Flex>
                     </Flex>
                     <Flex w="full" flexDirection="row" justifyContent="space-between">
                         <Spacer />
-
-                        <VStack>
-                            <Button
-                                colorScheme={data && data.enabled ? 'red' : 'green'}
-                                justifySelf="flex-end"
-                                leftIcon={data && data.enabled ? <FaStop /> : <FaPlay />}
-                                px="8"
-                                isLoading={isToggling}
-                                onClick={toggle}
-                            >
-                                {data && data.enabled ? 'Turn off live banner' : 'Turn on live banner'}
-                            </Button>
-                            <Heading fontSize="lg" w="full" textAlign="center">
-                                {data && data.enabled ? 'Your banner is enabled.' : 'Live banner not enabled.'}
-                            </Heading>
-                        </VStack>
+                        {EnableButton}
                     </Flex>
                 </Flex>
             </Container>

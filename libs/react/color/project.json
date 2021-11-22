@@ -1,0 +1,23 @@
+{
+    "root": "libs/react/color",
+    "sourceRoot": "libs/react/color/src",
+    "projectType": "library",
+    "tags": [],
+    "targets": {
+        "lint": {
+            "executor": "@nrwl/linter:eslint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": ["libs/react/color/**/*.{ts,tsx,js,jsx}"]
+            }
+        },
+        "test": {
+            "executor": "@nrwl/jest:jest",
+            "outputs": ["coverage/libs/react/color"],
+            "options": {
+                "jestConfig": "libs/react/color/jest.config.js",
+                "passWithNoTests": true
+            }
+        }
+    }
+}
