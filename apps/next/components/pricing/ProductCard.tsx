@@ -17,6 +17,16 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
     if (!price || !monthlyPrice) {
         return null;
     }
+
+    const sharedFeatureList = ['Remove watermark', 'High quality image rendering', 'Customize colors', 'Unlock all features'];
+    const personalFeatureList = sharedFeatureList.concat(['Thumbnail refreshing (coming soon)']);
+    const professionalFeatureList = sharedFeatureList.concat(['Fastest thumbnail refreshing (coming soon)']);
+
+    const featureDescriptionMapping: Record<string, string[]> = {
+        Personal: personalFeatureList,
+        Professional: professionalFeatureList,
+    };
+
     return (
         <WrapItem key={product.name} w="full">
             <Card props={{ w: 'full' }}>
@@ -68,7 +78,7 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
                 <Box>
                     <Heading size="md">{"What's included"}</Heading>
                     <List>
-                        {['Remove watermark', 'High quality image rendering', 'Customize colors', 'Unlock all features'].map((feature) => (
+                        {featureDescriptionMapping[product.name].map((feature) => (
                             <ListItem key={feature}>
                                 <ListIcon color="green.200" as={CheckIcon} />
                                 {feature}
