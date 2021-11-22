@@ -54,7 +54,7 @@ export default function Page() {
 
     const availableForAccount = (): boolean => {
         if (subscriptionStatus === undefined || subscriptionStatus[0] === undefined) {
-            return true;
+            return false;
         }
         // add additional checks when we are actually offering stuff for professional
         return true;
