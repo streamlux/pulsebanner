@@ -218,8 +218,9 @@ export default function Page() {
                 {BackgroundTemplates[bgId].form({
                     setProps: setBgProps,
                     props: bgProps,
-                    showPricing: () => {
+                    showPricing: (force: boolean) => {
                         console.error('Not implemented yet!');
+                        return true;
                     },
                 })}
             </Center>
