@@ -1,7 +1,7 @@
 import { Price, PriceInterval, Product } from '.prisma/client';
 import { HStack, SimpleGrid, VStack } from '@chakra-ui/layout';
 import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay } from '@chakra-ui/modal';
-import { Button, Center, chakra, Switch, Tag, Text } from '@chakra-ui/react';
+import { Box, Button, Center, chakra, Switch, Tag, Text } from '@chakra-ui/react';
 import router from 'next/router';
 import React, { useState } from 'react';
 import useSWR from 'swr';
@@ -57,13 +57,15 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 </ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
-                    <VStack spacing={8}>
+                    <VStack spacing={8} w="full">
                         <Center>{AnnualBillingControl}</Center>
-                        <Center>
-                            <SimpleGrid columns={[1, 2]} spacing="4">
+                        <Center w="full">
+                            <SimpleGrid columns={[1, 2]} spacing="4" w="full">
                                 {sortProductsByPrice(data).map((product) => (
-                                    // eslint-disable-next-line @typescript-eslint/no-empty-function
-                                    <ProductCard key={product.id} product={product} billingInterval={billingInterval} handlePricingClick={() => router.push('/pricing')} />
+                                    <Box key={product.id} w="full">
+                                        {/* eslint-disable-next-line @typescript-eslint/no-empty-function */}
+                                        <ProductCard key={product.id} product={product} billingInterval={billingInterval} handlePricingClick={() => router.push('/pricing')} />
+                                    </Box>
                                 ))}
                             </SimpleGrid>
                         </Center>
