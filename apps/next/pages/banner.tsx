@@ -19,6 +19,7 @@ import {
     Tabs,
     useBoolean,
     useBreakpoint,
+    Text,
     useDisclosure,
     VStack,
 } from '@chakra-ui/react';
@@ -138,13 +139,17 @@ export default function Page() {
         <>
             <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} />
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
-                <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between">
-                    <Heading fontSize={['2xl', '3xl']} alignSelf={['center', 'end']}>
-                        Setup Twitch live banner
-                    </Heading>
+                <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
+                    <Box maxW="xl">
+                        <Heading fontSize={['2xl', '3xl']} alignSelf={['center', 'end']}>
+                            Twitch live banner
+                        </Heading>
+                        <Text>
+                            Your Twitter banner will update when you start broadcasting on Twitch. Your banner will revert back to your current banner image when your stream ends.
+                        </Text>
+                    </Box>
                     {EnableButton}
                 </Flex>
-
                 <Flex w="full" rounded="md" direction="column">
                     <Center>
                         <RemotionPreview compositionHeight={500} compositionWidth={1500}>
