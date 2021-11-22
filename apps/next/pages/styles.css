@@ -16,3 +16,7 @@ iframe {
     border-radius: 0.5rem;
     filter: invert(1);
 }
+
+.responsive .react-colorful {
+    width: auto;
+}

@@ -130,7 +130,7 @@ export default function Header() {
                             <Spacer />
 
                             <Flex experimental_spaceX="2" alignItems="center" justifySelf="flex-end">
-                                {breakpointValue.mobile && <IconButton onClick={() => onToggle()} aria-label="Newsletter" title="Newsletter" icon={<MdEmail />} />}
+                                {breakpointValue.mobile && <IconButton size="sm" onClick={() => onToggle()} aria-label="Newsletter" title="Newsletter" icon={<MdEmail />} />}
                                 {!breakpointValue.mobile && (
                                     <Button onClick={() => onToggle()} leftIcon={<MdEmail />}>
                                         Subscribe for updates
@@ -185,11 +185,6 @@ export default function Header() {
                 {breakpointValue.mobile && (
                     <Center id="nav-links" fontSize="lg">
                         <Wrap spacing={['8', '16', '20', '24']}>
-                            {/* <WrapItem>
-                            <NextLink href="/features" passHref>
-                                <Link>Features</Link>
-                            </NextLink>
-                        </WrapItem> */}
                             <WrapItem>
                                 <NextLink href="/banner" passHref>
                                     <Link>Banner</Link>
