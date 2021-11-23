@@ -35,6 +35,7 @@ import favicon from '@app/public/logo.webp';
 import { FaTwitter } from 'react-icons/fa';
 import { MdEmail } from 'react-icons/md';
 import { NewsletterModal } from './newsletter/NewsletterModal';
+import { trackEvent } from '@app/util/umami/trackEvent';
 
 // The approach used in this component shows how to built a sign in and sign out
 // component that works on pages which support both client and server side
@@ -130,9 +131,18 @@ export default function Header() {
                             <Spacer />
 
                             <Flex experimental_spaceX="2" alignItems="center" justifySelf="flex-end">
-                                {breakpointValue.mobile && <IconButton size="sm" onClick={() => onToggle()} aria-label="Newsletter" title="Newsletter" icon={<MdEmail />} />}
+                                {breakpointValue.mobile && (
+                                    <IconButton
+                                        size="sm"
+                                        onClick={() => onToggle()}
+                                        aria-label="Newsletter"
+                                        title="Newsletter"
+                                        icon={<MdEmail />}
+                                        className={trackEvent('click', 'newsletter-button')}
+                                    />
+                                )}
                                 {!breakpointValue.mobile && (
-                                    <Button onClick={() => onToggle()} leftIcon={<MdEmail />}>
+                                    <Button onClick={() => onToggle()} leftIcon={<MdEmail />} className={trackEvent('click', 'newsletter-button')}>
                                         Subscribe for updates
                                     </Button>
                                 )}
@@ -141,6 +151,7 @@ export default function Header() {
                                     aria-label="Toggle theme"
                                     icon={colorMode === 'dark' ? <SunIcon /> : <MoonIcon />}
                                     onClick={toggleColorMode}
+                                    className={trackEvent('click', 'color-theme-button')}
                                 >
                                     Toggle {colorMode === 'light' ? 'Dark' : 'Light'}
                                 </IconButton>

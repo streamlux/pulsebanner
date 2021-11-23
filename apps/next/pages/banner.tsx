@@ -35,6 +35,7 @@ import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 import { PaymentModal } from '@app/components/pricing/PaymentModal';
 import { StarIcon } from '@chakra-ui/icons';
+import { trackEvent } from '@app/util/umami/trackEvent';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
@@ -93,6 +94,7 @@ export default function Page() {
     const toggle = async () => {
         // ensure user is signed up before enabling banner
         if (ensureSignUp()) {
+            umami(data && data.enabled ? 'disable-banner' : 'enable-banner');
             on();
             await saveSettings();
             await axios.put(bannerEndpoint);
@@ -111,6 +113,7 @@ export default function Page() {
 
     const showPricing: (force?: boolean) => boolean = (force?: boolean) => {
         if (!availableForAccount() || force) {
+            umami('show-pricing-modal');
             pricingToggle();
             return false;
         }
@@ -126,6 +129,7 @@ export default function Page() {
                 leftIcon={data && data.enabled ? <FaStop /> : <FaPlay />}
                 px="8"
                 onClick={toggle}
+                className={trackEvent('click', 'toggle-banner-button')}
             >
                 {data && data.enabled ? 'Turn off live banner' : 'Turn on live banner'}
             </Button>
@@ -194,7 +198,13 @@ export default function Page() {
                                         </Select>
                                     </FormControl>
                                     <Box py="4">
-                                        <Form setProps={setBgProps} props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }} showPricing={showPricing} />
+                                        <Form
+                                            setProps={(p) => {
+                                                setBgProps({ ...BackgroundTemplates[bgId].defaultProps, ...p });
+                                            }}
+                                            props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }}
+                                            showPricing={showPricing}
+                                        />
                                     </Box>
                                 </TabPanel>
                             </TabPanels>
@@ -205,6 +215,7 @@ export default function Page() {
                                 defaultChecked={watermark}
                                 isChecked={availableForAccount() ? watermark : true}
                                 size="lg"
+                                className={trackEvent('click', 'watermark-checkbox')}
                                 onChange={(e) => {
                                     e.preventDefault();
                                     if (availableForAccount() === false) {
@@ -221,7 +232,13 @@ export default function Page() {
                                     <IconButton w="min" aria-label="Premium" icon={<StarIcon />} colorScheme="teal" variant="ghost" onClick={() => pricingToggle()} />
                                 )}
                                 {breakpoint !== 'base' && (
-                                    <Button leftIcon={<StarIcon />} colorScheme="teal" variant="ghost" onClick={() => pricingToggle()}>
+                                    <Button
+                                        leftIcon={<StarIcon />}
+                                        colorScheme="teal"
+                                        variant="ghost"
+                                        onClick={() => pricingToggle()}
+                                        className={trackEvent('click', 'premium-watermark-button')}
+                                    >
                                         Premium
                                     </Button>
                                 )}
@@ -229,7 +246,7 @@ export default function Page() {
                         </HStack>
                         <Flex justifyContent="space-between" direction={['column', 'row']}>
                             <Spacer />
-                            <Button my="2" onClick={saveSettings}>
+                            <Button my="2" onClick={saveSettings} className={trackEvent('click', 'save-settings-button')}>
                                 Save settings
                             </Button>
                         </Flex>
