@@ -165,7 +165,7 @@ export default function Page() {
                         </RemotionPreview>
                     </Center>
 
-                    <Flex grow={1} p="4" my="4" rounded="md" bg="whiteAlpha.100" w="full" direction="column" minH="xl">
+                    <Flex grow={1} p="4" my="4" rounded="md" bg="whiteAlpha.100" w="full" direction="column" minH="lg">
                         <Tabs colorScheme="purple" flexGrow={1}>
                             <TabList>
                                 <Tab>Banner</Tab>

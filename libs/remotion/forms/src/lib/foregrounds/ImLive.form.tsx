@@ -1,4 +1,4 @@
-import { Box, Checkbox, FormControl, FormLabel, Input, Select, VStack } from '@chakra-ui/react';
+import { Box, Center, Checkbox, FormControl, FormLabel, Input, Select, VStack, Wrap, WrapItem } from '@chakra-ui/react';
 import { CustomColorPicker } from '@pulsebanner/react/color';
 import { ForegroundComponents } from '@pulsebanner/remotion/components';
 import { ComponentProps } from 'react';
@@ -17,19 +17,34 @@ export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, s
 
     return (
         <Box w="full" experimental_spaceY={2}>
-            <FormControl id="email" w="full">
-                <FormLabel>Text</FormLabel>
-                <Input
-                    maxLength={36}
-                    maxWidth="xs"
-                    type="text"
-                    onChange={(e) => {
-                        setProps({ ...props, text: e.target.value });
-                    }}
-                    defaultValue={props.text}
-                />
-            </FormControl>
-
+            <Wrap spacing={4}>
+                <WrapItem>
+                    <FormControl id="email" w="full">
+                        <FormLabel>Text</FormLabel>
+                        <Input
+                            maxLength={36}
+                            maxWidth="xs"
+                            type="text"
+                            onChange={(e) => {
+                                setProps({ ...props, text: e.target.value });
+                            }}
+                            defaultValue={props.text}
+                        />
+                    </FormControl>
+                </WrapItem>
+                <WrapItem>
+                    <FormControl>
+                        <FormLabel>Text color</FormLabel>
+                        <CustomColorPicker
+                            hideCustom
+                            colors={textColors}
+                            color={props.fontColor}
+                            onChangeColor={(c) => onChangeProps({ fontColor: c })}
+                            showPricing={showPricing}
+                        />
+                    </FormControl>
+                </WrapItem>
+            </Wrap>
             <Checkbox
                 p="2"
                 colorScheme="purple"
@@ -41,12 +56,6 @@ export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, s
             >
                 Show text
             </Checkbox>
-
-            <FormControl>
-                <FormLabel>Text color</FormLabel>
-                <CustomColorPicker hideCustom colors={textColors} color={props.fontColor} onChangeColor={(c) => onChangeProps({ fontColor: c })} showPricing={showPricing} />
-            </FormControl>
-
             <Checkbox
                 p="2"
                 colorScheme="purple"

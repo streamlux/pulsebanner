@@ -24,7 +24,7 @@ export const CustomColorPicker: FC<CustomColorPickerProps> = ({ colors, color, o
     };
     return (
         <Box>
-            <Stack p="2" direction={['column', 'row']}>
+            <Stack direction={['column', 'row']}>
                 <SwatchGroup
                     colors={swatchColors}
                     onChange={(color) => {
@@ -32,7 +32,7 @@ export const CustomColorPicker: FC<CustomColorPickerProps> = ({ colors, color, o
                     }}
                     value={color}
                 />
-                <Button aria-label="Color picker" leftIcon={<CgColorPicker />} onClick={onCustomColor}>
+                <Button w="fit-content" aria-label="Color picker" leftIcon={<CgColorPicker />} onClick={onCustomColor}>
                     Custom
                 </Button>
             </Stack>
