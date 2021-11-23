@@ -10,7 +10,7 @@ export default function Layout({ children }) {
                 <Box as={chakra.header}>
                     <Header />
                 </Box>
-                <Flex as={chakra.main} flex="1" px={['2', '8', '16', '36']} w="100vw">
+                <Flex as={chakra.main} flex="1" px={['2', '8', '16', '36']}>
                     <Box w="full" pt="20">
                         {children}
                     </Box>
