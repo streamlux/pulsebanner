@@ -11,9 +11,10 @@
 6. Run `prisma db push` *
 7. Verify by viewing the newly created database 'mydb'. [Adminer link](http://localhost:8080/?pgsql=db&username=postgres&db=mydb&ns=public)
 8. Run `prisma db seed` *
-9. Verify by viewing the newly created rows in the products table. [Adminer link](http://localhost:8080/?pgsql=db&username=postgres&db=mydb&ns=public&select=products)
-10. Run `nx run next:serve` *
-11. Run `nx run remotion:serve` to start the remotion server *
+9. If you have changes in your prisma design, be sure to run `prisma migrate dev --name <short descriptive name>` before merging *
+10. Verify by viewing the newly created rows in the products table. [Adminer link](http://localhost:8080/?pgsql=db&username=postgres&db=mydb&ns=public&select=products)
+11. Run `nx run next:serve` *
+12. Run `nx run remotion:serve` to start the remotion server *
 
 Note: Running locally on windows inside of wsl may cause issues with spawning a local server. Running `Get-Service LxssManager | Restart-Service` 
 
