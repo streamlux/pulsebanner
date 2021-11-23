@@ -1,7 +1,8 @@
 import { Price, PriceInterval, Product } from '.prisma/client';
+import { trackEvent } from '@app/util/umami/trackEvent';
 import { HStack, SimpleGrid, VStack } from '@chakra-ui/layout';
-import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay } from '@chakra-ui/modal';
-import { Box, Button, Center, chakra, Switch, Tag, Text } from '@chakra-ui/react';
+import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay } from '@chakra-ui/modal';
+import { Box, Center, chakra, Switch, Tag, Text } from '@chakra-ui/react';
 import router from 'next/router';
 import React, { useState } from 'react';
 import useSWR from 'swr';
@@ -32,6 +33,7 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 id="billingInterval"
                 size="lg"
                 colorScheme="green"
+                className={trackEvent('click', 'billing-interval-switch')}
                 isChecked={billingInterval === 'year'}
                 onChange={(v) => {
                     setBillingInterval(billingInterval === 'year' ? 'month' : 'year');

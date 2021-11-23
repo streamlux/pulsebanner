@@ -11,6 +11,11 @@ import favicon from '../public/favicon.png';
 import { DefaultSeo } from 'next-seo';
 import seoOptions from '@app/util/seo/next-seo.config';
 
+declare global {
+    // eslint-disable-next-line no-var
+    const umami: any;
+}
+
 // Use of the <SessionProvider> is now mandatory to allow components that call
 // `useSession()` anywhere in your application to access the `session` object.
 export default function App({ Component, pageProps }) {

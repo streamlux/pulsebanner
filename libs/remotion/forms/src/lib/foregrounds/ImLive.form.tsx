@@ -1,4 +1,4 @@
-import { Box, Center, Checkbox, FormControl, FormLabel, Input, Select, VStack, Wrap, WrapItem } from '@chakra-ui/react';
+import { Box, Checkbox, FormControl, FormLabel, Input, Wrap, WrapItem } from '@chakra-ui/react';
 import { CustomColorPicker } from '@pulsebanner/react/color';
 import { ForegroundComponents } from '@pulsebanner/remotion/components';
 import { ComponentProps } from 'react';
