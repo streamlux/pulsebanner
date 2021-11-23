@@ -38,23 +38,22 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
                         </VStack>
 
                         <VStack spacing={0} onClick={() => handlePricingClick(price.id)} cursor="pointer">
-                            <Text fontSize="2xl" fontWeight="extrabold" lineHeight="tight" w="full">
-                                <Stack direction={['column', 'row']} alignItems={['center', 'center']} w="full" spacing={[0, 2]}>
-                                    {billingInterval === 'month' && (
-                                        <Text as={chakra.span} bg="green.200" px="1" py="0.5" rounded="md" color="black">
-                                            {`$${(price.unitAmount / 100).toFixed(2)}`}
+                            <Stack direction={['column', 'row']} alignItems={['center', 'center']} w="full" spacing={[0, 2]}>
+                                {billingInterval === 'month' && (
+                                    <Text fontSize="2xl" fontWeight="extrabold" lineHeight="tight" as={chakra.span} bg="green.200" px="1" py="0.5" rounded="md" color="black">
+                                        {`$${(price.unitAmount / 100).toFixed(2)}`}
+                                    </Text>
+                                )}
+                                {billingInterval === 'year' && (
+                                    <>
+                                        <Text fontSize="2xl" fontWeight="extrabold" lineHeight="tight" as={chakra.span} bg="green.200" px="1" py="0.5" rounded="md" color="black">
+                                            {`$${(price.unitAmount / 100 / (billingInterval === 'year' ? 12 : 1)).toFixed(2)}`}
                                         </Text>
-                                    )}
-                                    {billingInterval === 'year' && (
-                                        <>
-                                            <Text as={chakra.span} bg="green.200" px="1" py="0.5" rounded="md" color="black">
-                                                {`$${(price.unitAmount / 100 / (billingInterval === 'year' ? 12 : 1)).toFixed(2)}`}
-                                            </Text>
-                                            <Text as="s">{`$${monthlyPrice.unitAmount / 100}`}</Text>
-                                        </>
-                                    )}
-                                </Stack>
-                            </Text>
+                                        <Text fontSize="2xl" fontWeight="extrabold" lineHeight="tight" as="s">{`$${monthlyPrice.unitAmount / 100}`}</Text>
+                                    </>
+                                )}
+                            </Stack>
+
                             <Box w="full">
                                 {billingInterval === 'year' && (
                                     <ScaleFade initialScale={0.9} in={billingInterval === 'year'} style={{ width: '100%' }}>

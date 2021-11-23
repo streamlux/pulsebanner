@@ -1,5 +1,6 @@
 import { Price, PriceInterval, Product, Subscription } from '@prisma/client';
 import type { GetServerSideProps, NextPage } from 'next';
+import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import { signIn, useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -179,7 +180,14 @@ const Page: NextPage<Props> = ({ products }) => {
                             </VStack>
                             <Center>
                                 <Text fontSize="sm">
-                                    {'By signing up, you agree to our'} <Link>Terms</Link> and <Link>Privacy Policy</Link>
+                                    {'By signing up, you agree to our'}{' '}
+                                    <Link as={NextLink} href="/terms" passHref>
+                                        Terms
+                                    </Link>{' '}
+                                    and{' '}
+                                    <Link as={NextLink} href="/privacy" passHref>
+                                        Privacy Policy
+                                    </Link>
                                 </Text>
                             </Center>
                         </Flex>
