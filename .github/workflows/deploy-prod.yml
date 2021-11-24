@@ -1,4 +1,4 @@
-name: Build Next.js app
+name: Build and deploy to prod
 # This workflow is triggered on pushes to the repository.
 on:
     release: # https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#release
@@ -6,7 +6,7 @@ on:
 
 jobs:
     deploy_next:
-        name: Build and deploy Next.js app
+        name: Build and deploy Next.js app to prod
         runs-on: ubuntu-latest
         environment: Production
         concurrency: Production
@@ -82,7 +82,7 @@ jobs:
                   IMAGE_NAME: ${{ fromJson(steps.meta.outputs.json).tags[0] }}
               run: "caprover deploy --caproverUrl=$APP_URL --imageName=$IMAGE_NAME --appName=$APP_NAME"
     deploy_remotion:
-        name: Build and deploy Remotion server
+        name: Build and deploy Remotion server to prod
         environment: Production
         concurrency: Production
         runs-on: ubuntu-latest
