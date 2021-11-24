@@ -106,7 +106,7 @@ app.get(
         );
 
         const output = path.join(await tmpDir, hash);
-        const puppeteerInstance = await openBrowser();
+        const puppeteerInstance = await getBrowser();
         const webpackBundle = await webpackBundling;
         const composition = await getComp(compName, inputProps);
         await new Promise<void>((resolve, reject) => {
