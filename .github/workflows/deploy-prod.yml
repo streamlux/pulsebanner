@@ -83,8 +83,8 @@ jobs:
               run: "caprover deploy --caproverUrl=$APP_URL --imageName=$IMAGE_NAME --appName=$APP_NAME"
     deploy_remotion:
         name: Build and deploy Remotion server
-        environment: Staging
-        concurrency: Staging
+        environment: Production
+        concurrency: Production
         runs-on: ubuntu-latest
         needs: deploy_next
         steps:
