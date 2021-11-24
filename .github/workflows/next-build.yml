@@ -9,6 +9,8 @@ on:
     pull_request:
         branches:
             - main
+    release:
+        type: [created]
 
 jobs:
     deploy_next:
@@ -43,7 +45,8 @@ jobs:
                       ghcr.io/streamlux/pulsebanner-next
                   # generate Docker tags based on the following events/attributes
                   tags: |
-                      type=sha,prefix=${{ env.BRANCH_NAME }}-
+                      type=sha,prefix=${{ env.BRANCH_NAME }}-,priority=1000
+                      type=semver,priority=900,pattern={{version}},prefix=staging-
 
             - name: Setup node
               uses: actions/setup-node@v2
@@ -133,7 +136,8 @@ jobs:
                       ghcr.io/streamlux/pulsebanner-remotion
                   # generate Docker tags based on the following events/attributes
                   tags: |
-                      type=sha,prefix=${{ env.BRANCH_NAME }}-
+                      type=sha,prefix=${{ env.BRANCH_NAME }}-,priority=1000
+                      type=semver,priority=900,pattern={{version}}
 
             - name: Setup node
               uses: actions/setup-node@v2
