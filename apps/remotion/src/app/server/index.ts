@@ -76,6 +76,9 @@ app.use(
     rateLimit({
         windowMs: 1 * 60 * 1000,
         max: 20,
+        onLimitReached: () => {
+            console.log('Rate limit reached')
+        }
     })
 );
 
@@ -103,13 +106,14 @@ app.get(
         );
 
         const output = path.join(await tmpDir, hash);
-
+        const puppeteerInstance = await openBrowser();
         const webpackBundle = await webpackBundling;
         const composition = await getComp(compName, inputProps);
         await new Promise<void>((resolve, reject) => {
             renderStill({
                 composition,
                 webpackBundle,
+                puppeteerInstance,
                 output,
                 inputProps,
                 imageFormat,
