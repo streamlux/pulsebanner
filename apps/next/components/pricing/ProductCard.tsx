@@ -18,7 +18,7 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
         return null;
     }
 
-    const sharedFeatureList = ['Remove watermark', 'High quality image rendering', 'Customize colors', 'Unlock all features'];
+    const sharedFeatureList = ['Remove watermark', 'High quality image rendering', 'Customize colors', 'Unlock all features', 'Personalized images'];
     const personalFeatureList = sharedFeatureList.concat(['Thumbnail refreshing (coming soon)']);
     const professionalFeatureList = sharedFeatureList.concat(['Fastest thumbnail refreshing (coming soon)']);
 

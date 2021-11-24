@@ -1,4 +1,4 @@
-import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, ButtonGroup, Button, useDisclosure, Center } from '@chakra-ui/react';
+import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ButtonGroup, Button, useDisclosure, Center } from '@chakra-ui/react';
 import React, { ReactElement, FC, useState } from 'react';
 import { StarIcon } from '@chakra-ui/icons';
 import { HexColorPicker } from 'react-colorful';

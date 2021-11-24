@@ -12,8 +12,8 @@ type CustomColorPickerProps = {
 };
 
 export const CustomColorPicker: FC<CustomColorPickerProps> = ({ colors, color, onChangeColor, showPricing, hideCustom }): ReactElement => {
-    const [customColor, setCustomColor] = useState('#0fffff');
     const swatchColors = [...colors];
+    const [customColor, setCustomColor] = useState('');
     if (!hideCustom) {
         swatchColors.push(customColor);
     }
