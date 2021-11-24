@@ -18,7 +18,7 @@ export const ColorBackground: LayerForm<typeof BackgroundComponents.ColorBackgro
         <Box>
             <FormControl>
                 <FormLabel>Color</FormLabel>
-                <CustomColorPicker colors={colors} color={props.color} onChangeColor={(c) => onChangeProps({ color: c })} showPricing={showPricing} />
+                <CustomColorPicker hideCustom colors={colors} color={props.color} onChangeColor={(c) => onChangeProps({ color: c })} showPricing={showPricing} />
             </FormControl>
         </Box>
     );

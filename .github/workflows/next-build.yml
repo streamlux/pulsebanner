@@ -137,7 +137,7 @@ jobs:
                   # generate Docker tags based on the following events/attributes
                   tags: |
                       type=sha,prefix=${{ env.BRANCH_NAME }}-,priority=1000
-                      type=semver,priority=900,pattern={{version}}
+                      type=semver,priority=900,pattern={{version}},prefix=staging-
 
             - name: Setup node
               uses: actions/setup-node@v2
