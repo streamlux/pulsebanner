@@ -19,6 +19,15 @@ const nextConfig = {
         // Important: return the modified config
         return config;
     },
+    async redirects() {
+        return [
+            {
+                source: '/',
+                destination: '/banner',
+                permanent: true,
+            },
+        ]
+    }
 };
 
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
