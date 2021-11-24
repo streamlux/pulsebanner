@@ -49,6 +49,11 @@ export default function Page() {
     const [fgProps, setFgProps] = useState(data?.foregroundProps ?? (ForegroundTemplates[defaultForeground].defaultProps as any));
     const [watermark, setWatermark] = useState(true);
 
+    const BackgroundTemplate = BackgroundTemplates[bgId];
+    const ForegroundTemplate = ForegroundTemplates[fgId];
+    const Form = BackgroundTemplate.form;
+    const FgForm = ForegroundTemplate.form;
+
     const breakpoint = useBreakpoint();
 
     // call subscription endpoint here to get back their status. 3 statuses: free (obj is null), personal, professional
@@ -84,8 +89,8 @@ export default function Page() {
             const response = await axios.post(bannerEndpoint, {
                 foregroundId: fgId,
                 backgroundId: bgId,
-                backgroundProps: bgProps,
-                foregroundProps: fgProps,
+                backgroundProps: { ...BackgroundTemplate.defaultProps, ...bgProps },
+                foregroundProps: { ...ForegroundTemplate.defaultProps, ...fgProps },
             });
             mutate();
         }
@@ -105,9 +110,6 @@ export default function Page() {
             });
         }
     };
-
-    const Form = BackgroundTemplates[bgId].form;
-    const FgForm = ForegroundTemplates[fgId].form;
 
     const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
 
