@@ -12,12 +12,17 @@ jobs:
 
             - name: Get latest tag
               id: latest_tag
-              uses: jacobtomlinson/gha-get-docker-hub-tags@0.1.3
+              uses: davidspek/gha-get-docker-hub-tags@0.1.15
               with:
-                  org: "streamlux" # Docker Hub user or organisation name
-                  repo: "pulsebanner-next" # Docker Hub repository name
+                  img: "ghcr.io/streamlux/pulsebanner-next" # container image to list tags from
 
             # Optionally check the tag we got back
             - name: Check outputs
               run: |
-                  echo "Latest Image Tag - ${{ steps.latest_tag.outputs.tag }}"
+                  echo "Latest Image Tag - ${{ steps.latest_tag.outputs.latest_tag }}"
+                  echo "Next Major Tag - ${{ steps.latest_tag.outputs.new_major }}"
+                  echo "Next Minor Tag - ${{ steps.latest_tag.outputs.new_minor }}"
+                  echo "Next Patch Tag - ${{ steps.latest_tag.outputs.new_patch }}"
+                  echo "Next Major Tag with v prefix - ${{ steps.latest_tag.outputs.new_v_major }}"
+                  echo "Next Minor Tag with v prefix - ${{ steps.latest_tag.outputs.new_v_minor }}"
+                  echo "Next Patch Tag with v prefix - ${{ steps.latest_tag.outputs.new_v_patch }}"
