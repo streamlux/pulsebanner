@@ -204,6 +204,7 @@ export default function Page() {
                                             }}
                                             props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }}
                                             showPricing={showPricing}
+                                            availableFeature={availableForAccount()}
                                         />
                                     </Box>
                                 </TabPanel>

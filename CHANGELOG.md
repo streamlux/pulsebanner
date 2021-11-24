@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added 
 
 - Added redirect from `/` to `/banner`.
+- Restricted custom image setting for background to paying users only.
 
 ## [0.1.4] - 2021-11-24
 
