@@ -13,7 +13,7 @@ const seoOptions: NextSeoProps = {
         type: 'website',
         url: 'https://pulsebanner.com/',
         title: 'PulseBanner - Twitter live banner for Twitch',
-        description: 'Easily attract more viewers to your stream from Twitch',
+        description: 'Easily attract more viewers to your stream from Twitter',
     }
 }
 
