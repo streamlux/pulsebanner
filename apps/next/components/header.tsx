@@ -103,11 +103,13 @@ export default function Header() {
                                 <LinkBox h="full" w="min">
                                     <HStack height="100%">
                                         <Image alt="PulseBanner logo" src={favicon.src} height="40px" width="40px" />
-                                        <Heading size="md" as={chakra.p}>
-                                            <NextLink href="/banner" passHref>
-                                                <LinkOverlay href="/banner">PulseBanner</LinkOverlay>
-                                            </NextLink>
-                                        </Heading>
+                                        <NextLink href="/banner" passHref>
+                                            <LinkOverlay>
+                                                <Heading size="md" as="h1">
+                                                    PulseBanner
+                                                </Heading>
+                                            </LinkOverlay>
+                                        </NextLink>
                                     </HStack>
                                 </LinkBox>
                             </HStack>

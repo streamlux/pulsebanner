@@ -1,9 +1,9 @@
 .footer {
     margin-top: 2rem;
+    margin-bottom: 1rem;
 }
 
 .navItems {
-    margin-bottom: 1rem;
     padding: 0;
     list-style: none;
 }
