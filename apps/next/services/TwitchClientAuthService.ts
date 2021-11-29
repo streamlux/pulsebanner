@@ -1,3 +1,4 @@
+import { AxiosInstance } from "axios";
 import { ClientCredentialsAuthProvider } from "twitch-auth";
 
 export class TwitchClientAuthService {
@@ -6,5 +7,15 @@ export class TwitchClientAuthService {
     public static getAuthProvider(): ClientCredentialsAuthProvider {
         this.authProvider ||= new ClientCredentialsAuthProvider(process.env.TWITCH_CLIENT_ID, process.env.TWITCH_CLIENT_SECRET);
         return this.authProvider;
+    }
+
+    public static async authAxios(axios: AxiosInstance): Promise<AxiosInstance> {
+        const accessToken = (await this.getAuthProvider().getAccessToken()).accessToken;
+        axios.defaults.headers = {
+            'Client-ID': process.env.TWITCH_CLIENT_ID,
+            Authorization: `Bearer ${accessToken}`,
+        }
+
+        return axios;
     }
 }
