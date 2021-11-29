@@ -1,30 +1,71 @@
 import NextLink from 'next/link';
-import { Center, Link } from '@chakra-ui/react';
+import { Button, Center, Divider, Heading, Link, Text, VStack, Wrap, WrapItem } from '@chakra-ui/react';
 import styles from './footer.module.css';
 import React from 'react';
+import { FaDiscord, FaTwitter } from 'react-icons/fa';
+import { discordLink, instagramLink, twitterLink } from '@app/util/constants';
 
 export default function Footer() {
     return (
         <footer className={styles.footer}>
-            <Center>
-                <ul className={styles.navItems}>
-                    <li className={styles.navItem}>
-                        <Link isExternal={true} href="https://twitter.com/pulsebanner">
-                            Twitter
-                        </Link>
-                    </li>
-                    <li className={styles.navItem}>
-                        <NextLink href="/privacy">
-                            <Link>Privacy</Link>
-                        </NextLink>
-                    </li>
-                    <li className={styles.navItem}>
-                        <NextLink href="/terms">
-                            <Link>Terms of Use</Link>
-                        </NextLink>
-                    </li>
-                </ul>
-            </Center>
+            <VStack pb="2" spacing="6">
+                <Divider maxW="xl" />
+
+                <VStack spacing="2">
+                    <Heading fontSize="lg">Connect with us! 🤠</Heading>
+                    <Wrap justify="center">
+                        <WrapItem>
+                            <Link isExternal href="https://twitter.com/PulseBanner?ref_src=twsrc%5Etfw">
+                                <Button colorScheme="twitter" leftIcon={<FaTwitter />} as="a">
+                                    Follow us on Twitter
+                                </Button>
+                            </Link>
+                        </WrapItem>
+                        <WrapItem>
+                            <Link isExternal href={discordLink}>
+                                <Button as="a" leftIcon={<FaDiscord />}>
+                                    Join our Discord
+                                </Button>
+                            </Link>
+                        </WrapItem>
+                    </Wrap>
+                </VStack>
+
+                <Divider maxW="xl" />
+
+                <Center>
+                    <Wrap justify="center">
+                        <WrapItem className={styles.navItem}>
+                            <Link isExternal href={discordLink}>
+                                Discord
+                            </Link>
+                        </WrapItem>
+                        <WrapItem className={styles.navItem}>
+                            <Link isExternal href={twitterLink}>
+                                Twitter
+                            </Link>
+                        </WrapItem>
+                        <WrapItem className={styles.navItem}>
+                            <Link isExternal href={instagramLink}>
+                                Instagram
+                            </Link>
+                        </WrapItem>
+                        <WrapItem className={styles.navItem}>
+                            <NextLink href="/privacy" passHref>
+                                <Link>Privacy</Link>
+                            </NextLink>
+                        </WrapItem>
+                        <WrapItem className={styles.navItem}>
+                            <NextLink href="/terms" passHref>
+                                <Link>Terms of Use</Link>
+                            </NextLink>
+                        </WrapItem>
+                    </Wrap>
+                </Center>
+                <Center>
+                    <Text>© PulseBanner 2021. All rights reserved.</Text>
+                </Center>
+            </VStack>
         </footer>
     );
 }
