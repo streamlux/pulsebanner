@@ -70,7 +70,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log(req.body.event);
         const streamStatus = req.body.subscription.type;
 
-        const userId = param[0];
+        const userId = param[1];
 
         // get the features that are enabled
         const response = await localAxios.get<{ enabled: Features[] }>(`/api/features/${userId}`);
