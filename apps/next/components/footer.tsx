@@ -1,5 +1,5 @@
 import NextLink from 'next/link';
-import { Button, Center, Divider, Heading, Link, Text, VStack, Wrap, WrapItem } from '@chakra-ui/react';
+import { Button, Center, Divider, Heading, Link, Spacer, Text, VStack, Wrap, WrapItem } from '@chakra-ui/react';
 import styles from './footer.module.css';
 import React from 'react';
 import { FaDiscord, FaTwitter } from 'react-icons/fa';
@@ -9,7 +9,7 @@ export default function Footer() {
     return (
         <footer className={styles.footer}>
             <VStack pb="2" spacing="6">
-                <Divider maxW="xl" />
+                <Spacer />
 
                 <VStack spacing="2">
                     <Heading fontSize="lg">Connect with us! 🤠</Heading>
@@ -31,10 +31,11 @@ export default function Footer() {
                     </Wrap>
                 </VStack>
 
-                <Divider maxW="xl" />
+                <Spacer />
+                <Divider maxW={['56', 'xl']} />
 
                 <Center>
-                    <Wrap justify="center">
+                    <Wrap justify="center" spacing={['2', '6']}>
                         <WrapItem className={styles.navItem}>
                             <Link isExternal href={discordLink}>
                                 Discord
