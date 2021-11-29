@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 import crypto from 'crypto';
 import bodyParser from 'body-parser';
-import { Features } from '@app/services/FeaturesService';
+import { Features, FeaturesService } from '@app/services/FeaturesService';
 import { localAxios } from '@app/util/axios';
 
 type VerificationBody = {
@@ -70,22 +70,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log(req.body.event);
         const streamStatus = req.body.subscription.type;
 
-        const userId = param[0];
+        const userId = param[1];
 
-        // get the features that are enabled
-        const response = await localAxios.get<{ enabled: Features[] }>(`/api/features/${userId}`);
-        if (response.status === 200) {
-            const features = response.data;
-
-            features.enabled.forEach(async (feature: Features) => {
-                if (streamStatus === 'stream.online') {
-                    await localAxios.post(`/api/features/${feature}/streamup/${userId}`);
-                }
-                if (streamStatus === 'stream.offline') {
-                    await localAxios.post(`/api/features/${feature}/streamdown/${userId}`);
-                }
-            });
-        }
+        // get enabled features
+        const features = await FeaturesService.listEnabled(userId);
+        features.forEach(async (feature: Features) => {
+            if (streamStatus === 'stream.online') {
+                await localAxios.post(`/api/features/${feature}/streamup/${userId}`);
+            }
+            if (streamStatus === 'stream.offline') {
+                await localAxios.post(`/api/features/${feature}/streamdown/${userId}`);
+            }
+        });
 
         res.status(200);
         res.end();

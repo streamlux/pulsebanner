@@ -23,6 +23,7 @@ import {
     useDisclosure,
     VStack,
     Link,
+    useToast,
 } from '@chakra-ui/react';
 import type { Banner } from '@prisma/client';
 import React, { useEffect, useState } from 'react';
@@ -57,6 +58,7 @@ export default function Page() {
     const Form = BackgroundTemplate.form;
     const FgForm = ForegroundTemplate.form;
 
+    const toast = useToast();
     const breakpoint = useBreakpoint();
 
     // call subscription endpoint here to get back their status. 3 statuses: free (obj is null), personal, professional
@@ -107,6 +109,25 @@ export default function Page() {
             await saveSettings();
             await axios.put(bannerEndpoint);
             off();
+            if (data && data.enabled) {
+                toast({
+                    title: 'Banner Deactivated',
+                    description: 'Your banner will not change when you stream next time. Re-enable to get banner updates!',
+                    status: 'success',
+                    duration: 7000,
+                    isClosable: true,
+                    position: 'top',
+                });
+            } else {
+                toast({
+                    title: 'Banner Activated',
+                    description: 'Your banner will be updated automatically next time you stream!',
+                    status: 'success',
+                    duration: 7000,
+                    isClosable: true,
+                    position: 'top',
+                });
+            }
             mutate({
                 ...data,
                 enabled: !data.enabled,

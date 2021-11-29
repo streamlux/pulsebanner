@@ -35,16 +35,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             },
         });
         const allSubscriptions = response.data.data;
-        const userSubscriptions = allSubscriptions.filter((subscription) => subscription.condition.broadcaster_user_id === twitchAccount.providerAccountId);
 
         if (req.method === 'GET') {
             if (session.user['role'] === 'admin') {
                 res.status(200).json({ subscriptions: allSubscriptions });
             } else {
+                const userSubscriptions = allSubscriptions.filter((subscription) => subscription.condition.broadcaster_user_id === twitchAccount.providerAccountId);
                 res.status(200).json({ subscriptions: userSubscriptions });
             }
             // this is only for deleting webhooks i.e. when user terminates account
         } else if (req.method === 'DELETE') {
+            const userSubscriptions = allSubscriptions.filter((subscription) => subscription.condition.broadcaster_user_id === twitchAccount.providerAccountId);
             userSubscriptions.forEach(async (webhook) => {
                 await twitchAxios.delete(`/helix/eventsub/subscriptions?id=${webhook.id}`, {
                     headers: {
