@@ -149,7 +149,7 @@ const Page: NextPage<Props> = ({ products }) => {
                 <ModalContent>
                     <ModalHeader>
                         <Center>Almost there!</Center>
-                        <Center>Connect to all platforms to continue.</Center>
+                        <Center>Connect to Twitter to continue.</Center>
                     </ModalHeader>
                     <ModalCloseButton />
                     <ModalBody minH="32" h="32" pb="4">

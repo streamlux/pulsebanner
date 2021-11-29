@@ -5,7 +5,6 @@ import { LayerForm } from '../LayerForm';
 import { StarIcon } from '@chakra-ui/icons';
 
 export const ImageBackground: LayerForm<typeof BackgroundComponents.ImageBackground> = ({ props, setProps, showPricing, availableFeature }) => {
-    console.log('show pricing: ', availableFeature);
     const [currentString, setCurrentString] = useState(props.src ?? '');
 
     const onClickPremium = () => {
@@ -43,7 +42,10 @@ export const ImageBackground: LayerForm<typeof BackgroundComponents.ImageBackgro
                     w="full"
                     type="url"
                     defaultValue={props.src ?? ''}
-                    onChange={(e) => setCurrentString(e.target.value)}
+                    onChange={(e) => {
+                        setCurrentString(e.target.value);
+                        setProps({ ...(props ?? {}), src: e.target.value && e.target.value !== '' ? e.target.value : undefined });
+                    }}
                 />
                 <Button disabled={availableFeature === false ? true : false} onClick={() => setProps({ ...(props ?? {}), src: currentString !== '' ? currentString : undefined })}>
                     Set Image URL
