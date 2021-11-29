@@ -1,4 +1,4 @@
-import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, VStack, Button, Center, Text, Link, Flex } from '@chakra-ui/react';
+import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, VStack, Button, Center, Text, Link, Flex, Spacer } from '@chakra-ui/react';
 import { Account, Session } from '@prisma/client';
 import { signIn } from 'next-auth/react';
 import { FaTwitter, FaCheck, FaTwitch } from 'react-icons/fa';
@@ -54,7 +54,7 @@ export const ConnectTwitchModal: React.FC<ConnectTwitchModalProps> = ({ session,
                                 </Button>
                             )}
                         </VStack>
-                        <Center>
+                        <Center mt="4">
                             <Text fontSize="sm">
                                 {'By signing up, you agree to our'}{' '}
                                 <Link as={NextLink} href="/terms" passHref>
