@@ -22,6 +22,7 @@ import {
     Text,
     useDisclosure,
     VStack,
+    Link,
 } from '@chakra-ui/react';
 import type { Banner } from '@prisma/client';
 import React, { useEffect, useState } from 'react';
@@ -29,7 +30,7 @@ import useSWR from 'swr';
 import axios from 'axios';
 import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
 import { Composer } from '@pulsebanner/remotion/components';
-import { FaPlay, FaStop } from 'react-icons/fa';
+import { FaDiscord, FaPlay, FaStop } from 'react-icons/fa';
 import { RemotionPreview } from '@pulsebanner/remotion/preview';
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
@@ -37,6 +38,7 @@ import { PaymentModal } from '@app/components/pricing/PaymentModal';
 import { StarIcon } from '@chakra-ui/icons';
 import { trackEvent } from '@app/util/umami/trackEvent';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
+import { discordLink } from '@app/util/constants';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
@@ -148,12 +150,23 @@ export default function Page() {
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
                 <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
                     <Box maxW="xl">
-                        <Heading fontSize={['2xl', '3xl']} alignSelf={['center', 'end']}>
+                        <Heading as="h1" fontSize={['2xl', '3xl']} alignSelf={['center', 'end']}>
                             Twitch live banner
                         </Heading>
-                        <Text>
+                        <Heading fontSize="md" fontWeight="normal" as="h2">
                             Your Twitter banner will update when you start broadcasting on Twitch. Your banner will revert back to your current banner image when your stream ends.
-                        </Text>
+                        </Heading>
+
+                        <HStack pt={['2', '2']} pb={['2', '0']}>
+                            <Text textAlign={['center', 'left']} h="full">
+                                Need help? 👉{' '}
+                            </Text>
+                            <Link isExternal href={discordLink}>
+                                <Button as="a" size="sm" colorScheme="gray" rightIcon={<FaDiscord />}>
+                                    Join our Discord
+                                </Button>
+                            </Link>
+                        </HStack>
                     </Box>
                     {EnableButton}
                 </Flex>
