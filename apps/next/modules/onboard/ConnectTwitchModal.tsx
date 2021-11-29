@@ -17,7 +17,7 @@ export const ConnectTwitchModal: React.FC<ConnectTwitchModalProps> = ({ session,
             <ModalContent>
                 <ModalHeader>
                     <Center>Almost there!</Center>
-                    <Center>Connect to Twitter to continue.</Center>
+                    <Center>Connect to all platforms to continue.</Center>
                 </ModalHeader>
                 <ModalCloseButton />
                 <ModalCloseButton />

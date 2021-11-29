@@ -1,10 +1,9 @@
-import { Subscription } from "@app/types/twitch";
-import { twitchAxios } from "@app/util/axios";
-import { TwitchClientAuthService } from "./TwitchClientAuthService";
+import { Subscription } from '@app/types/twitch';
+import { twitchAxios } from '@app/util/axios';
+import { TwitchClientAuthService } from './TwitchClientAuthService';
 import { execa } from 'execa';
 
 export class TwitchSubscriptionService {
-
     public async getAccessToken(): Promise<string> {
         return (await TwitchClientAuthService.getAuthProvider().getAccessToken()).accessToken;
     }
@@ -38,10 +37,10 @@ export class TwitchSubscriptionService {
             },
         });
 
-        if (process.env.NODE_ENV === 'development') {
+        if (process.env.NODE_ENV === 'development' && process.env.ENABLE_WEBHOOK_LOCAL_TESTING === 'true') {
             try {
                 console.log('Sending Webhook challenge request via twitch-cli...\n');
-                const args = `event verify-subscription streamup -F ${process.env.NEXTAUTH_URL}/api/twitch/notification/${userId} -s ${process.env.EVENTSUB_SECRET}`
+                const args = `event verify-subscription streamup -F ${process.env.NEXTAUTH_URL}/api/twitch/notification/${userId} -s ${process.env.EVENTSUB_SECRET}`;
                 const { stdout } = await execa('twitch', args.split(' '));
                 if (stdout.includes('Invalid')) {
                     console.error('Error handling challenge request made my twitch-cli');
@@ -49,7 +48,6 @@ export class TwitchSubscriptionService {
                     console.log();
                 }
                 console.log(stdout);
-
             } catch (e) {
                 console.error('Error running twitch-cli', e);
             }
@@ -70,7 +68,7 @@ export class TwitchSubscriptionService {
     }
 
     public async deleteMany(subscriptions: Subscription[]): Promise<void> {
-        const deleteRequests = subscriptions.map(subscription => this.deleteOne(subscription.id));
+        const deleteRequests = subscriptions.map((subscription) => this.deleteOne(subscription.id));
         await Promise.all(deleteRequests);
     }
 }
