@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Sample image banner backgrounds that any user level can use. Let users understand how the background images work.
+- Fixed api issue with /api/twitch/notification where we were getting the wrong element in array causing 500's.
+- Added toasts for when the banner is enabled/disabled letting users know the banner will/will not update next time they start streaming.
+
 ## [0.1.5] - 2021-11-24
 
 ### Added 
