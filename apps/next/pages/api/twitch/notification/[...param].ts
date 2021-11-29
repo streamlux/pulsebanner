@@ -70,7 +70,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log(req.body.event);
         const streamStatus = req.body.subscription.type;
 
-        const userId = param[0];
+        const userId = param[1];
 
         // get enabled features
         const features = await FeaturesService.listEnabled(userId);
