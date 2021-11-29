@@ -42,9 +42,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const authedTwitchAxios = await TwitchClientAuthService.authAxios(twitchAxios);
 
     // get twitch stream info for user
+    // https://dev.twitch.tv/docs/api/reference#get-streams
     const streamResponse = await authedTwitchAxios.get(`/helix/streams?user_id=${twitchUserId}`);
 
     // get twitch user
+    // https://dev.twitch.tv/docs/api/reference#get-users
     const userResponse = await authedTwitchAxios.get(`/helix/users?id=${twitchUserId}`);
     const twitchUserInfo = userResponse.data.data[0];
 
