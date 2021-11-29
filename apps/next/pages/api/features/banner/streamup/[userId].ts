@@ -2,8 +2,11 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 import { TwitterResponseCode, updateBanner, getBanner } from '@app/util/twitter/twitterHelpers';
 import { getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
-import { localAxios, remotionAxios } from '@app/util/axios';
+import { localAxios, remotionAxios, twitchAxios } from '@app/util/axios';
 import { Prisma } from '@prisma/client';
+import { getAccountsById } from '@app/util/getAccountsById';
+import { TwitchClientAuthService } from '@app/services/TwitchClientAuthService';
+import { AxiosResponse } from 'axios';
 
 type TemplateRequestBody = {
     foregroundId: string;
@@ -27,14 +30,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const bannerEntry = await getBannerEntry(userId);
 
+    const accounts = await getAccountsById(userId);
+    const twitchUserId = accounts['twitch'].providerAccountId;
+
     const twitterInfo = await getTwitterInfo(userId, true);
 
     if (bannerEntry === null || twitterInfo === null) {
         return res.status(400).send('Could not find banner entry or twitter info for user');
     }
 
+    const authedTwitchAxios = await TwitchClientAuthService.authAxios(twitchAxios);
+
+    // get twitch stream info for user
+    const streamResponse = await authedTwitchAxios.get(`/helix/streams?user_id=${twitchUserId}`);
+
+    // get twitch user
+    const userResponse = await authedTwitchAxios.get(`/helix/users?id=${twitchUserId}`);
+    const twitchUserInfo = userResponse.data.data[0];
+
+    // get twitch thumbnail, defaulting to the url given by the api, but falling back to a manually constructed one
+    const defaultStreamThumbnailUrl = `https://static-cdn.jtvnw.net/previews-ttv/live_user_${twitchUserInfo.login}-440x248.jpg`;
+    const streamThumbnailUrlTemplate: string = streamResponse.data?.data?.[0]?.thumbnail_url ?? defaultStreamThumbnailUrl;
+    const streamThumbnailUrl: string = streamThumbnailUrlTemplate.replace('{width}', '440').replace('{height}', '248');
+
     // call twitter api to get imageUrl and convert to base64
-    const bannerUrl = await getBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
+    const bannerUrl: string = await getBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
 
     // store the current banner in s3
     await localAxios.put(`/api/storage/upload/${userId}?imageUrl=${bannerUrl}`);
@@ -45,15 +65,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const templateObj: TemplateRequestBody = {
         backgroundId: bannerEntry.backgroundId ?? 'CSSBackground',
         foregroundId: bannerEntry.foregroundId ?? 'ImLive',
-        foregroundProps: bannerEntry.foregroundProps as Prisma.JsonObject ?? {},
+        // pass in thumbnail url
+        foregroundProps: { ...bannerEntry.foregroundProps as Prisma.JsonObject, thumbnailUrl: streamThumbnailUrl } ?? {},
         backgroundProps: bannerEntry.backgroundProps as Prisma.JsonObject ?? {},
     };
 
     // pass in the bannerEntry info
-    const response = await remotionAxios.post('/getTemplate', templateObj, {
-
-    });
-    const base64Image = response.data;
+    const response: AxiosResponse<string> = await remotionAxios.post('/getTemplate', templateObj);
+    const base64Image: string = response.data;
 
     // post this base64 image to twitter
     const bannerStatus: TwitterResponseCode = await updateBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, base64Image);
