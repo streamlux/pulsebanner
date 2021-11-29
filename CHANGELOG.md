@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Fixed
+- Connect accounts modal not popping up after connecting to Twitter on banner page
+
 ## [0.1.6] - 2021-11-29
 
 ### Fixed
