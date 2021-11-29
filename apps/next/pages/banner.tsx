@@ -36,6 +36,7 @@ import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 import { PaymentModal } from '@app/components/pricing/PaymentModal';
 import { StarIcon } from '@chakra-ui/icons';
 import { trackEvent } from '@app/util/umami/trackEvent';
+import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
@@ -259,8 +260,10 @@ export default function Page() {
                         {EnableButton}
                     </Flex>
                 </Flex>
+                <Box pt="8">
+                    <ShareToTwitter />
+                </Box>
             </Container>
-
             <PaymentModal isOpen={pricingIsOpen} onClose={pricingClose} />
         </>
     );
