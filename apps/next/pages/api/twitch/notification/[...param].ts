@@ -49,6 +49,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const messageSignature = req.headers['Twitch-Eventsub-Message-Signature'.toLowerCase()] as string;
     const messageId = req.headers['Twitch-Eventsub-Message-Id'.toLowerCase()] as string;
     const messageTimestamp = req.headers['Twitch-Eventsub-Message-Timestamp'.toLowerCase()] as string;
+    const messageType: MessageType = req.headers['Twitch-Eventsub-Message-Type'.toLowerCase()] as MessageType;
+
+    // print headers
+    console.log('Message headers:');
+    console.log(JSON.stringify({
+        messageId,
+        messageSignature,
+        messageTimestamp,
+        messageType
+    }, null, 2));
+    console.log('Message body: \n', JSON.stringify(req.body, null, 2));
 
     if (!verifySignature(messageSignature, messageId, messageTimestamp, req['rawBody'])) {
         console.log('Request verification failed.');
@@ -56,8 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.end();
         return;
     }
-
-    const messageType: MessageType = req.headers['Twitch-Eventsub-Message-Type'.toLowerCase()] as MessageType;
+    console.log('Signature verified.');
 
     if (messageType === MessageType.Verification) {
         const challenge: string = (req.body as VerificationBody).challenge;
@@ -67,7 +77,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (messageType === MessageType.Notification) {
-        console.log(req.body.event);
+
         const streamStatus = req.body.subscription.type;
 
         const userId = param[1];
@@ -76,7 +86,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const features = await FeaturesService.listEnabled(userId);
         features.forEach(async (feature: Features) => {
             if (streamStatus === 'stream.online') {
-                await localAxios.post(`/api/features/${feature}/streamup/${userId}`);
+
+                // Sometimes twitch sends more than one streamup notification, this causes issues for us
+                // to mitigate this, we only process the notification if the stream started within the last 10 minutes
+                const minutesSinceStreamStart: number = ((Date.now() - new Date(req.body.event.started_at).getTime()) / (60 * 1000));
+                if (minutesSinceStreamStart > 10) {
+
+                    console.log('Recieved streamup notification for stream that started more than 10 minutes ago. Will not process notification.');
+
+                    res.status(200);
+                    res.end();
+                }
+
+                const requestUrl = `/api/features/${feature}/streamup/${userId}`;
+                console.log(`Making request to ${requestUrl}`);
+                await localAxios.post(requestUrl);
             }
             if (streamStatus === 'stream.offline') {
                 await localAxios.post(`/api/features/${feature}/streamdown/${userId}`);
@@ -90,7 +114,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 function verifySignature(messageSignature: string, id: string, timestamp: string, body: unknown): boolean {
-    console.log('Verifying signature', messageSignature, id, timestamp);
+    console.log('Verifying signature...');
     const message = id + timestamp + body;
     const signature = crypto.createHmac('sha256', process.env.EVENTSUB_SECRET).update(message);
     const expectedSignatureHeader = 'sha256=' + signature.digest('hex');

@@ -45,6 +45,7 @@ model User {
     email         String?       @unique
     emailVerified DateTime?
     image         String?
+    createdAt     DateTime      @default(now()) @map("created_at")
     role          Role          @default(user)
     accounts      Account[]
     sessions      Session[]
@@ -72,10 +73,11 @@ model VerificationToken {
 }
 
 model Banner {
-    id              String  @id @default(cuid())
-    userId          String  @unique(map: "banners_user_id_unique") @map("user_id")
-    user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-    enabled         Boolean @default(false)
+    id              String   @id @default(cuid())
+    updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+    userId          String   @unique(map: "banners_user_id_unique") @map("user_id")
+    user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    enabled         Boolean  @default(false)
     foregroundId    String
     backgroundId    String
     backgroundProps Json

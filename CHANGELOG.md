@@ -12,6 +12,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Partnered users that will get professional for free
  - Cleanup code handling whether customer is paying or not
 
+## [0.1.10] - 2021-11-30
+
+### Added
+
+- Discord webhook on user signup
+- Useful timestamps: updatedAt for banners, createdAt for users
+
+## [0.1.9] - 2021-11-29
+
+### Fixed
+
+- Handle duplicate streamup notifications without breaking
+
 ## [0.1.8] - 2021-11-29
 
 ### Added
