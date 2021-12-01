@@ -32,13 +32,14 @@ import prisma from '../util/ssr/prisma';
 import { FaTwitter, FaCheck } from 'react-icons/fa';
 import { ProductCard } from '@app/components/pricing/ProductCard';
 import { trackEvent } from '@app/util/umami/trackEvent';
+import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
 
 type Props = {
     products: (Product & { prices: Price[] })[];
 };
 
 const Page: NextPage<Props> = ({ products }) => {
-    const [subscription, setSubscription] = useState<Subscription>();
+    const [paymentPlan, setPaymentPlan] = useState<PaymentPlan>();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { status, data: session } = useSession({ required: false }) as any;
 
@@ -68,10 +69,10 @@ const Page: NextPage<Props> = ({ products }) => {
             if (status === 'authenticated') {
                 const res = await fetch('/api/user/subscription');
 
-                const data = await res.json();
+                const data: APIPaymentObject = await res.json();
 
-                if (data.subscription) {
-                    setSubscription(data.subscription);
+                if (data) {
+                    setPaymentPlan(data.plan);
                 }
             }
         })();
@@ -85,7 +86,7 @@ const Page: NextPage<Props> = ({ products }) => {
                 },
             });
             if (ensureSignUp()) {
-                if (subscription) {
+                if (paymentPlan === 'Professional') {
                     return router.push('/account');
                 }
 
@@ -105,7 +106,7 @@ const Page: NextPage<Props> = ({ products }) => {
                 stripe?.redirectToCheckout({ sessionId: data.sessionId });
             }
         },
-        [router, subscription, ensureSignUp]
+        [router, paymentPlan, ensureSignUp]
     );
 
     useEffect(() => {
