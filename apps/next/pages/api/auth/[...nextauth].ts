@@ -1,10 +1,11 @@
-import NextAuth from 'next-auth';
+import NextAuth, { User } from 'next-auth';
 import TwitchProvider from 'next-auth/providers/twitch';
 import TwitterProvider from 'next-auth/providers/twitter';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import { getSecondsSinceEpoch } from '@app/util/common';
 import { refreshAccessToken } from '@app/util/twitch/refreshAccessToken';
 import prisma from '@app/util/ssr/prisma';
+import axios from 'axios';
 
 // File contains options and hooks for next-auth, the authentication package
 // we are using to handle signup, signin, etc.
@@ -141,7 +142,18 @@ export default NextAuth({
 
     // Events are useful for logging
     // https://next-auth.js.org/configuration/events
-    events: {},
+    events: {
+        createUser: (message: { user: User }) => {
+            if (process.env.ENABLE_DISCORD_WEBHOOKS === 'true') {
+                // get total # of users, then make request to Discord webhook to send a message
+                prisma.user.count().then((value) => {
+                    axios.post(process.env.DISCORD_WEBHOOK_URL, {
+                        content: `"${message.user.name}" signed up for PulseBanner! Total users: ${value}`
+                    });
+                });
+            }
+        }
+    },
 
     // You can set the theme to 'light', 'dark' or use 'auto' to default to the
     // whatever prefers-color-scheme is set to in the browser. Default is 'auto'
