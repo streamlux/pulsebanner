@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Discord webhook on user signup
+- Useful timestamps: updatedAt for banners, createdAt for users
 
 ## [0.1.9] - 2021-11-29
 
