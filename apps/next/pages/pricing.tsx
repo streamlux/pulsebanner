@@ -25,6 +25,8 @@ import {
     Tag,
     Flex,
     Link,
+    Box,
+    Img,
 } from '@chakra-ui/react';
 
 import getStripe from '../util/getStripe';
@@ -32,6 +34,7 @@ import prisma from '../util/ssr/prisma';
 import { FaTwitter, FaCheck } from 'react-icons/fa';
 import { ProductCard } from '@app/components/pricing/ProductCard';
 import { trackEvent } from '@app/util/umami/trackEvent';
+import favicon from '@app/public/logo.webp';
 import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
 
 type Props = {
@@ -137,7 +140,7 @@ const Page: NextPage<Props> = ({ products }) => {
             <Text style={{ WebkitTextStrokeWidth: billingInterval === 'year' ? '0.75px' : '0.25px' }} as={chakra.span}>
                 Yearly billing
             </Text>
-            <Tag size="md" variant="solid" background="green.200" color="black">
+            <Tag size="md" variant="solid" background={billingInterval === 'year' ? 'green.200' : 'gray.200'} color="black">
                 Two months free!
             </Tag>
         </HStack>
@@ -195,13 +198,34 @@ const Page: NextPage<Props> = ({ products }) => {
                     </ModalBody>
                 </ModalContent>
             </Modal>
-            <VStack spacing="16">
+            <VStack spacing={[6, 12]}>
+                <VStack spacing={8}>
+                    <VStack spacing={0}>
+                        <HStack fontSize="xl">
+                            <Text fontSize="2xl" fontWeight="bold">
+                                PulseBanner is
+                            </Text>
+                            <Tag size="lg" p="2" py="1" fontSize="2xl" variant="solid" background="green.200" color="black" fontWeight="bold">
+                                FREE
+                            </Tag>
+                        </HStack>
+                        <Text textAlign="center" maxW="2xl" px="4" fontSize="xl">
+                            You can use PulseBanner for free forever 🎉
+                        </Text>
+                    </VStack>
+
+                    <Text textAlign="center" maxW="2xl" px="4" fontSize="xl">
+                        However, you can unlock even more awesome features and kindly support the creators with a PulseBanner Membership.
+                    </Text>
+                </VStack>
+
                 <Container centerContent maxW="container.lg" experimental_spaceY="6">
-                    <Heading size="2xl" textAlign="center">
-                        Automatically attract viewers to your stream
+                    <Heading size="xl" textAlign="center" h="full">
+                        PulseBanner Memberships
                     </Heading>
                 </Container>
-                <Center>{AnnualBillingControl}</Center>
+
+                {AnnualBillingControl}
                 <Center w={['auto', 'auto', 'auto', '5xl']}>
                     <SimpleGrid columns={[1, 1, 1, 2]} spacing="4" w="full">
                         {sortProductsByPrice(products).map((product) => (
@@ -210,6 +234,10 @@ const Page: NextPage<Props> = ({ products }) => {
                     </SimpleGrid>
                 </Center>
                 <Text fontSize="md">Prices in USD. VAT may apply. Membership is tied to one Twitter account.</Text>
+                <Text textAlign="center" maxW="2xl" px="4" fontSize="xl">
+                    Just like you, the people behind PulseBanner are creators. And like you, we rely on PulseBanner Memberships to keep improving and maintaining PulseBanner.
+                    Supporting PulseBanner enables us to do what we love and empower creators ❤️
+                </Text>
             </VStack>
         </>
     );

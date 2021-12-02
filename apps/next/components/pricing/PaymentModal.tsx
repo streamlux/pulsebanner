@@ -55,11 +55,25 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
             <ModalOverlay />
             <ModalContent alignContent="center" pb="6">
                 <ModalHeader>
-                    <Center>Looking for something more? Purchase now!</Center>
+                    <Text>PulseBanner Membership</Text>
                 </ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
                     <VStack spacing={8} w="full">
+                        <Center>
+                            <VStack>
+                                <HStack fontSize="xl">
+                                    <Text fontSize="2xl">PulseBanner is</Text>
+                                    <Tag size="lg" p="2" py="1" fontSize="2xl" variant="solid" background="green.200" color="black" fontWeight="bold">
+                                        FREE
+                                    </Tag>
+                                </HStack>
+                                <Text textAlign="center" maxW="2xl">
+                                    You can use PulseBanner for free forever. However, you can unlock even more awesome features and kindly support the creators with a PulseBanner
+                                    Membership.
+                                </Text>
+                            </VStack>
+                        </Center>
                         <Center>{AnnualBillingControl}</Center>
                         <Center w="full">
                             <SimpleGrid columns={[1, 2]} spacing="4" w="full">

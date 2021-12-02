@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+
+- Improved pricing page and pricing modal UI
+- Made clear that PulseBanner is free to use
+
 ### Added
 
  - Partnered users that will get professional for free
