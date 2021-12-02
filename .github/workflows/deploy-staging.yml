@@ -215,11 +215,13 @@ jobs:
                   IMAGE_NAME: ${{ fromJson(steps.nest-meta.outputs.json).tags[0] }}
               run: 'caprover deploy --caproverUrl=$APP_URL --imageName=$IMAGE_NAME --appName=$APP_NAME'
 
-    deploy_remotion:
-        name: Deploy Remotion
+    build_remotion:
+        name: Build and push Remotion image
         runs-on: ubuntu-latest
         environment: Staging
         concurrency: Staging
+        outputs:
+            image-tag: ${{ steps.set-image-tag.outputs.image-tag }}
         steps:
             #
             #
@@ -306,10 +308,20 @@ jobs:
                   tags: ${{ steps.remotion-meta.outputs.tags }}
                   labels: ${{ steps.remotion-meta.outputs.labels }}
 
+            - id: set-image-tag
+              run: echo "::set-output name=image-tag::${{ fromJson(steps.remotion-meta.outputs.json).tags[0] }}"
+
+    deploy_remotion:
+        name: Deploy Remotion
+        runs-on: ubuntu-latest
+        needs: [build_remotion, deploy_nest]
+        environment: Staging
+        concurrency: Staging
+        steps:
             - name: 'Deploy to Caprover'
               env:
                   CAPROVER_APP_TOKEN: ${{ secrets.REMOTION_CAPROVER_APP_TOKEN }}
                   APP_URL: ${{ secrets.CAPROVER_URL }}
                   APP_NAME: ${{ secrets.REMOTION_APP_NAME }}
-                  IMAGE_NAME: ${{ fromJson(steps.remotion-meta.outputs.json).tags[0] }}
+                  IMAGE_NAME: ${{ needs.build_remotion.outputs.image-tag }}
               run: 'caprover deploy --caproverUrl=$APP_URL --imageName=$IMAGE_NAME --appName=$APP_NAME'
