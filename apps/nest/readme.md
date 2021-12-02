@@ -1,5 +1,7 @@
 # Nest.JS server
 
+Docs: https://docs.nestjs.com/
+
 NestJS is a server-side framework. This app will contain all of PulseBanner specific APIs. Anything that has to do with banners, etc.
 
 Routes that will be moved to the NestJS API:

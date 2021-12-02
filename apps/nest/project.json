@@ -5,12 +5,17 @@
     "targets": {
         "build": {
             "executor": "@nrwl/node:build",
-            "outputs": ["{options.outputPath}"],
+            "outputs": [
+                "{options.outputPath}"
+            ],
             "options": {
                 "outputPath": "dist/apps/nest",
                 "main": "apps/nest/src/main.ts",
                 "tsConfig": "apps/nest/tsconfig.app.json",
-                "assets": ["apps/nest/src/assets"]
+                "assets": [
+                    "apps/nest/src/assets"
+                ],
+                "generatePackageJson": true
             },
             "configurations": {
                 "production": {
@@ -32,16 +37,34 @@
                 "buildTarget": "nest:build"
             }
         },
+        "docker": {
+            "executor": "@nx-tools/nx-docker:build",
+            "options": {
+                "file": "apps/nest/Dockerfile",
+                "tags": [
+                    "your-org/nest:latest"
+                ],
+                "platforms": [
+                    "linux/amd64"
+                ]
+            }
+        },
         "lint": {
             "executor": "@nrwl/linter:eslint",
-            "outputs": ["{options.outputFile}"],
+            "outputs": [
+                "{options.outputFile}"
+            ],
             "options": {
-                "lintFilePatterns": ["apps/nest/**/*.ts"]
+                "lintFilePatterns": [
+                    "apps/nest/**/*.ts"
+                ]
             }
         },
         "test": {
             "executor": "@nrwl/jest:jest",
-            "outputs": ["coverage/apps/nest"],
+            "outputs": [
+                "coverage/apps/nest"
+            ],
             "options": {
                 "jestConfig": "apps/nest/jest.config.js",
                 "passWithNoTests": true
