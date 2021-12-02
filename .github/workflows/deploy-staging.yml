@@ -1,4 +1,10 @@
 name: Deploy to staging
+
+env:
+    NEXT_APP_NAME: next
+    NEST_APP_NAME: nest
+    REMOTION_APP_NAME: remotion
+
 # This workflow is triggered on pushes to the repository.
 on:
     # Trigger the workflow on push or pull request,
@@ -303,9 +309,9 @@ jobs:
 
             - name: 'Deploy nest'
               env:
-                  CAPROVER_APP_TOKEN: ${{ secrets.NEXT_CAPROVER_APP_TOKEN }}
+                  CAPROVER_APP_TOKEN: ${{ secrets.NEST_CAPROVER_APP_TOKEN }}
                   APP_URL: ${{ secrets.CAPROVER_URL }}
-                  APP_NAME: ${{ secrets.NEXT_APP_NAME }}
+                  APP_NAME: ${{ env.NEST_APP_NAME }}
                   IMAGE_NAME: ${{ needs.build_nest.outputs.image-tag }}
               run: 'caprover deploy --caproverUrl=$APP_URL --imageName=$IMAGE_NAME --appName=$APP_NAME'
 
@@ -313,7 +319,7 @@ jobs:
               env:
                   CAPROVER_APP_TOKEN: ${{ secrets.NEXT_CAPROVER_APP_TOKEN }}
                   APP_URL: ${{ secrets.CAPROVER_URL }}
-                  APP_NAME: ${{ secrets.NEXT_APP_NAME }}
+                  APP_NAME: ${{ env.NEXT_APP_NAME }}
                   IMAGE_NAME: ${{ needs.build_next.outputs.image-tag }}
               run: 'caprover deploy --caproverUrl=$APP_URL --imageName=$IMAGE_NAME --appName=$APP_NAME'
 
@@ -321,6 +327,6 @@ jobs:
               env:
                   CAPROVER_APP_TOKEN: ${{ secrets.REMOTION_CAPROVER_APP_TOKEN }}
                   APP_URL: ${{ secrets.CAPROVER_URL }}
-                  APP_NAME: ${{ secrets.REMOTION_APP_NAME }}
+                  APP_NAME: ${{ env.REMOTION_APP_NAME }}
                   IMAGE_NAME: ${{ needs.build_remotion.outputs.image-tag }}
               run: 'caprover deploy --caproverUrl=$APP_URL --imageName=$IMAGE_NAME --appName=$APP_NAME'
