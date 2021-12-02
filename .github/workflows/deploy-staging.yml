@@ -302,31 +302,30 @@ jobs:
         needs: [build_next, build_nest, build_remotion]
         environment: Staging
         concurrency: Staging
+        strategy:
+            matrix:
+                include:
+                    - app: nest
+                      name: nest
+                      token: ${{ secrets.NEST_CAPROVER_APP_TOKEN }}
+                      image: ${{ needs.build_nest.outputs.image-tag }}
+                    - app: next
+                      name: next
+                      token: ${{ secrets.NEXT_CAPROVER_APP_TOKEN }}
+                      image: ${{ needs.build_next.outputs.image-tag }}
+                    - app: remotion
+                      name: remotion
+                      token: ${{ secrets.REMOTION_CAPROVER_APP_TOKEN }}
+                      image: ${{ needs.build_remotion.outputs.image-tag }}
         steps:
             # Install Caprover CLI, which we use to deploy images to Caprover
             - name: 'Install caprover-cli'
               run: npm install -g caprover
 
-            - name: 'Deploy nest'
+            - name: 'Deploy ${{ matrix.name }}'
               env:
-                  CAPROVER_APP_TOKEN: ${{ secrets.NEST_CAPROVER_APP_TOKEN }}
                   APP_URL: ${{ secrets.CAPROVER_URL }}
-                  APP_NAME: ${{ env.NEST_APP_NAME }}
-                  IMAGE_NAME: ${{ needs.build_nest.outputs.image-tag }}
-              run: 'caprover deploy --caproverUrl=$APP_URL --imageName=$IMAGE_NAME --appName=$APP_NAME'
-
-            - name: 'Deploy next'
-              env:
-                  CAPROVER_APP_TOKEN: ${{ secrets.NEXT_CAPROVER_APP_TOKEN }}
-                  APP_URL: ${{ secrets.CAPROVER_URL }}
-                  APP_NAME: ${{ env.NEXT_APP_NAME }}
-                  IMAGE_NAME: ${{ needs.build_next.outputs.image-tag }}
-              run: 'caprover deploy --caproverUrl=$APP_URL --imageName=$IMAGE_NAME --appName=$APP_NAME'
-
-            - name: 'Deploy remotion'
-              env:
-                  CAPROVER_APP_TOKEN: ${{ secrets.REMOTION_CAPROVER_APP_TOKEN }}
-                  APP_URL: ${{ secrets.CAPROVER_URL }}
-                  APP_NAME: ${{ env.REMOTION_APP_NAME }}
-                  IMAGE_NAME: ${{ needs.build_remotion.outputs.image-tag }}
+                  APP_NAME: ${{ matrix.name }}
+                  CAPROVER_APP_TOKEN: ${{ matrix.token }}
+                  IMAGE_NAME: ${{ matrix.image }}
               run: 'caprover deploy --caproverUrl=$APP_URL --imageName=$IMAGE_NAME --appName=$APP_NAME'
