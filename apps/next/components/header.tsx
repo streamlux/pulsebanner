@@ -195,23 +195,23 @@ export default function Header() {
                         </Flex>
                     </Flex>
                 </Center>
-                {breakpointValue.mobile && (
-                    <Center id="nav-links" fontSize="lg">
-                        <Wrap spacing={['8', '16', '20', '24']}>
-                            <WrapItem>
-                                <NextLink href="/banner" passHref>
-                                    <Link>Banner</Link>
-                                </NextLink>
-                            </WrapItem>
-                            <WrapItem>
-                                <NextLink href="/pricing" passHref>
-                                    <Link>Pricing</Link>
-                                </NextLink>
-                            </WrapItem>
-                        </Wrap>
-                    </Center>
-                )}
             </header>
+            {breakpointValue.mobile && (
+                <Center id="nav-links" fontSize="lg" className={`nojs-show ${!session && loading ? styles.loading : styles.loaded}`}>
+                    <Wrap spacing={['8', '16', '20', '24']}>
+                        <WrapItem>
+                            <NextLink href="/banner" passHref>
+                                <Link>Banner</Link>
+                            </NextLink>
+                        </WrapItem>
+                        <WrapItem>
+                            <NextLink href="/pricing" passHref>
+                                <Link>Pricing</Link>
+                            </NextLink>
+                        </WrapItem>
+                    </Wrap>
+                </Center>
+            )}
         </>
     );
 }
