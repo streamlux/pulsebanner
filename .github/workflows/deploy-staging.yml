@@ -1,4 +1,4 @@
-name: Build Next.js app
+name: Deploy to staging
 # This workflow is triggered on pushes to the repository.
 on:
     # Trigger the workflow on push or pull request,
