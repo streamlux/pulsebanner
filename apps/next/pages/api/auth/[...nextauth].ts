@@ -27,13 +27,16 @@ export default NextAuth({
             // See here for the type of TwitterProfile:
             // https://github.com/nextauthjs/next-auth/blob/main/src/providers/twitter.ts
             profile: (profile: any) => {
-                const user: User & { id: string } = {
-                    id: profile.id_str,
-                    name: profile.name,
+                if (profile.email === "" || profile.email === undefined || profile.email === null) {
                     // Twitter does not require email to make account, since you can sign up with phone number
                     // so we have to fill it in with a uuid, to protect against someone signing up with someone elses
                     // email and then taking over their account
-                    email: profile.email ?? nanoid(),
+                    profile.email = nanoid();
+                }
+                const user: User & { id: string } = {
+                    id: profile.id_str,
+                    name: profile.name,
+                    email: profile.email,
                     image: profile.profile_image_url_https.replace(
                         /_normal\.(jpg|png|gif)$/,
                         ".$1"

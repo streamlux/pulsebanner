@@ -7,12 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.1.14] - 2021-12-02
+
+### Fixed
+
+- Users couldn't sign up if they had created their Twitter account using a phone number rather than an email address (for real this time)
+
 ## [0.1.13] - 2021-12-02
 
 ### Fixed
 
 - Users couldn't sign up if they had created their Twitter account using a phone number rather than an email address
-
 
 ## [0.1.12] - 2021-12-02
 
