@@ -302,20 +302,26 @@ jobs:
         needs: [build_next, build_nest, build_remotion]
         environment: Staging
         concurrency: Staging
+        env:
+            CAPROVER_URL: ${{ secrets.CAPROVER_URL }}
+            NEST_CAPROVER_APP_TOKEN: ${{ secrets.NEST_CAPROVER_APP_TOKEN }}
+            NEXT_CAPROVER_APP_TOKEN: ${{ secrets.NEXT_CAPROVER_APP_TOKEN }}
+            REMOTION_CAPROVER_APP_TOKEN: ${{ secrets.REMOTION_CAPROVER_APP_TOKEN }}
+
         strategy:
             matrix:
                 include:
                     - app: nest
                       name: nest
-                      token: ${{ secrets.NEST_CAPROVER_APP_TOKEN }}
+                      token: ${{ env.NEST_CAPROVER_APP_TOKEN }}
                       image: ${{ needs.build_nest.outputs.image-tag }}
                     - app: next
                       name: next
-                      token: ${{ secrets.NEXT_CAPROVER_APP_TOKEN }}
+                      token: ${{ env.NEXT_CAPROVER_APP_TOKEN }}
                       image: ${{ needs.build_next.outputs.image-tag }}
                     - app: remotion
                       name: remotion
-                      token: ${{ secrets.REMOTION_CAPROVER_APP_TOKEN }}
+                      token: ${{ env.REMOTION_CAPROVER_APP_TOKEN }}
                       image: ${{ needs.build_remotion.outputs.image-tag }}
         steps:
             # Install Caprover CLI, which we use to deploy images to Caprover
@@ -324,7 +330,7 @@ jobs:
 
             - name: 'Deploy ${{ matrix.name }}'
               env:
-                  APP_URL: ${{ secrets.CAPROVER_URL }}
+                  APP_URL: ${{ env.CAPROVER_URL }}
                   APP_NAME: ${{ matrix.name }}
                   CAPROVER_APP_TOKEN: ${{ matrix.token }}
                   IMAGE_NAME: ${{ matrix.image }}
