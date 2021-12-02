@@ -44,9 +44,7 @@ const Page: NextPage = () => {
 
     // delete the account
     const deleteAccount = async () => {
-        console.log('deleting account');
         const sessionInfo = await getSession();
-        console.log('sessionInfo: ', sessionInfo);
         if ((sessionInfo?.user as any)?.id) {
             const userId = (sessionInfo?.user as any)?.id;
             // delete all webhooks
