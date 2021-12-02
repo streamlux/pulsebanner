@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+ - Partnered users that will get professional for free
+ - Cleanup code handling whether customer is paying or not
+
 ## [0.1.11] - 2021-12-01
 
 ### Fixed
