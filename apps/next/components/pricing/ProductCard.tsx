@@ -18,9 +18,9 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
         return null;
     }
 
-    const sharedFeatureList = ['Remove watermark', 'High quality image rendering', 'Customize colors', 'Unlock all features', 'Personalized images'];
-    const personalFeatureList = sharedFeatureList.concat(['Thumbnail refreshing (coming soon)']);
-    const professionalFeatureList = sharedFeatureList.concat(['Fastest thumbnail refreshing (coming soon)']);
+    const sharedFeatureList = ['Remove watermark', 'Unlimited color options', 'Upload a custom background image'];
+    const personalFeatureList = sharedFeatureList.concat(['High quality image rendering', 'Thumbnail refreshing (coming soon)']);
+    const professionalFeatureList = sharedFeatureList.concat(['Ultra high image quality', 'Unlock all features', 'Fastest thumbnail refreshing (coming soon)']);
 
     const featureDescriptionMapping: Record<string, string[]> = {
         Personal: personalFeatureList,
@@ -28,8 +28,8 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
     };
 
     return (
-        <WrapItem key={product.name} w="full">
-            <Card props={{ w: 'full' }}>
+        <WrapItem key={product.name} w="full" h="full">
+            <Card props={{ w: 'full', h: 'full' }}>
                 <Box w="full">
                     <Flex direction="row" justify="space-between" alignItems="center">
                         <VStack alignItems="start" spacing={0}>
@@ -74,7 +74,7 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
                     </Flex>
                 </Box>
 
-                <Box>
+                <Box flexGrow={2}>
                     <Heading size="md">{"What's included"}</Heading>
                     <List>
                         {featureDescriptionMapping[product.name].map((feature) => (
@@ -85,12 +85,15 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
                         ))}
                     </List>
                 </Box>
-                <Flex w="full" justifyContent="space-between">
-                    <Spacer />
-                    <Button fontWeight="bold" onClick={() => handlePricingClick(price.id)} colorScheme="green" rightIcon={<FaArrowRight />}>
-                        Buy {product.name}
-                    </Button>
-                </Flex>
+
+                <Box justifySelf="flex-end">
+                    <Flex w="full" justifyContent="space-between">
+                        <Spacer />
+                        <Button fontWeight="bold" onClick={() => handlePricingClick(price.id)} colorScheme="green" rightIcon={<FaArrowRight />}>
+                            Buy {product.name}
+                        </Button>
+                    </Flex>
+                </Box>
             </Card>
         </WrapItem>
     );

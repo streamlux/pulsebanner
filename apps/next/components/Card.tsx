@@ -1,4 +1,4 @@
-import { Box, BoxProps, useColorModeValue } from '@chakra-ui/react';
+import { Box, BoxProps, Flex, useColorModeValue } from '@chakra-ui/react';
 import React from 'react';
 
 export const Card: React.FC<{ props?: BoxProps }> = ({ children, props }) => {
@@ -13,8 +13,8 @@ export const Card: React.FC<{ props?: BoxProps }> = ({ children, props }) => {
     );
 
     return (
-        <Box rounded="md" p="4" experimental_spaceY="8" {...styles} {...(props ?? {})}>
+        <Flex direction="column" rounded="md" p="4" experimental_spaceY="8" {...styles} {...(props ?? {})}>
             {children}
-        </Box>
+        </Flex>
     );
 };
