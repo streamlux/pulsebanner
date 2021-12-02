@@ -8,12 +8,13 @@ on:
             - main
     workflow_dispatch:
 
+concurrency: Staging
+
 jobs:
     deploy_next:
         name: Deploy NextJS
         runs-on: ubuntu-latest
         environment: Staging
-        concurrency: Staging
         steps:
             #
             #
@@ -121,7 +122,6 @@ jobs:
         name: Deploy NestJS
         runs-on: ubuntu-latest
         environment: Staging
-        concurrency: Staging
         steps:
             #
             #
@@ -219,7 +219,6 @@ jobs:
         name: Build and push Remotion image
         runs-on: ubuntu-latest
         environment: Staging
-        concurrency: Staging
         outputs:
             image-tag: ${{ steps.set-image-tag.outputs.image-tag }}
         steps:
