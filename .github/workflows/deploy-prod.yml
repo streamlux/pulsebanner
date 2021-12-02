@@ -1,22 +1,60 @@
-name: Build and deploy to prod
+name: Deploy to production
 # This workflow is triggered on pushes to the repository.
 on:
-    release: # https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#release
-        types: [published] # GITHUB_REF Tag of release
+    # Trigger the workflow on push or pull request,
+    # but only for the main branch
+    push:
+        branches:
+            - main
+    workflow_dispatch:
 
 jobs:
     deploy_next:
-        name: Build and deploy Next.js app to prod
+        name: Deploy to production
         runs-on: ubuntu-latest
         environment: Production
         concurrency: Production
         steps:
+            # checkout GitHub repository
             - name: Checkout
               uses: actions/checkout@v2
 
+            # install QEMU, a utility for building docker images
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v1
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v1
+            - name: Login to GitHub Container Registry
+              uses: docker/login-action@v1
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.repository_owner }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            # Install and setup Node.JS
+            - name: Setup node
+              uses: actions/setup-node@v2
+              with:
+                  node-version: '16'
+
+            # Install npm dependencies
+            - name: Install and cache dependencies
+              uses: bahmutov/npm-install@v1
+
+            # Install Caprover CLI, which we use to deploy images to Caprover
+            - name: 'Install caprover-cli'
+              run: npm install -g caprover
+
+            #
+            #
+            # ------------------  NextJS (frontend + API) -----------------------
+            #
+            #
+
+            # This creates docker tags
             # https://github.com/docker/build-push-action/blob/master/docs/advanced/tags-labels.md
             - name: Docker meta
-              id: meta
+              id: next-meta
               uses: docker/metadata-action@v3
               with:
                   # list of Docker images to use as base name for tags
@@ -26,18 +64,10 @@ jobs:
                   tags: |
                       type=semver,priority=900,pattern={{version}},prefix=prod-
 
-            - name: Setup node
-              uses: actions/setup-node@v2
-              with:
-                  node-version: "16"
-
-            - name: Install and cache dependencies
-              uses: bahmutov/npm-install@v1
-
             - name: Lint Next.js app
               run: npx nx run next:lint
 
-            - name: "nx run next:make:ci"
+            - name: 'nx run next:make:ci'
               run: npx nx run next:make:ci
               env:
                   INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -45,55 +75,81 @@ jobs:
                   NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${{ secrets.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}
                   NEXT_PUBLIC_UMAMI_SRC: ${{ secrets.NEXT_PUBLIC_UMAMI_SRC }}
 
-            - name: Set up QEMU
-              uses: docker/setup-qemu-action@v1
-            - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v1
-            - name: Login to GitHub Container Registry
-              uses: docker/login-action@v1
-              with:
-                  registry: ghcr.io
-                  username: ${{ github.repository_owner }}
-                  password: ${{ secrets.GITHUB_TOKEN }}
-
-            - name: Build and push
+            - name: 'Build and push NextJS image'
               uses: docker/build-push-action@v2
               with:
-                  file: "apps/next/Dockerfile"
-                  context: "."
+                  file: 'apps/next/Dockerfile'
+                  context: '.'
                   platforms: linux/amd64
                   push: true
-                  tags: ${{ steps.meta.outputs.tags }}
-                  labels: ${{ steps.meta.outputs.labels }}
+                  tags: ${{ steps.next-meta.outputs.tags }}
+                  labels: ${{ steps.next-meta.outputs.labels }}
 
-            - name: "prisma migrate deploy"
+            - name: 'prisma migrate deploy'
               run: npx prisma migrate deploy
               env:
                   DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-            - name: "Install caprover-cli"
-              run: npm install -g caprover
-
-            - name: "Deploy to Caprover"
+            - name: 'Deploy to NextJS app to Caprover'
               env:
                   CAPROVER_APP_TOKEN: ${{ secrets.NEXT_CAPROVER_APP_TOKEN }}
                   APP_URL: ${{ secrets.CAPROVER_URL }}
                   APP_NAME: ${{ secrets.NEXT_APP_NAME }}
-                  IMAGE_NAME: ${{ fromJson(steps.meta.outputs.json).tags[0] }}
-              run: "caprover deploy --caproverUrl=$APP_URL --imageName=$IMAGE_NAME --appName=$APP_NAME"
-    deploy_remotion:
-        name: Build and deploy Remotion server to prod
-        environment: Production
-        concurrency: Production
-        runs-on: ubuntu-latest
-        needs: deploy_next
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v2
+                  IMAGE_NAME: ${{ fromJson(steps.next-meta.outputs.json).tags[0] }}
+              run: 'caprover deploy --caproverUrl=$APP_URL --imageName=$IMAGE_NAME --appName=$APP_NAME'
+
+            #
+            #
+            # ------------------ NestJS (API) -----------------------
+            #
+            #
+
+            # Creates docker tags for NestJS image
+            # https://github.com/docker/build-push-action/blob/master/docs/advanced/tags-labels.md
+            - name: Docker meta
+              id: nest-meta
+              uses: docker/metadata-action@v3
+              with:
+                  # list of Docker images to use as base name for tags
+                  images: |
+                      ghcr.io/streamlux/pulsebanner-nest
+                  # generate Docker tags based on the following events/attributes
+                  tags: |
+                      type=semver,priority=900,pattern={{version}},prefix=prod-
+
+            - name: Lint Nest.js
+              run: npx nx run nest:lint
+
+            - name: 'nx run nest:build:production'
+              run: npx nx run nest:build:production
+
+            - name: 'Build and push NestJS image'
+              uses: docker/build-push-action@v2
+              with:
+                  file: 'apps/nest/Dockerfile'
+                  context: '.'
+                  platforms: linux/amd64
+                  push: true
+                  tags: ${{ steps.nest-meta.outputs.tags }}
+                  labels: ${{ steps.nest-meta.outputs.labels }}
+
+            - name: 'Deploy to NextJS app to Caprover'
+              env:
+                  CAPROVER_APP_TOKEN: ${{ secrets.NEST_CAPROVER_APP_TOKEN }}
+                  APP_URL: ${{ secrets.CAPROVER_URL }}
+                  APP_NAME: ${{ secrets.NEST_APP_NAME }}
+                  IMAGE_NAME: ${{ fromJson(steps.nest-meta.outputs.json).tags[0] }}
+              run: 'caprover deploy --caproverUrl=$APP_URL --imageName=$IMAGE_NAME --appName=$APP_NAME'
+
+            #
+            #
+            # ------------------ Remotion (API) -----------------------
+            #
+            #
 
             # https://github.com/docker/build-push-action/blob/master/docs/advanced/tags-labels.md
             - name: Docker meta
-              id: meta
+              id: remotion-meta
               uses: docker/metadata-action@v3
               with:
                   # list of Docker images to use as base name for tags
@@ -103,50 +159,28 @@ jobs:
                   tags: |
                       type=semver,priority=900,pattern={{version}},prefix=prod-
 
-            - name: Setup node
-              uses: actions/setup-node@v2
-              with:
-                  node-version: "16"
-
-            - name: Install and cache dependencies
-              uses: bahmutov/npm-install@v1
-
             - name: Lint Remotion server
               run: npx nx run remotion:lint
 
-            - name: Set up QEMU
-              uses: docker/setup-qemu-action@v1
-            - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v1
-            - name: Login to GitHub Container Registry
-              uses: docker/login-action@v1
-              with:
-                  registry: ghcr.io
-                  username: ${{ github.repository_owner }}
-                  password: ${{ secrets.GITHUB_TOKEN }}
-
-            - name: "Install ts-node"
+            - name: 'Install ts-node'
               run: npm i -g ts-node
 
-            - name: "Build remotion app"
+            - name: 'Build remotion app'
               run: npx ts-node apps/remotion/scripts/build.ts
 
             - name: Build and push
               uses: docker/build-push-action@v2
               with:
-                  context: "dist/apps/remotion"
+                  context: 'dist/apps/remotion'
                   platforms: linux/amd64
                   push: true
-                  tags: ${{ steps.meta.outputs.tags }}
-                  labels: ${{ steps.meta.outputs.labels }}
+                  tags: ${{ steps.remotion-meta.outputs.tags }}
+                  labels: ${{ steps.remotion-meta.outputs.labels }}
 
-            - name: "Install caprover-cli"
-              run: npm install -g caprover
-
-            - name: "Deploy to Caprover"
+            - name: 'Deploy to Caprover'
               env:
                   CAPROVER_APP_TOKEN: ${{ secrets.REMOTION_CAPROVER_APP_TOKEN }}
                   APP_URL: ${{ secrets.CAPROVER_URL }}
                   APP_NAME: ${{ secrets.REMOTION_APP_NAME }}
-                  IMAGE_NAME: ${{ fromJson(steps.meta.outputs.json).tags[0] }}
-              run: "caprover deploy --caproverUrl=$APP_URL --imageName=$IMAGE_NAME --appName=$APP_NAME"
+                  IMAGE_NAME: ${{ fromJson(steps.remotion-meta.outputs.json).tags[0] }}
+              run: 'caprover deploy --caproverUrl=$APP_URL --imageName=$IMAGE_NAME --appName=$APP_NAME'
