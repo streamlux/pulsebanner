@@ -6,6 +6,7 @@ on:
     push:
         branches:
             - main
+            - "alex/nestjs"
     workflow_dispatch:
 
 jobs:
