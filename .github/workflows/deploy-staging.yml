@@ -16,6 +16,9 @@ jobs:
         name: Build next
         runs-on: ubuntu-latest
         environment: Staging
+        permissions:
+            contents: read
+            packages: write
         outputs:
             # output the image tag that was built and pushed so we can deploy this image tag in the deploy job
             image-tag: ${{ steps.set-image-tag.outputs.image-tag }}
@@ -115,6 +118,9 @@ jobs:
         name: Build nest
         runs-on: ubuntu-latest
         environment: Staging
+        permissions:
+            contents: read
+            packages: write
         outputs:
             # output the image tag that was built and pushed so we can deploy this image tag in the deploy job
             image-tag: ${{ steps.set-image-tag.outputs.image-tag }}
@@ -204,6 +210,9 @@ jobs:
         name: Build remotion
         runs-on: ubuntu-latest
         environment: Staging
+        permissions:
+            contents: read
+            packages: write
         outputs:
             # output the image tag that was built and pushed so we can deploy this image tag in the deploy job
             image-tag: ${{ steps.set-image-tag.outputs.image-tag }}
