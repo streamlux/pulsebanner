@@ -45,7 +45,6 @@ const Page: NextPage = () => {
 
     const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
     const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
-    const partner = paymentPlanResponse === undefined ? false : true;
 
     // delete the account
     const deleteAccount = async () => {
@@ -86,7 +85,7 @@ const Page: NextPage = () => {
                                         {paymentPlan === 'Free' ? 'Become PulseBanner Member' : 'Change/Cancel PulseBanner Membership'}
                                     </Button>
                                 </Flex>
-                                {partner && (
+                                {paymentPlanResponse.partner && (
                                     <Tag variant="solid" colorScheme="teal">
                                         PulseBanner Partner
                                     </Tag>
@@ -110,7 +109,7 @@ const Page: NextPage = () => {
                                     {({ isOpen, onClose }) => (
                                         <>
                                             <PopoverTrigger>
-                                                <Button colorScheme="red" disabled={paymentPlan !== 'Free' || partner}>
+                                                <Button colorScheme="red" disabled={paymentPlan !== 'Free' || paymentPlanResponse?.partner}>
                                                     Delete account and erase all data
                                                 </Button>
                                             </PopoverTrigger>
