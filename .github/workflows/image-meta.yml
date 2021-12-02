@@ -1,0 +1,61 @@
+on:
+    workflow_call:
+        inputs:
+            image-name:
+                required: true
+                type: string
+
+env:
+    STAGING_TAGS: |
+        type=sha,prefix=${{ env.BRANCH_NAME }}-,priority=1000
+        type=semver,priority=900,pattern={{version}},prefix=staging-
+    PRODUCTION_TAGS: |
+        type=semver,priority=900,pattern={{version}},prefix=prod-
+
+jobs:
+    image-meta:
+        name: Get image metadata
+        runs-on: ubuntu-latest
+        outputs:
+            branch-name: ${{ steps.set-branch-name.outputs.branch-name }}
+            image-tags: ${{ steps.set-image-tabs.outputs.image-tabs }}
+            image-labels: ${{ steps.set-image-labels.outputs.image-labels }}
+        steps:
+            # checkout GitHub repository
+            - name: Checkout
+              uses: actions/checkout@v2
+
+            # If merge event triggered this, get the name of the branch
+            - name: Get branch name (merge)
+              if: github.event_name != 'pull_request'
+              shell: bash
+              run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
+
+            # If PR create event triggered this, get the name of the branch
+            - name: Get branch name (pull request)
+              if: github.event_name == 'pull_request'
+              shell: bash
+              run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
+
+            - id: set-branch-name
+              run: echo "::set-output name=branch-name::${{ env.BRANCH_NAME }}"
+
+            # This creates docker tags
+            # https://github.com/docker/build-push-action/blob/master/docs/advanced/tags-labels.md
+            - name: Docker meta
+              id: next-meta
+              uses: docker/metadata-action@v3
+              with:
+                  # list of Docker images to use as base name for tags
+                  images: |
+                      ghcr.io/streamlux/${{ inputs.image-name }}
+                  # generate Docker tags based on the following events/attributes
+                  tags: |
+                      type=sha,prefix=${{ env.BRANCH_NAME }}-,priority=1000
+                      type=semver,priority=900,pattern={{version}},prefix=staging-
+
+            - id: set-image-tag
+              run: echo "::set-output name=image-tag::${{ steps.nest-meta.outputs.tags }}"
+
+            - id: set-image-labels
+              run: echo "::set-output name=image-labels::${{ steps.nest-meta.outputs.labels }}"
