@@ -1,8 +1,10 @@
+import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
 import { CheckIcon } from '@chakra-ui/icons';
 import { WrapItem, Box, Flex, VStack, Heading, HStack, chakra, ScaleFade, Button, List, ListItem, ListIcon, Text, Tag, Stack, Spacer } from '@chakra-ui/react';
 import type { Price, PriceInterval, Product } from '@prisma/client';
 import React from 'react';
 import { FaArrowRight } from 'react-icons/fa';
+import useSWR from 'swr';
 import { Card } from '../Card';
 
 interface ProductProps {
@@ -14,6 +16,10 @@ interface ProductProps {
 export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, handlePricingClick }) => {
     const price: Price = product?.prices?.find((one: Price) => one.interval === billingInterval);
     const monthlyPrice: Price = product?.prices.find((one: Price) => one.interval === 'month');
+
+    const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
+    const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
+
     if (!price || !monthlyPrice) {
         return null;
     }
@@ -85,11 +91,11 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
                         ))}
                     </List>
                 </Box>
-
+              
                 <Box justifySelf="flex-end">
                     <Flex w="full" justifyContent="space-between">
                         <Spacer />
-                        <Button fontWeight="bold" onClick={() => handlePricingClick(price.id)} colorScheme="green" rightIcon={<FaArrowRight />}>
+                        <Button fontWeight="bold" disabled={product.name === paymentPlan} onClick={() => handlePricingClick(price.id)} colorScheme="green" rightIcon={<FaArrowRight />}>
                             Buy {product.name}
                         </Button>
                     </Flex>
