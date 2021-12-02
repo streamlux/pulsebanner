@@ -18,6 +18,7 @@ import {
     Container,
     Flex,
     Spacer,
+    Tag,
 } from '@chakra-ui/react';
 import type { NextPage } from 'next';
 import { getSession, signOut } from 'next-auth/react';
@@ -77,7 +78,6 @@ const Page: NextPage = () => {
                                         <Text>Current PulseBanner Membership status: </Text>
                                         <Text>{paymentPlan === 'Free' ? 'None' : paymentPlan}</Text>
                                     </HStack>
-                                    <pre>{JSON.stringify(paymentPlanResponse, null, 2)}</pre>
                                     <Button
                                         onClick={async () => {
                                             await handleCreatePortal();
@@ -86,6 +86,11 @@ const Page: NextPage = () => {
                                         {paymentPlan === 'Free' ? 'Become PulseBanner Member' : 'Change/Cancel PulseBanner Membership'}
                                     </Button>
                                 </Flex>
+                                {partner && (
+                                    <Tag variant="solid" colorScheme="teal">
+                                        PulseBanner Partner
+                                    </Tag>
+                                )}
                             </Box>
                         </Card>
                     </Box>
