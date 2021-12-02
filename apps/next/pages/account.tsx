@@ -85,7 +85,7 @@ const Page: NextPage = () => {
                                         {paymentPlan === 'Free' ? 'Become PulseBanner Member' : 'Change/Cancel PulseBanner Membership'}
                                     </Button>
                                 </Flex>
-                                {paymentPlanResponse.partner && (
+                                {paymentPlanResponse?.partner && (
                                     <Tag variant="solid" colorScheme="teal">
                                         PulseBanner Partner
                                     </Tag>
