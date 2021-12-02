@@ -8,8 +8,6 @@ on:
             - main
     workflow_dispatch:
 
-concurrency: Staging
-
 jobs:
     deploy_next:
         name: Deploy NextJS
