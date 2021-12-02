@@ -9,7 +9,7 @@ export type APIPaymentObject = {
 };
 
 const checkPartnerAccount = async (userId: string): Promise<boolean> => {
-    const userInfo = await prisma.user?.findFirst({
+    const userInfo = await prisma.user.findFirst({
         where: {
             id: userId,
         },
@@ -22,7 +22,7 @@ const checkPartnerAccount = async (userId: string): Promise<boolean> => {
 };
 
 const checkPaymentPlan = async (userId: string): Promise<PaymentPlan> => {
-    const paymentPlan = await prisma.subscription?.findFirst({
+    const paymentPlan = await prisma.subscription.findFirst({
         where: {
             userId: userId,
         },
@@ -33,7 +33,7 @@ const checkPaymentPlan = async (userId: string): Promise<PaymentPlan> => {
 
     // check what price level they are using
     if (paymentPlan !== null) {
-        const prices = await prisma.price?.findFirst({
+        const prices = await prisma.price.findFirst({
             where: {
                 id: paymentPlan.priceId,
             },
@@ -44,7 +44,7 @@ const checkPaymentPlan = async (userId: string): Promise<PaymentPlan> => {
 
         // check what product they are using
         if (prices !== null) {
-            const product = await prisma.product?.findFirst({
+            const product = await prisma.product.findFirst({
                 where: {
                     id: prices.productId,
                 },
@@ -52,8 +52,6 @@ const checkPaymentPlan = async (userId: string): Promise<PaymentPlan> => {
                     name: true,
                 },
             });
-
-            console.log(';product: ', product);
 
             if (product !== null) {
                 return product.name as PaymentPlan;
