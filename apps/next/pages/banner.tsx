@@ -40,6 +40,7 @@ import { StarIcon } from '@chakra-ui/icons';
 import { trackEvent } from '@app/util/umami/trackEvent';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
 import { discordLink } from '@app/util/constants';
+import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
@@ -61,14 +62,14 @@ export default function Page() {
     const toast = useToast();
     const breakpoint = useBreakpoint();
 
-    // call subscription endpoint here to get back their status. 3 statuses: free (obj is null), personal, professional
-    const { data: subscriptionStatus } = useSWR<any>('subscription', async () => await (await fetch('/api/user/subscription')).json());
+    const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
+
+    const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
 
     const availableForAccount = (): boolean => {
-        if (subscriptionStatus === undefined || subscriptionStatus[0] === undefined) {
+        if (paymentPlan === 'Free') {
             return false;
         }
-        // add additional checks when we are actually offering stuff for professional
         return true;
     };
 
@@ -77,12 +78,12 @@ export default function Page() {
         setFgId((data?.foregroundId as keyof typeof ForegroundTemplates) ?? defaultForeground);
         setBgProps(data?.backgroundProps ?? {});
         setFgProps(data?.foregroundProps ?? {});
-        if (subscriptionStatus === undefined || subscriptionStatus[0] === undefined) {
+        if (paymentPlan === 'Free') {
             setWatermark(true);
         } else {
             setWatermark(false);
         }
-    }, [data, subscriptionStatus]);
+    }, [data, paymentPlan]);
 
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch();
 

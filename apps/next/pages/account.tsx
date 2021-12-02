@@ -20,6 +20,7 @@ import Link from 'next/link';
 import { getSession, signOut } from 'next-auth/react';
 import axios from 'axios';
 import useSWR from 'swr';
+import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
 
 const Page: NextPage = () => {
     const handleCreatePortal = async () => {
@@ -37,17 +38,14 @@ const Page: NextPage = () => {
         window.location.assign(url);
     };
 
-    const { data: subscriptionStatus } = useSWR<any>('subscription', async () => await (await fetch('/api/user/subscription')).json());
-
-    const isSubscribed = subscriptionStatus === undefined || subscriptionStatus[0] === undefined ? false : true;
+    const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
+    const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
+    const partner = paymentPlanResponse === undefined ? false : true;
 
     // delete the account
     const deleteAccount = async () => {
-        console.log('deleting account');
         const sessionInfo = await getSession();
-        console.log('sessionInfo: ', sessionInfo);
         if ((sessionInfo?.user as any)?.id) {
-            console.log('here');
             const userId = (sessionInfo?.user as any)?.id;
             // delete all webhooks
             await axios.delete('/api/twitch/subscription');
@@ -73,7 +71,7 @@ const Page: NextPage = () => {
                 {({ isOpen, onClose }) => (
                     <>
                         <PopoverTrigger>
-                            <Button disabled={isSubscribed ?? true}>Remove account</Button>
+                            <Button disabled={paymentPlan === 'Free' || partner}>Remove account</Button>
                         </PopoverTrigger>
                         <PopoverContent>
                             <PopoverArrow />
