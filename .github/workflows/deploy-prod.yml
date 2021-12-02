@@ -1,12 +1,8 @@
 name: Deploy to production
-# This workflow is triggered on pushes to the repository.
+
 on:
-    # Trigger the workflow on push or pull request,
-    # but only for the main branch
-    push:
-        branches:
-            - main
-    workflow_dispatch:
+    release: # https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#release
+        types: [published] # GITHUB_REF Tag of release
 
 jobs:
     deploy_next:
