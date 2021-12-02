@@ -313,15 +313,15 @@ jobs:
                 include:
                     - app: nest
                       name: nest
-                      token: ${{ env.NEST_CAPROVER_APP_TOKEN }}
+                      token-key: NEST_CAPROVER_APP_TOKEN
                       image: ${{ needs.build_nest.outputs.image-tag }}
                     - app: next
                       name: next
-                      token: ${{ env.NEXT_CAPROVER_APP_TOKEN }}
+                      token-key: NEXT_CAPROVER_APP_TOKEN
                       image: ${{ needs.build_next.outputs.image-tag }}
                     - app: remotion
                       name: remotion
-                      token: ${{ env.REMOTION_CAPROVER_APP_TOKEN }}
+                      token-key: REMOTION_CAPROVER_APP_TOKEN
                       image: ${{ needs.build_remotion.outputs.image-tag }}
         steps:
             # Install Caprover CLI, which we use to deploy images to Caprover
@@ -330,8 +330,8 @@ jobs:
 
             - name: 'Deploy ${{ matrix.name }}'
               env:
-                  APP_URL: ${{ env.CAPROVER_URL }}
                   APP_NAME: ${{ matrix.name }}
-                  CAPROVER_APP_TOKEN: ${{ matrix.token }}
+                  APP_URL: ${{ env.CAPROVER_URL }}
+                  CAPROVER_APP_TOKEN: ${{ env[matrix.token-key] }}
                   IMAGE_NAME: ${{ matrix.image }}
               run: 'caprover deploy --caproverUrl=$APP_URL --imageName=$IMAGE_NAME --appName=$APP_NAME'
