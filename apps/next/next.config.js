@@ -27,7 +27,16 @@ const nextConfig = {
                 permanent: true,
             },
         ]
-    }
+    },
+    // proxy requests to /api/pb/* to NestJS server
+    // async rewrites() {
+    //     return [
+    //         {
+    //             source: '/api/pb/:path*',
+    //             destination: `${process.env.NEST_BASEURL}/api/:path*` // Proxy to Backend
+    //         }
+    //     ]
+    // }
 };
 
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
