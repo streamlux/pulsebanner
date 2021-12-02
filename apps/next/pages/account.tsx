@@ -56,7 +56,11 @@ const Page: NextPage = () => {
             await axios.post(`/api/storage/delete/${userId}`);
 
             // call api endpoint here to delete from prisma db
-            await axios.post(`/api/user/delete/${userId}`);
+            await axios.delete(`/api/user`);
+
+            signOut({
+                callbackUrl: '/',
+            });
         }
     };
 

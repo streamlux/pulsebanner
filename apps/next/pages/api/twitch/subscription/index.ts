@@ -45,6 +45,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
             // this is only for deleting webhooks i.e. when user terminates account
         } else if (req.method === 'DELETE') {
+            if (!twitchAccount) {
+                res.status(200).send('No twitch account. Nothing deleted.');
+                return;
+            }
             const userSubscriptions = allSubscriptions.filter((subscription) => subscription.condition.broadcaster_user_id === twitchAccount.providerAccountId);
             userSubscriptions.forEach(async (webhook) => {
                 await twitchAxios.delete(`/helix/eventsub/subscriptions?id=${webhook.id}`, {

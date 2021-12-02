@@ -9,14 +9,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await NextCors(req, res, {
         // Options
         // methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-        methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+        methods: ['POST'],
         origin: '*',
         optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
     });
 
     // communicate with revue
-    console.log('here with data: ', req.body);
-
     const response = await axios.post(
         'https://www.getrevue.co/api/v2/subscribers',
         {
@@ -28,6 +26,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
     );
 
-    console.log('response: ', response.status);
-    return res.status(response.status).send(response.status !== 200 ? 'Failure' : 'Success');
+    res.status(response.status).send(response.status !== 200 ? 'Failure' : 'Success');
 }
