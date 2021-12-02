@@ -6,6 +6,7 @@ import { getSecondsSinceEpoch } from '@app/util/common';
 import { refreshAccessToken } from '@app/util/twitch/refreshAccessToken';
 import prisma from '@app/util/ssr/prisma';
 import axios from 'axios';
+import { nanoid } from 'nanoid';
 
 // File contains options and hooks for next-auth, the authentication package
 // we are using to handle signup, signin, etc.
@@ -23,6 +24,24 @@ export default NextAuth({
         TwitterProvider({
             clientId: process.env.TWITTER_ID,
             clientSecret: process.env.TWITTER_SECRET,
+            // See here for the type of TwitterProfile:
+            // https://github.com/nextauthjs/next-auth/blob/main/src/providers/twitter.ts
+            profile: (profile: any) => {
+                const user: User & { id: string } = {
+                    id: profile.id_str,
+                    name: profile.name,
+                    // Twitter does not require email to make account, since you can sign up with phone number
+                    // so we have to fill it in with a uuid, to protect against someone signing up with someone elses
+                    // email and then taking over their account
+                    email: profile.email ?? nanoid(),
+                    image: profile.profile_image_url_https.replace(
+                        /_normal\.(jpg|png|gif)$/,
+                        ".$1"
+                    ),
+                };
+
+                return user;
+            }
         }),
     ],
     // Database optional. MySQL, Maria DB, Postgres and MongoDB are supported.
