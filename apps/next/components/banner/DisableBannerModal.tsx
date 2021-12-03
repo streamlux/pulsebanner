@@ -31,7 +31,7 @@ export const DisableBannerModal: React.FC<Props> = ({ isOpen, onClose }) => {
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>
-                    <Center>Why Disable Your Banner?</Center>
+                    <Center>Reason for disabling your banner</Center>
                 </ModalHeader>
                 <ModalCloseButton onClick={() => toastHelper()} />
                 <ModalBody>
