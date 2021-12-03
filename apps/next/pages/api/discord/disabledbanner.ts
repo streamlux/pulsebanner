@@ -20,7 +20,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const body = req.body;
-    console.log('body: ', body);
 
     if (process.env.ENABLE_DISCORD_WEBHOOKS === 'true') {
         const response = await axios.post(process.env.DISCORD_BANNER_DISABLED_WEBHOOK_URL, {
