@@ -36,7 +36,12 @@ const nextConfig = {
     //             destination: `${process.env.NEST_BASEURL}/api/:path*` // Proxy to Backend
     //         }
     //     ]
-    // }
+    // },
+    // fix heap limit allocation failed issue with NextJS 12
+    // https://github.com/vercel/next.js/issues/30330#issuecomment-952172377
+    experimental: {
+        esmExternals: false,
+    },
 };
 
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
