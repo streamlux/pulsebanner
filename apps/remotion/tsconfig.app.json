@@ -5,25 +5,16 @@
         "module": "commonjs",
         "esModuleInterop": true,
         "noEmit": true,
-        "types": [
-            "node"
-        ],
+        "types": ["node"],
         "target": "ES2018",
-		"jsx": "react-jsx",
-		"strict": true,
-		"lib": ["es2015", "DOM"],
-		"skipLibCheck": true,
-		"forceConsistentCasingInFileNames": true,
+        "jsx": "react-jsx",
+        "strict": true,
+        "lib": ["es2015", "DOM"],
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
         "allowSyntheticDefaultImports": true,
         "isolatedModules": true
     },
-    "exclude": [
-        "**/*.spec.ts"
-    ],
-    "include": [
-        "**/*.ts",
-        "**/*.tsx",
-        "**/*.js",
-        "**/*.jsx"
-    ]
+    "exclude": ["**/*.spec.ts", "**/*.test.ts"],
+    "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"]
 }
