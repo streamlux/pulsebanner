@@ -29,14 +29,14 @@ const nextConfig = {
         ]
     },
     // proxy requests to /api/pb/* to NestJS server
-    // async rewrites() {
-    //     return [
-    //         {
-    //             source: '/api/pb/:path*',
-    //             destination: `${process.env.NEST_BASEURL}/api/:path*` // Proxy to Backend
-    //         }
-    //     ]
-    // },
+    async rewrites() {
+        return [
+            {
+                source: '/api/pulse/:path*',
+                destination: `${process.env.NEST_BASEURL}/api/:path*` // Proxy to Backend
+            }
+        ]
+    },
     // fix heap limit allocation failed issue with NextJS 12
     // https://github.com/vercel/next.js/issues/30330#issuecomment-952172377
     experimental: {

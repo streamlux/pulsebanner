@@ -1,5 +1,5 @@
 import { Account } from "@prisma/client";
-import { getSecondsSinceEpoch } from "../common";
+import { getSecondsSinceEpoch } from "@pulsebanner/util";
 
 export async function refreshAccessToken(refreshToken: string): Promise<Pick<Account, 'access_token' | 'expires_at' | 'scope' | 'token_type' | 'refresh_token'>> {
     try {

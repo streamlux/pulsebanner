@@ -1,6 +1,7 @@
 {
     "version": 2,
     "projects": {
+        "auth": "libs/auth",
         "nest": "apps/nest",
         "next": "apps/next",
         "next-e2e": "apps/next-e2e",
@@ -9,6 +10,8 @@
         "remotion-components": "libs/remotion/components",
         "remotion-forms": "libs/remotion/forms",
         "remotion-preview": "libs/remotion/preview",
-        "remotion-templates": "libs/remotion/templates"
+        "remotion-templates": "libs/remotion/templates",
+        "twitch": "libs/twitch",
+        "util": "libs/util"
     }
 }

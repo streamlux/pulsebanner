@@ -2,8 +2,7 @@ import NextAuth, { User } from 'next-auth';
 import TwitchProvider from 'next-auth/providers/twitch';
 import TwitterProvider from 'next-auth/providers/twitter';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import { getSecondsSinceEpoch } from '@app/util/common';
-import { refreshAccessToken } from '@app/util/twitch/refreshAccessToken';
+import { getSessionFunc } from '@pulsebanner/auth';
 import prisma from '@app/util/ssr/prisma';
 import axios from 'axios';
 import { nanoid } from 'nanoid';
@@ -120,46 +119,7 @@ export default NextAuth({
         // async session({ session, token, user }) { return session },
         // async jwt({ token, user, account, profile, isNewUser }) { return token },
         // Use this session callback to add custom information to the session. Ex: role
-        async session({ session, token, user }) {
-            const accounts = await prisma.account.findMany({
-                where: {
-                    userId: user.id,
-                },
-            });
-            session.user['role'] = user.role;
-            session.userId = user.id;
-            session.user['id'] = user.id;
-            session.role = user.role;
-            session.accounts = {};
-            accounts.forEach(async (account) => {
-                if (account.provider === 'twitch') {
-                    // Check if twitch access token is expired
-                    if (account.expires_at <= getSecondsSinceEpoch()) {
-                        console.log('refreshing access token');
-                        // Use the refresh token to request a new access token from twitch
-                        const data = await refreshAccessToken(account.refresh_token);
-
-                        // update the access token and other token details in the database
-                        await prisma.account.update({
-                            where: {
-                                id: account.id,
-                            },
-                            data: {
-                                access_token: data.access_token,
-                                refresh_token: data.refresh_token,
-                                expires_at: data.expires_at,
-                                token_type: data.token_type,
-                                scope: data.scope,
-                            },
-                        });
-                    }
-                }
-
-                // Boolean specifying if the user has connected this account or not
-                session.accounts[account.provider] = true;
-            });
-            return session;
-        }
+        session: getSessionFunc(prisma)
     },
 
     // Events are useful for logging
