@@ -57,9 +57,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // call twitter api to get imageUrl and convert to base64
     const bannerUrl: string = await getBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
-
+    const bucketName = 'pulsebanner';
     // store the current banner in s3
-    await localAxios.put(`/api/storage/upload/${userId}?imageUrl=${bannerUrl}`);
+    await localAxios.put(`/api/storage/upload/${userId}?imageUrl=${bannerUrl}&bucket=${bucketName}`);
 
     // get the banner info saved in Banner table
 
@@ -68,8 +68,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         backgroundId: bannerEntry.backgroundId ?? 'CSSBackground',
         foregroundId: bannerEntry.foregroundId ?? 'ImLive',
         // pass in thumbnail url
-        foregroundProps: { ...bannerEntry.foregroundProps as Prisma.JsonObject, thumbnailUrl: streamThumbnailUrl } ?? {},
-        backgroundProps: bannerEntry.backgroundProps as Prisma.JsonObject ?? {},
+        foregroundProps: { ...(bannerEntry.foregroundProps as Prisma.JsonObject), thumbnailUrl: streamThumbnailUrl } ?? {},
+        backgroundProps: (bannerEntry.backgroundProps as Prisma.JsonObject) ?? {},
     };
 
     // pass in the bannerEntry info

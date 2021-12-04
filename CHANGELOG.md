@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+ - All user banners are saved to different bucket for safe keeping and backup on sign up
+
 ## [0.1.14] - 2021-12-02
 
 ### Fixed
