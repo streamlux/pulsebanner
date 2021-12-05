@@ -1,8 +1,8 @@
 import { PrismaClient, Role, User } from '@prisma/client';
 import { JWT } from 'next-auth/jwt';
 import { ISODateString, Session, User as NextUser } from 'next-auth';
-import { getSecondsSinceEpoch } from '@pulsebanner/util';
-import { refreshAccessToken } from '@pulsebanner/twitch';
+import { getSecondsSinceEpoch } from '@pulsebanner/util/common';
+import { refreshAccessToken } from '@pulsebanner/util/twitch';
 
 export interface CustomSession extends Record<string, unknown> {
     user?: {
@@ -18,23 +18,22 @@ export interface CustomSession extends Record<string, unknown> {
     expires: ISODateString;
 }
 
-export function getSessionFunc(prisma: PrismaClient): (params: { session: Session; user: NextUser; token?: JWT; }) => Promise<CustomSession> {
-    const sessionFactory = async ({ session, user }: { session: Session; user: User; token?: JWT; }): Promise<CustomSession> => {
-
+export function getSessionFunc(prisma: PrismaClient): (params: { session: Session; user: NextUser; token?: JWT }) => Promise<CustomSession> {
+    const sessionFactory = async ({ session, user }: { session: Session; user: User; token?: JWT }): Promise<CustomSession> => {
         const customSession: CustomSession = {
             ...session,
             user: {
                 ...session.user,
                 role: user.role,
-                id: user.id
+                id: user.id,
             },
             accounts: {
                 twitch: false,
-                twitter: false
+                twitter: false,
             },
             role: user.role,
-            userId: user.id
-        }
+            userId: user.id,
+        };
 
         const accounts = await prisma.account.findMany({
             where: {
@@ -71,8 +70,7 @@ export function getSessionFunc(prisma: PrismaClient): (params: { session: Sessio
         });
 
         return customSession;
-    }
+    };
 
     return sessionFactory;
-
 }

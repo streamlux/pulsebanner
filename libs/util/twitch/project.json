@@ -1,20 +1,20 @@
 {
-    "root": "libs/util",
-    "sourceRoot": "libs/util/src",
+    "root": "libs/util/twitch",
+    "sourceRoot": "libs/util/twitch/src",
     "projectType": "library",
     "targets": {
         "lint": {
             "executor": "@nrwl/linter:eslint",
             "outputs": ["{options.outputFile}"],
             "options": {
-                "lintFilePatterns": ["libs/util/**/*.ts"]
+                "lintFilePatterns": ["libs/util/twitch/**/*.ts"]
             }
         },
         "test": {
             "executor": "@nrwl/jest:jest",
-            "outputs": ["coverage/libs/util"],
+            "outputs": ["coverage/libs/util/twitch"],
             "options": {
-                "jestConfig": "libs/util/jest.config.js",
+                "jestConfig": "libs/util/twitch/jest.config.js",
                 "passWithNoTests": true
             }
         }

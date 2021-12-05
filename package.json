@@ -6,6 +6,7 @@
         "start": "nx serve",
         "build": "nx build",
         "test": "nx test",
+        "type": "./scripts/type-check.sh",
         "prepare": "husky install"
     },
     "prisma": {

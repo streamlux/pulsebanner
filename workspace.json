@@ -11,7 +11,7 @@
         "remotion-forms": "libs/remotion/forms",
         "remotion-preview": "libs/remotion/preview",
         "remotion-templates": "libs/remotion/templates",
-        "twitch": "libs/twitch",
-        "util": "libs/util"
+        "util-common": "libs/util/common",
+        "util-twitch": "libs/util/twitch"
     }
 }

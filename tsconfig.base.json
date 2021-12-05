@@ -46,11 +46,11 @@
             "@pulsebanner/templates": [
                 "libs/templates/src/index.ts"
             ],
-            "@pulsebanner/util": [
-                "libs/util/src/index.ts"
+            "@pulsebanner/util/common": [
+                "libs/util/common/src/index.ts"
             ],
-            "@pulsebanner/twitch": [
-                "libs/twitch/src/index.ts"
+            "@pulsebanner/util/twitch": [
+                "libs/util/twitch/src/index.ts"
             ]
         },
         "allowSyntheticDefaultImports": true
