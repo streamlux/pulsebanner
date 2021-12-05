@@ -6,6 +6,8 @@ import { getSessionFunc } from '@pulsebanner/auth';
 import prisma from '@app/util/ssr/prisma';
 import axios from 'axios';
 import { nanoid } from 'nanoid';
+import { getBanner } from '@app/util/twitter/twitterHelpers';
+import { localAxios } from '@app/util/axios';
 
 // File contains options and hooks for next-auth, the authentication package
 // we are using to handle signup, signin, etc.
@@ -26,7 +28,7 @@ export default NextAuth({
             // See here for the type of TwitterProfile:
             // https://github.com/nextauthjs/next-auth/blob/main/src/providers/twitter.ts
             profile: (profile: any) => {
-                if (profile.email === "" || profile.email === undefined || profile.email === null) {
+                if (profile.email === '' || profile.email === undefined || profile.email === null) {
                     // Twitter does not require email to make account, since you can sign up with phone number
                     // so we have to fill it in with a uuid, to protect against someone signing up with someone elses
                     // email and then taking over their account
@@ -36,14 +38,11 @@ export default NextAuth({
                     id: profile.id_str,
                     name: profile.name,
                     email: profile.email,
-                    image: profile.profile_image_url_https.replace(
-                        /_normal\.(jpg|png|gif)$/,
-                        ".$1"
-                    ),
+                    image: profile.profile_image_url_https.replace(/_normal\.(jpg|png|gif)$/, '.$1'),
                 };
 
                 return user;
-            }
+            },
         }),
     ],
     // Database optional. MySQL, Maria DB, Postgres and MongoDB are supported.
@@ -111,10 +110,10 @@ export default NextAuth({
         // async signIn({ user, account, profile, email, credentials }) { return true },
         // async redirect({ url, baseUrl }) { return baseUrl },
         redirect({ url, baseUrl }) {
-            if (url.startsWith(baseUrl)) return url
+            if (url.startsWith(baseUrl)) return url;
             // Allows relative callback URLs
-            else if (url.startsWith("/")) return new URL(url, baseUrl).toString()
-            return baseUrl
+            else if (url.startsWith('/')) return new URL(url, baseUrl).toString();
+            return baseUrl;
         },
         // async session({ session, token, user }) { return session },
         // async jwt({ token, user, account, profile, isNewUser }) { return token },
@@ -130,11 +129,25 @@ export default NextAuth({
                 // get total # of users, then make request to Discord webhook to send a message
                 prisma.user.count().then((value) => {
                     axios.post(process.env.DISCORD_WEBHOOK_URL, {
-                        content: `"${message.user.name}" signed up for PulseBanner! Total users: ${value}`
+                        content: `"${message.user.name}" signed up for PulseBanner! Total users: ${value}`,
                     });
                 });
             }
-        }
+        },
+        signIn: (message: { user: User; account: any; isNewUser: boolean }) => {
+            // we automatically upload the user's banner to s3 storage on first sign in
+            if (message.isNewUser === true && message.account.provider === 'twitter') {
+                const twitterProvider = message.account;
+                getBanner(twitterProvider.oauth_token, twitterProvider.oauth_token_secret, twitterProvider.providerAccountId).then((bannerUrl) => {
+
+                    const bucketName = 'bannerbackup';
+
+                    localAxios.put(`/api/storage/upload/${message.user.id}?imageUrl=${bannerUrl}&bucket=${bucketName}`).then((resp) => {
+                        console.log('Uploaded Twitter banner on new user signup.');
+                    });
+                });
+            }
+        },
     },
 
     // You can set the theme to 'light', 'dark' or use 'auto' to default to the

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.1.15] - 2021-12-05
+
+### Fixed
+
+- Fixed twitch client token not refreshing
+
+### Added
+
+ - Twitch username is now option to show on your banner
+ - All user banners are saved to different bucket for safe keeping and backup on sign up
+
 ## [0.1.14] - 2021-12-02
 
 ### Fixed

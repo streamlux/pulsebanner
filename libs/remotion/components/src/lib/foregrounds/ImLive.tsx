@@ -10,6 +10,8 @@ type ImLiveProps = {
     fontColor: string;
     arrow: boolean;
     showText: boolean;
+    showUsername: boolean;
+    username?: string;
     thumbnailBorderColor: string;
 };
 
@@ -20,6 +22,8 @@ export const ImLive: React.FC<ImLiveProps> = ({
     thumbnailBorderColor = 'rgb(145, 71, 255)',
     arrow = true,
     showText = true,
+    showUsername = true,
+    username,
 }) => {
     return (
         <div style={{ width: '100%', height: '100%', overflow: 'hidden', fontFamily: 'Inter' }}>
@@ -27,6 +31,7 @@ export const ImLive: React.FC<ImLiveProps> = ({
                 <div style={{ width: '100%', alignItems: 'flex-end', paddingTop: '4px' }}>
                     {showText && <h1 style={{ color: fontColor, fontSize: '86px', width: '100%', textAlign: 'center', alignItems: 'flex-end', margin: 0 }}>{text}</h1>}
                 </div>
+
                 <div style={{ display: 'flex', width: '100%', height: 'min', alignItems: 'bottom', justifyContent: 'flex-end' }}>
                     <div
                         style={{
@@ -75,6 +80,34 @@ export const ImLive: React.FC<ImLiveProps> = ({
                                 LIVE
                             </div>
                             <Img src={thumbnailUrl} />
+                            <div style={{ display: 'flex', padding: '2px 0 2px 0', height: '100%' }}>
+                                <div
+                                    style={{
+                                        height: '100%',
+                                        width: '100%',
+                                        alignItems: 'flex-end',
+                                        textAlign: 'center',
+                                        display: 'flex',
+                                        justifyItems: 'center',
+                                        alignContent: 'center',
+                                    }}
+                                >
+                                    {showUsername && (
+                                        <h1
+                                            style={{
+                                                color: fontColor,
+                                                fontSize: '36px',
+                                                width: '100%',
+                                                textAlign: 'center',
+                                                alignItems: 'flex-end',
+                                                margin: 0,
+                                            }}
+                                        >
+                                            {username}
+                                        </h1>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

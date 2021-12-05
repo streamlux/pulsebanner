@@ -17,11 +17,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const userId: string = req.query.userId as string;
     const imageUrl: string = req.query.imageUrl as string;
+    const bucketName: string = req.query.bucket as string;
 
     const imageBase64 = imageUrl === 'empty' ? 'empty' : await imageToBase64(imageUrl);
 
     const s3 = createS3(env.DO_SPACE_ENDPOINT, env.DO_ACCESS_KEY, env.DO_SECRET);
-    s3.upload({ Bucket: 'pulsebanner', Key: userId, Body: imageBase64 }, null, (err, _data) => {
+    s3.upload({ Bucket: bucketName, Key: userId, Body: imageBase64 }, null, (err, _data) => {
         if (err) {
             console.log('error: ', err);
             res.status(400).send('Error uploading image to s3 storage');

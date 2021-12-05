@@ -11,6 +11,8 @@ export const ImLive: Layer<typeof ForegroundComponents.ImLive> = {
         thumbnailBorderColor: 'rgb(145, 71, 255)',
         fontColor: '#ffffff',
         showText: true,
+        showUsername: true,
+        username: 'Username Here!',
     },
     name: 'Live stream',
     description: 'Twitch stream description',

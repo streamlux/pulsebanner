@@ -41,6 +41,8 @@ import { trackEvent } from '@app/util/umami/trackEvent';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
 import { discordLink } from '@app/util/constants';
 import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
+import { DisableBannerModal } from '@app/components/banner/DisableBannerModal';
+import { useSession } from 'next-auth/react';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
@@ -58,6 +60,20 @@ export default function Page() {
     const ForegroundTemplate = ForegroundTemplates[fgId];
     const Form = BackgroundTemplate.form;
     const FgForm = ForegroundTemplate.form;
+
+    const sessionInfo = useSession();
+    const userId = sessionInfo.data?.userId;
+
+    const { data: twitchInfo } = useSWR(
+        `twitchInfo_${userId}`,
+        userId !== undefined
+            ? async () => {
+                  const response = await axios.get(`/api/twitch/username/${userId}`);
+                  setFgProps({ ...fgProps, username: response.data.displayName });
+                  return response;
+              }
+            : null
+    );
 
     const toast = useToast();
     const breakpoint = useBreakpoint();
@@ -96,7 +112,7 @@ export default function Page() {
                 foregroundId: fgId,
                 backgroundId: bgId,
                 backgroundProps: { ...BackgroundTemplate.defaultProps, ...bgProps },
-                foregroundProps: { ...ForegroundTemplate.defaultProps, ...fgProps },
+                foregroundProps: { ...ForegroundTemplate.defaultProps, ...fgProps, username: twitchInfo.data.displayName ?? '' },
             });
             mutate();
         }
@@ -111,14 +127,7 @@ export default function Page() {
             await axios.put(bannerEndpoint);
             off();
             if (data && data.enabled) {
-                toast({
-                    title: 'Banner Deactivated',
-                    description: 'Your banner will not change when you stream next time. Re-enable to get banner updates!',
-                    status: 'success',
-                    duration: 7000,
-                    isClosable: true,
-                    position: 'top',
-                });
+                bannerDisabledToggle();
             } else {
                 toast({
                     title: 'Banner Activated',
@@ -131,12 +140,13 @@ export default function Page() {
             }
             mutate({
                 ...data,
-                enabled: !data.enabled,
+                enabled: data === undefined ? false : !data.enabled,
             });
         }
     };
 
     const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
+    const { isOpen: disableBannerIsOpen, onClose: disableBannerOnClose, onToggle: bannerDisabledToggle } = useDisclosure();
 
     const showPricing: (force?: boolean) => boolean = (force?: boolean) => {
         if (!availableForAccount() || force) {
@@ -168,6 +178,7 @@ export default function Page() {
 
     return (
         <>
+            <DisableBannerModal isOpen={disableBannerIsOpen} onClose={disableBannerOnClose} />
             <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} />
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
                 <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
@@ -210,8 +221,8 @@ export default function Page() {
                     <Flex grow={1} p="4" my="4" rounded="md" bg="whiteAlpha.100" w="full" direction="column" minH="lg">
                         <Tabs colorScheme="purple" flexGrow={1}>
                             <TabList>
-                                <Tab>Banner</Tab>
-                                <Tab>Background</Tab>
+                                <Tab className={trackEvent('click', 'banner-tab')}>Banner</Tab>
+                                <Tab className={trackEvent('click', 'background-tab')}>Background</Tab>
                             </TabList>
 
                             <TabPanels flexGrow={1}>
