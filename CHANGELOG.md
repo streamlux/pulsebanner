@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+ - Users can select different font's used in their banner
+
 ## [0.1.16] - 2021-12-05
 
 ### Changed
