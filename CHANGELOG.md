@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+ - Twitch username is now option to show on your banner
  - All user banners are saved to different bucket for safe keeping and backup on sign up
 
 ## [0.1.14] - 2021-12-02

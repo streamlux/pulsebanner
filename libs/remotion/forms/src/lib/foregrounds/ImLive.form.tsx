@@ -67,6 +67,17 @@ export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, s
             >
                 Show arrow
             </Checkbox>
+            <Checkbox
+                p="2"
+                colorScheme="purple"
+                isChecked={props.showUsername}
+                size="lg"
+                onChange={(e) => {
+                    setProps({ ...props, showUsername: !props.showUsername, username: props.username });
+                }}
+            >
+                Show username
+            </Checkbox>
             <FormControl>
                 <FormLabel>Thumbnail border color</FormLabel>
                 <CustomColorPicker
