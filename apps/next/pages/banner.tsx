@@ -64,12 +64,16 @@ export default function Page() {
     const sessionInfo = useSession();
     const userId = sessionInfo.data?.userId;
 
-    const { data: twitchInfo } = useSWR(`twitchInfo_${userId}`, async () => {
-        if (userId !== undefined) {
-            const response = await axios.get(`/api/twitch/username/${userId}`);
-            return response;
-        }
-    });
+    const { data: twitchInfo } = useSWR(
+        `twitchInfo_${userId}`,
+        userId !== undefined
+            ? async () => {
+                  const response = await axios.get(`/api/twitch/username/${userId}`);
+                  setFgProps({ ...fgProps, username: response.data.displayName });
+                  return response;
+              }
+            : null
+    );
 
     const toast = useToast();
     const breakpoint = useBreakpoint();
