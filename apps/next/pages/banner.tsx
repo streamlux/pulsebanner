@@ -221,8 +221,8 @@ export default function Page() {
                     <Flex grow={1} p="4" my="4" rounded="md" bg="whiteAlpha.100" w="full" direction="column" minH="lg">
                         <Tabs colorScheme="purple" flexGrow={1}>
                             <TabList>
-                                <Tab>Banner</Tab>
-                                <Tab>Background</Tab>
+                                <Tab className={trackEvent('click', 'banner-tab')}>Banner</Tab>
+                                <Tab className={trackEvent('click', 'background-tab')}>Background</Tab>
                             </TabList>
 
                             <TabPanels flexGrow={1}>
