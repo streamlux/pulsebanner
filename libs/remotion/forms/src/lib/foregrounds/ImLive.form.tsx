@@ -77,7 +77,7 @@ export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, s
                         setProps({ ...props, showUsername: !props.showUsername, username: props.username });
                     }}
                 >
-                    Show username
+                    Display Twitch username
                 </Checkbox>
                 <Tag colorScheme="green">New!</Tag>
             </HStack>
