@@ -174,14 +174,18 @@ export default NextAuth({
                 });
             }
         },
-        signIn: async (message: { user: User; account: any; isNewUser: boolean }) => {
+        signIn: (message: { user: User; account: any; isNewUser: boolean }) => {
             // we automatically upload the user's banner to s3 storage on first sign in
             if (message.isNewUser === true && message.account.provider === 'twitter') {
                 const twitterProvider = message.account;
-                const bannerUrl: string = await getBanner(twitterProvider.oauth_token, twitterProvider.oauth_token_secret, twitterProvider.providerAccountId);
-                const bucketName = 'bannerbackup';
+                getBanner(twitterProvider.oauth_token, twitterProvider.oauth_token_secret, twitterProvider.providerAccountId).then((bannerUrl) => {
 
-                await localAxios.put(`/api/storage/upload/${message.user.id}?imageUrl=${bannerUrl}&bucket=${bucketName}`);
+                    const bucketName = 'bannerbackup';
+
+                    localAxios.put(`/api/storage/upload/${message.user.id}?imageUrl=${bannerUrl}&bucket=${bucketName}`).then((resp) => {
+                        console.log('Uploaded Twitter banner on new user signup.');
+                    });
+                });
             }
         },
     },
