@@ -28,13 +28,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const userId: string = req.query.userId as string;
 
-    const bannerEntry = await getBannerEntry(userId);
 
     const accounts = await getAccountsById(userId);
     const twitchUserId = accounts['twitch'].providerAccountId;
 
     const twitterInfo = await getTwitterInfo(userId, true);
 
+    const bannerEntry = await getBannerEntry(userId);
     if (bannerEntry === null || twitterInfo === null) {
         return res.status(400).send('Could not find banner entry or twitter info for user');
     }
