@@ -105,7 +105,7 @@ export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, s
                     </HStack>
                 </FormLabel>
                 <Select
-                    disabled={!availableFeature}
+                    // disabled={!availableFeature}
                     defaultValue="Default"
                     onChange={(e) => {
                         setProps({ ...props, fontStyle: e.target.value });
