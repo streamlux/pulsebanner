@@ -5,7 +5,7 @@ import { twitchAxios } from "../axios";
 
 export async function listSubscriptions(twitchUserId?: string): Promise<Subscription[]> {
 
-    const accessToken = (await TwitchClientAuthService.getAuthProvider().getAccessToken()).accessToken;
+    const accessToken = (await TwitchClientAuthService.getAccessToken()).accessToken;
 
     const subscriptions: Subscription[] = [];
     const firstResponse = await getSubscriptionsRequest(accessToken);
