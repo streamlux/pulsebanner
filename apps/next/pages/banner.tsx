@@ -42,6 +42,7 @@ import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
 import { discordLink } from '@app/util/constants';
 import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
 import { DisableBannerModal } from '@app/components/banner/DisableBannerModal';
+import { useSession } from 'next-auth/react';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
@@ -59,6 +60,16 @@ export default function Page() {
     const ForegroundTemplate = ForegroundTemplates[fgId];
     const Form = BackgroundTemplate.form;
     const FgForm = ForegroundTemplate.form;
+
+    const sessionInfo = useSession();
+    const userId = sessionInfo.data?.userId;
+
+    const { data: twitchInfo } = useSWR(`twitchInfo_${userId}`, async () => {
+        if (userId !== undefined) {
+            const response = await axios.get(`/api/twitch/username/${userId}`);
+            return response;
+        }
+    });
 
     const toast = useToast();
     const breakpoint = useBreakpoint();
@@ -97,7 +108,7 @@ export default function Page() {
                 foregroundId: fgId,
                 backgroundId: bgId,
                 backgroundProps: { ...BackgroundTemplate.defaultProps, ...bgProps },
-                foregroundProps: { ...ForegroundTemplate.defaultProps, ...fgProps },
+                foregroundProps: { ...ForegroundTemplate.defaultProps, ...fgProps, username: twitchInfo.data.displayName ?? '' },
             });
             mutate();
         }

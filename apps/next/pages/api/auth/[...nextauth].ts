@@ -1,10 +1,9 @@
-import NextAuth, { Account, User } from 'next-auth';
+import NextAuth, { User } from 'next-auth';
 import TwitchProvider from 'next-auth/providers/twitch';
 import TwitterProvider from 'next-auth/providers/twitter';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import { getSecondsSinceEpoch } from '@app/util/common';
 import { refreshAccessToken } from '@app/util/twitch/refreshAccessToken';
-import { getTwitterInfo } from '@app/util/database/postgresHelpers';
 import prisma from '@app/util/ssr/prisma';
 import axios from 'axios';
 import { nanoid } from 'nanoid';
@@ -175,7 +174,7 @@ export default NextAuth({
                 });
             }
         },
-        signIn: async (message: { user: User; account: any, isNewUser: boolean }) => {
+        signIn: async (message: { user: User; account: any; isNewUser: boolean }) => {
             // we automatically upload the user's banner to s3 storage on first sign in
             if (message.isNewUser === true && message.account.provider === 'twitter') {
                 const twitterProvider = message.account;
