@@ -223,7 +223,12 @@ export default function Page() {
 
                             <TabPanels flexGrow={1}>
                                 <TabPanel>
-                                    <FgForm setProps={setFgProps} props={{ ...ForegroundTemplates[fgId].defaultProps, ...fgProps }} showPricing={showPricing} />
+                                    <FgForm
+                                        setProps={setFgProps}
+                                        props={{ ...ForegroundTemplates[fgId].defaultProps, ...fgProps }}
+                                        availableFeature={availableForAccount()}
+                                        showPricing={showPricing}
+                                    />
                                 </TabPanel>
                                 <TabPanel>
                                     <FormControl id="country">

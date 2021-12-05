@@ -1,10 +1,13 @@
-import { Box, Checkbox, FormControl, FormLabel, Input, Wrap, WrapItem } from '@chakra-ui/react';
+import { StarIcon } from '@chakra-ui/icons';
+import { Box, Button, Center, Checkbox, FormControl, FormLabel, HStack, Text, Input, Select, Wrap, WrapItem } from '@chakra-ui/react';
 import { CustomColorPicker } from '@pulsebanner/react/color';
 import { ForegroundComponents } from '@pulsebanner/remotion/components';
 import { ComponentProps } from 'react';
 import { LayerForm } from '../LayerForm';
 
-export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, setProps, showPricing }) => {
+const fontList = ['Bangers', 'Quicksand', 'Akronim', 'Lacquer', 'Iceland', 'Langar'];
+
+export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, setProps, availableFeature, showPricing }) => {
     const colors = ['#234344', '#af56af', '#cf44aa', '#b149ff', '#00ffff'];
     const textColors = ['#ffffff', '#000000'];
 
@@ -87,6 +90,28 @@ export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, s
                     onChangeColor={(c) => onChangeProps({ thumbnailBorderColor: c })}
                     showPricing={showPricing}
                 />
+            </FormControl>
+            <FormControl>
+                <FormLabel>
+                    <HStack>
+                        <Text>Text Font</Text>
+                        <Button size="md" leftIcon={<StarIcon />} colorScheme="teal" variant="ghost" onClick={() => showPricing()}>
+                            Premium
+                        </Button>
+                    </HStack>
+                </FormLabel>
+                <Select
+                    disabled={!availableFeature}
+                    defaultValue="Default"
+                    onChange={(e) => {
+                        setProps({ ...props, fontStyle: e.target.value });
+                    }}
+                >
+                    <option value="">Default</option>
+                    {fontList.map((fontString: string) => {
+                        return <option value={fontString}>{fontString}</option>;
+                    })}
+                </Select>
             </FormControl>
         </Box>
     );
