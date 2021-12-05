@@ -96,7 +96,7 @@ export const ImLive: React.FC<ImLiveProps> = ({
                                         <h1
                                             style={{
                                                 color: fontColor,
-                                                fontSize: showText ? '36px' : '86px',
+                                                fontSize: '36px',
                                                 width: '100%',
                                                 textAlign: 'center',
                                                 alignItems: 'flex-end',
