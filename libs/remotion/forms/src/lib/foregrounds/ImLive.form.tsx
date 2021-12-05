@@ -1,5 +1,5 @@
 import { StarIcon } from '@chakra-ui/icons';
-import { Box, Button, Center, Checkbox, FormControl, FormLabel, HStack, Text, Input, Select, Wrap, WrapItem } from '@chakra-ui/react';
+import { Box, Button, Checkbox, FormControl, FormLabel, HStack, Text, Input, Select, Wrap, WrapItem, Tag } from '@chakra-ui/react';
 import { CustomColorPicker } from '@pulsebanner/react/color';
 import { ForegroundComponents } from '@pulsebanner/remotion/components';
 import { ComponentProps } from 'react';
@@ -70,17 +70,21 @@ export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, s
             >
                 Show arrow
             </Checkbox>
-            <Checkbox
-                p="2"
-                colorScheme="purple"
-                isChecked={props.showUsername}
-                size="lg"
-                onChange={(e) => {
-                    setProps({ ...props, showUsername: !props.showUsername, username: props.username });
-                }}
-            >
-                Show username
-            </Checkbox>
+            <HStack spacing={0}>
+                <Checkbox
+                    p="2"
+                    colorScheme="purple"
+                    isChecked={props.showUsername}
+                    size="lg"
+                    onChange={(e) => {
+                        setProps({ ...props, showUsername: !props.showUsername, username: props.username });
+                    }}
+                >
+                    Display Twitch username
+                </Checkbox>
+                <Tag colorScheme="green">New!</Tag>
+            </HStack>
+
             <FormControl>
                 <FormLabel>Thumbnail border color</FormLabel>
                 <CustomColorPicker

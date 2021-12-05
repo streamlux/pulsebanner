@@ -7,9 +7,11 @@ export const twitchAxios = axios.create({
 twitchAxios.interceptors.response.use(function (response) {
     // Do something with response data
     return response;
-}, function (error) {
-    // Do something with response error
-    console.error('Twitch API error', error);
+}, function (error: AxiosError) {
+    // Do something with the error
+    console.error('Error occured during request (local)');
+    console.error(`${error.config.method?.toUpperCase()} ${error.config.url}`);
+    console.error('Axios request config: ', error.config);
 });
 
 export const localAxios = axios.create({

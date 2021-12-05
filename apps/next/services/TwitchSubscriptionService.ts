@@ -5,7 +5,7 @@ import { execa } from 'execa';
 
 export class TwitchSubscriptionService {
     public async getAccessToken(): Promise<string> {
-        return (await TwitchClientAuthService.getAuthProvider().getAccessToken()).accessToken;
+        return (await TwitchClientAuthService.getAccessToken()).accessToken;
     }
 
     /**
