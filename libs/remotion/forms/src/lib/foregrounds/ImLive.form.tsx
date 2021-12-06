@@ -49,7 +49,7 @@ export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, s
                     </FormControl>
                 </WrapItem>
             </Wrap>
-            <FormControl>
+            {/* <FormControl>
                 <FormLabel>
                     <HStack>
                         <Text>Text Font</Text>
@@ -82,7 +82,7 @@ export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, s
                         );
                     })}
                 </Select>
-            </FormControl>
+            </FormControl> */}
             <Checkbox
                 p="2"
                 colorScheme="purple"
