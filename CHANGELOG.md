@@ -7,10 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.1.17] - 2021-12-06
+
 ### Added
 
- - Users can select different font's used in their banner
+ - Users can select different font's used in their banner (hidden)
  - OG image
+ - Added Discord webhook for errors
+  
+### Changed
+- Using updated Twitch auth package
 
 ## [0.1.16] - 2021-12-05
 
