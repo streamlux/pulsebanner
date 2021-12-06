@@ -62,7 +62,7 @@ export default function Page() {
     const FgForm = ForegroundTemplate.form;
 
     const sessionInfo = useSession();
-    const userId = sessionInfo.data?.userId;
+    const userId: string = sessionInfo.data?.userId as string;
 
     const { data: twitchInfo } = useSWR(
         `twitchInfo_${userId}`,

@@ -1,5 +1,5 @@
 import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Account } from '@prisma/client';
 
 // This file was copied from the official NestJS + Prisma guide
 // https://docs.nestjs.com/recipes/prisma
@@ -16,5 +16,19 @@ export class PrismaService extends PrismaClient
         this.$on('beforeExit', async () => {
             await app.close();
         });
+    }
+
+    async getAccountsById(userId: string): Promise<Record<string, Account>> {
+        const accounts = await this.account.findMany({
+            where: {
+                userId: userId,
+            },
+        });
+
+        const result: Record<string, Account> = {};
+        accounts.forEach((account) => {
+            result[account.provider] = account;
+        });
+        return result;
     }
 }

@@ -1,6 +1,4 @@
-import { Account } from '@prisma/client';
 import { TwitterClient } from 'twitter-api-client';
-import Twitter from 'twitter-lite';
 
 export type TwitterResponseCode = 200 | 400;
 
@@ -96,27 +94,4 @@ export async function tweetStreamStatusOffline(oauth_token: string, oauth_token_
         return 400;
     }
     return 200;
-}
-
-// unsed?
-export async function fetchBanner(account: Account): Promise<string> {
-    const client = new Twitter({
-        consumer_key: process.env.TWITTER_ID,
-        consumer_secret: process.env.TWITTER_SECRET,
-        access_token_key: account.oauth_token,
-        access_token_secret: account.oauth_token_secret,
-    });
-
-    try {
-        // https://developer.twitter.com/en/docs/twitter-api/v1/accounts-and-users/manage-account-settings/api-reference/get-users-profile_banner
-        const response = await client.get('users/profile_banner', {
-            user_id: account.providerAccountId,
-        });
-
-        const url = response.sizes['1500x500'].url;
-        return url;
-    } catch (e) {
-        console.error('Failed to get Twitter profile banner.');
-        throw e;
-    }
 }

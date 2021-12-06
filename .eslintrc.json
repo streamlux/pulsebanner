@@ -6,6 +6,11 @@
     "plugins": [
         "@nrwl/nx"
     ],
+    "parserOptions": {
+        "project": [
+            "tsconfig.base.json"
+        ]
+    },
     "overrides": [
         {
             "files": [
@@ -15,6 +20,16 @@
                 "*.jsx"
             ],
             "rules": {
+                "@typescript-eslint/restrict-template-expressions": [
+                    "error"
+                ],
+                "@typescript-eslint/no-inferrable-types": [
+                    "off",
+                    {
+                        "ignoreParameters": true,
+                        "ignoreProperties": true
+                    }
+                ],
                 "@nrwl/nx/enforce-module-boundaries": [
                     "error",
                     {
