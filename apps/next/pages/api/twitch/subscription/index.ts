@@ -2,12 +2,10 @@ import { getAccounts } from '../../../../util/getAccounts';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSession } from 'next-auth/react';
 import NextCors from 'nextjs-cors';
-import { ClientCredentialsAuthProvider } from 'twitch-auth';
 import { Account } from '@prisma/client';
 import { GetSubscriptionsResponse } from '@app/types/twitch';
 import { twitchAxios } from '@app/util/axios';
-
-const authProvider = new ClientCredentialsAuthProvider(process.env.TWITCH_CLIENT_ID, process.env.TWITCH_CLIENT_SECRET);
+import { TwitchClientAuthService } from '@app/services/TwitchClientAuthService';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
@@ -26,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const accounts = await getAccounts(session);
         const twitchAccount: Account = accounts['twitch'];
 
-        const token = await authProvider.getAccessToken();
+        const token = await TwitchClientAuthService.getAccessToken();
 
         const response = await twitchAxios.get<GetSubscriptionsResponse>('/helix/eventsub/subscriptions', {
             headers: {
