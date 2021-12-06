@@ -122,6 +122,11 @@ export default function Header() {
                                             </NextLink>
                                         </WrapItem>
                                         <WrapItem>
+                                            <NextLink href="/tweet" passHref>
+                                                <Link>Tweet</Link>
+                                            </NextLink>
+                                        </WrapItem>
+                                        <WrapItem>
                                             <NextLink href="/pricing" passHref>
                                                 <Link>Pricing</Link>
                                             </NextLink>
@@ -202,6 +207,11 @@ export default function Header() {
                         <WrapItem>
                             <NextLink href="/banner" passHref>
                                 <Link>Banner</Link>
+                            </NextLink>
+                        </WrapItem>
+                        <WrapItem>
+                            <NextLink href="/tweet" passHref>
+                                <Link>Tweet</Link>
                             </NextLink>
                         </WrapItem>
                         <WrapItem>
