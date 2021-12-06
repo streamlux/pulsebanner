@@ -26,9 +26,9 @@ export class TwitterService {
                 user_id: providerAccountId,
             });
             imageUrl = response.sizes['1500x500'].url;
-            Logger.verbose('Retrieved Twitter banner. imageUrl: ', imageUrl);
+            Logger.verbose(`Retrieved Twitter banner. imageUrl: ${imageUrl}`);
         } catch (e) {
-            Logger.verbose('User does not have a banner setup. Will save empty for later: ', e);
+            Logger.verbose(e, `User does not have a banner setup. Will save empty for later`);
             imageUrl = 'empty';
         }
 
