@@ -22,7 +22,7 @@ export class TwitchClientAuthService {
     public static async authAxios(axios: AxiosInstance): Promise<AxiosInstance> {
         const accessToken = (await this.getAccessToken()).accessToken;
 
-        axios.defaults.headers = {
+        axios.defaults.headers.common = {
             'Client-ID': process.env.TWITCH_CLIENT_ID,
             Authorization: `Bearer ${accessToken}`,
         }
