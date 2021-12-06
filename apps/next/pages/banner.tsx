@@ -83,7 +83,7 @@ export default function Page() {
     const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
 
     const availableForAccount = (): boolean => {
-        if (paymentPlan === 'Free') {
+        if (paymentPlan === 'Free' || !paymentPlanResponse.partner) {
             return false;
         }
         return true;
@@ -204,7 +204,7 @@ export default function Page() {
                     {EnableButton}
                 </Flex>
                 <Flex w="full" rounded="md" direction="column">
-                    <Center>
+                    <Center w="full">
                         <RemotionPreview compositionHeight={500} compositionWidth={1500}>
                             <Composer
                                 {...{
