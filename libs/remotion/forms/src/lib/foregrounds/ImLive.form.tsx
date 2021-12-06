@@ -113,7 +113,11 @@ export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, s
                 >
                     <option value="">Default</option>
                     {fontList.map((fontString: string) => {
-                        return <option value={fontString}>{fontString}</option>;
+                        return (
+                            <option key={fontString} value={fontString}>
+                                {fontString}
+                            </option>
+                        );
                     })}
                 </Select>
             </FormControl>
