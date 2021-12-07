@@ -1,5 +1,5 @@
 import { AxiosInstance } from "axios";
-import { AccessToken, ClientCredentialsAuthProvider } from "twitch-auth";
+import { AccessToken, ClientCredentialsAuthProvider, accessTokenIsExpired } from "@twurple/auth";
 
 export class TwitchClientAuthService {
     private static authProvider: ClientCredentialsAuthProvider | undefined;
@@ -10,9 +10,9 @@ export class TwitchClientAuthService {
     }
 
     public static async getAccessToken(): Promise<AccessToken> {
-        const token = await this._getAuthProvider().getAccessToken();
+        const token: AccessToken = await this._getAuthProvider().getAccessToken();
 
-        if (token.isExpired) {
+        if (accessTokenIsExpired(token)) {
             return this._getAuthProvider().refresh();
         };
 
@@ -22,7 +22,7 @@ export class TwitchClientAuthService {
     public static async authAxios(axios: AxiosInstance): Promise<AxiosInstance> {
         const accessToken = (await this.getAccessToken()).accessToken;
 
-        axios.defaults.headers = {
+        axios.defaults.headers.common = {
             'Client-ID': process.env.TWITCH_CLIENT_ID,
             Authorization: `Bearer ${accessToken}`,
         }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, ButtonGroup, FormControl, FormHelperText, FormLabel, Input, InputGroup, InputRightElement, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, FormControl, FormHelperText, FormLabel, HStack, IconButton, Input, Text, useBreakpoint, VStack } from '@chakra-ui/react';
 import { BackgroundComponents } from '@pulsebanner/remotion/components';
 import { LayerForm } from '../LayerForm';
 import { StarIcon } from '@chakra-ui/icons';
@@ -10,6 +10,8 @@ export const ImageBackground: LayerForm<typeof BackgroundComponents.ImageBackgro
     const onClickPremium = () => {
         showPricing(true);
     };
+
+    const breakpoint = useBreakpoint();
 
     const sampleImageMap: Record<string, string> = {
         Sky: 'http://2.bp.blogspot.com/-QkeZcIm3X_g/VJRzwWkYfXI/AAAAAAAAJWg/HhIgNTT6PtM/s1600/clouds-1500x500-twitter-header-04.jpg',
@@ -31,10 +33,19 @@ export const ImageBackground: LayerForm<typeof BackgroundComponents.ImageBackgro
                     </VStack>
                 </FormLabel>
                 <FormLabel>
-                    Background image URL{' '}
-                    <Button variant="ghost" colorScheme="teal" onClick={onClickPremium} leftIcon={<StarIcon />}>
-                        Premium
-                    </Button>
+                    <HStack>
+                        <Text>Background image URL</Text>
+                        <Box>
+                            {breakpoint === 'base' && (
+                                <IconButton w="min" aria-label="Premium" icon={<StarIcon />} colorScheme="teal" variant="ghost" onClick={() => showPricing(true)} />
+                            )}
+                            {breakpoint !== 'base' && (
+                                <Button leftIcon={<StarIcon />} colorScheme="teal" variant="ghost" onClick={() => showPricing(true)}>
+                                    Premium
+                                </Button>
+                            )}
+                        </Box>
+                    </HStack>
                 </FormLabel>
                 <Input
                     disabled={availableFeature === false ? true : false}

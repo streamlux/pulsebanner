@@ -13,6 +13,7 @@ type ImLiveProps = {
     showUsername: boolean;
     username?: string;
     thumbnailBorderColor: string;
+    fontStyle: string;
 };
 
 export const ImLive: React.FC<ImLiveProps> = ({
@@ -24,14 +25,14 @@ export const ImLive: React.FC<ImLiveProps> = ({
     showText = true,
     showUsername = true,
     username,
+    fontStyle = '',
 }) => {
     return (
         <div style={{ width: '100%', height: '100%', overflow: 'hidden', fontFamily: 'Inter' }}>
             <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-                <div style={{ width: '100%', alignItems: 'flex-end', paddingTop: '4px' }}>
+                <div style={{ fontFamily: fontStyle, width: '100%', alignItems: 'flex-end', paddingTop: '4px' }}>
                     {showText && <h1 style={{ color: fontColor, fontSize: '86px', width: '100%', textAlign: 'center', alignItems: 'flex-end', margin: 0 }}>{text}</h1>}
                 </div>
-
                 <div style={{ display: 'flex', width: '100%', height: 'min', alignItems: 'bottom', justifyContent: 'flex-end' }}>
                     <div
                         style={{
