@@ -3,7 +3,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import Joi from 'joi';
 
-import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
 import { SessionService } from './auth/session.service';
@@ -12,7 +11,7 @@ import { PrismaService } from './prisma/prisma.service';
 import { BannerModule } from './banner/banner.module';
 import { FeaturesModule } from './features/features.module';
 import { StorageModule } from './storage/storage.module';
-import { TwitchModule } from './twitch/twitch.module';
+import { TwitchNotificationsModule } from './twitch/notifications/twitch-notifications.module';
 import { TwitterModule } from './twitter/twitter.module';
 
 @Module({
@@ -22,7 +21,7 @@ import { TwitterModule } from './twitter/twitter.module';
         FeaturesModule,
         TwitterModule,
         StorageModule,
-        TwitchModule,
+        TwitchNotificationsModule,
         ConfigModule.forRoot({
             isGlobal: true,
             validationSchema: Joi.object({
@@ -35,7 +34,11 @@ import { TwitterModule } from './twitter/twitter.module';
                 TWITTER_SECRET: Joi.string().required(),
             }),
         })],
-    controllers: [AppController],
+    controllers: [],
     providers: [SessionService, AppService, PrismaService],
 })
-export class AppModule { }
+export class AppModule {
+    configure(consumer: MiddlewareConsumer): void {
+        consumer.apply(AppLoggerMiddleware).forRoutes('*');
+    }
+}

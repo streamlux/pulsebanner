@@ -4,7 +4,6 @@ import { AxiosResponse } from 'axios';
 import { firstValueFrom } from 'rxjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
-import { TwitchService } from '../twitch/twitch.service';
 import { TwitterResponseCode, TwitterService } from '../twitter/twitter.service';
 import { remotionHttp } from '../util/axios';
 
