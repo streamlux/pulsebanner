@@ -1,8 +1,8 @@
 import prisma from "@app/util/ssr/prisma";
 import type { Prisma } from "@prisma/client";
+
 export type Features = keyof Pick<Prisma.UserInclude, 'banner' | 'tweet'>;
 const features: Features[] = ['banner', 'tweet'];
-
 export class FeaturesService {
     /**
      * @param userId

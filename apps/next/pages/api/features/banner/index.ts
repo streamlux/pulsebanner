@@ -30,7 +30,7 @@ handler.post(async (req, res) => {
 
 // Get banner
 handler.get(async (req, res) => {
-    const banner = await prisma.banner.findFirst({
+    const banner = await prisma.banner.findUnique({
         where: {
             userId: req.session.userId,
         },

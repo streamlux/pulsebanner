@@ -1,15 +1,15 @@
 import { Test } from '@nestjs/testing';
-import { TwitchService } from './twitch.service';
+import { TwitchNotificationsService } from '../notifications/twitch-notifications.service';
 
 describe('ApiTwitchService', () => {
-    let service: TwitchService;
+    let service: TwitchNotificationsService;
 
     beforeEach(async () => {
         const module = await Test.createTestingModule({
-            providers: [TwitchService],
+            providers: [TwitchNotificationsService],
         }).compile();
 
-        service = module.get(TwitchService);
+        service = module.get(TwitchNotificationsService);
     });
 
     it('should be defined', () => {

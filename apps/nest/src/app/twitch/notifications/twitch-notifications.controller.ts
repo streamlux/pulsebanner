@@ -1,10 +1,10 @@
 import { BadRequestException, Controller, Logger, Param, Post, Req } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { TwitchService } from './twitch.service';
+import { TwitchNotificationsService } from './twitch-notifications.service';
 import { Request } from 'express';
 import type { Subscription } from '@pulsebanner/util/twitch';
 import { firstValueFrom } from 'rxjs';
-import { Features, FeaturesService } from '../features/features.service';
+import { Features, FeaturesService } from '../../features/features.service';
 
 interface VerificationBody {
     challenge: string;
@@ -17,8 +17,8 @@ interface NotificationBody {
 }
 
 @Controller('twitch')
-export class TwitchController {
-    constructor(private twitchService: TwitchService, private featuresService: FeaturesService, private httpService: HttpService) { }
+export class TwitchNotificationsController {
+    constructor(private twitchService: TwitchNotificationsService, private featuresService: FeaturesService, private httpService: HttpService) { }
 
     @Post('notification/:type/:userId')
     async notification(@Req() req: Request, @Param('userId') userId: string) {

@@ -28,7 +28,7 @@ const nextConfig = {
             },
         ]
     },
-    // proxy requests to /api/pb/* to NestJS server
+    // proxy requests to /api/pulse/* to NestJS server
     async rewrites() {
         return [
             {

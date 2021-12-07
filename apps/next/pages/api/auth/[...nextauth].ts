@@ -129,7 +129,7 @@ export default NextAuth({
                 // get total # of users, then make request to Discord webhook to send a message
                 prisma.user.count().then((value) => {
                     axios.post(process.env.DISCORD_WEBHOOK_URL, {
-                        content: `"${message.user.name}" signed up for PulseBanner! Total users: ${value}`,
+                        content: `"${message.user.name as string}" signed up for PulseBanner! Total users: ${value}`,
                     });
                 });
             }
@@ -155,5 +155,5 @@ export default NextAuth({
     theme: 'auto',
 
     // Enable debug messages in the console if you are having problems
-    debug: false,
+    debug: false
 });
