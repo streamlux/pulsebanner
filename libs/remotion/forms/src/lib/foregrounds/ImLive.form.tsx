@@ -49,7 +49,7 @@ export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, s
                     </FormControl>
                 </WrapItem>
             </Wrap>
-            {/* <FormControl>
+            <FormControl>
                 <FormLabel>
                     <HStack>
                         <Text>Text Font</Text>
@@ -74,7 +74,7 @@ export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, s
                     }}
                 >
                     <option value="">Default</option>
-                    {fontList.map((fontString: string) => {
+                    {fontList.sort().map((fontString: string) => {
                         return (
                             <option key={fontString} value={fontString}>
                                 {fontString}
@@ -82,7 +82,7 @@ export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, s
                         );
                     })}
                 </Select>
-            </FormControl> */}
+            </FormControl>
             <Checkbox
                 p="2"
                 colorScheme="purple"

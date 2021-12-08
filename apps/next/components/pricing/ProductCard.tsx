@@ -24,7 +24,7 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
         return null;
     }
 
-    const sharedFeatureList = ['Remove watermark', 'Unlimited color options', 'Upload a custom background image'];
+    const sharedFeatureList = ['Remove watermark', 'Unlimited color options', 'Upload a custom background image', 'Custom fonts'];
     const personalFeatureList = sharedFeatureList.concat(['High quality image rendering', 'Thumbnail refreshing (coming soon)']);
     const professionalFeatureList = sharedFeatureList.concat(['Ultra high image quality', 'Unlock all features', 'Fastest thumbnail refreshing (coming soon)']);
 
@@ -91,11 +91,17 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
                         ))}
                     </List>
                 </Box>
-              
+
                 <Box justifySelf="flex-end">
                     <Flex w="full" justifyContent="space-between">
                         <Spacer />
-                        <Button fontWeight="bold" disabled={product.name === paymentPlan} onClick={() => handlePricingClick(price.id)} colorScheme="green" rightIcon={<FaArrowRight />}>
+                        <Button
+                            fontWeight="bold"
+                            disabled={product.name === paymentPlan}
+                            onClick={() => handlePricingClick(price.id)}
+                            colorScheme="green"
+                            rightIcon={<FaArrowRight />}
+                        >
                             Buy {product.name}
                         </Button>
                     </Flex>
