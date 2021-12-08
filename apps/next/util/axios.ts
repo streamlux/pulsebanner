@@ -8,10 +8,20 @@ twitchAxios.interceptors.response.use(function (response) {
     // Do something with response data
     return response;
 }, function (error: AxiosError) {
-    // Do something with the error
-    console.error('Error occured during request (local)');
-    console.error(`${error.config.method?.toUpperCase()} ${error.config.url}`);
-    console.error('Axios request config: ', error.config);
+
+    const errorLogs: string[] = ['Error occured during request (twitch)'];
+
+    errorLogs.push(`${error.config.method?.toUpperCase()} ${error.config.url}`);
+    errorLogs.push(`Error message: ${error.message}`);
+    errorLogs.push(`Axios request config: ${JSON.stringify(error.config, null, 2)}`);
+
+    console.log(errorLogs.join('\n'));
+
+    if (process.env.ENABLE_DISCORD_WEBHOOKS) {
+        axios.post(process.env.DISCORD_ERROR_WEBHOOK_URL, {
+            content: errorLogs.join('\n'),
+        });
+    }
 });
 
 export const localAxios = axios.create({

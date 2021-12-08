@@ -25,7 +25,7 @@ export const RemotionPreview: React.FC<RemotionPreviewProps> = ({ children, comp
                 height: undefined,
             }),
         };
-    }, [canvasSize]);
+    }, [canvasSize, compositionHeight, compositionWidth]);
 
     const layout = useMemo(() => {
         if (!canvasSize) {
@@ -37,7 +37,7 @@ export const RemotionPreview: React.FC<RemotionPreviewProps> = ({ children, comp
             compositionHeight: compositionHeight,
             compositionWidth: compositionWidth,
         });
-    }, [canvasSize]);
+    }, [canvasSize, compositionHeight, compositionWidth]);
 
     const outer: React.CSSProperties = useMemo(() => {
         if (!layout) {
@@ -56,7 +56,7 @@ export const RemotionPreview: React.FC<RemotionPreviewProps> = ({ children, comp
             top: centerY,
             overflow: 'hidden',
         };
-    }, [layout]);
+    }, [layout, compositionHeight, compositionWidth]);
 
     const containerStyle: React.CSSProperties = useMemo(() => {
         if (!canvasSize) {
@@ -79,9 +79,9 @@ export const RemotionPreview: React.FC<RemotionPreviewProps> = ({ children, comp
             marginTop: yCorrection,
             overflow: 'hidden',
         };
-    }, [canvasSize]);
+    }, [canvasSize, compositionHeight, compositionWidth]);
     return (
-        <div ref={container} style={{ ...outerStyle, ...{ width: '80vw', maxWidth: '100%', maxHeight: '100%' } }}>
+        <div ref={container} style={{ ...outerStyle, ...{ width: '100%', maxWidth: '100%', maxHeight: '100%', margin: '0 1vw 0 1vw' } }}>
             <div style={outer}>
                 <div style={containerStyle} className="__remotion-player">
                     {children}
