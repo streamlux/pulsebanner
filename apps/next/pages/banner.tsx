@@ -66,7 +66,7 @@ export default function Page() {
 
     const { data: twitchInfo } = useSWR(
         `twitchInfo_${userId}`,
-        userId !== undefined
+        userId !== undefined && data
             ? async () => {
                   const response = await axios.get(`/api/twitch/username/${userId}`);
                   setFgProps({ ...fgProps, username: response.data.displayName });

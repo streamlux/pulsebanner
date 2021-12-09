@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Fixed
+
+- Fixed glitch on banner page that shows default banner instead of user settings
+
 ## [0.1.20] - 2021-12-09
 
 ### Fixed
