@@ -24,6 +24,7 @@ import {
     VStack,
     Link,
     useToast,
+    Tag,
 } from '@chakra-ui/react';
 import type { Banner } from '@prisma/client';
 import React, { useEffect, useState } from 'react';
@@ -114,6 +115,17 @@ export default function Page() {
                 backgroundProps: { ...BackgroundTemplate.defaultProps, ...bgProps },
                 foregroundProps: { ...ForegroundTemplate.defaultProps, ...fgProps, username: twitchInfo.data.displayName ?? '' },
             });
+            console.log('response: ', response.status);
+            if (response.status === 200) {
+                toast({
+                    title: 'Settings Saved',
+                    description: 'Your banner settings have been saved',
+                    status: 'success',
+                    duration: 3000,
+                    isClosable: true,
+                    position: 'top',
+                });
+            }
             mutate();
         }
     };
