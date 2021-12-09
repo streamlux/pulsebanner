@@ -83,7 +83,8 @@ export default function Page() {
     const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
 
     const availableForAccount = (): boolean => {
-        if (paymentPlan === 'Free' || !paymentPlanResponse.partner) {
+        // if they have a free plan and they are not a partner
+        if (paymentPlan === 'Free' && !paymentPlanResponse?.partner) {
             return false;
         }
         return true;
