@@ -34,9 +34,6 @@
                             }
                         ]
                     }
-                ],
-                "@typescript-eslint/restrict-template-expressions": [
-                    "error"
                 ]
             }
         },
