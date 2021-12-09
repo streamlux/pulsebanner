@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+
+- Use twurple library to refresh Twitch user access tokens when getting user session
+
 ## [0.1.18] - 2021-12-07
 
 ### Changed
