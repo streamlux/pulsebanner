@@ -2,13 +2,13 @@ import NextAuth, { User } from 'next-auth';
 import TwitchProvider from 'next-auth/providers/twitch';
 import TwitterProvider from 'next-auth/providers/twitter';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import { getSecondsSinceEpoch } from '@app/util/common';
-import { refreshAccessToken } from '@app/util/twitch/refreshAccessToken';
 import prisma from '@app/util/ssr/prisma';
-import axios from 'axios';
 import { nanoid } from 'nanoid';
 import { getBanner } from '@app/util/twitter/twitterHelpers';
 import { localAxios } from '@app/util/axios';
+import { AccessToken, accessTokenIsExpired, refreshUserToken, StaticAuthProvider } from '@twurple/auth';
+import { sendMessage } from '@app/util/discord/sendMessage';
+import { sendError } from '@app/util/discord/sendError';
 
 // File contains options and hooks for next-auth, the authentication package
 // we are using to handle signup, signin, etc.
@@ -131,31 +131,42 @@ export default NextAuth({
             session.role = user.role;
             session.accounts = {};
             accounts.forEach(async (account) => {
-                if (account.provider === 'twitch') {
-                    // Check if twitch access token is expired
-                    if (account.expires_at <= getSecondsSinceEpoch()) {
-                        console.log('refreshing access token');
-                        // Use the refresh token to request a new access token from twitch
-                        const data = await refreshAccessToken(account.refresh_token);
-
-                        // update the access token and other token details in the database
-                        await prisma.account.update({
-                            where: {
-                                id: account.id,
-                            },
-                            data: {
-                                access_token: data.access_token,
-                                refresh_token: data.refresh_token,
-                                expires_at: data.expires_at,
-                                token_type: data.token_type,
-                                scope: data.scope,
-                            },
-                        });
-                    }
-                }
 
                 // Boolean specifying if the user has connected this account or not
                 session.accounts[account.provider] = true;
+
+                if (account.provider === 'twitch') {
+                    const authProvider: StaticAuthProvider = new StaticAuthProvider(process.env.TWITCH_CLIENT_ID, account.access_token, undefined, 'user');
+                    const token: AccessToken = await authProvider.getAccessToken();
+
+                    // Check if twitch access token is expired
+                    if (accessTokenIsExpired(token)) {
+                        console.log(`Twitch user access token is expired for user: '${user.name}'. Refreshing token...`);
+                        try {
+                            const newToken: AccessToken = await refreshUserToken(process.env.TWITCH_CLIENT_ID, process.env.TWITCH_CLIENT_SECRET, token.refreshToken);
+                            // update the access token and other token details in the database
+                            await prisma.account.update({
+                                where: {
+                                    id: account.id,
+                                },
+                                data: {
+                                    access_token: newToken.accessToken,
+                                    refresh_token: newToken.refreshToken,
+                                    expires_at: newToken.obtainmentTimestamp + (1000 * newToken.expiresIn),
+                                    token_type: account.token_type,
+                                    scope: newToken.scope.join(' '),
+                                },
+                            });
+                            console.log(`Twitch user access token is expired for user: '${user.name}'. Refreshing token...`);
+
+                        } catch (e) {
+                            const msgs = [`Failed to refresh Twitch user access token for user: '${user.name}'.`];
+                            const msg = msgs.join('\n');
+                            console.error(msg, e);
+                            sendError(e, msg);
+                        }
+                    }
+                }
             });
             return session;
         },
@@ -165,14 +176,9 @@ export default NextAuth({
     // https://next-auth.js.org/configuration/events
     events: {
         createUser: (message: { user: User }) => {
-            if (process.env.ENABLE_DISCORD_WEBHOOKS === 'true') {
-                // get total # of users, then make request to Discord webhook to send a message
-                prisma.user.count().then((value) => {
-                    axios.post(process.env.DISCORD_WEBHOOK_URL, {
-                        content: `"${message.user.name}" signed up for PulseBanner! Total users: ${value}`,
-                    });
-                });
-            }
+            prisma.user.count().then((value) => {
+                sendMessage(`"${message.user.name}" signed up for PulseBanner! Total users: ${value}`, process.env.DISCORD_WEBHOOK_URL);
+            });
         },
         signIn: (message: { user: User; account: any; isNewUser: boolean }) => {
             // we automatically upload the user's banner to s3 storage on first sign in

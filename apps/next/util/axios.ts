@@ -9,7 +9,7 @@ twitchAxios.interceptors.response.use(function (response) {
     return response;
 }, function (error: AxiosError) {
 
-    const errorLogs: string[] = ['Error occured during request (twitch)'];
+    const errorLogs: string[] = ['Error occured during request (twitch axios)'];
 
     errorLogs.push(`${error.config.method?.toUpperCase()} ${error.config.url}`);
     errorLogs.push(`Error message: ${error.message}`);
