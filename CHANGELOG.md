@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.1.23] - 2021-12-09
+
+### Fixed
+
+- Banner page
+- Validate access tokens
+
 ## [0.1.22] - 2021-12-09
 
 ### Fixed
