@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.1.22] - 2021-12-09
+
+### Fixed
+
+- Not being able to save banner settings
+
 ## [0.1.21] - 2021-12-09
 
 ### Fixed
