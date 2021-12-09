@@ -113,7 +113,7 @@ export default function Page() {
                 foregroundId: fgId,
                 backgroundId: bgId,
                 backgroundProps: { ...BackgroundTemplate.defaultProps, ...bgProps },
-                foregroundProps: { ...ForegroundTemplate.defaultProps, ...fgProps, username: twitchInfo.data.displayName ?? '' },
+                foregroundProps: { ...ForegroundTemplate.defaultProps, ...fgProps, username: twitchInfo?.data?.displayName ?? '' },
             });
             mutate();
         }
@@ -229,7 +229,10 @@ export default function Page() {
                             <TabPanels flexGrow={1}>
                                 <TabPanel>
                                     <FgForm
-                                        setProps={setFgProps}
+                                        setProps={(s) => {
+                                            console.log('set props', s);
+                                            setFgProps(s);
+                                        }}
                                         props={{ ...ForegroundTemplates[fgId].defaultProps, ...fgProps }}
                                         availableFeature={availableForAccount()}
                                         showPricing={showPricing}
