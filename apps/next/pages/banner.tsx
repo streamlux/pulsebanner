@@ -25,7 +25,6 @@ import {
     Link,
     useToast,
 } from '@chakra-ui/react';
-import type { Banner } from '@prisma/client';
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
@@ -49,11 +48,10 @@ const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
 const defaultBackground: keyof typeof BackgroundTemplates = 'GradientBackground';
 
 export default function Page() {
-    const { data, mutate } = useSWR<Banner>('banner', async () => (await fetch(bannerEndpoint)).json());
-    const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>((data?.backgroundId as keyof typeof BackgroundTemplates) ?? defaultBackground);
-    const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>((data?.foregroundId as keyof typeof ForegroundTemplates) ?? defaultForeground);
-    const [bgProps, setBgProps] = useState(data?.backgroundProps ?? (BackgroundTemplates[defaultBackground].defaultProps as any));
-    const [fgProps, setFgProps] = useState(data?.foregroundProps ?? (ForegroundTemplates[defaultForeground].defaultProps as any));
+    const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>(defaultBackground);
+    const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>(defaultForeground);
+    const [bgProps, setBgProps] = useState(BackgroundTemplates[defaultBackground].defaultProps as any);
+    const [fgProps, setFgProps] = useState(ForegroundTemplates[defaultForeground].defaultProps as any);
     const [watermark, setWatermark] = useState(true);
 
     const BackgroundTemplate = BackgroundTemplates[bgId];
@@ -64,16 +62,7 @@ export default function Page() {
     const sessionInfo = useSession();
     const userId = sessionInfo.data?.userId;
 
-    const { data: twitchInfo } = useSWR(
-        `twitchInfo_${userId}`,
-        userId !== undefined && data
-            ? async () => {
-                  const response = await axios.get(`/api/twitch/username/${userId}`);
-                  setFgProps({ ...fgProps, username: response.data.displayName });
-                  return response;
-              }
-            : null
-    );
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
     const toast = useToast();
     const breakpoint = useBreakpoint();
@@ -90,17 +79,25 @@ export default function Page() {
         return true;
     };
 
+    const [usernameLoaded, setUsernameLoaded] = useState(false);
+    const [banner, setBanner] = useState({} as any);
+
     useEffect(() => {
-        setBgId((data?.backgroundId as keyof typeof BackgroundTemplates) ?? defaultBackground);
-        setFgId((data?.foregroundId as keyof typeof ForegroundTemplates) ?? defaultForeground);
-        setBgProps(data?.backgroundProps ?? {});
-        setFgProps(data?.foregroundProps ?? {});
-        if (paymentPlan === 'Free') {
-            setWatermark(true);
-        } else {
-            setWatermark(false);
+        if (sessionInfo && userId) {
+            axios.get(bannerEndpoint).then((bannerResponse) => {
+                axios.get(`/api/twitch/username/${userId as string}`).then((response) => {
+                    if (response.data) {
+                        setBanner(response.data);
+                        setBgId((bannerResponse.data?.backgroundId as keyof typeof BackgroundTemplates) ?? defaultBackground);
+                        setFgId((bannerResponse.data?.foregroundId as keyof typeof ForegroundTemplates) ?? defaultForeground);
+                        setBgProps(bannerResponse.data?.backgroundProps ?? {});
+                        setFgProps({ ...(bannerResponse.data?.foregroundProps as any), username: response.data.displayName } ?? {});
+                        setUsernameLoaded(true);
+                    }
+                });
+            });
         }
-    }, [data, paymentPlan]);
+    }, [sessionInfo, userId, usernameLoaded]);
 
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch();
 
@@ -113,21 +110,20 @@ export default function Page() {
                 foregroundId: fgId,
                 backgroundId: bgId,
                 backgroundProps: { ...BackgroundTemplate.defaultProps, ...bgProps },
-                foregroundProps: { ...ForegroundTemplate.defaultProps, ...fgProps, username: twitchInfo?.data?.displayName ?? '' },
+                foregroundProps: { ...ForegroundTemplate.defaultProps, ...fgProps },
             });
-            mutate();
         }
     };
 
     const toggle = async () => {
         // ensure user is signed up before enabling banner
         if (ensureSignUp()) {
-            umami(data && data.enabled ? 'disable-banner' : 'enable-banner');
+            umami(banner && banner.enabled ? 'disable-banner' : 'enable-banner');
             on();
             await saveSettings();
             await axios.put(bannerEndpoint);
             off();
-            if (data && data.enabled) {
+            if (banner && banner.enabled) {
                 bannerDisabledToggle();
             } else {
                 toast({
@@ -139,10 +135,6 @@ export default function Page() {
                     position: 'top',
                 });
             }
-            mutate({
-                ...data,
-                enabled: data === undefined ? false : !data.enabled,
-            });
         }
     };
 
@@ -161,18 +153,18 @@ export default function Page() {
     const EnableButton = (
         <VStack>
             <Button
-                colorScheme={data && data.enabled ? 'red' : 'green'}
+                colorScheme={banner && banner.enabled ? 'red' : 'green'}
                 justifySelf="flex-end"
                 isLoading={isToggling}
-                leftIcon={data && data.enabled ? <FaStop /> : <FaPlay />}
+                leftIcon={banner && banner.enabled ? <FaStop /> : <FaPlay />}
                 px="8"
                 onClick={toggle}
                 className={trackEvent('click', 'toggle-banner-button')}
             >
-                {data && data.enabled ? 'Turn off live banner' : 'Turn on live banner'}
+                {banner && banner.enabled ? 'Turn off live banner' : 'Turn on live banner'}
             </Button>
             <Heading fontSize="lg" w="full" textAlign="center">
-                {data && data.enabled ? 'Your banner is enabled.' : 'Live banner not enabled.'}
+                {banner && banner.enabled ? 'Your banner is enabled.' : 'Live banner not enabled.'}
             </Heading>
         </VStack>
     );
@@ -268,6 +260,7 @@ export default function Page() {
                                 </TabPanel>
                             </TabPanels>
                         </Tabs>
+
                         <HStack px="6">
                             <Checkbox
                                 colorScheme="purple"
@@ -305,9 +298,12 @@ export default function Page() {
                         </HStack>
                         <Flex justifyContent="space-between" direction={['column', 'row']}>
                             <Spacer />
-                            <Button my="2" onClick={saveSettings} className={trackEvent('click', 'save-settings-button')}>
-                                Save settings
-                            </Button>
+                            <HStack>
+                                <Text>{hasUnsavedChanges ? 'Unsaved changes' : ''}</Text>
+                                <Button my="2" onClick={saveSettings} className={trackEvent('click', 'save-settings-button')}>
+                                    Save settings
+                                </Button>
+                            </HStack>
                         </Flex>
                     </Flex>
                     <Flex w="full" flexDirection="row" justifyContent="space-between">

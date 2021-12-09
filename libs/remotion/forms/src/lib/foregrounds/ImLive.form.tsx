@@ -112,7 +112,7 @@ export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, s
                     isChecked={props.showUsername}
                     size="lg"
                     onChange={(e) => {
-                        setProps({ ...props, showUsername: !props.showUsername, username: props.username });
+                        setProps({ ...props, showUsername: !props.showUsername });
                     }}
                 >
                     Display username
