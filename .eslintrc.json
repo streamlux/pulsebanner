@@ -6,6 +6,11 @@
     "plugins": [
         "@nrwl/nx"
     ],
+    "parserOptions": {
+        "project": [
+            "tsconfig.base.json"
+        ]
+    },
     "overrides": [
         {
             "files": [
@@ -29,6 +34,9 @@
                             }
                         ]
                     }
+                ],
+                "@typescript-eslint/restrict-template-expressions": [
+                    "error"
                 ]
             }
         },
