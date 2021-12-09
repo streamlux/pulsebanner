@@ -1,6 +1,6 @@
 {
     "name": "streamlux-saas",
-    "version": "0.1.18",
+    "version": "0.1.19",
     "license": "MIT",
     "scripts": {
         "start": "nx serve",
