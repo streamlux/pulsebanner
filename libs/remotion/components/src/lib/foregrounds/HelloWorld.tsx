@@ -1,5 +1,4 @@
 import React from 'react';
-import { LayerComponent } from '../LayerComponent';
 
 export const HelloWorld: React.FC = () => {
     return (
@@ -10,9 +9,3 @@ export const HelloWorld: React.FC = () => {
         </div>
     );
 };
-
-const sh = {
-    component: HelloWorld,
-    defaultProps: {},
-    name: 'hello world',
-} as LayerComponent<typeof HelloWorld>;

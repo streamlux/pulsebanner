@@ -7,9 +7,10 @@ import { useElementSize } from './useElementSize';
 export interface RemotionPreviewProps {
     compositionHeight: number;
     compositionWidth: number;
+    previewStyle?: React.CSSProperties;
 }
 
-export const RemotionPreview: React.FC<RemotionPreviewProps> = ({ children, compositionHeight, compositionWidth }) => {
+export const RemotionPreview: React.FC<RemotionPreviewProps> = ({ children, compositionHeight, compositionWidth, previewStyle }) => {
     const container = useRef(null);
     const canvasSize = useElementSize(container, { triggerOnWindowResize: false });
 
@@ -81,7 +82,7 @@ export const RemotionPreview: React.FC<RemotionPreviewProps> = ({ children, comp
         };
     }, [canvasSize, compositionHeight, compositionWidth]);
     return (
-        <div ref={container} style={{ ...outerStyle, ...{ width: '100%', maxWidth: '100%', maxHeight: '100%', margin: '0 1vw 0 1vw' } }}>
+        <div ref={container} style={{ ...outerStyle, ...{ width: '100%', maxWidth: '100%', maxHeight: '100%', margin: '0 1vw 0 1vw' }, ...previewStyle }}>
             <div style={outer}>
                 <div style={containerStyle} className="__remotion-player">
                     {children}

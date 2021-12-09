@@ -14,6 +14,7 @@ export const ImLive: Layer<typeof ForegroundComponents.ImLive> = {
         showUsername: true,
         username: 'Username Here!',
         fontStyle: '',
+        watermark: true,
     },
     name: 'Live stream',
     description: 'Twitch stream description',

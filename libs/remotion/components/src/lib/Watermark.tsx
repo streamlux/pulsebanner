@@ -1,8 +1,13 @@
 import React from 'react';
 import { AbsoluteFill, Img } from 'remotion';
-import './foregrounds/fonts.module.css';
+import './fonts.module.css';
 
-export const Watermark: React.FC = () => (
+interface WatermarkProps {
+    text: string;
+    fontSize?: React.CSSProperties['fontSize'];
+}
+
+export const Watermark: React.FC<WatermarkProps> = ({ text, fontSize }) => (
     <AbsoluteFill style={{ height: '100%', width: '100%' }}>
         <div
             style={{
@@ -12,22 +17,22 @@ export const Watermark: React.FC = () => (
                 bottom: '0',
                 background: 'rgba(255, 255, 255, 0.50)',
                 borderRadius: '5px 5px 0 0',
-                height: '32px',
+                width: 'fit-content',
             }}
         >
             <div
                 style={{
-                    fontSize: '24px',
+                    fontSize: fontSize ?? '24x',
                     fontFamily: 'Inter',
                     display: 'flex',
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyItems: 'center',
-                    padding: '0px 6px 0px 6px',
+                    padding: '0px 8px 0px 8px',
                     color: 'black',
                 }}
             >
-                <span>Twitch live banner by PulseBanner.com</span>
+                <span>{text}</span>
             </div>
         </div>
     </AbsoluteFill>

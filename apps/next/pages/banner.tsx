@@ -211,8 +211,7 @@ export default function Page() {
                                     backgroundId: bgId,
                                     foregroundId: fgId,
                                     backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
-                                    foregroundProps: { ...ForegroundTemplates[fgId].defaultProps, ...fgProps },
-                                    watermark: availableForAccount() ? watermark : true,
+                                    foregroundProps: { ...ForegroundTemplates[fgId].defaultProps, ...fgProps, watermark: availableForAccount() ? watermark : true },
                                 }}
                             />
                         </RemotionPreview>

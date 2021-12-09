@@ -1,8 +1,8 @@
 import React from 'react';
 import { Img } from 'remotion';
-import { LayerComponent } from '../LayerComponent';
-import './fonts.module.css';
+import '../fonts.module.css';
 import arrowImg from '../../assets/arrow.jpeg';
+import { Watermark } from '../Watermark';
 
 type ImLiveProps = {
     text?: string;
@@ -14,6 +14,7 @@ type ImLiveProps = {
     username?: string;
     thumbnailBorderColor: string;
     fontStyle: string;
+    watermark?: boolean;
 };
 
 export const ImLive: React.FC<ImLiveProps> = ({
@@ -26,6 +27,7 @@ export const ImLive: React.FC<ImLiveProps> = ({
     showUsername = true,
     username,
     fontStyle = '',
+    watermark = true,
 }) => {
     return (
         <div style={{ width: '100%', height: '100%', overflow: 'hidden', fontFamily: 'Inter' }}>
@@ -113,15 +115,7 @@ export const ImLive: React.FC<ImLiveProps> = ({
                     </div>
                 </div>
             </div>
+            {watermark && <Watermark text="Realtime banner by PulseBanner.com" />}
         </div>
     );
 };
-
-const sh = {
-    component: ImLive,
-    defaultProps: {
-        thumbnailUrl: 'https://static-cdn.jtvnw.net/previews-ttv/live_user_moistcr1tikal-440x248.jpg',
-    },
-    name: "I'm Live!",
-    description: "Let your audience know you're live with this awesome live-upating banner.",
-} as LayerComponent<typeof ImLive>;

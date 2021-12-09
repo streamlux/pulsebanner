@@ -1,7 +1,6 @@
 import React from 'react';
 import { Img } from 'remotion';
-import { LayerComponent } from '../LayerComponent';
-import './fonts.module.css';
+import '../fonts.module.css';
 
 type TwitchStreamProps = {
     text?: string;
@@ -70,12 +69,3 @@ export const TwitchStream: React.FC<TwitchStreamProps> = ({
         </div>
     );
 };
-
-const sh = {
-    component: TwitchStream,
-    defaultProps: {
-        thumbnailUrl: 'https://static-cdn.jtvnw.net/previews-ttv/live_user_moistcr1tikal-440x248.jpg',
-    },
-    name: 'Twitch stream',
-    description: 'Twitch stream description',
-} as LayerComponent<typeof TwitchStream>;
