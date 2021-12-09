@@ -24,7 +24,6 @@ import {
     VStack,
     Link,
     useToast,
-    Tag,
 } from '@chakra-ui/react';
 import type { Banner } from '@prisma/client';
 import React, { useEffect, useState } from 'react';
