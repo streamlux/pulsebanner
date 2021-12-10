@@ -32,7 +32,7 @@ export const getTwitterInfo = async (userId: string, getProviderAccountId = fals
 };
 
 export const getTweetInfo = async (userId: string): Promise<Tweet> => {
-    const tweet = await prisma.tweet?.findFirst({
+    const tweet = await prisma.twitchTweet?.findFirst({
         where: {
             userId: userId,
         },
