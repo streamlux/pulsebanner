@@ -101,7 +101,7 @@ export default function Page() {
         }
     }, [data, paymentPlan]);
 
-    const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch();
+    const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('banner');
 
     const [isToggling, { on, off }] = useBoolean(false);
 
@@ -179,7 +179,7 @@ export default function Page() {
     return (
         <>
             <DisableBannerModal isOpen={disableBannerIsOpen} onClose={disableBannerOnClose} />
-            <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} />
+            <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} currentPage="banner" />
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
                 <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
                     <Box maxW="xl">

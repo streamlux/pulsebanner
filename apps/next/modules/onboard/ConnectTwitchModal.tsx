@@ -8,9 +8,10 @@ interface ConnectTwitchModalProps {
     onClose: () => void;
     isOpen: boolean;
     session: Session & { accounts?: { [key: string]: Account } };
+    currentPage: string; // we need to know what page to send them back to
 }
 
-export const ConnectTwitchModal: React.FC<ConnectTwitchModalProps> = ({ session, isOpen, onClose }) => {
+export const ConnectTwitchModal: React.FC<ConnectTwitchModalProps> = ({ session, isOpen, onClose, currentPage }) => {
     return (
         <Modal onClose={onClose} size={'xl'} isOpen={isOpen}>
             <ModalOverlay />
@@ -30,7 +31,7 @@ export const ConnectTwitchModal: React.FC<ConnectTwitchModalProps> = ({ session,
                                         ? undefined
                                         : () =>
                                               signIn('twitter', {
-                                                  callbackUrl: '/banner?modal=true',
+                                                  callbackUrl: currentPage === 'banner' ? '/banner?modal=true' : '/tweet?modal=true',
                                               })
                                 }
                                 colorScheme="twitter"
@@ -43,7 +44,7 @@ export const ConnectTwitchModal: React.FC<ConnectTwitchModalProps> = ({ session,
                                 <Button
                                     onClick={() =>
                                         signIn('twitch', {
-                                            callbackUrl: '/banner',
+                                            callbackUrl: currentPage === 'banner' ? '/banner' : '/tweet',
                                         })
                                     }
                                     colorScheme="twitch"

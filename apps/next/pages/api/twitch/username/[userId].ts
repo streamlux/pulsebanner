@@ -32,6 +32,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const userResponse = await authedTwitchAxios.get(`/helix/users?id=${twitchUserId}`);
 
     const displayName = userResponse.data?.data[0]?.display_name;
+    const login = userResponse.data?.data[0]?.display_name;
 
-    return displayName === undefined ? res.status(400).send('No name') : res.status(200).send({ displayName });
+    return displayName === undefined || login === undefined
+        ? res.status(400).send('Unsuccessful twitch request')
+        : res.status(200).send({ displayName: displayName, login: login });
 }
