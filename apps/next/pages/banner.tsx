@@ -46,6 +46,7 @@ import { GetServerSideProps } from 'next';
 import { Banner } from '@prisma/client';
 import prisma from '@app/util/ssr/prisma';
 import { localAxios } from '@app/util/axios';
+import router from 'next/router';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
@@ -161,6 +162,10 @@ export default function Page({ banner }: Props) {
         }
     };
 
+    const refreshData = () => {
+        router.replace(router.asPath);
+    };
+
     const toggle = async () => {
         // ensure user is signed up before enabling banner
         if (ensureSignUp()) {
@@ -181,6 +186,7 @@ export default function Page({ banner }: Props) {
                     position: 'top',
                 });
             }
+            refreshData();
         }
     };
 
