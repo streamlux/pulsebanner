@@ -25,7 +25,7 @@ import {
     Link,
     useToast,
 } from '@chakra-ui/react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
 import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
@@ -41,17 +41,90 @@ import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
 import { discordLink } from '@app/util/constants';
 import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
 import { DisableBannerModal } from '@app/components/banner/DisableBannerModal';
-import { useSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
+import { GetServerSideProps } from 'next';
+import { Banner } from '@prisma/client';
+import prisma from '@app/util/ssr/prisma';
+import { localAxios } from '@app/util/axios';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
 const defaultBackground: keyof typeof BackgroundTemplates = 'GradientBackground';
 
-export default function Page() {
-    const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>(defaultBackground);
-    const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>(defaultForeground);
-    const [bgProps, setBgProps] = useState(BackgroundTemplates[defaultBackground].defaultProps as any);
-    const [fgProps, setFgProps] = useState(ForegroundTemplates[defaultForeground].defaultProps as any);
+// these types are ids of foregrounds or backgrounds
+type Foreground = keyof typeof ForegroundTemplates;
+type Background = keyof typeof BackgroundTemplates;
+
+interface BannerSettings {
+    foregroundId: Foreground;
+    backgroundId: Background;
+    foregroundProps: any;
+    backgroundProps: any;
+}
+
+const defaultBannerSettings: BannerSettings = {
+    foregroundId: defaultForeground,
+    backgroundId: defaultBackground,
+    foregroundProps: ForegroundTemplates[defaultForeground].defaultProps,
+    backgroundProps: BackgroundTemplates[defaultBackground].defaultProps,
+};
+
+interface Props {
+    banner: Banner;
+}
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+    const session = (await getSession({
+        ctx: context,
+    })) as any;
+
+    if (session) {
+        const banner = await prisma.banner.findUnique({
+            where: {
+                userId: session.userId,
+            },
+        });
+
+        if (banner) {
+            return {
+                props: {
+                    banner,
+                },
+            };
+        } else {
+            // assumptions: user has twitch account linked (since they can't have a banner if they don't have a twitch account)
+            const usernameInfo = await localAxios.get(`/api/twitch/username/${session.userId as string}`);
+            const username = usernameInfo.data.displayName;
+            return {
+                props: {
+                    banner: {
+                        ...defaultBannerSettings,
+                        foregroundProps: {
+                            ...defaultBannerSettings.foregroundProps,
+                            username,
+                        },
+                    },
+                },
+            };
+        }
+    }
+    return {
+        props: {
+            banner: {},
+        },
+    };
+};
+
+export default function Page({ banner }: Props) {
+    const { data: sessionInfo } = useSession();
+
+    const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
+    const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
+
+    const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>((banner?.backgroundId as Background) ?? defaultBackground);
+    const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>((banner?.foregroundId as Foreground) ?? defaultForeground);
+    const [bgProps, setBgProps] = useState(banner.backgroundProps ?? (BackgroundTemplates[defaultBackground].defaultProps as any));
+    const [fgProps, setFgProps] = useState(banner.foregroundProps ?? (ForegroundTemplates[defaultForeground].defaultProps as any));
     const [watermark, setWatermark] = useState(true);
 
     const BackgroundTemplate = BackgroundTemplates[bgId];
@@ -59,17 +132,8 @@ export default function Page() {
     const Form = BackgroundTemplate.form;
     const FgForm = ForegroundTemplate.form;
 
-    const sessionInfo = useSession();
-    const userId = sessionInfo.data?.userId;
-
-    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-
     const toast = useToast();
     const breakpoint = useBreakpoint();
-
-    const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
-
-    const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
 
     const availableForAccount = (): boolean => {
         // if they have a free plan and they are not a partner
@@ -79,39 +143,21 @@ export default function Page() {
         return true;
     };
 
-    const [usernameLoaded, setUsernameLoaded] = useState(false);
-    const [banner, setBanner] = useState({} as any);
-
-    useEffect(() => {
-        if (sessionInfo && userId) {
-            axios.get(bannerEndpoint).then((bannerResponse) => {
-                axios.get(`/api/twitch/username/${userId as string}`).then((response) => {
-                    if (response.data) {
-                        setBanner(response.data);
-                        setBgId((bannerResponse.data?.backgroundId as keyof typeof BackgroundTemplates) ?? defaultBackground);
-                        setFgId((bannerResponse.data?.foregroundId as keyof typeof ForegroundTemplates) ?? defaultForeground);
-                        setBgProps(bannerResponse.data?.backgroundProps ?? {});
-                        setFgProps({ ...(bannerResponse.data?.foregroundProps as any), username: response.data.displayName } ?? {});
-                        setUsernameLoaded(true);
-                    }
-                });
-            });
-        }
-    }, [sessionInfo, userId, usernameLoaded]);
-
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch();
 
     const [isToggling, { on, off }] = useBoolean(false);
 
+    const getUnsavedBanner = () => ({
+        foregroundId: fgId,
+        backgroundId: bgId,
+        backgroundProps: { ...BackgroundTemplate.defaultProps, ...bgProps },
+        foregroundProps: { ...ForegroundTemplate.defaultProps, ...fgProps },
+    });
+
     const saveSettings = async () => {
         // ensure user is signed up before saving settings
         if (ensureSignUp()) {
-            const response = await axios.post(bannerEndpoint, {
-                foregroundId: fgId,
-                backgroundId: bgId,
-                backgroundProps: { ...BackgroundTemplate.defaultProps, ...bgProps },
-                foregroundProps: { ...ForegroundTemplate.defaultProps, ...fgProps },
-            });
+            const response = await axios.post(bannerEndpoint, getUnsavedBanner());
         }
     };
 
@@ -299,7 +345,6 @@ export default function Page() {
                         <Flex justifyContent="space-between" direction={['column', 'row']}>
                             <Spacer />
                             <HStack>
-                                <Text>{hasUnsavedChanges ? 'Unsaved changes' : ''}</Text>
                                 <Button my="2" onClick={saveSettings} className={trackEvent('click', 'save-settings-button')}>
                                     Save settings
                                 </Button>
