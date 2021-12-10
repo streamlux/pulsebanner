@@ -61,7 +61,7 @@ export const ImageBackground: LayerForm<typeof BackgroundComponents.ImageBackgro
                 <Button disabled={availableFeature === false ? true : false} onClick={() => setProps({ ...(props ?? {}), src: currentString !== '' ? currentString : undefined })}>
                     Set Image URL
                 </Button>
-                <FormHelperText>Enter a URL to an image to use.</FormHelperText>
+                <FormHelperText>Enter a URL to an image to use. Image size should be exactly 1500x500 for best appearance.</FormHelperText>
             </FormControl>
         </Box>
     );
