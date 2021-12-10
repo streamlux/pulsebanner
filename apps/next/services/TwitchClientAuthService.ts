@@ -9,6 +9,12 @@ export class TwitchClientAuthService {
         return this.authProvider;
     }
 
+    /**
+     * Validates an access token as described here:
+     * https://dev.twitch.tv/docs/authentication#validating-requests
+     * @param accessToken
+     * @returns True if valid, false if invalid
+     */
     private static async isTokenValid(accessToken: AccessToken): Promise<boolean> {
         try {
             const response = await axios.get('https://id.twitch.tv/oauth2/validate', {
