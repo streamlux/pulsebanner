@@ -351,8 +351,17 @@ export default function Page({ banner }: Props) {
                             </HStack>
                         </Flex>
                     </Flex>
-                    <Flex w="full" flexDirection="row" justifyContent="space-between">
-                        <Spacer />
+                    <Flex w="full" flexDirection={['column-reverse', 'row']} justifyContent="space-between">
+                        <HStack pt={['2', '2']} pb={['2', '0']} h="full">
+                            <Text textAlign={['center', 'left']} h="full">
+                                Have feedback? 👉{' '}
+                            </Text>
+                            <Link isExternal href={discordLink}>
+                                <Button as="a" size="sm" colorScheme="gray" rightIcon={<FaDiscord />}>
+                                    Join our Discord
+                                </Button>
+                            </Link>
+                        </HStack>
                         {EnableButton}
                     </Flex>
                 </Flex>
