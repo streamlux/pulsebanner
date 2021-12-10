@@ -1,5 +1,5 @@
 import { shareOnTwitterLink } from '@app/util/constants';
-import { Box, Button, HStack, Link, VStack, Text, Heading } from '@chakra-ui/react';
+import { Box, Button, HStack, Link, VStack, Text, Heading, Center } from '@chakra-ui/react';
 import React, { ReactElement, FC } from 'react';
 
 export const ShareToTwitter: FC = (): ReactElement => {
@@ -10,8 +10,10 @@ export const ShareToTwitter: FC = (): ReactElement => {
             </Heading>
             <Box border="1px" borderColor="gray.200" p="3" rounded="md" w="min-content" minW={['xs', 'md']} textAlign="center">
                 <Text fontSize="lg" as="i">
-                    I just setup my auto updating Twitter banner using <Link color="twitter.500">@PulseBanner</Link>. Make your own at{' '}
-                    <Link color="twitter.500">pulsebanner.com</Link>
+                    I just setup my auto updating Twitter banner using <Link color="twitter.500">@PulseBanner</Link>. Get it for free at{' '}
+                    <Link color="twitter.500">pulsebanner.com</Link>!
+                    <br />
+                    <Link color="twitter.500">#PulseBanner</Link>
                 </Text>
             </Box>
             <HStack>
