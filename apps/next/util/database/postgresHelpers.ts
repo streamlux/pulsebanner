@@ -1,4 +1,4 @@
-import { Banner, Tweet } from '@prisma/client';
+import { Banner, TwitchTweet } from '@prisma/client';
 import prisma from '../ssr/prisma';
 
 export type PostgresTwitterInfo = {
@@ -31,7 +31,7 @@ export const getTwitterInfo = async (userId: string, getProviderAccountId = fals
     return twitterInfo;
 };
 
-export const getTweetInfo = async (userId: string): Promise<Tweet> => {
+export const getTweetInfo = async (userId: string): Promise<TwitchTweet> => {
     const tweet = await prisma.twitchTweet?.findFirst({
         where: {
             userId: userId,
