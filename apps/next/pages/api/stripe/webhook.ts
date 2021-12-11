@@ -5,6 +5,7 @@ import { timestampToDate } from '../../../util/common';
 import { createApiHandler } from '../../../util/ssr/createApiHandler';
 import stripe from '../../../util/ssr/stripe';
 import prisma from '../../../util/ssr/prisma';
+import { log } from '@app/util/discord/log';
 
 // Stripe requires the raw body to construct the event.
 export const config = {
@@ -42,8 +43,8 @@ handler.post(async (req, res) => {
     try {
         event = stripe.webhooks.constructEvent(buf, sig, process.env.STRIPE_WEBHOOK_SECRET);
     } catch (err) {
-        console.log(`❌ Error verifying webhook. Message: ${err?.message}`);
-        console.log('secret', process.env.STRIPE_WEBHOOK_SECRET);
+        log(`❌ Error verifying webhook. Message: ${err?.message}`);
+        log('secret', process.env.STRIPE_WEBHOOK_SECRET);
         return res.status(400).send(`Webhook Error: ${err?.message}`);
     }
 
@@ -200,7 +201,7 @@ handler.post(async (req, res) => {
                     throw new Error(`Unhandled relevant event! ${event.type}`);
             }
         } catch (error) {
-            console.log(error);
+            log(error);
             return res.status(400).send('Webhook error: "Webhook handler failed. View logs."');
         }
     }

@@ -44,10 +44,6 @@ handler.get(async (req, res) => {
         },
     });
 
-    log('hello');
-    log('test');
-    log(JSON.stringify(banner, null, 2));
-
     res.json(banner);
 });
 
