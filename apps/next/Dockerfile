@@ -14,6 +14,8 @@ WORKDIR /app
 COPY ./dist/apps/next/package.json ./
 COPY ./patches ./patches
 RUN npm install --only=production --legacy-peer-deps
+RUN npm i -g patch-package
+RUN npx patch-package
 
 # Production image, copy all the files and run next
 FROM node:16.3-alpine3.12 AS runner
