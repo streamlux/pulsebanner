@@ -34,7 +34,9 @@ import axios from 'axios';
 import { Composer } from '@pulsebanner/remotion/components';
 import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
 import { FaPlay, FaStop } from 'react-icons/fa';
-import { RemotionPreview } from '@pulsebanner/remotion/preview';
+import dynamic from 'next/dynamic';
+
+const RemotionPreview = dynamic(() => import('@pulsebanner/remotion/preview'));
 
 export default function Page() {
     const { data, mutate } = useSWR<Banner>('banner', async () => (await fetch('/api/banner')).json());

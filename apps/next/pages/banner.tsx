@@ -31,7 +31,6 @@ import axios from 'axios';
 import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
 import { Composer } from '@pulsebanner/remotion/components';
 import { FaDiscord, FaPlay, FaStop } from 'react-icons/fa';
-import { RemotionPreview } from '@pulsebanner/remotion/preview';
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 import { PaymentModal } from '@app/components/pricing/PaymentModal';
@@ -47,6 +46,9 @@ import { Banner } from '@prisma/client';
 import prisma from '@app/util/ssr/prisma';
 import { localAxios } from '@app/util/axios';
 import router from 'next/router';
+import dynamic from 'next/dynamic';
+
+const RemotionPreview = dynamic(() => import('@pulsebanner/remotion/preview'));
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';

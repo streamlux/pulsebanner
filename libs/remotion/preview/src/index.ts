@@ -1,1 +1,2 @@
-export * from './lib/RemotionPreview';
+import RemotionPreview from './lib/RemotionPreview';
+export default RemotionPreview;
