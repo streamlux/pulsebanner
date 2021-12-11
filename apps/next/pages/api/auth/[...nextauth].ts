@@ -9,7 +9,6 @@ import { localAxios } from '@app/util/axios';
 import { AccessToken, accessTokenIsExpired, refreshUserToken, StaticAuthProvider } from '@twurple/auth';
 import { sendMessage } from '@app/util/discord/sendMessage';
 import { sendError } from '@app/util/discord/sendError';
-import { log } from '@app/util/discord/log';
 
 // File contains options and hooks for next-auth, the authentication package
 // we are using to handle signup, signin, etc.
@@ -142,7 +141,7 @@ export default NextAuth({
 
                     // Check if twitch access token is expired
                     if (accessTokenIsExpired(token)) {
-                        log(`Twitch user access token is expired for user: '${user.name}'. Refreshing token...`);
+                        console.log(`Twitch user access token is expired for user: '${user.name}'. Refreshing token...`);
                         try {
                             const newToken: AccessToken = await refreshUserToken(process.env.TWITCH_CLIENT_ID, process.env.TWITCH_CLIENT_SECRET, token.refreshToken);
                             // update the access token and other token details in the database
@@ -158,12 +157,12 @@ export default NextAuth({
                                     scope: newToken.scope.join(' '),
                                 },
                             });
-                            log(`Twitch user access token is expired for user: '${user.name}'. Refreshing token...`);
+                            console.log(`Twitch user access token is expired for user: '${user.name}'. Refreshing token...`);
 
                         } catch (e) {
                             const msgs = [`Failed to refresh Twitch user access token for user: '${user.name}'.`];
                             const msg = msgs.join('\n');
-                            log('Error: ', msg, e);
+                            console.error(msg, e);
                             sendError(e, msg);
                         }
                     }
@@ -190,7 +189,7 @@ export default NextAuth({
                     const bucketName = 'bannerbackup';
 
                     localAxios.put(`/api/storage/upload/${message.user.id}?imageUrl=${bannerUrl}&bucket=${bucketName}`).then((resp) => {
-                        log('Uploaded Twitter banner on new user signup.');
+                        console.log('Uploaded Twitter banner on new user signup.');
                     });
                 });
             }

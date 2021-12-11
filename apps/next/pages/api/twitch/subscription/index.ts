@@ -6,7 +6,6 @@ import { Account } from '@prisma/client';
 import { GetSubscriptionsResponse } from '@app/types/twitch';
 import { twitchAxios } from '@app/util/axios';
 import { TwitchClientAuthService } from '@app/services/TwitchClientAuthService';
-import { log } from '@app/util/discord/log';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
@@ -60,7 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             res.send(200);
         }
     } else {
-        log('Failed to get subscription. Session undefined.');
+        console.log('this failed');
         res.send(401);
     }
 }

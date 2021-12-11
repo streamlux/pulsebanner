@@ -1,5 +1,4 @@
 import { createS3 } from '@app/util/database/s3ClientHelper';
-import { log } from '@app/util/discord/log';
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 import { env } from 'process';
@@ -24,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const statusCode = response.$response.httpResponse.statusCode;
         return res.status(statusCode).send('S3 deletion completed');
     } catch (e) {
-        log('Error deleting from s3: ', e);
+        console.log('error deleting from s3: ', e);
     }
     return res.status(400).send('Error deleting from s3');
 }
