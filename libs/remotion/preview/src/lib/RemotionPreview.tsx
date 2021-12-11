@@ -1,13 +1,9 @@
+/* eslint-disable no-native-reassign */
+/* eslint-disable no-global-assign */
 import React, { useMemo, useRef } from 'react';
 import { calculateScale } from './calculateSize';
 import { calculatePlayerSize } from './getPlayerSize';
 import { useElementSize } from './useElementSize';
-
-if (typeof window !== 'undefined') {
-    console.log('In player');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).remotion_isPlayer = true;
-}
 
 /* eslint-disable-next-line */
 export interface RemotionPreviewProps {
@@ -15,7 +11,17 @@ export interface RemotionPreviewProps {
     compositionWidth: number;
 }
 
+if (typeof window === 'undefined') {
+    console.log('Server side rendering!');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // (window as any).remotion_isPlayer = true;
+    global.remotion_isPlayer = true;
+}
+
 export const RemotionPreview: React.FC<RemotionPreviewProps> = ({ children, compositionHeight, compositionWidth }) => {
+
     const container = useRef(null);
     const canvasSize = useElementSize(container, { triggerOnWindowResize: false });
 
