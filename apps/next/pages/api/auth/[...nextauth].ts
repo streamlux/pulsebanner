@@ -9,6 +9,7 @@ import { localAxios } from '@app/util/axios';
 import { AccessToken, accessTokenIsExpired, refreshUserToken, StaticAuthProvider } from '@twurple/auth';
 import { sendMessage } from '@app/util/discord/sendMessage';
 import { sendError } from '@app/util/discord/sendError';
+import { env } from 'process';
 
 // File contains options and hooks for next-auth, the authentication package
 // we are using to handle signup, signin, etc.
@@ -131,7 +132,6 @@ export default NextAuth({
             session.role = user.role;
             session.accounts = {};
             accounts.forEach(async (account) => {
-
                 // Boolean specifying if the user has connected this account or not
                 session.accounts[account.provider] = true;
 
@@ -152,13 +152,12 @@ export default NextAuth({
                                 data: {
                                     access_token: newToken.accessToken,
                                     refresh_token: newToken.refreshToken,
-                                    expires_at: newToken.obtainmentTimestamp + (1000 * newToken.expiresIn),
+                                    expires_at: newToken.obtainmentTimestamp + 1000 * newToken.expiresIn,
                                     token_type: account.token_type,
                                     scope: newToken.scope.join(' '),
                                 },
                             });
                             console.log(`Twitch user access token is expired for user: '${user.name}'. Refreshing token...`);
-
                         } catch (e) {
                             const msgs = [`Failed to refresh Twitch user access token for user: '${user.name}'.`];
                             const msg = msgs.join('\n');
@@ -185,8 +184,7 @@ export default NextAuth({
             if (message.isNewUser === true && message.account.provider === 'twitter') {
                 const twitterProvider = message.account;
                 getBanner(twitterProvider.oauth_token, twitterProvider.oauth_token_secret, twitterProvider.providerAccountId).then((bannerUrl) => {
-
-                    const bucketName = 'bannerbackup';
+                    const bucketName = env.BANNER_BACKUP_BUCKET;
 
                     localAxios.put(`/api/storage/upload/${message.user.id}?imageUrl=${bannerUrl}&bucket=${bucketName}`).then((resp) => {
                         console.log('Uploaded Twitter banner on new user signup.');

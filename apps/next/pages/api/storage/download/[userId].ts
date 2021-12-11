@@ -20,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let base64Image: string = undefined;
 
     try {
-        const s3Object = await s3.getObject({ Bucket: 'pulsebanner', Key: userId }).promise();
+        const s3Object = await s3.getObject({ Bucket: env.IMAGE_BUCKET_NAME, Key: userId }).promise();
         base64Image = s3Object.Body.toString();
     } catch (e) {
         console.log('error: ', e);

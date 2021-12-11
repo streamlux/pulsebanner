@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const userId: string = req.query.userId as string;
 
     try {
-        const response = await s3.deleteObject({ Bucket: 'pulsebanner', Key: userId }).promise();
+        const response = await s3.deleteObject({ Bucket: env.IMAGE_BUCKET_NAME, Key: userId }).promise();
         const statusCode = response.$response.httpResponse.statusCode;
         return res.status(statusCode).send('S3 deletion completed');
     } catch (e) {
