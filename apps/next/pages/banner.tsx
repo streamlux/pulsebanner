@@ -93,22 +93,33 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 },
             };
         } else {
-            // assumptions: user has twitch account linked (since they can't have a banner if they don't have a twitch account)
-            const usernameInfo = await localAxios.get(`/api/twitch/username/${session.userId as string}`);
-            const username = usernameInfo.data.displayName;
-            return {
-                props: {
-                    banner: {
-                        ...defaultBannerSettings,
-                        foregroundProps: {
-                            ...defaultBannerSettings.foregroundProps,
-                            username,
+            // if they have their twitch account connected, but dont have a banner yet
+            if (session.accounts['twitch']) {
+                // fetch twitch username, and save a banner for them (this code should run only once for every user after they sign up)
+                const usernameInfo = await localAxios.get(`/api/twitch/username/${session.userId as string}`);
+                const username = usernameInfo.data.displayName;
+                return {
+                    props: {
+                        banner: {
+                            ...defaultBannerSettings,
+                            foregroundProps: {
+                                ...defaultBannerSettings.foregroundProps,
+                                username,
+                            },
                         },
                     },
-                },
-            };
+                };
+            } else {
+                // if they need to still connect their twitch account
+                return {
+                    props: {
+                        banner: {},
+                    },
+                };
+            }
         }
     }
+    // if they are not logged in
     return {
         props: {
             banner: {},
@@ -173,6 +184,7 @@ export default function Page({ banner }: Props) {
             on();
             await saveSettings();
             await axios.put(bannerEndpoint);
+            refreshData();
             off();
             if (banner && banner.enabled) {
                 bannerDisabledToggle();
@@ -186,7 +198,6 @@ export default function Page({ banner }: Props) {
                     position: 'top',
                 });
             }
-            refreshData();
         }
     };
 
