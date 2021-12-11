@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import bodyParser from 'body-parser';
 import { Features, FeaturesService } from '@app/services/FeaturesService';
 import { localAxios } from '@app/util/axios';
+import { log } from '@app/util/discord/log';
 
 type VerificationBody = {
     challenge: string;
@@ -51,23 +52,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const messageTimestamp = req.headers['Twitch-Eventsub-Message-Timestamp'.toLowerCase()] as string;
     const messageType: MessageType = req.headers['Twitch-Eventsub-Message-Type'.toLowerCase()] as MessageType;
 
-    // print headers
-    console.log('Message headers:');
-    console.log(JSON.stringify({
-        messageId,
-        messageSignature,
-        messageTimestamp,
-        messageType
-    }, null, 2));
-    console.log('Message body: \n', JSON.stringify(req.body, null, 2));
+    logMessageHeaders(messageType, messageId, messageTimestamp, messageSignature);
+
+    log('Message body: \n', JSON.stringify(req.body, null, 2));
 
     if (!verifySignature(messageSignature, messageId, messageTimestamp, req['rawBody'])) {
-        console.log('Request verification failed.');
+        log('Request verification failed.');
         res.status(403).send('Forbidden'); // Reject requests with invalid signatures
         res.end();
         return;
     }
-    console.log('Signature verified.');
+    log('Signature verified.');
 
     if (messageType === MessageType.Verification) {
         const challenge: string = (req.body as VerificationBody).challenge;
@@ -92,7 +87,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 const minutesSinceStreamStart: number = ((Date.now() - new Date(req.body.event.started_at).getTime()) / (60 * 1000));
                 if (minutesSinceStreamStart > 10) {
 
-                    console.log('Recieved streamup notification for stream that started more than 10 minutes ago. Will not process notification.');
+                    log('Recieved streamup notification for stream that started more than 10 minutes ago. Will not process notification.');
 
                     res.status(200);
                     res.end();
@@ -100,11 +95,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 }
 
                 const requestUrl = `/api/features/${feature}/streamup/${userId}`;
-                console.log(`Making request to ${requestUrl}`);
+                log(`Making request to ${requestUrl}`);
                 await localAxios.post(requestUrl);
             }
             if (streamStatus === 'stream.offline') {
-                await localAxios.post(`/api/features/${feature}/streamdown/${userId}`);
+                const requestUrl = `/api/features/${feature}/streamdown/${userId}`;
+                log(`Making request to ${requestUrl}`);
+                await localAxios.post(requestUrl);
             }
         });
 
@@ -115,7 +112,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 function verifySignature(messageSignature: string, id: string, timestamp: string, body: unknown): boolean {
-    console.log('Verifying signature...');
+    log('Verifying signature...');
     const message = id + timestamp + body;
     const signature = crypto.createHmac('sha256', process.env.EVENTSUB_SECRET).update(message);
     const expectedSignatureHeader = 'sha256=' + signature.digest('hex');
@@ -132,4 +129,17 @@ function runMiddleware(req, res, fn) {
             return resolve(result);
         });
     });
+}
+
+function logMessageHeaders(messageType: MessageType, messageId: string, messageTimestamp: string, messageSignature: string) {
+
+    const msg: string[] = ['Message headers: '];
+    msg.push(JSON.stringify({
+        id: messageId,
+        signature: messageSignature,
+        timestamp: messageTimestamp,
+        type: messageType
+    }, null, 2));
+
+    log(msg);
 }
