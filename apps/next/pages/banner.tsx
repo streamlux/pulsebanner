@@ -265,7 +265,7 @@ export default function Page({ banner }: Props) {
                     {EnableButton}
                 </Flex>
                 <Flex w="full" rounded="md" direction="column">
-                    <Center w="full">
+                    <Center w="full" maxH="320px">
                         <RemotionPreview compositionHeight={500} compositionWidth={1500}>
                             <Composer
                                 {...{
