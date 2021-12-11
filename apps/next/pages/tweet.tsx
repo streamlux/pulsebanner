@@ -11,7 +11,9 @@ import {
     HStack,
     Input,
     Link,
+    Progress,
     Spacer,
+    Stack,
     Tag,
     Text,
     Textarea,
@@ -19,6 +21,7 @@ import {
     useToast,
     VStack,
     Wrap,
+    WrapItem,
 } from '@chakra-ui/react';
 import { NextPage } from 'next';
 import { discordLink } from '@app/util/constants';
@@ -41,8 +44,7 @@ const Page: NextPage = () => {
 
     const defaultTweetMessage = `Come join me on Twitch! I am live!`;
     const [tweetText, setTweetText] = useState(data?.tweetInfo ?? defaultTweetMessage);
-    const [tweetLength, setTweetLength] = useState(tweetText.length);
-    const [remainingChars, setRemainingChars] = useState(maxTweetLength - tweetLength);
+    const remainingChars = maxTweetLength - tweetText.length;
 
     const sessionInfo = useSession();
     const userId = sessionInfo.data?.userId;
@@ -162,55 +164,79 @@ const Page: NextPage = () => {
                     {EnableButton}
                 </Flex>
                 <Flex w="full" rounded="md" direction="column">
-                    <Flex grow={1} p="4" my="4" rounded="md" bg="whiteAlpha.100" w="full" direction="column" minH="lg">
-                        <HStack spacing="4">
-                            <Text p="2">Tweet message</Text>
-                            <Text>{`${remainingChars} characters left`}</Text>
-                        </HStack>
-                        <Textarea
-                            placeholder="Tweet message here"
-                            defaultValue={tweetText}
-                            onChange={(val) => {
-                                setTweetText(val.target.value);
-                                setRemainingChars(maxTweetLength - tweetText.length);
-                            }}
-                        />
-                        <Box w="full" experimental_spaceY={2}>
-                            <VStack align={'start'}>
-                                <HStack spacing={0}>
-                                    <Checkbox isDisabled p="2" colorScheme="purple" checked={false} size="lg">
-                                        {' '}
-                                        {/* Make this not a checkbox */}
-                                        Post Image
-                                    </Checkbox>
-                                    <Tag colorScheme="cyan">Coming Soon!</Tag>
+                    <Flex grow={1} p="4" my="4" rounded="md" bg="whiteAlpha.100" w="full" direction="column" minH="sm">
+                        <Stack direction={['column', 'row']} w="full" spacing={6}>
+                            <VStack minW="50%">
+                                <HStack w="full">
+                                    <Heading fontSize="lg">Tweet message</Heading>
                                 </HStack>
-                                <Checkbox
-                                    p="2"
-                                    colorScheme="purple"
-                                    isDisabled={false}
-                                    checked={urlSelected}
-                                    onChange={async (e) => {
-                                        e.preventDefault();
-                                        setUrlSelected(!urlSelected);
-                                        await getStreamLink();
+                                <Textarea
+                                    minH="32"
+                                    resize="none"
+                                    maxLength={280}
+                                    placeholder="Tweet message here"
+                                    defaultValue={tweetText}
+                                    onChange={(val) => {
+                                        const text = val.target.value;
+                                        if (text.length >= maxTweetLength) {
+                                            return;
+                                        }
+                                        setTweetText(val.target.value);
                                     }}
-                                    size="lg"
-                                >
-                                    Post Twitch URL
-                                </Checkbox>
+                                />
                             </VStack>
+
+                            <VStack minW={['full', '50%']}>
+                                <Heading as="p" w="full" fontSize="lg">
+                                    Preview
+                                </Heading>
+                                <Box maxW="full" minH="32" h="full" p="3" border="1px" borderColor="gray.200" rounded="md" w="full" textAlign="center">
+                                    <Text as="i">
+                                        {`${tweetText}`}
+                                        <br /> <TwitchLinkComponent />
+                                    </Text>
+                                </Box>
+                            </VStack>
+                        </Stack>
+                        <Text w="full" textAlign="left">{`${remainingChars} characters left`}</Text>
+
+                        <Box w="full" experimental_spaceY={2}>
+                            <Wrap align={'start'} spacing={[-2, 8]}>
+                                <WrapItem>
+                                    <Checkbox
+                                        p="2"
+                                        colorScheme="purple"
+                                        isDisabled={false}
+                                        checked={urlSelected}
+                                        onChange={async (e) => {
+                                            e.preventDefault();
+                                            setUrlSelected(!urlSelected);
+                                            await getStreamLink();
+                                        }}
+                                        size="lg"
+                                    >
+                                        <Wrap spacing={[0, 4]}>
+                                            <WrapItem>
+                                                <Text>Include stream link</Text>
+                                            </WrapItem>
+                                            <WrapItem>
+                                                <Text as="i">({streamLink})</Text>
+                                            </WrapItem>
+                                        </Wrap>
+                                    </Checkbox>
+                                </WrapItem>
+                                <WrapItem>
+                                    <HStack spacing={0}>
+                                        <Checkbox isDisabled p="2" colorScheme="purple" checked={false} size="lg">
+                                            {' '}
+                                            {/* Make this not a checkbox */}
+                                            Post Image
+                                        </Checkbox>
+                                        <Tag colorScheme="cyan">Coming Soon!</Tag>
+                                    </HStack>
+                                </WrapItem>
+                            </Wrap>
                         </Box>
-                        <VStack spacing="2">
-                            <Heading fontSize="lg" px="4" textAlign="center">
-                                Tweet Message
-                            </Heading>
-                            <Box border="1px" borderColor="gray.200" p="3" rounded="md" w="min-content" minW={['xs', 'md']} textAlign="center">
-                                <Text fontSize="lg" as="i">
-                                    {`${tweetText}`} <TwitchLinkComponent />
-                                </Text>
-                            </Box>
-                        </VStack>
                         <Flex justifyContent="space-between" direction={['column', 'row']}>
                             <Spacer />
                             <Button my="2" onClick={saveSettings} className={trackEvent('click', 'save-settings-button')}>
