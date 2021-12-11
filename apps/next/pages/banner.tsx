@@ -123,6 +123,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
         props: {
             banner: {},
+            isStreaming: false,
         },
     };
 };
@@ -132,6 +133,9 @@ export default function Page({ banner }: Props) {
 
     const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
     const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
+
+    const { data: streamingState } = useSWR('streamState', async () => await (await fetch(`/api/twitch/streaming/${session?.user['id']}`)).json());
+    const streaming = streamingState ? streamingState.isStreaming : false;
 
     const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>((banner?.backgroundId as Background) ?? defaultBackground);
     const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>((banner?.foregroundId as Foreground) ?? defaultForeground);
@@ -223,6 +227,7 @@ export default function Page({ banner }: Props) {
                 px="8"
                 onClick={toggle}
                 className={trackEvent('click', 'toggle-banner-button')}
+                disabled={banner && banner.enabled && streaming}
             >
                 {banner && banner.enabled ? 'Turn off live banner' : 'Turn on live banner'}
             </Button>
