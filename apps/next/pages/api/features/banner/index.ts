@@ -1,6 +1,7 @@
 import prisma from '@app/util/ssr/prisma';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import { updateTwitchSubscriptions } from '@app/services/updateTwitchSubscriptions';
+import { log } from '@app/util/discord/log';
 
 const handler = createAuthApiHandler();
 
@@ -42,6 +43,10 @@ handler.get(async (req, res) => {
             foregroundProps: true
         },
     });
+
+    log('hello');
+    log('test');
+    log(JSON.stringify(banner, null, 2));
 
     res.json(banner);
 });
