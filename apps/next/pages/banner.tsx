@@ -45,10 +45,8 @@ import { Banner } from '@prisma/client';
 import prisma from '@app/util/ssr/prisma';
 import { localAxios } from '@app/util/axios';
 import router from 'next/router';
-import dynamic from 'next/dynamic';
-
-const RemotionPreview = dynamic(() => import('@pulsebanner/remotion/preview'));
-const Composer = dynamic(() => import('@app/util/composer'));
+import RemotionPreview from '@pulsebanner/remotion/preview';
+import { Composer } from '@pulsebanner/remotion/components';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
