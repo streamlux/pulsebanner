@@ -54,7 +54,7 @@ handler.put(async (req, res) => {
     });
 
     if (tweet) {
-        await prisma.banner.update({
+        await prisma.twitchTweet.update({
             where: {
                 userId,
             },

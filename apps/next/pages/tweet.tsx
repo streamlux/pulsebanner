@@ -148,7 +148,6 @@ const Page: NextPage = () => {
                         <Heading fontSize="md" fontWeight="normal" as="h2">
                             You can now automatically send a tweet when you go live on Twitch! Enable now!
                         </Heading>
-
                         <HStack pt={['2', '2']} pb={['2', '0']}>
                             <Text textAlign={['center', 'left']} h="full">
                                 Need help? 👉{' '}

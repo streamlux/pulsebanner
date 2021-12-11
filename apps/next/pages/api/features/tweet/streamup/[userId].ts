@@ -26,8 +26,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).send('Could not find tweet entry or twitter info for user');
     }
 
+    let tweetContent = '';
+    if (tweetInfo.streamUrl) {
+        tweetContent = `${tweetInfo.tweetInfo}\n${tweetInfo.streamUrl}`;
+    } else {
+        tweetContent = `${tweetInfo.tweetInfo}`;
+    }
+
     // get the twitch info from tweetInfo here, then feed into tweetStreamStatusLive
 
-    const tweetStatus: TwitterResponseCode = await tweetStreamStatusLive(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    const tweetStatus: TwitterResponseCode = await tweetStreamStatusLive(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, tweetContent);
+    // we hit this when their last tweet was also from us. We do not tweet then
+    if (tweetStatus === 403) {
+        return res.status(201).send('Tweet already published recently. No changes');
+    }
+
     return tweetStatus === 200 ? res.status(200).send('Tweet successfully published') : res.status(400).send('Unable to publish tweet');
 }

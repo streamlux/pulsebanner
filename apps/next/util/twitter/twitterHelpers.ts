@@ -1,6 +1,6 @@
 import { TwitterClient } from 'twitter-api-client';
 
-export type TwitterResponseCode = 200 | 400;
+export type TwitterResponseCode = 200 | 400 | 403;
 
 const createTwitterClient = (oauth_token: string, oauth_token_secret: string): TwitterClient => {
     return new TwitterClient({
@@ -66,17 +66,17 @@ export async function updateBanner(oauth_token: string, oauth_token_secret: stri
 }
 
 // pass in the twitch url here that we will get from somewhere the user uploads it (TBD)
-export async function tweetStreamStatusLive(oauth_token: string, oauth_token_secret: string, streamLink?: string, tweetContent?: string): Promise<TwitterResponseCode> {
+export async function tweetStreamStatusLive(oauth_token: string, oauth_token_secret: string, tweetMessage: string): Promise<TwitterResponseCode> {
     const client = createTwitterClient(oauth_token, oauth_token_secret);
 
     try {
         await client.tweets.statusesUpdate({
-            status: tweetContent === undefined ? `I am live! Come join the stream on twitch! ${streamLink}` : `${tweetContent} ${streamLink}`,
+            status: tweetMessage,
         });
     } catch (e) {
         // there could be a problem with how long the string is
         console.log('error with publishing the tweet: ', e);
-        return 400;
+        return 403;
     }
     return 200;
 }

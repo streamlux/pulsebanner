@@ -31,10 +31,14 @@ export const getTwitterInfo = async (userId: string, getProviderAccountId = fals
     return twitterInfo;
 };
 
-export const getTweetInfo = async (userId: string): Promise<TwitchTweet> => {
+export const getTweetInfo = async (userId: string): Promise<Partial<TwitchTweet>> => {
     const tweet = await prisma.twitchTweet?.findFirst({
         where: {
             userId: userId,
+        },
+        select: {
+            tweetInfo: true,
+            streamUrl: true,
         },
     });
 
