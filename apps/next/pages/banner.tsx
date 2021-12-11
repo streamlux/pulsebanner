@@ -29,7 +29,6 @@ import React, { useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
 import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
-import { Composer } from '@pulsebanner/remotion/components';
 import { FaDiscord, FaPlay, FaStop } from 'react-icons/fa';
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
@@ -49,6 +48,7 @@ import router from 'next/router';
 import dynamic from 'next/dynamic';
 
 const RemotionPreview = dynamic(() => import('@pulsebanner/remotion/preview'));
+const Composer = dynamic(() => import('@app/util/composer'));
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
