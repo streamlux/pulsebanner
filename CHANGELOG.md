@@ -11,7 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Inform users that background images should be 1500x500
 - Custom 404 page
-- Discord logging
 
 ### Changed
 
