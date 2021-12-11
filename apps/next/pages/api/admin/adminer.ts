@@ -4,6 +4,7 @@ const handler = createAuthApiHandler();
 
 handler.get(async (req, res) => {
     if (req.session.role !== 'admin') {
+        console.log(req.session);
         res.send(401);
     }
 

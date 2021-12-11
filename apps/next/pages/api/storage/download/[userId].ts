@@ -2,7 +2,6 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 import { env } from 'process';
 import { createS3 } from '@app/util/database/s3ClientHelper';
-import { log } from '@app/util/discord/log';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
@@ -24,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const s3Object = await s3.getObject({ Bucket: 'pulsebanner', Key: userId }).promise();
         base64Image = s3Object.Body.toString();
     } catch (e) {
-        log('Error getting object from S3: ', e);
+        console.log('error: ', e);
     }
 
     return base64Image === undefined ? res.status(404).send('Could not find user') : res.status(200).send(base64Image);

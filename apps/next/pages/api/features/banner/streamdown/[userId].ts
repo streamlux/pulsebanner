@@ -3,7 +3,6 @@ import NextCors from 'nextjs-cors';
 import { TwitterResponseCode, updateBanner } from '@app/util/twitter/twitterHelpers';
 import { getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { localAxios } from '@app/util/axios';
-import { log } from '@app/util/discord/log';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
@@ -29,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // query the original banner image from the db
     const response = await localAxios.get(`/api/storage/download/${userId}`);
     if (response.status === 200) {
-        log('Found user in db and got image');
+        console.log('Found user in db and got image');
     } else {
         res.status(404).send('Unable to find user in database for streamdown');
     }
