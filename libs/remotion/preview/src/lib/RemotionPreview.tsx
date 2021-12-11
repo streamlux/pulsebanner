@@ -3,6 +3,12 @@ import { calculateScale } from './calculateSize';
 import { calculatePlayerSize } from './getPlayerSize';
 import { useElementSize } from './useElementSize';
 
+if (typeof window !== 'undefined') {
+    console.log('In player');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).remotion_isPlayer = true;
+}
+
 /* eslint-disable-next-line */
 export interface RemotionPreviewProps {
     compositionHeight: number;
