@@ -1,7 +1,7 @@
-import prisma from "@app/util/ssr/prisma";
-import type { Prisma } from "@prisma/client";
-export type Features = keyof Pick<Prisma.UserInclude, 'banner' | 'tweet'>;
-const features: Features[] = ['banner', 'tweet'];
+import prisma from '@app/util/ssr/prisma';
+import type { Prisma } from '@prisma/client';
+export type Features = keyof Pick<Prisma.UserInclude, 'banner' | 'tweet' | 'twitterName'>;
+const features: Features[] = ['banner', 'tweet', 'twitterName'];
 
 export class FeaturesService {
     /**
@@ -9,16 +9,16 @@ export class FeaturesService {
      * @returns A list containing the features the user has enabled.
      */
     public static async listEnabled(userId: string): Promise<Features[]> {
-
         const user = await prisma.user.findUnique({
             where: {
                 id: userId,
             },
             include: {
                 banner: true,
-                tweet: true
+                tweet: true,
+                twitterName: true,
             },
-            rejectOnNotFound: true
+            rejectOnNotFound: true,
         });
 
         const enabledFeatures: Features[] = [];

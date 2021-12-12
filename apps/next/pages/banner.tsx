@@ -123,7 +123,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
         props: {
             banner: {},
-            isStreaming: false,
         },
     };
 };
