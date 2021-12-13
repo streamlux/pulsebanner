@@ -95,3 +95,28 @@ export async function tweetStreamStatusOffline(oauth_token: string, oauth_token_
     }
     return 200;
 }
+
+export async function getCurrentTwitterName(oauth_token: string, oauth_token_secret: string): Promise<string> {
+    const client = createTwitterClient(oauth_token, oauth_token_secret);
+
+    try {
+        const account = await client.accountsAndUsers.accountVerifyCredentials();
+        const name = account.name;
+        return name;
+    } catch (e) {
+        console.log('Errror getting twitter name: ', e);
+        return '';
+    }
+}
+
+export async function updateTwitterName(oauth_token: string, oauth_token_secret: string, name: string): Promise<TwitterResponseCode> {
+    const client = createTwitterClient(oauth_token, oauth_token_secret);
+
+    try {
+        await client.accountsAndUsers.accountUpdateProfile({ name: name });
+    } catch (e) {
+        console.log('error updating twitter name: ', e);
+        return 400;
+    }
+    return 200;
+}

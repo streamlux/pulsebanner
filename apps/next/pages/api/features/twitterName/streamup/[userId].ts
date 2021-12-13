@@ -1,3 +1,5 @@
+import { getTwitterInfo, getTwitterName, updateOriginalTwitterNameDB } from '@app/util/database/postgresHelpers';
+import { getCurrentTwitterName, updateTwitterName } from '@app/util/twitter/twitterHelpers';
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 
@@ -14,15 +16,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const userId: string = req.query.userId as string;
 
+    const twitterInfo = await getTwitterInfo(userId);
+
     // get the current twitter name
+    const twitterName = await getCurrentTwitterName(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
 
     // get the twitter stream name specified in table
+    const dbInfo = await getTwitterName(userId);
 
     // If it is not found return immediately and do not update normal twitter name
+    if (dbInfo && twitterName !== '') {
+        if (dbInfo.streamName) {
+            // post to twitter
+            const response = await updateTwitterName(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, dbInfo.streamName);
 
-    // update TwitterName table to have the normal twitter name
-
-    // post to twitter
-
-    // done
+            if (response === 200) {
+                await updateOriginalTwitterNameDB(userId, twitterName);
+                return res.status(200).send('success');
+            }
+        }
+    }
+    return res.status(400).send('error handling twitter name on streamup');
 }

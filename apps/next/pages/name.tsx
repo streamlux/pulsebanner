@@ -14,7 +14,7 @@ import { useState } from 'react';
 import { FaDiscord, FaPlay, FaStop } from 'react-icons/fa';
 import useSWR from 'swr';
 
-const nameEndpoint = '/api/features/name';
+const nameEndpoint = '/api/features/twitterName';
 const maxNameLength = 50;
 
 interface Props {
@@ -74,7 +74,6 @@ export default function Page({ twitterName }: Props) {
     const [isToggling, { on, off }] = useBoolean(false);
 
     const getUnsavedName = () => ({
-        originalName: 'CHANGE HERE',
         streamName: `${streamName}`,
     });
 
@@ -99,7 +98,7 @@ export default function Page({ twitterName }: Props) {
             refreshData();
             off();
             if (twitterName && twitterName.enabled) {
-                // we need to add the disablebanner shit here (breaking off into separate PR as it is not high pri)
+                // we need to add the disablebanner modal here (breaking off into separate PR as it is not high pri)
             } else {
                 toast({
                     title: 'Twitter Name Activated',

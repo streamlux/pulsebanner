@@ -40,21 +40,22 @@ model Session {
 }
 
 model User {
-  id            String        @id @default(cuid())
-  name          String?
-  email         String?       @unique
-  emailVerified DateTime?
-  image         String?
-  createdAt     DateTime      @default(now()) @map("created_at")
-  role          Role          @default(user)
-  accounts      Account[]
-  sessions      Session[]
-  customer      Customer?
-  subscription  Subscription?
-  banner        Banner?
-  tweet         Tweet?
-  twitterName   TwitterName?
-  partner       Boolean       @default(false)
+  id                  String               @id @default(cuid())
+  name                String?
+  email               String?              @unique
+  emailVerified       DateTime?
+  image               String?
+  createdAt           DateTime             @default(now()) @map("created_at")
+  role                Role                 @default(user)
+  accounts            Account[]
+  sessions            Session[]
+  customer            Customer?
+  subscription        Subscription?
+  banner              Banner?
+  tweet               Tweet?
+  twitterName         TwitterName?
+  twitterOriginalName TwitterOriginalName?
+  partner             Boolean              @default(false)
 
   @@map("users")
 }
@@ -110,14 +111,23 @@ model Twitch {
 }
 
 model TwitterName {
-  id           String  @id @default(cuid())
-  userId       String  @unique(map: "twitter_username_user_id_unique") @map("user_id")
-  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  enabled      Boolean @default(false)
-  originalName String
-  streamName   String
+  id         String  @id @default(cuid())
+  userId     String  @unique(map: "twitter_username_user_id_unique") @map("user_id")
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enabled    Boolean @default(false)
+  streamName String
 
   @@map("username")
+}
+
+// separate this out since we do not need to save this when they save their settings. Makes fetching easier
+model TwitterOriginalName {
+  id           String @id @default(cuid())
+  userId       String @unique(map: "twitter_original_username_user_id_unique") @map("user_id")
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  originalName String
+
+  @@map("original_name")
 }
 
 // Stripe models

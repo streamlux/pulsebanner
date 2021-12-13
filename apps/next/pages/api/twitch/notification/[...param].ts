@@ -53,12 +53,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // print headers
     console.log('Message headers:');
-    console.log(JSON.stringify({
-        messageId,
-        messageSignature,
-        messageTimestamp,
-        messageType
-    }, null, 2));
+    console.log(
+        JSON.stringify(
+            {
+                messageId,
+                messageSignature,
+                messageTimestamp,
+                messageType,
+            },
+            null,
+            2
+        )
+    );
     console.log('Message body: \n', JSON.stringify(req.body, null, 2));
 
     if (!verifySignature(messageSignature, messageId, messageTimestamp, req['rawBody'])) {
@@ -77,7 +83,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (messageType === MessageType.Notification) {
-
         const streamStatus = req.body.subscription.type;
 
         const userId = param[1];
@@ -86,12 +91,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const features = await FeaturesService.listEnabled(userId);
         features.forEach(async (feature: Features) => {
             if (streamStatus === 'stream.online') {
-
                 // Sometimes twitch sends more than one streamup notification, this causes issues for us
                 // to mitigate this, we only process the notification if the stream started within the last 10 minutes
-                const minutesSinceStreamStart: number = ((Date.now() - new Date(req.body.event.started_at).getTime()) / (60 * 1000));
+                const minutesSinceStreamStart: number = (Date.now() - new Date(req.body.event.started_at).getTime()) / (60 * 1000);
                 if (minutesSinceStreamStart > 10) {
-
                     console.log('Recieved streamup notification for stream that started more than 10 minutes ago. Will not process notification.');
 
                     res.status(200);

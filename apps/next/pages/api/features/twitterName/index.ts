@@ -7,17 +7,17 @@ const handler = createAuthApiHandler();
 // do we need this method
 handler.post(async (req, res) => {
     const userId = req.session?.userId;
-    const originalName = req.body.originalName ?? '';
     const streamName = req.body.streamName ?? '';
 
     if (userId) {
+        // we should see if they have anything in their
+
         await prisma.twitterName.upsert({
             where: {
                 userId: userId,
             },
             create: {
                 userId: userId,
-                originalName: originalName,
                 streamName: streamName,
             },
             update: {
@@ -38,7 +38,6 @@ handler.get(async (req, res) => {
             },
             select: {
                 enabled: true,
-                originalName: true,
                 streamName: true,
             },
         });
