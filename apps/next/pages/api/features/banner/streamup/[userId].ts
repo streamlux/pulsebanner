@@ -7,6 +7,7 @@ import { Prisma } from '@prisma/client';
 import { getAccountsById } from '@app/util/getAccountsById';
 import { TwitchClientAuthService } from '@app/services/TwitchClientAuthService';
 import { AxiosResponse } from 'axios';
+import { env } from 'process';
 
 type TemplateRequestBody = {
     foregroundId: string;
@@ -57,7 +58,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // call twitter api to get imageUrl and convert to base64
     const bannerUrl: string = await getBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
-    const bucketName = 'pulsebanner';
+    const bucketName = env.IMAGE_BUCKET_NAME;
     // store the current banner in s3
     await localAxios.put(`/api/storage/upload/${userId}?imageUrl=${bannerUrl}&bucket=${bucketName}`);
 

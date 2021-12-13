@@ -32,13 +32,13 @@ twitch event verify-subscription streamup -F http://localhost:4200/api/twitch/no
 ```
 
 ```
-twitch event trigger streamup -F http://localhost:4200/api/twitch/notification/${twitter-id-here} --secret="${secret-here}"
+twitch event trigger streamup -F http://localhost:4200/api/twitch/notification/stream.online/${user-id-here} --secret="${secret-here}"
 ```
  
 To test stream is offline event (streamdown) run following command
 
 ```
-twitch event trigger streamdown -F http://localhost:4200/api/twitch/notification/${twitter-id-here} --secret="${secret-here}"
+twitch event trigger streamdown -F http://localhost:4200/api/twitch/notification/stream.offline/${user-id-here} --secret="${secret-here}"
 ```
 
 https://dev.twitch.tv/docs/eventsub/handling-webhook-events#using-the-cli-to-test-your-handler
