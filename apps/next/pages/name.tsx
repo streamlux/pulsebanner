@@ -1,10 +1,12 @@
+import { PaymentModal } from '@app/components/pricing/PaymentModal';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 import { discordLink } from '@app/util/constants';
 import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import prisma from '@app/util/ssr/prisma';
 import { trackEvent } from '@app/util/umami/trackEvent';
-import { Box, Button, Container, Flex, Heading, HStack, Link, Spacer, Stack, Text, Textarea, useBoolean, useToast, VStack } from '@chakra-ui/react';
+import { StarIcon } from '@chakra-ui/icons';
+import { Box, Button, Container, Flex, Heading, HStack, Link, Spacer, Stack, Text, Textarea, useBoolean, useDisclosure, useToast, VStack } from '@chakra-ui/react';
 import { TwitterName } from '@prisma/client';
 import axios from 'axios';
 import { GetServerSideProps } from 'next';
@@ -63,19 +65,31 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 export default function Page({ twitterName }: Props) {
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch();
 
+    const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
+    const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
+
     const { data: streamingState } = useSWR('streamState', async () => await (await fetch(`/api/twitch/streaming/${session?.user['id']}`)).json());
     const streaming = streamingState ? streamingState.isStreaming : false;
 
-    const defaultMessage = 'Sample text';
+    const defaultMessage = "🔴I'm live!🔴";
     const [streamName, setStreamName] = useState(twitterName.streamName ?? defaultMessage);
 
     const toast = useToast();
 
     const [isToggling, { on, off }] = useBoolean(false);
 
+    const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
+
     const getUnsavedName = () => ({
         streamName: `${streamName}`,
     });
+
+    const availableForAccount = (): boolean => {
+        if (paymentPlan === 'Free' && !paymentPlanResponse?.partner) {
+            return false;
+        }
+        return true;
+    };
 
     const saveSettings = async () => {
         // ensure user is signed up before saving settings
@@ -112,6 +126,16 @@ export default function Page({ twitterName }: Props) {
         }
     };
 
+    const PremiumMessage = (
+        <VStack>
+            <Heading fontSize="xl">Looking to use this feature?</Heading>
+            <Text>⭐Unlock today with premium⭐</Text>
+            <Button colorScheme="teal" onClick={() => pricingToggle()} className={trackEvent('click', 'premium-watermark-button')}>
+                Unlock Now
+            </Button>
+        </VStack>
+    );
+
     const EnableButton = (
         <VStack>
             <Button
@@ -122,7 +146,7 @@ export default function Page({ twitterName }: Props) {
                 px="8"
                 onClick={toggle}
                 className={trackEvent('click', 'toggle-name-button')}
-                disabled={twitterName && twitterName.enabled && streaming}
+                disabled={(twitterName && twitterName.enabled && streaming) || !availableForAccount()}
             >
                 {twitterName && twitterName.enabled ? 'Turn off live name' : 'Turn on live name'}
             </Button>
@@ -134,6 +158,7 @@ export default function Page({ twitterName }: Props) {
 
     return (
         <>
+            <PaymentModal isOpen={pricingIsOpen} onClose={pricingClose} />
             <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} />
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
                 <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
@@ -160,6 +185,7 @@ export default function Page({ twitterName }: Props) {
                 </Flex>
                 <Flex w="full" rounded="md" direction="column">
                     <Flex grow={1} p="4" my="4" rounded="md" bg="whiteAlpha.100" w="full" direction="column" minH="lg">
+                        {availableForAccount() ? <></> : PremiumMessage}
                         <VStack align="start">
                             <Heading fontSize="lg">Streaming name</Heading>
                             <Textarea
@@ -180,7 +206,16 @@ export default function Page({ twitterName }: Props) {
                         <Flex justifyContent="space-between" direction={['column', 'row']}>
                             <Spacer />
                             <HStack>
-                                <Button my="2" onClick={saveSettings} className={trackEvent('click', 'save-settings-button')}>
+                                <Button
+                                    leftIcon={<StarIcon />}
+                                    colorScheme="teal"
+                                    variant="ghost"
+                                    onClick={() => pricingToggle()}
+                                    className={trackEvent('click', 'premium-watermark-button')}
+                                >
+                                    Premium
+                                </Button>
+                                <Button my="2" disabled={!availableForAccount()} onClick={saveSettings} className={trackEvent('click', 'save-settings-button')}>
                                     Save settings
                                 </Button>
                             </HStack>

@@ -87,8 +87,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const userId = param[1];
 
+        console.log(`Received ${streamStatus} notification for user ${userId}`);
+
         // get enabled features
         const features = await FeaturesService.listEnabled(userId);
+        console.log('features enabled: ', features);
         features.forEach(async (feature: Features) => {
             if (streamStatus === 'stream.online') {
                 // Sometimes twitch sends more than one streamup notification, this causes issues for us

@@ -30,6 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             if (response === 200) {
                 // just return, we do not need to do anything to the db's on streamdown
+                console.log('success updating username on streamdown');
                 return res.status(200).send('success');
             }
         }

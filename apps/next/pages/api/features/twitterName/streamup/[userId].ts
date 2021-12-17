@@ -20,6 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // get the current twitter name
     const twitterName = await getCurrentTwitterName(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    console.log('current twitter name: ', twitterName);
 
     // get the twitter stream name specified in table
     const dbInfo = await getTwitterName(userId);
@@ -32,6 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             if (response === 200) {
                 await updateOriginalTwitterNameDB(userId, twitterName);
+                console.log('success updating username on streamup');
                 return res.status(200).send('success');
             }
         }
