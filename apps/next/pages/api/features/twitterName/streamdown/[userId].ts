@@ -33,8 +33,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 console.log('success updating username on streamdown');
                 return res.status(200).send('success');
             }
+        } else {
+            return res.status(201).send('Original name not found in DB');
         }
-
-        return res.status(400).send('error handling twitter name on streamdown');
     }
+    return res.status(400).send('Unsuccessful streamdown handling. Could not get twitterInfo.');
 }
