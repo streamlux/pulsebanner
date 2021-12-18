@@ -28,8 +28,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // If it is not found return immediately and do not update normal twitter name
     if (dbInfo && twitterName !== '') {
         if (dbInfo.streamName) {
+            // join the existing twitter name with stream name
+            const joinedName = `${dbInfo.streamName} | ${twitterName}`.substring(0, 50);
+
             // post to twitter
-            const response = await updateTwitterName(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, dbInfo.streamName);
+            const response = await updateTwitterName(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, joinedName);
 
             if (response === 200) {
                 await updateOriginalTwitterNameDB(userId, twitterName);
