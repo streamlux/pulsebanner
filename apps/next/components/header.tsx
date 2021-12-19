@@ -24,6 +24,7 @@ import {
     useBreakpoint,
     useDisclosure,
     Spacer,
+    Tag,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { signIn, signOut, useSession } from 'next-auth/react';
@@ -123,7 +124,10 @@ export default function Header() {
                                         </WrapItem>
                                         <WrapItem>
                                             <NextLink href="/name" passHref>
-                                                <Link>Name Changer</Link>
+                                                <HStack>
+                                                    <Link>Name Changer</Link>
+                                                    <Tag colorScheme="green">NEW</Tag>
+                                                </HStack>
                                             </NextLink>
                                         </WrapItem>
                                         <WrapItem>
@@ -211,7 +215,10 @@ export default function Header() {
                         </WrapItem>
                         <WrapItem>
                             <NextLink href="/name" passHref>
-                                <Link>Name Changer</Link>
+                                <HStack>
+                                    <Link>Name Changer</Link>
+                                    <Tag colorScheme="green">NEW</Tag>
+                                </HStack>
                             </NextLink>
                         </WrapItem>
                         <WrapItem>
