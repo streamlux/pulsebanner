@@ -188,6 +188,8 @@ export default NextAuth({
 
                     localAxios.put(`/api/storage/upload/${message.user.id}?imageUrl=${bannerUrl}&bucket=${bucketName}`).then((resp) => {
                         console.log('Uploaded Twitter banner on new user signup.');
+                    }).catch((reason) => {
+                        sendError(reason, 'Error uploading Twitter banner to backup bucket on new user signup');
                     });
                 });
             }
