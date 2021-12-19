@@ -122,13 +122,13 @@ export default function Header() {
                                             </NextLink>
                                         </WrapItem>
                                         <WrapItem>
-                                            <NextLink href="/pricing" passHref>
-                                                <Link>Pricing</Link>
+                                            <NextLink href="/name" passHref>
+                                                <Link>Name Changer</Link>
                                             </NextLink>
                                         </WrapItem>
                                         <WrapItem>
-                                            <NextLink href="/name" passHref>
-                                                <Link>Name</Link>
+                                            <NextLink href="/pricing" passHref>
+                                                <Link>Pricing</Link>
                                             </NextLink>
                                         </WrapItem>
                                     </Wrap>
@@ -210,13 +210,13 @@ export default function Header() {
                             </NextLink>
                         </WrapItem>
                         <WrapItem>
-                            <NextLink href="/pricing" passHref>
-                                <Link>Pricing</Link>
+                            <NextLink href="/name" passHref>
+                                <Link>Name Changer</Link>
                             </NextLink>
                         </WrapItem>
                         <WrapItem>
-                            <NextLink href="/name" passHref>
-                                <Link>Name</Link>
+                            <NextLink href="/pricing" passHref>
+                                <Link>Pricing</Link>
                             </NextLink>
                         </WrapItem>
                     </Wrap>

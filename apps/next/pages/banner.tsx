@@ -236,6 +236,17 @@ export default function Page({ banner }: Props) {
         </VStack>
     );
 
+    const tweetText = 'I just setup my auto updating Twitter banner for #Twitch using @PulseBanner. Get it for free at pulsebanner.com!\n\n#PulseBanner';
+
+    const TweetPreview = (
+        <Text fontSize="lg" as="i">
+            I just setup my auto updating Twitter banner for <Link color="twitter.500">#Twitch</Link> using <Link color="twitter.500">@PulseBanner</Link>. Get it for free at{' '}
+            <Link color="twitter.500">pulsebanner.com</Link>!
+            <br />
+            <Link color="twitter.500">#PulseBanner</Link>
+        </Text>
+    );
+
     return (
         <>
             <DisableBannerModal isOpen={disableBannerIsOpen} onClose={disableBannerOnClose} />
@@ -243,7 +254,7 @@ export default function Page({ banner }: Props) {
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
                 <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
                     <Box maxW="xl">
-                        <Heading as="h1" fontSize={['2xl', '3xl']} alignSelf={['center', 'end']}>
+                        <Heading as="h1" fontSize={['2xl', '3xl']} alignSelf={['center', 'end']} pb={[0, 2]}>
                             Twitch live banner
                         </Heading>
                         <Heading fontSize="md" fontWeight="normal" as="h2">
@@ -387,7 +398,7 @@ export default function Page({ banner }: Props) {
                     </Flex>
                 </Flex>
                 <Box pt="8">
-                    <ShareToTwitter />
+                    <ShareToTwitter tweetText={tweetText} tweetPreview={TweetPreview} />
                 </Box>
             </Container>
             <PaymentModal isOpen={pricingIsOpen} onClose={pricingClose} />

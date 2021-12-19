@@ -26,3 +26,7 @@ iframe {
 .responsive .react-colorful {
     width: auto;
 }
+
+span.fake-link > img {
+    display: inline-block;
+}
