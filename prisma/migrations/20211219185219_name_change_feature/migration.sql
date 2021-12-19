@@ -3,7 +3,8 @@ CREATE TABLE "username" (
     "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "enabled" BOOLEAN NOT NULL DEFAULT false,
-    "streamName" TEXT NOT NULL,
+    "stream_name" TEXT NOT NULL,
+    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "username_pkey" PRIMARY KEY ("id")
 );
@@ -12,7 +13,7 @@ CREATE TABLE "username" (
 CREATE TABLE "original_name" (
     "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
-    "originalName" TEXT NOT NULL,
+    "original_name" TEXT NOT NULL,
 
     CONSTRAINT "original_name_pkey" PRIMARY KEY ("id")
 );
