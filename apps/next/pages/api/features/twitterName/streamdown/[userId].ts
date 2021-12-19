@@ -1,5 +1,5 @@
 import { getOriginalTwitterName, getTwitterInfo } from '@app/util/database/postgresHelpers';
-import { updateTwitterName } from '@app/util/twitter/twitterHelpers';
+import { getCurrentTwitterName, updateTwitterName } from '@app/util/twitter/twitterHelpers';
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 
@@ -23,18 +23,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (twitterInfo) {
         // call our db to get the original twitter name
         const originalName = await getOriginalTwitterName(userId);
+        const currentTwitterName = await getCurrentTwitterName(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
 
         // when received, post to twitter to update
         if (originalName) {
+            console.log(`Changing Twitter name from '${currentTwitterName}' to '${originalName}'.`);
             const response = await updateTwitterName(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, originalName.originalName);
 
             if (response === 200) {
                 // just return, we do not need to do anything to the db's on streamdown
-                console.log('success updating username on streamdown');
+                console.log('Successfully updated Twitter name on streamdown.');
                 return res.status(200).send('success');
             }
         } else {
-            return res.status(201).send('Original name not found in DB');
+            return res.status(201).send('Original name not found in database.');
         }
     }
     return res.status(400).send('Unsuccessful streamdown handling. Could not get twitterInfo.');
