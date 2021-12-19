@@ -111,11 +111,12 @@ model Twitch {
 }
 
 model TwitterName {
-  id         String  @id @default(cuid())
-  userId     String  @unique(map: "twitter_username_user_id_unique") @map("user_id")
-  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  enabled    Boolean @default(false)
-  streamName String
+  id         String   @id @default(cuid())
+  userId     String   @unique(map: "twitter_username_user_id_unique") @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enabled    Boolean  @default(false)
+  streamName String   @map("stream_name")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
 
   @@map("username")
 }
@@ -125,7 +126,7 @@ model TwitterOriginalName {
   id           String @id @default(cuid())
   userId       String @unique(map: "twitter_original_username_user_id_unique") @map("user_id")
   user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  originalName String
+  originalName String @map("original_name")
 
   @@map("original_name")
 }

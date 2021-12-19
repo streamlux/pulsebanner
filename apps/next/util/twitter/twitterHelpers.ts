@@ -2,7 +2,7 @@ import { TwitterClient } from 'twitter-api-client';
 
 export type TwitterResponseCode = 200 | 400;
 
-const createTwitterClient = (oauth_token: string, oauth_token_secret: string): TwitterClient => {
+export const createTwitterClient = (oauth_token: string, oauth_token_secret: string): TwitterClient => {
     return new TwitterClient({
         apiKey: process.env.TWITTER_ID,
         apiSecret: process.env.TWITTER_SECRET,

@@ -10,19 +10,20 @@ import {
     Box,
     Button,
     Center,
-    ColorMode,
-    ColorModeContext,
     Container,
     Flex,
+    FormControl,
+    FormHelperText,
+    FormLabel,
     Heading,
     HStack,
+    IconButton,
     Input,
     Link,
     Spacer,
-    Stack,
     Text,
-    Textarea,
     useBoolean,
+    useBreakpoint,
     useColorMode,
     useDisclosure,
     useToast,
@@ -39,12 +40,15 @@ import useSWR from 'swr';
 import FakeTweet from 'fake-tweet';
 import 'fake-tweet/build/index.css';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
-
+import { createTwitterClient } from '@app/util/twitter/twitterHelpers';
+import { getTwitterInfo } from '@app/util/database/postgresHelpers';
+import { format } from 'date-fns';
 const nameEndpoint = '/api/features/twitterName';
 const maxNameLength = 50;
 
 interface Props {
     twitterName: TwitterName;
+    twitterProfile: any;
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -59,19 +63,36 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             },
         });
 
+        const twitterInfo = await getTwitterInfo(session.userId, true);
+        const client = createTwitterClient(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+
+        const twitterProfile = (
+            await client.accountsAndUsers.usersLookup({
+                user_id: twitterInfo.providerAccountId,
+            })
+        )?.[0];
+
         if (twitterName) {
             return {
                 props: {
                     twitterName,
+                    twitterProfile,
                 },
             };
         } else {
             if (session.accounts['twitter']) {
                 // don't think we need this if check, unless we save the twitter name from the very first time they sign up
+                return {
+                    props: {
+                        twitterName: {},
+                        twitterProfile,
+                    },
+                };
             } else {
                 return {
                     props: {
                         twitterName: {},
+                        twitterProfile: {},
                     },
                 };
             }
@@ -80,14 +101,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
         props: {
             twitterName: {},
+            twitterProfile: {},
         },
     };
 };
 
 // NOTE: We should potentially allow them to change what it is reverted back to. Would make it easier to handle in the UI and passing it around
 
-export default function Page({ twitterName }: Props) {
-    const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch();
+export default function Page({ twitterName, twitterProfile }: Props) {
+    const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('/name');
 
     const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
     const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
@@ -95,7 +117,7 @@ export default function Page({ twitterName }: Props) {
     const { data: streamingState } = useSWR('streamState', async () => await (await fetch(`/api/twitch/streaming/${session?.user['id']}`)).json());
     const streaming = streamingState ? streamingState.isStreaming : false;
 
-    const defaultMessage = '🔴 Live now | ';
+    const defaultMessage = `🔴 Live now | ${twitterProfile.name ?? 'PulseBanner'}`;
     const [streamName, setStreamName] = useState(twitterName.streamName ?? defaultMessage);
 
     const toast = useToast();
@@ -109,6 +131,7 @@ export default function Page({ twitterName }: Props) {
     });
 
     const { colorMode } = useColorMode();
+    const breakpoint = useBreakpoint();
 
     const availableForAccount = (): boolean => {
         if (paymentPlan === 'Free' && !paymentPlanResponse?.partner) {
@@ -161,28 +184,18 @@ export default function Page({ twitterName }: Props) {
         }
     };
 
-    const PremiumMessage = (
-        <VStack>
-            <Heading fontSize="xl">Looking to use this feature?</Heading>
-            <Text>⭐Unlock today with premium⭐</Text>
-            <Button colorScheme="teal" onClick={() => pricingToggle()} className={trackEvent('click', 'premium-watermark-button')}>
-                Unlock Now
-            </Button>
-        </VStack>
-    );
-
     const config = {
         user: {
-            nickname: 'PulseBanner',
-            name: `${streamName}PulseBanner`,
-            avatar: 'https://pulsebanner.com/favicon.png',
+            nickname: twitterProfile?.screen_name ?? 'PulseBanner',
+            name: streamName,
+            avatar: twitterProfile?.profile_image_url_https ?? 'https://pulsebanner.com/favicon.png',
             verified: false,
             locked: false,
         },
         display: colorMode === 'dark' ? 'dim' : 'default',
-        text: 'Super awesome epic tweet',
+        text: 'I ❤️ PulseBanner!',
         image: '',
-        date: '3:32 PM · Feb 14, 2021',
+        date: `${format(new Date(), 'MMM d, u')}`,
         app: 'Twitter for iPhone',
         retweets: 6,
         quotedTweets: 0,
@@ -224,7 +237,7 @@ export default function Page({ twitterName }: Props) {
     return (
         <>
             <PaymentModal isOpen={pricingIsOpen} onClose={pricingClose} />
-            <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} />
+            <ConnectTwitchModal callbackUrl="/name" session={session} isOpen={isOpen} onClose={onClose} />
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
                 <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
                     <Box maxW="xl">
@@ -248,80 +261,96 @@ export default function Page({ twitterName }: Props) {
                     </Box>
                     {EnableButton}
                 </Flex>
-                <Center w="full" pt="4">
-                    <FakeTweet config={config} />
-                </Center>
-                <Flex rounded="md" direction="column">
-                    <Flex grow={1} p="4" my="4" mb="8" rounded="md" bg="whiteAlpha.100" w="full" direction="column" maxW="container.md">
-                        {/* {availableForAccount() ? <></> : PremiumMessage} */}
 
-                        <Flex justifyContent="space-between" direction={['column', 'row']} experimental_spaceY={[4, 0]} experimental_spaceX={[0, 4]}>
-                            <Box>
-                                <HStack w="full">
-                                    <Input
-                                        w="fit-content"
-                                        disabled
-                                        _disabled={{}}
-                                        maxLength={maxNameLength}
-                                        placeholder="Live name"
-                                        defaultValue={streamName}
-                                        onChange={(val) => {
-                                            const text = val.target.value;
-                                            if (text.length >= maxNameLength) {
-                                                return;
-                                            }
-                                            setStreamName(text);
-                                        }}
-                                    />
+                <Center pt="4">
+                    <Heading as="p" fontSize="lg">
+                        Preview 👇
+                    </Heading>
+                </Center>
+
+                <Center w="full" fontSize={[14, 15]}>
+                    <Box px={['0', '24']} w="container.sm">
+                        <FakeTweet config={config} />
+                    </Box>
+                </Center>
+                <Flex rounded="md" direction="column" w="full">
+                    <Center w="full">
+                        <Flex grow={1} p="4" my="4" mb="8" rounded="md" bg="whiteAlpha.100" direction="column" maxW="container.sm" experimental_spaceY={4}>
+                            <HStack w="full">
+                                <FormControl id="name">
+                                    <FormLabel>Live name</FormLabel>
+                                    <HStack>
+                                        <Input
+                                            w="full"
+                                            disabled={!availableForAccount()}
+                                            _disabled={{}}
+                                            maxLength={maxNameLength}
+                                            placeholder="Live name"
+                                            defaultValue={streamName}
+                                            onChange={(val) => {
+                                                const text = val.target.value;
+                                                if (text.length >= maxNameLength) {
+                                                    return;
+                                                }
+                                                setStreamName(text);
+                                            }}
+                                        />
+                                        {!availableForAccount() &&
+                                            (breakpoint === 'base' ? (
+                                                <IconButton
+                                                    aria-label="Edit"
+                                                    icon={<EditIcon />}
+                                                    onClick={() => {
+                                                        showPricing();
+                                                    }}
+                                                />
+                                            ) : (
+                                                <Button
+                                                    aria-label="Edit"
+                                                    leftIcon={<EditIcon />}
+                                                    onClick={() => {
+                                                        showPricing();
+                                                    }}
+                                                >
+                                                    Edit
+                                                </Button>
+                                            ))}
+                                    </HStack>
+                                    <FormHelperText>Your Twitter name will change to this when you go live.</FormHelperText>
+                                </FormControl>
+                            </HStack>
+                            <Flex justifyContent="space-between" direction="row">
+                                <Spacer />
+                                <HStack>
                                     <Button
-                                        leftIcon={<EditIcon />}
-                                        onClick={() => {
-                                            if (showPricing()) {
-                                                //
-                                            }
-                                        }}
+                                        leftIcon={<StarIcon />}
+                                        colorScheme="teal"
+                                        variant="ghost"
+                                        onClick={() => pricingToggle()}
+                                        className={trackEvent('click', 'premium-watermark-button')}
                                     >
-                                        Edit
+                                        Premium
+                                    </Button>
+                                    <Button my="2" onClick={saveSettings} className={trackEvent('click', 'save-settings-button')}>
+                                        Save settings
                                     </Button>
                                 </HStack>
-                            </Box>
-                            <HStack>
-                                <Button
-                                    leftIcon={<StarIcon />}
-                                    colorScheme="teal"
-                                    variant="ghost"
-                                    onClick={() => pricingToggle()}
-                                    className={trackEvent('click', 'premium-watermark-button')}
-                                >
-                                    Premium
-                                </Button>
-                                <Button
-                                    my="2"
-                                    onClick={() => {
-                                        if (showPricing()) {
-                                            saveSettings();
-                                        }
-                                    }}
-                                    className={trackEvent('click', 'save-settings-button')}
-                                >
-                                    Save settings
-                                </Button>
-                            </HStack>
+                            </Flex>
                         </Flex>
+                    </Center>
+                    <Flex w="full" flexDirection={['column-reverse', 'row']} justifyContent="space-between">
+                        <HStack pt={['2', '2']} pb={['2', '0']} h="full">
+                            <Text textAlign={['center', 'left']} h="full">
+                                Have feedback? 👉{' '}
+                            </Text>
+                            <Link isExternal href={discordLink}>
+                                <Button as="a" size="sm" colorScheme="gray" rightIcon={<FaDiscord />}>
+                                    Join our Discord
+                                </Button>
+                            </Link>
+                        </HStack>
+                        {EnableButton}
                     </Flex>
-                </Flex>
-                <Flex w="full" flexDirection={['column-reverse', 'row']} justifyContent="space-between">
-                    <HStack pt={['2', '2']} pb={['2', '0']} h="full">
-                        <Text textAlign={['center', 'left']} h="full">
-                            Have feedback? 👉{' '}
-                        </Text>
-                        <Link isExternal href={discordLink}>
-                            <Button as="a" size="sm" colorScheme="gray" rightIcon={<FaDiscord />}>
-                                Join our Discord
-                            </Button>
-                        </Link>
-                    </HStack>
-                    {EnableButton}
                 </Flex>
                 <Box pt="8">
                     <ShareToTwitter tweetText={tweetText} tweetPreview={TweetPreview} />

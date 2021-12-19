@@ -87,6 +87,32 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         });
 
         if (banner) {
+            if ((banner.foregroundProps as any).username === 'Username Here!') {
+                const usernameInfo = await localAxios.get(`/api/twitch/username/${session.userId as string}`);
+                const username = usernameInfo.data.displayName;
+                await prisma.banner.update({
+                    where: {
+                        userId: session.userId,
+                    },
+                    data: {
+                        foregroundProps: {
+                            ...(banner.foregroundProps as any),
+                            username,
+                        },
+                    },
+                });
+                return {
+                    props: {
+                        banner: {
+                            ...defaultBannerSettings,
+                            foregroundProps: {
+                                ...defaultBannerSettings.foregroundProps,
+                                username,
+                            },
+                        },
+                    },
+                };
+            }
             return {
                 props: {
                     banner,
@@ -255,7 +281,7 @@ export default function Page({ banner }: Props) {
                 <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
                     <Box maxW="xl">
                         <Heading as="h1" fontSize={['2xl', '3xl']} alignSelf={['center', 'end']} pb={[0, 2]}>
-                            Twitch live banner
+                            Twitch Live Banner
                         </Heading>
                         <Heading fontSize="md" fontWeight="normal" as="h2">
                             Your Twitter banner will update when you start broadcasting on Twitch. Your banner will revert back to your current banner image when your stream ends.
