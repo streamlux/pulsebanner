@@ -24,9 +24,9 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
         return null;
     }
 
-    const sharedFeatureList = ['Remove watermark', 'Unlimited color options', 'Upload a custom background image', 'Custom fonts'];
+    const sharedFeatureList = ['Unlimited color options', 'Upload a custom background image', 'Custom fonts'];
     const personalFeatureList = sharedFeatureList.concat(['High quality image rendering', 'Thumbnail refreshing (coming soon)']);
-    const professionalFeatureList = sharedFeatureList.concat(['Ultra high image quality', 'Unlock all features', 'Fastest thumbnail refreshing (coming soon)']);
+    const professionalFeatureList = sharedFeatureList.concat(['Remove watermark', 'Ultra high image quality', 'Unlock all features', 'Fastest thumbnail refreshing (coming soon)']);
 
     const featureDescriptionMapping: Record<string, string[]> = {
         Personal: personalFeatureList,
