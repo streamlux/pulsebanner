@@ -8,9 +8,10 @@ type CustomColorModalProps = {
     isOpen: boolean;
     onClose: () => void;
     showPricing: (force?: boolean) => boolean;
+    availableFeature: boolean;
 };
 
-export const CustomColorModal: FC<CustomColorModalProps> = ({ onSave, isOpen, onClose, showPricing }): ReactElement => {
+export const CustomColorModal: FC<CustomColorModalProps> = ({ onSave, isOpen, onClose, showPricing, availableFeature }): ReactElement => {
     const [color, setColor] = useState('#00ffff');
 
     const onClickPremium = () => {
@@ -18,7 +19,9 @@ export const CustomColorModal: FC<CustomColorModalProps> = ({ onSave, isOpen, on
     };
 
     const onClickSave = () => {
-        if (showPricing()) {
+        if (!availableFeature) {
+            showPricing(true);
+        } else {
             onSave(color);
             onClose();
         }

@@ -7,7 +7,7 @@ import { LayerForm } from '../LayerForm';
 
 const fontList = ['Bangers', 'Quicksand', 'Akronim', 'Lacquer', 'Iceland', 'Langar'];
 
-export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, setProps, availableFeature, showPricing }) => {
+export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, setProps, showPricing, accountLevel }) => {
     const colors = ['#234344', '#af56af', '#cf44aa', '#b149ff', '#00ffff'];
     const textColors = ['#ffffff', '#000000'];
     const breakpoint = useBreakpoint();
@@ -45,6 +45,7 @@ export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, s
                             color={props.fontColor}
                             onChangeColor={(c) => onChangeProps({ fontColor: c })}
                             showPricing={showPricing}
+                            availableFeature={accountLevel !== 'Free'}
                         />
                     </FormControl>
                 </WrapItem>
@@ -67,7 +68,7 @@ export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, s
                 </FormLabel>
                 <Select
                     w="fit-content"
-                    disabled={!availableFeature}
+                    disabled={accountLevel === 'Free'}
                     defaultValue="Default"
                     onChange={(e) => {
                         setProps({ ...props, fontStyle: e.target.value });
@@ -128,8 +129,35 @@ export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, s
                     color={props.thumbnailBorderColor}
                     onChangeColor={(c) => onChangeProps({ thumbnailBorderColor: c })}
                     showPricing={showPricing}
+                    availableFeature={accountLevel !== 'Free'}
                 />
             </FormControl>
+            <HStack>
+                <Checkbox
+                    colorScheme="purple"
+                    defaultChecked={true}
+                    isChecked={props.watermark}
+                    size="lg"
+                    onChange={(e) => {
+                        e.preventDefault();
+                        if (accountLevel !== 'Professional') {
+                            showPricing(true);
+                        } else {
+                            setProps({ ...props, watermark: !props.watermark });
+                        }
+                    }}
+                >
+                    Show watermark
+                </Checkbox>
+                <Box>
+                    {breakpoint === 'base' && <IconButton w="min" aria-label="Premium" icon={<StarIcon />} colorScheme="teal" variant="ghost" onClick={() => showPricing(true)} />}
+                    {breakpoint !== 'base' && (
+                        <Button leftIcon={<StarIcon />} colorScheme="teal" variant="ghost" onClick={() => showPricing(true)}>
+                            Premium
+                        </Button>
+                    )}
+                </Box>
+            </HStack>
         </Box>
     );
 };

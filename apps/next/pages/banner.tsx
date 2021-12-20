@@ -2,14 +2,12 @@ import {
     Box,
     Button,
     Center,
-    Checkbox,
     Container,
     Flex,
     FormControl,
     FormLabel,
     Heading,
     HStack,
-    IconButton,
     Select,
     Spacer,
     Tab,
@@ -33,7 +31,6 @@ import { FaDiscord, FaPlay, FaStop } from 'react-icons/fa';
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 import { PaymentModal } from '@app/components/pricing/PaymentModal';
-import { StarIcon } from '@chakra-ui/icons';
 import { trackEvent } from '@app/util/umami/trackEvent';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
 import { discordLink } from '@app/util/constants';
@@ -166,7 +163,6 @@ export default function Page({ banner }: Props) {
     const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>((banner?.foregroundId as Foreground) ?? defaultForeground);
     const [bgProps, setBgProps] = useState(banner.backgroundProps ?? (BackgroundTemplates[defaultBackground].defaultProps as any));
     const [fgProps, setFgProps] = useState(banner.foregroundProps ?? (ForegroundTemplates[defaultForeground].defaultProps as any));
-    const [watermark, setWatermark] = useState(true);
 
     const BackgroundTemplate = BackgroundTemplates[bgId];
     const ForegroundTemplate = ForegroundTemplates[fgId];
@@ -175,14 +171,6 @@ export default function Page({ banner }: Props) {
 
     const toast = useToast();
     const breakpoint = useBreakpoint();
-
-    const availableForAccount = (): boolean => {
-        // if they have a free plan and they are not a partner
-        if (paymentPlan === 'Free' && !paymentPlanResponse?.partner) {
-            return false;
-        }
-        return true;
-    };
 
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch();
 
@@ -234,7 +222,7 @@ export default function Page({ banner }: Props) {
     const { isOpen: disableBannerIsOpen, onClose: disableBannerOnClose, onToggle: bannerDisabledToggle } = useDisclosure();
 
     const showPricing: (force?: boolean) => boolean = (force?: boolean) => {
-        if (!availableForAccount() || force) {
+        if (force) {
             umami('show-pricing-modal');
             pricingToggle();
             return false;
@@ -309,7 +297,6 @@ export default function Page({ banner }: Props) {
                                     foregroundId: fgId,
                                     backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
                                     foregroundProps: { ...ForegroundTemplates[fgId].defaultProps, ...fgProps },
-                                    watermark: availableForAccount() ? watermark : true,
                                 }}
                             />
                         </RemotionPreview>
@@ -330,8 +317,8 @@ export default function Page({ banner }: Props) {
                                             setFgProps(s);
                                         }}
                                         props={{ ...ForegroundTemplates[fgId].defaultProps, ...fgProps }}
-                                        availableFeature={availableForAccount()}
                                         showPricing={showPricing}
+                                        accountLevel={paymentPlan}
                                     />
                                 </TabPanel>
                                 <TabPanel>
@@ -358,48 +345,12 @@ export default function Page({ banner }: Props) {
                                             }}
                                             props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }}
                                             showPricing={showPricing}
-                                            availableFeature={availableForAccount()}
+                                            accountLevel={paymentPlan}
                                         />
                                     </Box>
                                 </TabPanel>
                             </TabPanels>
                         </Tabs>
-
-                        <HStack px="6">
-                            <Checkbox
-                                colorScheme="purple"
-                                defaultChecked={watermark}
-                                isChecked={availableForAccount() ? watermark : true}
-                                size="lg"
-                                className={trackEvent('click', 'watermark-checkbox')}
-                                onChange={(e) => {
-                                    e.preventDefault();
-                                    if (availableForAccount() === false) {
-                                        pricingToggle();
-                                    } else {
-                                        setWatermark(!watermark);
-                                    }
-                                }}
-                            >
-                                Show watermark
-                            </Checkbox>
-                            <Box>
-                                {breakpoint === 'base' && (
-                                    <IconButton w="min" aria-label="Premium" icon={<StarIcon />} colorScheme="teal" variant="ghost" onClick={() => pricingToggle()} />
-                                )}
-                                {breakpoint !== 'base' && (
-                                    <Button
-                                        leftIcon={<StarIcon />}
-                                        colorScheme="teal"
-                                        variant="ghost"
-                                        onClick={() => pricingToggle()}
-                                        className={trackEvent('click', 'premium-watermark-button')}
-                                    >
-                                        Premium
-                                    </Button>
-                                )}
-                            </Box>
-                        </HStack>
                         <Flex justifyContent="space-between" direction={['column', 'row']}>
                             <Spacer />
                             <HStack>

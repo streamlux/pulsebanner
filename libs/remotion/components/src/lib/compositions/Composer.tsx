@@ -9,8 +9,7 @@ export const Composer: React.FC<{
     backgroundId: keyof typeof Backgrounds;
     backgroundProps: any;
     foregroundProps: any;
-    watermark: boolean;
-}> = ({ foregroundId, backgroundId, foregroundProps, backgroundProps, watermark }) => {
+}> = ({ foregroundId, backgroundId, foregroundProps, backgroundProps }) => {
     const Background = Backgrounds[backgroundId];
     const Foreground = Foregrounds[foregroundId];
     return (
@@ -21,8 +20,6 @@ export const Composer: React.FC<{
             <AbsoluteFill>
                 <Foreground {...foregroundProps} />
             </AbsoluteFill>
-            {/* eslint-disable-next-line react/jsx-no-useless-fragment */}
-            {watermark ? <Watermark /> : <></>}
         </div>
     );
 };

@@ -4,7 +4,7 @@ import { LayerForm } from '../LayerForm';
 import { CustomColorPicker } from '@pulsebanner/react/color';
 import { ComponentProps } from 'react';
 
-export const ColorBackground: LayerForm<typeof BackgroundComponents.ColorBackground> = ({ props, setProps, showPricing }) => {
+export const ColorBackground: LayerForm<typeof BackgroundComponents.ColorBackground> = ({ props, setProps, showPricing, accountLevel }) => {
     const colors = ['#eb7734', '#af56af', '#cf44aa', '#b149ff', '#00ffff'];
 
     const onChangeProps = (newProps: Partial<ComponentProps<typeof BackgroundComponents.ColorBackground>>) => {
@@ -18,7 +18,14 @@ export const ColorBackground: LayerForm<typeof BackgroundComponents.ColorBackgro
         <Box>
             <FormControl>
                 <FormLabel>Color</FormLabel>
-                <CustomColorPicker hideCustom colors={colors} color={props.color} onChangeColor={(c) => onChangeProps({ color: c })} showPricing={showPricing} />
+                <CustomColorPicker
+                    hideCustom
+                    colors={colors}
+                    color={props.color}
+                    onChangeColor={(c) => onChangeProps({ color: c })}
+                    showPricing={showPricing}
+                    availableFeature={accountLevel !== 'Free'}
+                />
             </FormControl>
         </Box>
     );

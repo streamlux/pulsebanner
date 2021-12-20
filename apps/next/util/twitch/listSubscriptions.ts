@@ -16,7 +16,7 @@ export async function listSubscriptions(twitchUserId?: string): Promise<Subscrip
     // if it has a cursor, that means there are more pages of subcriptions
     // see: https://dev.twitch.tv/docs/eventsub/manage-subscriptions#getting-the-list-of-events-you-subscribe-to
     while (cursor !== undefined) {
-        const response = await getSubscriptionsRequest(accessToken);
+        const response = await getSubscriptionsRequest(accessToken, cursor);
         subscriptions.push(...getSubscriptionsFromResponse(response, twitchUserId));
         cursor = response.data.pagination.cursor;
     }
@@ -24,8 +24,10 @@ export async function listSubscriptions(twitchUserId?: string): Promise<Subscrip
     return subscriptions;
 }
 
-async function getSubscriptionsRequest(accessToken: string): Promise<AxiosResponse<GetSubscriptionsResponse>> {
-    return await twitchAxios.get<GetSubscriptionsResponse>('helix/eventsub/subscriptions', {
+async function getSubscriptionsRequest(accessToken: string, cursor?: string): Promise<AxiosResponse<GetSubscriptionsResponse>> {
+
+    const url = cursor ? `helix/eventsub/subscriptions?after=${cursor}` : 'helix/eventsub/subscriptions';
+    return await twitchAxios.get<GetSubscriptionsResponse>(url, {
         headers: {
             'Client-ID': process.env.TWITCH_CLIENT_ID,
             Authorization: `Bearer ${accessToken}`,
