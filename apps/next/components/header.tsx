@@ -38,6 +38,7 @@ import { FaArrowRight, FaTwitter } from 'react-icons/fa';
 import { MdEmail } from 'react-icons/md';
 import { NewsletterModal } from './newsletter/NewsletterModal';
 import { trackEvent } from '@app/util/umami/trackEvent';
+import { holidayDecor } from '@app/util/constants';
 
 // The approach used in this component shows how to built a sign in and sign out
 // component that works on pages which support both client and server side
@@ -231,26 +232,28 @@ export default function Header() {
                     </Wrap>
                 </Center>
             )}
-            <Center pt={['4', '2']}>
-                <Box px="4" py="2" mx="4" color={colorMode === 'dark' ? 'black' : 'black'} w={['fit-content']} bg="green.200" rounded="lg">
-                    <Center h="full">
-                        <Stack direction={['column', 'column', 'row']}>
-                            <Text textAlign="center" pt="1" fontSize={['sm', 'md']}>
-                                {'Holiday sale! Use code'}{' '}
-                                <Tag color="black" fontWeight="bold" colorScheme="green" bg={colorMode === 'dark' ? 'green.100' : undefined}>
-                                    HAPPY25
-                                </Tag>{' '}
-                                {'at checkout to save 25% on your first 3 months!'}
-                            </Text>
-                            <NextLink href="/pricing" passHref>
-                                <Button rightIcon={<FaArrowRight />} colorScheme="whiteAlpha" bg="green.100" size="sm" color="black">
-                                    View pricing
-                                </Button>
-                            </NextLink>
-                        </Stack>
-                    </Center>
-                </Box>
-            </Center>
+            {holidayDecor && (
+                <Center pt={['4', '2']}>
+                    <Box px="4" py="2" mx="4" color={colorMode === 'dark' ? 'black' : 'black'} w={['fit-content']} bg="green.200" rounded="lg">
+                        <Center h="full">
+                            <Stack direction={['column', 'column', 'row']}>
+                                <Text textAlign="center" pt="1" fontSize={['sm', 'md']}>
+                                    {'Holiday sale! Use code'}{' '}
+                                    <Tag color="black" fontWeight="bold" colorScheme="green" bg={colorMode === 'dark' ? 'green.100' : undefined}>
+                                        HAPPY25
+                                    </Tag>{' '}
+                                    {'at checkout to save 25% on your first 3 months!'}
+                                </Text>
+                                <NextLink href="/pricing" passHref>
+                                    <Button rightIcon={<FaArrowRight />} colorScheme="whiteAlpha" bg="green.100" size="sm" color="black">
+                                        View pricing
+                                    </Button>
+                                </NextLink>
+                            </Stack>
+                        </Center>
+                    </Box>
+                </Center>
+            )}
         </>
     );
 }

@@ -22,6 +22,7 @@ import Header from './header';
 import Footer from './footer';
 import { FaArrowRight } from 'react-icons/fa';
 import NextLink from 'next/link';
+import { holidayDecor } from '@app/util/constants';
 
 export default function Layout({ children }) {
     const { colorMode } = useColorMode();
@@ -40,7 +41,7 @@ export default function Layout({ children }) {
                         {children}
                     </Box>
                 </Flex>
-                {isOpen && (
+                {holidayDecor && isOpen && (
                     <Portal>
                         <Box
                             sx={{ position: 'fixed', bottom: '0', right: '0' }}
@@ -54,7 +55,7 @@ export default function Layout({ children }) {
                         >
                             <Stack direction={['column', 'row']}>
                                 <HStack>
-                                    <Text textAlign="center" fontSize={['sm', 'md']} pt="1">
+                                    <Text textAlign="center" fontSize={['sm', 'md']}>
                                         {'Holiday sale! Use code'}{' '}
                                         <Tag color="black" fontWeight="bold" colorScheme="green" bg={colorMode === 'dark' ? 'green.100' : undefined}>
                                             HAPPY25

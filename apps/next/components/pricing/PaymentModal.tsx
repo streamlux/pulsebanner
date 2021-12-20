@@ -1,4 +1,5 @@
 import { Price, PriceInterval, Product } from '.prisma/client';
+import { holidayDecor } from '@app/util/constants';
 import { trackEvent } from '@app/util/umami/trackEvent';
 import { HStack, SimpleGrid, Stack, VStack } from '@chakra-ui/layout';
 import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay } from '@chakra-ui/modal';
@@ -61,21 +62,23 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 <ModalCloseButton />
                 <ModalBody>
                     <VStack spacing={8} w="full">
-                        <Center pt={['4', '2']}>
-                            <Box px="4" py="2" mx="4" color={colorMode === 'dark' ? 'black' : 'black'} w={['fit-content']} bg="green.200" rounded="lg">
-                                <Center h="full">
-                                    <Stack direction={['column', 'row']}>
-                                        <Text textAlign="center" fontSize={['sm', 'md']}>
-                                            {'Holiday sale! Use code'}{' '}
-                                            <Tag color="black" colorScheme="green" bg={colorMode === 'dark' ? 'green.100' : undefined}>
-                                                HAPPY25
-                                            </Tag>{' '}
-                                            {'at checkout to save 25% on your first 3 months!'}
-                                        </Text>
-                                    </Stack>
-                                </Center>
-                            </Box>
-                        </Center>
+                        {holidayDecor && (
+                            <Center pt={['4', '2']}>
+                                <Box px="4" py="2" mx="4" color={colorMode === 'dark' ? 'black' : 'black'} w={['fit-content']} bg="green.200" rounded="lg">
+                                    <Center h="full">
+                                        <Stack direction={['column', 'row']}>
+                                            <Text textAlign="center" fontSize={['sm', 'md']}>
+                                                {'Holiday sale! Use code'}{' '}
+                                                <Tag color="black" colorScheme="green" bg={colorMode === 'dark' ? 'green.100' : undefined}>
+                                                    HAPPY25
+                                                </Tag>{' '}
+                                                {'at checkout to save 25% on your first 3 months!'}
+                                            </Text>
+                                        </Stack>
+                                    </Center>
+                                </Box>
+                            </Center>
+                        )}
                         <Center>
                             <VStack>
                                 <HStack fontSize="xl">
