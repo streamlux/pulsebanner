@@ -27,6 +27,7 @@ import {
     Link,
     Box,
     Img,
+    useToast,
 } from '@chakra-ui/react';
 
 import getStripe from '../util/getStripe';
@@ -36,6 +37,7 @@ import { ProductCard } from '@app/components/pricing/ProductCard';
 import { trackEvent } from '@app/util/umami/trackEvent';
 import favicon from '@app/public/logo.webp';
 import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
+import { NextSeo } from 'next-seo';
 
 type Props = {
     products: (Product & { prices: Price[] })[];
@@ -47,6 +49,7 @@ const Page: NextPage<Props> = ({ products }) => {
     const { status, data: session } = useSession({ required: false }) as any;
 
     const router = useRouter();
+
     const { modal, priceId } = router.query;
 
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -148,6 +151,7 @@ const Page: NextPage<Props> = ({ products }) => {
 
     return (
         <>
+            <NextSeo title="Pricing" />
             <Modal onClose={onClose} size={'xl'} isOpen={isOpen}>
                 <ModalOverlay />
                 <ModalContent>

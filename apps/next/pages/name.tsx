@@ -11,6 +11,7 @@ import {
     Button,
     Center,
     Container,
+    Divider,
     Flex,
     FormControl,
     FormHelperText,
@@ -21,6 +22,7 @@ import {
     Input,
     Link,
     Spacer,
+    Stack,
     Text,
     useBoolean,
     useBreakpoint,
@@ -43,8 +45,10 @@ import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
 import { createTwitterClient } from '@app/util/twitter/twitterHelpers';
 import { getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { format } from 'date-fns';
+import { NextSeo } from 'next-seo';
 const nameEndpoint = '/api/features/twitterName';
 const maxNameLength = 50;
+import NextLink from 'next/link';
 
 interface Props {
     twitterName: TwitterName;
@@ -203,7 +207,7 @@ export default function Page({ twitterName, twitterProfile }: Props) {
     };
 
     const tweetText =
-        'I just setup my auto updating Twitter name for #Twitch using @PulseBanner. \r\n\r\nIt adds "🔴 Live now" to my name when I go live, then changes back when my stream ends. Get it for free at pulsebanner.com!\n\n#PulseBanner #NameChanger';
+        'I just setup my auto updating Twitter name for #Twitch using @PulseBanner. \r\n\r\nIt adds "🔴 Live now" to my name when I go live, then changes back when my stream ends. Get it for free at pulsebanner.com/name!\n\n#PulseBanner #NameChanger';
 
     const TweetPreview = (
         <Text fontSize="lg" as="i">
@@ -228,14 +232,36 @@ export default function Page({ twitterName, twitterProfile }: Props) {
             >
                 {twitterName && twitterName.enabled ? 'Turn off Name Changer' : 'Turn on Name Changer'}
             </Button>
-            <Heading fontSize="lg" w="full" textAlign="center">
-                {twitterName && twitterName.enabled ? 'Name Changer is enabled.' : 'Name Changer not enabled.'}
+            <Heading fontSize="md" w="full" textAlign="center">
+                {twitterName && twitterName.enabled ? 'Name Changer is enabled' : 'Name Changer not enabled'}
             </Heading>
         </VStack>
     );
 
     return (
         <>
+            <NextSeo
+                title="Twitter Name Changer"
+                openGraph={{
+                    site_name: 'PulseBanner',
+                    type: 'website',
+                    url: 'https://pulsebanner.com/name',
+                    title: 'PulseBanner - Twitter Name Changer',
+                    description: 'Easily attract more viewers to your stream from Twitter',
+                    images: [
+                        {
+                            url: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/pulsebanner_name_og.webp',
+                            width: 1200,
+                            height: 627,
+                            alt: 'PulseBanner automates your Twitter Name for free.',
+                        },
+                    ],
+                }}
+                twitter={{
+                    site: '@PulseBanner',
+                    cardType: 'summary_large_image',
+                }}
+            />
             <PaymentModal isOpen={pricingIsOpen} onClose={pricingClose} />
             <ConnectTwitchModal callbackUrl="/name" session={session} isOpen={isOpen} onClose={onClose} />
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
@@ -253,7 +279,7 @@ export default function Page({ twitterName, twitterProfile }: Props) {
                                 Need help? 👉{' '}
                             </Text>
                             <Link isExternal href={discordLink}>
-                                <Button as="a" size="sm" colorScheme="gray" rightIcon={<FaDiscord />}>
+                                <Button as="a" colorScheme="gray" rightIcon={<FaDiscord />}>
                                     Join our Discord
                                 </Button>
                             </Link>
@@ -264,7 +290,7 @@ export default function Page({ twitterName, twitterProfile }: Props) {
 
                 <Center pt="4">
                     <Heading as="p" fontSize="lg">
-                        Preview 👇
+                        Preview your name 👇
                     </Heading>
                 </Center>
 
@@ -275,7 +301,7 @@ export default function Page({ twitterName, twitterProfile }: Props) {
                 </Center>
                 <Flex rounded="md" direction="column" w="full">
                     <Center w="full">
-                        <Flex grow={1} p="4" my="4" mb="8" rounded="md" bg="whiteAlpha.100" direction="column" maxW="container.sm" experimental_spaceY={4}>
+                        <Flex grow={1} p="4" mb="8" rounded="md" bg="whiteAlpha.100" direction="column" maxW="container.sm" experimental_spaceY={4}>
                             <HStack w="full">
                                 <FormControl id="name">
                                     <FormLabel>Live name</FormLabel>
@@ -316,7 +342,10 @@ export default function Page({ twitterName, twitterProfile }: Props) {
                                                 </Button>
                                             ))}
                                     </HStack>
-                                    <FormHelperText>Your Twitter name will change to this when you go live.</FormHelperText>
+                                    <FormHelperText>
+                                        Your Twitter name will change to this when you go live.{' '}
+                                        {!availableForAccount() && ' Become a PulseBanner Member to customize your Twitter Live Name.'}
+                                    </FormHelperText>
                                 </FormControl>
                             </HStack>
                             <Flex justifyContent="space-between" direction="row">
@@ -352,6 +381,16 @@ export default function Page({ twitterName, twitterProfile }: Props) {
                         {EnableButton}
                     </Flex>
                 </Flex>
+                <Center>
+                    <Stack direction={['column', 'row']}>
+                        <Text textAlign="center">Like Name Changer? Check out {breakpoint === 'base' ? '👇' : '👉'} </Text>
+                        <NextLink passHref href="/banner">
+                            <Link color="blue.300" fontWeight="bold" fontSize={['md', 'lg']}>
+                                PulseBanner Automatic Twitter Banner ✨
+                            </Link>
+                        </NextLink>
+                    </Stack>
+                </Center>
                 <Box pt="8">
                     <ShareToTwitter tweetText={tweetText} tweetPreview={TweetPreview} />
                 </Box>

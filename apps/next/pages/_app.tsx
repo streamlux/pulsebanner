@@ -1,8 +1,8 @@
 import './styles.css';
-import { ChakraProvider } from '@chakra-ui/react';
+import { ChakraProvider, useToast } from '@chakra-ui/react';
 import { SessionProvider } from 'next-auth/react';
 import theme from '../definitions/chakra/theme';
-import React from 'react';
+import React, { useEffect } from 'react';
 import Layout from '../components/layout';
 import { useRouter } from 'next/router';
 import Script from 'next/script';
@@ -20,6 +20,7 @@ declare global {
 // `useSession()` anywhere in your application to access the `session` object.
 export default function App({ Component, pageProps }) {
     // const router = useRouter();
+
     return (
         <>
             <Head>
@@ -38,6 +39,7 @@ export default function App({ Component, pageProps }) {
                     <Layout>
                         <Component {...pageProps} />
                     </Layout>
+
                     {/* )} */}
                 </ChakraProvider>
             </SessionProvider>

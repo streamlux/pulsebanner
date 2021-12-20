@@ -22,6 +22,7 @@ import {
     VStack,
     Link,
     useToast,
+    Stack,
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import useSWR from 'swr';
@@ -44,6 +45,8 @@ import { localAxios } from '@app/util/axios';
 import router from 'next/router';
 import RemotionPreview from '@pulsebanner/remotion/preview';
 import { Composer } from '@pulsebanner/remotion/components';
+import { NextSeo } from 'next-seo';
+import NextLink from 'next/link';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
@@ -244,8 +247,8 @@ export default function Page({ banner }: Props) {
             >
                 {banner && banner.enabled ? 'Turn off live banner' : 'Turn on live banner'}
             </Button>
-            <Heading fontSize="lg" w="full" textAlign="center">
-                {banner && banner.enabled ? 'Your banner is enabled.' : 'Live banner not enabled.'}
+            <Heading fontSize="md" w="full" textAlign="center">
+                {banner && banner.enabled ? 'Your banner is enabled' : 'Live banner not enabled'}
             </Heading>
         </VStack>
     );
@@ -263,6 +266,28 @@ export default function Page({ banner }: Props) {
 
     return (
         <>
+            <NextSeo
+                title="Twitter Live Banner for Twitch"
+                openGraph={{
+                    site_name: 'PulseBanner',
+                    type: 'website',
+                    url: 'https://pulsebanner.com/banner',
+                    title: 'PulseBanner - Twitter Live Banner for Twitch',
+                    description: 'Easily attract more viewers to your stream from Twitter',
+                    images: [
+                        {
+                            url: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/pulsebanner_og.webp',
+                            width: 1200,
+                            height: 627,
+                            alt: 'PulseBanner automates your Twitter banner for free.',
+                        },
+                    ],
+                }}
+                twitter={{
+                    site: '@PulseBanner',
+                    cardType: 'summary_large_image',
+                }}
+            />
             <DisableBannerModal isOpen={disableBannerIsOpen} onClose={disableBannerOnClose} />
             <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} />
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
@@ -374,6 +399,16 @@ export default function Page({ banner }: Props) {
                         {EnableButton}
                     </Flex>
                 </Flex>
+                <Center>
+                    <Stack direction={['column', 'row']}>
+                        <Text textAlign="center">Like Live Banner? Check out {breakpoint === 'base' ? '👇' : '👉'} </Text>
+                        <NextLink passHref href="/name">
+                            <Link color="blue.300" fontWeight="bold" fontSize={['md', 'lg']}>
+                                PulseBanner Twitter Name Changer ✨
+                            </Link>
+                        </NextLink>
+                    </Stack>
+                </Center>
                 <Box pt="8">
                     <ShareToTwitter tweetText={tweetText} tweetPreview={TweetPreview} />
                 </Box>
