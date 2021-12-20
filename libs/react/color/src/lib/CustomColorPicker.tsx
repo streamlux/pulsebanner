@@ -9,9 +9,10 @@ type CustomColorPickerProps = {
     onChangeColor: (color: string) => void;
     showPricing: (force?: boolean) => boolean;
     hideCustom?: boolean;
+    availableFeature: boolean;
 };
 
-export const CustomColorPicker: FC<CustomColorPickerProps> = ({ colors, color, onChangeColor, showPricing, hideCustom }): ReactElement => {
+export const CustomColorPicker: FC<CustomColorPickerProps> = ({ colors, color, onChangeColor, showPricing, hideCustom, availableFeature }): ReactElement => {
     const swatchColors = [...colors];
     const [customColor, setCustomColor] = useState('');
     if (!hideCustom) {
@@ -45,6 +46,7 @@ export const CustomColorPicker: FC<CustomColorPickerProps> = ({ colors, color, o
                 }}
                 showPricing={showPricing}
                 onClose={onModalClose}
+                availableFeature={availableFeature}
             />
         </Box>
     );

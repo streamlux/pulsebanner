@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Catch errors uploading banner to backup bucket
+- Update pricing handling for different levels
+- Watermark now properly removed with remotion rendering
 
 ## [0.2.1] - 2021-12-11
 

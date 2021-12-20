@@ -4,7 +4,7 @@ import { BackgroundComponents } from '@pulsebanner/remotion/components';
 import { LayerForm } from '../LayerForm';
 import { StarIcon } from '@chakra-ui/icons';
 
-export const ImageBackground: LayerForm<typeof BackgroundComponents.ImageBackground> = ({ props, setProps, showPricing, availableFeature }) => {
+export const ImageBackground: LayerForm<typeof BackgroundComponents.ImageBackground> = ({ props, setProps, showPricing, accountLevel }) => {
     const [currentString, setCurrentString] = useState(props.src ?? '');
 
     const onClickPremium = () => {
@@ -48,8 +48,8 @@ export const ImageBackground: LayerForm<typeof BackgroundComponents.ImageBackgro
                     </HStack>
                 </FormLabel>
                 <Input
-                    disabled={availableFeature === false ? true : false}
-                    title={!availableFeature ? 'Unlock with premium' : ''}
+                    disabled={accountLevel === 'Free' ? true : false}
+                    title={accountLevel === 'Free' ? 'Unlock with premium' : ''}
                     w="full"
                     type="url"
                     defaultValue={props.src ?? ''}
@@ -58,7 +58,7 @@ export const ImageBackground: LayerForm<typeof BackgroundComponents.ImageBackgro
                         setProps({ ...(props ?? {}), src: e.target.value && e.target.value !== '' ? e.target.value : undefined });
                     }}
                 />
-                <Button disabled={availableFeature === false ? true : false} onClick={() => setProps({ ...(props ?? {}), src: currentString !== '' ? currentString : undefined })}>
+                <Button disabled={accountLevel === 'Free' ? true : false} onClick={() => setProps({ ...(props ?? {}), src: currentString !== '' ? currentString : undefined })}>
                     Set Image URL
                 </Button>
                 <FormHelperText>Enter a URL to an image to use. Image size should be exactly 1500x500 for best appearance.</FormHelperText>
