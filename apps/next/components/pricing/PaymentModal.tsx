@@ -1,5 +1,5 @@
 import { Price, PriceInterval, Product } from '.prisma/client';
-import { holidayDecor } from '@app/util/constants';
+import { holidayDecor, promoCode } from '@app/util/constants';
 import { trackEvent } from '@app/util/umami/trackEvent';
 import { HStack, SimpleGrid, Stack, VStack } from '@chakra-ui/layout';
 import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay } from '@chakra-ui/modal';
@@ -69,8 +69,8 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
                                         <Stack direction={['column', 'row']}>
                                             <Text textAlign="center" fontSize={['sm', 'md']}>
                                                 {'Holiday sale! Use code'}{' '}
-                                                <Tag color="black" colorScheme="green" bg={colorMode === 'dark' ? 'green.100' : undefined}>
-                                                    HAPPY25
+                                                <Tag color="black" fontWeight="bold" colorScheme="green" bg={colorMode === 'dark' ? 'green.100' : undefined}>
+                                                    {promoCode}
                                                 </Tag>{' '}
                                                 {'at checkout to save 25% on your first 3 months!'}
                                             </Text>

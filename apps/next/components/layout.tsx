@@ -22,7 +22,7 @@ import Header from './header';
 import Footer from './footer';
 import { FaArrowRight } from 'react-icons/fa';
 import NextLink from 'next/link';
-import { holidayDecor } from '@app/util/constants';
+import { holidayDecor, promoCode } from '@app/util/constants';
 
 export default function Layout({ children }) {
     const { colorMode } = useColorMode();
@@ -58,7 +58,7 @@ export default function Layout({ children }) {
                                     <Text textAlign="center" fontSize={['sm', 'md']}>
                                         {'Holiday sale! Use code'}{' '}
                                         <Tag color="black" fontWeight="bold" colorScheme="green" bg={colorMode === 'dark' ? 'green.100' : undefined}>
-                                            HAPPY25
+                                            {promoCode}
                                         </Tag>{' '}
                                         {'at checkout to save 25% on your first 3 months!'}
                                     </Text>

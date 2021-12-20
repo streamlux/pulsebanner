@@ -38,7 +38,7 @@ import { FaArrowRight, FaTwitter } from 'react-icons/fa';
 import { MdEmail } from 'react-icons/md';
 import { NewsletterModal } from './newsletter/NewsletterModal';
 import { trackEvent } from '@app/util/umami/trackEvent';
-import { holidayDecor } from '@app/util/constants';
+import { holidayDecor, promoCode } from '@app/util/constants';
 
 // The approach used in this component shows how to built a sign in and sign out
 // component that works on pages which support both client and server side
@@ -240,7 +240,7 @@ export default function Header() {
                                 <Text textAlign="center" pt="1" fontSize={['sm', 'md']}>
                                     {'Holiday sale! Use code'}{' '}
                                     <Tag color="black" fontWeight="bold" colorScheme="green" bg={colorMode === 'dark' ? 'green.100' : undefined}>
-                                        HAPPY25
+                                        {promoCode}
                                     </Tag>{' '}
                                     {'at checkout to save 25% on your first 3 months!'}
                                 </Text>
