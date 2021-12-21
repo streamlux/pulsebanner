@@ -58,12 +58,12 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
         <Modal isOpen={isOpen} onClose={onClose} size="5xl">
             <ModalOverlay />
             <ModalContent alignContent="center" pb="6" rounded="md">
-                <ModalHeader>
+                <ModalHeader pb="0">
                     <Text>PulseBanner Membership</Text>
                 </ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
-                    <VStack spacing={8} w="full">
+                    <VStack spacing={4} w="full">
                         {holidayDecor && (
                             <Center pt={['4', '2']}>
                                 <Box px="4" py="2" mx="4" color={colorMode === 'dark' ? 'black' : 'black'} w={['fit-content']} bg="green.200" rounded="lg">
@@ -82,18 +82,10 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
                             </Center>
                         )}
                         <Center>
-                            <VStack>
-                                <HStack fontSize="xl">
-                                    <Text fontSize="2xl">PulseBanner is</Text>
-                                    <Tag size="lg" p="2" py="1" fontSize="2xl" variant="solid" background="green.200" color="black" fontWeight="bold">
-                                        FREE
-                                    </Tag>
-                                </HStack>
-                                <Text textAlign="center" maxW="2xl">
-                                    You can use PulseBanner for free forever. However, you can unlock even more awesome features and kindly support the creators with a PulseBanner
-                                    Membership.
-                                </Text>
-                            </VStack>
+                            <Text textAlign="center" fontSize="xl" maxW="container.sm">
+                                You can use PulseBanner for free forever 🎉 OR you can unlock even more awesome features and kindly support the creators with a PulseBanner
+                                Membership.
+                            </Text>
                         </Center>
                         <Center>{AnnualBillingControl}</Center>
                         <Center w="full">
