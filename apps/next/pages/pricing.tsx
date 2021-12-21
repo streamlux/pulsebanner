@@ -177,12 +177,8 @@ const Page: NextPage<Props> = ({ products }) => {
                                         if (session?.accounts?.twitter) {
                                             return;
                                         }
-                                        console.log(router);
                                         const url = new window.URL(window.location.href);
-                                        console.log('url', url);
                                         url.searchParams.append('modal', 'true');
-
-                                        console.log(url.pathname + url.search);
 
                                         signIn('twitter', {
                                             callbackUrl: url.pathname + url.search,
@@ -276,7 +272,18 @@ const Page: NextPage<Props> = ({ products }) => {
                                         {session ? (
                                             <></>
                                         ) : (
-                                            <Button fontWeight="bold" colorScheme="green" rightIcon={<FaArrowRight />}>
+                                            <Button
+                                                fontWeight="bold"
+                                                colorScheme="green"
+                                                rightIcon={<FaArrowRight />}
+                                                onClick={() => {
+                                                    const url = new window.URL(window.location.href);
+                                                    url.searchParams.append('modal', 'true');
+                                                    signIn('twitter', {
+                                                        callbackUrl: url.pathname + url.search,
+                                                    });
+                                                }}
+                                            >
                                                 Sign up
                                             </Button>
                                         )}
