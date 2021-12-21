@@ -60,7 +60,7 @@ export default function Layout({ children }) {
                                         <Tag color="black" fontWeight="bold" colorScheme="green" bg={colorMode === 'dark' ? 'green.100' : undefined}>
                                             {promoCode}
                                         </Tag>{' '}
-                                        {'at checkout to save 25% on your first 3 months!'}
+                                        {'at checkout to save 25% on your first 3 months! Promotion ends 11:59 PT Jan 5'}
                                     </Text>
                                     {breakpoint === 'base' && (
                                         <Center>
