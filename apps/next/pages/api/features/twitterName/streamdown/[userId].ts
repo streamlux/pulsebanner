@@ -27,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // when received, post to twitter to update
         if (originalName) {
-            console.log(`Changing Twitter name from '${currentTwitterName}' to '${originalName}'.`);
+            console.log(`Changing Twitter name from '${currentTwitterName}' to '${originalName.originalName}'.`);
             const response = await updateTwitterName(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, originalName.originalName);
 
             if (response === 200) {
