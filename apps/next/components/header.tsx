@@ -145,7 +145,7 @@ export default function Header() {
                             <Spacer />
 
                             <Flex experimental_spaceX="2" alignItems="center" justifySelf="flex-end">
-                                {breakpointValue.mobile && (
+                                {/* {breakpointValue.mobile && (
                                     <IconButton
                                         size="sm"
                                         onClick={() => onToggle()}
@@ -159,7 +159,7 @@ export default function Header() {
                                     <Button onClick={() => onToggle()} leftIcon={<MdEmail />} className={trackEvent('click', 'newsletter-button')}>
                                         Subscribe for updates
                                     </Button>
-                                )}
+                                )} */}
                                 <IconButton
                                     size={breakpoint === 'base' ? 'sm' : 'md'}
                                     aria-label="Toggle theme"
