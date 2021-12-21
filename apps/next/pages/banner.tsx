@@ -22,6 +22,7 @@ import {
     VStack,
     Link,
     useToast,
+    Stack,
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import useSWR from 'swr';
@@ -44,6 +45,8 @@ import { localAxios } from '@app/util/axios';
 import router from 'next/router';
 import RemotionPreview from '@pulsebanner/remotion/preview';
 import { Composer } from '@pulsebanner/remotion/components';
+import { NextSeo } from 'next-seo';
+import NextLink from 'next/link';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
@@ -84,6 +87,32 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         });
 
         if (banner) {
+            if ((banner.foregroundProps as any).username === 'Username Here!') {
+                const usernameInfo = await localAxios.get(`/api/twitch/username/${session.userId as string}`);
+                const username = usernameInfo.data.displayName;
+                await prisma.banner.update({
+                    where: {
+                        userId: session.userId,
+                    },
+                    data: {
+                        foregroundProps: {
+                            ...(banner.foregroundProps as any),
+                            username,
+                        },
+                    },
+                });
+                return {
+                    props: {
+                        banner: {
+                            ...defaultBannerSettings,
+                            foregroundProps: {
+                                ...defaultBannerSettings.foregroundProps,
+                                username,
+                            },
+                        },
+                    },
+                };
+            }
             return {
                 props: {
                     banner,
@@ -120,7 +149,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
         props: {
             banner: {},
-            isStreaming: false,
         },
     };
 };
@@ -219,21 +247,54 @@ export default function Page({ banner }: Props) {
             >
                 {banner && banner.enabled ? 'Turn off live banner' : 'Turn on live banner'}
             </Button>
-            <Heading fontSize="lg" w="full" textAlign="center">
-                {banner && banner.enabled ? 'Your banner is enabled.' : 'Live banner not enabled.'}
+            <Heading fontSize="md" w="full" textAlign="center">
+                {banner && banner.enabled ? 'Your banner is enabled' : 'Live banner not enabled'}
             </Heading>
         </VStack>
     );
 
+    const tweetText = 'I just setup my auto updating Twitter banner for #Twitch using @PulseBanner. Get it for free at pulsebanner.com!\n\n#PulseBanner';
+
+    const TweetPreview = (
+        <Text fontSize="lg" as="i">
+            I just setup my auto updating Twitter banner for <Link color="twitter.500">#Twitch</Link> using <Link color="twitter.500">@PulseBanner</Link>. Get it for free at{' '}
+            <Link color="twitter.500">pulsebanner.com</Link>!
+            <br />
+            <Link color="twitter.500">#PulseBanner</Link>
+        </Text>
+    );
+
     return (
         <>
+            <NextSeo
+                title="Twitter Live Banner for Twitch"
+                openGraph={{
+                    site_name: 'PulseBanner',
+                    type: 'website',
+                    url: 'https://pulsebanner.com/banner',
+                    title: 'PulseBanner - Twitter Live Banner for Twitch',
+                    description: 'Easily attract more viewers to your stream from Twitter',
+                    images: [
+                        {
+                            url: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/pulsebanner_og.webp',
+                            width: 1200,
+                            height: 627,
+                            alt: 'PulseBanner automates your Twitter banner for free.',
+                        },
+                    ],
+                }}
+                twitter={{
+                    site: '@PulseBanner',
+                    cardType: 'summary_large_image',
+                }}
+            />
             <DisableBannerModal isOpen={disableBannerIsOpen} onClose={disableBannerOnClose} />
             <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} />
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
                 <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
                     <Box maxW="xl">
-                        <Heading as="h1" fontSize={['2xl', '3xl']} alignSelf={['center', 'end']}>
-                            Twitch live banner
+                        <Heading as="h1" fontSize={['2xl', '3xl']} alignSelf={['center', 'end']} pb={[0, 2]}>
+                            Twitch Live Banner
                         </Heading>
                         <Heading fontSize="md" fontWeight="normal" as="h2">
                             Your Twitter banner will update when you start broadcasting on Twitch. Your banner will revert back to your current banner image when your stream ends.
@@ -338,8 +399,18 @@ export default function Page({ banner }: Props) {
                         {EnableButton}
                     </Flex>
                 </Flex>
+                <Center>
+                    <Stack direction={['column', 'row']}>
+                        <Text textAlign="center">Like Live Banner? Check out {breakpoint === 'base' ? '👇' : '👉'} </Text>
+                        <NextLink passHref href="/name">
+                            <Link color="blue.300" fontWeight="bold" fontSize={['md', 'lg']}>
+                                PulseBanner Twitter Name Changer ✨
+                            </Link>
+                        </NextLink>
+                    </Stack>
+                </Center>
                 <Box pt="8">
-                    <ShareToTwitter />
+                    <ShareToTwitter tweetText={tweetText} tweetPreview={TweetPreview} />
                 </Box>
             </Container>
             <PaymentModal isOpen={pricingIsOpen} onClose={pricingClose} />

@@ -2,7 +2,7 @@ import { TwitterClient } from 'twitter-api-client';
 
 export type TwitterResponseCode = 200 | 400;
 
-const createTwitterClient = (oauth_token: string, oauth_token_secret: string): TwitterClient => {
+export const createTwitterClient = (oauth_token: string, oauth_token_secret: string): TwitterClient => {
     return new TwitterClient({
         apiKey: process.env.TWITTER_ID,
         apiSecret: process.env.TWITTER_SECRET,
@@ -91,6 +91,31 @@ export async function tweetStreamStatusOffline(oauth_token: string, oauth_token_
     } catch (e) {
         // there could be a problem with how long the string is
         console.log('error with publishing the tweet: ', e);
+        return 400;
+    }
+    return 200;
+}
+
+export async function getCurrentTwitterName(oauth_token: string, oauth_token_secret: string): Promise<string> {
+    const client = createTwitterClient(oauth_token, oauth_token_secret);
+
+    try {
+        const account = await client.accountsAndUsers.accountVerifyCredentials();
+        const name = account.name;
+        return name;
+    } catch (e) {
+        console.log('Errror getting twitter name: ', e);
+        return '';
+    }
+}
+
+export async function updateTwitterName(oauth_token: string, oauth_token_secret: string, name: string): Promise<TwitterResponseCode> {
+    const client = createTwitterClient(oauth_token, oauth_token_secret);
+
+    try {
+        await client.accountsAndUsers.accountUpdateProfile({ name: name });
+    } catch (e) {
+        console.log('error updating twitter name: ', e);
         return 400;
     }
     return 200;

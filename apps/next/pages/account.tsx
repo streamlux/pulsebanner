@@ -26,6 +26,7 @@ import axios from 'axios';
 import useSWR from 'swr';
 import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
 import { Card } from '@app/components/Card';
+import { NextSeo } from 'next-seo';
 
 const Page: NextPage = () => {
     const handleCreatePortal = async () => {
@@ -61,84 +62,87 @@ const Page: NextPage = () => {
     };
 
     return (
-        <Container maxW="container.lg">
-            <VStack>
-                <Heading mb="8">PulseBanner Account</Heading>
+        <>
+            <NextSeo title="Account" />
+            <Container maxW="container.lg">
+                <VStack>
+                    <Heading mb="8">PulseBanner Account</Heading>
 
-                <VStack alignItems="start" w="full" spacing={12}>
-                    <Box w="full">
-                        <Heading as="p" fontSize="xl" mb="2">
-                            PulseBanner Membership
-                        </Heading>
-                        <Card props={{ w: 'full' }}>
-                            <Box>
-                                <Flex justifyContent="space-between">
-                                    <HStack>
-                                        <Text>Current PulseBanner Membership status: </Text>
-                                        <Text>{paymentPlan === 'Free' ? 'None' : paymentPlan}</Text>
-                                    </HStack>
-                                    <Button
-                                        onClick={async () => {
-                                            await handleCreatePortal();
-                                        }}
-                                    >
-                                        {paymentPlan === 'Free' || paymentPlanResponse.partner ? 'Become PulseBanner Member' : 'Change/Cancel PulseBanner Membership'}
-                                    </Button>
-                                </Flex>
-                                {paymentPlanResponse?.partner && (
-                                    <Tag variant="solid" colorScheme="teal">
-                                        PulseBanner Partner
-                                    </Tag>
-                                )}
-                            </Box>
-                        </Card>
-                    </Box>
-                    <Box w="full">
-                        <Heading as="p" fontSize="xl" mb="2">
-                            Danger Area
-                        </Heading>
-                        <Card props={{ w: 'full' }}>
-                            {paymentPlan !== 'Free' && (
-                                <Text fontSize="2xl" fontWeight="bold">
-                                    <Center>If you are a paid user, you must cancel your subscription before deleting your account</Center>
-                                </Text>
-                            )}
-                            <Flex justifyContent="space-between">
-                                <Spacer />
-                                <Popover placement="top">
-                                    {({ isOpen, onClose }) => (
-                                        <>
-                                            <PopoverTrigger>
-                                                <Button colorScheme="red" disabled={paymentPlan !== 'Free'}>
-                                                    Delete account and erase all data
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent>
-                                                <PopoverArrow />
-                                                <PopoverCloseButton />
-                                                <PopoverBody>
-                                                    Are you sure you want to delete your account and erase all your data? This is permanent and cannot be undone.
-                                                </PopoverBody>
-                                                <PopoverFooter d="flex" justifyContent="flex-end">
-                                                    <ButtonGroup size="sm">
-                                                        <Button colorScheme="red" onClick={async () => await deleteAccount()}>
-                                                            Confirm
-                                                        </Button>
-                                                        <Button colorScheme="green" onClick={() => onClose()}>
-                                                            Cancel
-                                                        </Button>
-                                                    </ButtonGroup>
-                                                </PopoverFooter>
-                                            </PopoverContent>
-                                        </>
+                    <VStack alignItems="start" w="full" spacing={12}>
+                        <Box w="full">
+                            <Heading as="p" fontSize="xl" mb="2">
+                                PulseBanner Membership
+                            </Heading>
+                            <Card props={{ w: 'full' }}>
+                                <Box>
+                                    <Flex justifyContent="space-between">
+                                        <HStack>
+                                            <Text>Current PulseBanner Membership status: </Text>
+                                            <Text>{paymentPlan === 'Free' ? 'None' : paymentPlan}</Text>
+                                        </HStack>
+                                        <Button
+                                            onClick={async () => {
+                                                await handleCreatePortal();
+                                            }}
+                                        >
+                                            {paymentPlan === 'Free' || paymentPlanResponse.partner ? 'Become PulseBanner Member' : 'Change/Cancel PulseBanner Membership'}
+                                        </Button>
+                                    </Flex>
+                                    {paymentPlanResponse?.partner && (
+                                        <Tag variant="solid" colorScheme="teal">
+                                            PulseBanner Partner
+                                        </Tag>
                                     )}
-                                </Popover>
-                            </Flex>
-                        </Card>
-                    </Box>
+                                </Box>
+                            </Card>
+                        </Box>
+                        <Box w="full">
+                            <Heading as="p" fontSize="xl" mb="2">
+                                Danger Area
+                            </Heading>
+                            <Card props={{ w: 'full' }}>
+                                {paymentPlan !== 'Free' && (
+                                    <Text fontSize="2xl" fontWeight="bold">
+                                        <Center>If you are a paid user, you must cancel your subscription before deleting your account</Center>
+                                    </Text>
+                                )}
+                                <Flex justifyContent="space-between">
+                                    <Spacer />
+                                    <Popover placement="top">
+                                        {({ isOpen, onClose }) => (
+                                            <>
+                                                <PopoverTrigger>
+                                                    <Button colorScheme="red" disabled={paymentPlan !== 'Free'}>
+                                                        Delete account and erase all data
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent>
+                                                    <PopoverArrow />
+                                                    <PopoverCloseButton />
+                                                    <PopoverBody>
+                                                        Are you sure you want to delete your account and erase all your data? This is permanent and cannot be undone.
+                                                    </PopoverBody>
+                                                    <PopoverFooter d="flex" justifyContent="flex-end">
+                                                        <ButtonGroup size="sm">
+                                                            <Button colorScheme="red" onClick={async () => await deleteAccount()}>
+                                                                Confirm
+                                                            </Button>
+                                                            <Button colorScheme="green" onClick={() => onClose()}>
+                                                                Cancel
+                                                            </Button>
+                                                        </ButtonGroup>
+                                                    </PopoverFooter>
+                                                </PopoverContent>
+                                            </>
+                                        )}
+                                    </Popover>
+                                </Flex>
+                            </Card>
+                        </Box>
+                    </VStack>
                 </VStack>
-            </VStack>
-        </Container>
+            </Container>
+        </>
     );
 };
 

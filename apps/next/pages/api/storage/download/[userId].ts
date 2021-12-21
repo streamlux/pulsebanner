@@ -23,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const s3Object = await s3.getObject({ Bucket: env.IMAGE_BUCKET_NAME, Key: userId }).promise();
         base64Image = s3Object.Body.toString();
     } catch (e) {
-        console.log('error: ', e);
+        console.log('unable to get user from s3 to download. User not found: ', e);
     }
 
     return base64Image === undefined ? res.status(404).send('Could not find user') : res.status(200).send(base64Image);

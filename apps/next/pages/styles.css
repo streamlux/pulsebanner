@@ -26,3 +26,39 @@ iframe {
 .responsive .react-colorful {
     width: auto;
 }
+
+div.user-info img.twemoji-sm,
+img.twemoji-bg {
+    display: inline-block;
+}
+
+img.twemoji-sm {
+    height: 16px;
+    width: 16px;
+}
+
+img.twemoji-bg {
+    height: 21px;
+    width: 21px;
+}
+
+div.drop-button {
+    display: none;
+}
+
+div.tweet {
+    font-size: inherit;
+}
+
+div.user-info img.avatar {
+    width: 48px;
+    height: 48px;
+}
+
+div.tweet-content {
+    font-size: 18px;
+}
+
+div.tweet {
+    width: 100% !important;
+}

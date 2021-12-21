@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+- Holiday decorations
+- Announcement components
+- Name changer feature
+
+### Changed
+- Pricing page layout
+
 ### Fixed
 - Catch errors uploading banner to backup bucket
 - Update pricing handling for different levels

@@ -4,12 +4,15 @@ import { SessionProvider } from 'next-auth/react';
 import theme from '../definitions/chakra/theme';
 import React from 'react';
 import Layout from '../components/layout';
-import { useRouter } from 'next/router';
 import Script from 'next/script';
 import Head from 'next/head';
 import favicon from '../public/favicon.png';
 import { DefaultSeo } from 'next-seo';
 import seoOptions from '@app/util/seo/next-seo.config';
+import dynamic from 'next/dynamic';
+import { holidayDecor } from '@app/util/constants';
+
+const Snow = dynamic(() => import('react-snowfall'));
 
 declare global {
     // eslint-disable-next-line no-var
@@ -20,6 +23,7 @@ declare global {
 // `useSession()` anywhere in your application to access the `session` object.
 export default function App({ Component, pageProps }) {
     // const router = useRouter();
+
     return (
         <>
             <Head>
@@ -38,9 +42,11 @@ export default function App({ Component, pageProps }) {
                     <Layout>
                         <Component {...pageProps} />
                     </Layout>
+
                     {/* )} */}
                 </ChakraProvider>
             </SessionProvider>
+            {holidayDecor && <div suppressHydrationWarning={true}>{process.browser && <Snow snowflakeCount={100} radius={[0.5, 2]} speed={[1, 2]} wind={[-0.5, 0.5]} />}</div>}
         </>
     );
 }

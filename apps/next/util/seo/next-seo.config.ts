@@ -5,9 +5,9 @@ import { NextSeoProps } from "next-seo"
 const seoOptions: NextSeoProps = {
 
     // Basic information https://github.com/garmeeh/next-seo#add-seo-to-page
-    title: "PulseBanner - Twitter live banner for Twitch",
     description: "Easily attract more viewers to your stream from Twitter.",
-
+    titleTemplate: 'PulseBanner - %s',
+    defaultTitle: 'PulseBanner',
     twitter: {
         cardType: 'summary_large_image',
         site: '@PulseBanner'
@@ -15,9 +15,10 @@ const seoOptions: NextSeoProps = {
 
     // https://github.com/garmeeh/next-seo#open-graph
     openGraph: {
+        site_name: 'PulseBanner',
         type: 'website',
         url: 'https://pulsebanner.com/',
-        title: 'PulseBanner - Twitter live banner for Twitch',
+        title: 'PulseBanner - Twitter Live Banner for Twitch',
         description: 'Easily attract more viewers to your stream from Twitter',
         images: [
             {
