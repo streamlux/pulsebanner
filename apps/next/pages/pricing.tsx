@@ -28,16 +28,25 @@ import {
     Box,
     Img,
     useToast,
+    Stack,
+    List,
+    ListIcon,
+    ListItem,
+    ScaleFade,
+    Spacer,
+    WrapItem,
 } from '@chakra-ui/react';
 
 import getStripe from '../util/getStripe';
 import prisma from '../util/ssr/prisma';
-import { FaTwitter, FaCheck } from 'react-icons/fa';
+import { FaTwitter, FaCheck, FaArrowRight } from 'react-icons/fa';
 import { ProductCard } from '@app/components/pricing/ProductCard';
 import { trackEvent } from '@app/util/umami/trackEvent';
 import favicon from '@app/public/logo.webp';
 import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
 import { NextSeo } from 'next-seo';
+import { Card } from '@app/components/Card';
+import { CheckIcon } from '@chakra-ui/icons';
 
 type Props = {
     products: (Product & { prices: Price[] })[];
@@ -144,7 +153,7 @@ const Page: NextPage<Props> = ({ products }) => {
                 Yearly billing
             </Text>
             <Tag size="md" variant="solid" background={billingInterval === 'year' ? 'green.200' : 'gray.200'} color="black">
-                Two months free!
+                Save 15%
             </Tag>
         </HStack>
     );
@@ -202,36 +211,79 @@ const Page: NextPage<Props> = ({ products }) => {
                     </ModalBody>
                 </ModalContent>
             </Modal>
-            <VStack spacing={[6, 12]}>
-                <VStack spacing={8}>
-                    <VStack spacing={0}>
-                        <HStack fontSize="xl">
-                            <Text fontSize="2xl" fontWeight="bold">
-                                PulseBanner is
-                            </Text>
-                            <Tag size="lg" p="2" py="1" fontSize="2xl" variant="solid" background="green.200" color="black" fontWeight="bold">
-                                FREE
-                            </Tag>
-                        </HStack>
-                        <Text textAlign="center" maxW="2xl" px="4" fontSize="xl">
-                            You can use PulseBanner for free forever 🎉
-                        </Text>
-                    </VStack>
 
-                    <Text textAlign="center" maxW="2xl" px="4" fontSize="xl">
-                        However, you can unlock even more awesome features and kindly support the creators with a PulseBanner Membership.
+            <Container maxW="container.lg" experimental_spaceY="6" pb="6">
+                <Heading size="xl" textAlign="center" h="full">
+                    PulseBanner Memberships
+                </Heading>
+                <Center>
+                    <Text textAlign="center" fontSize="xl" maxW="container.sm">
+                        You can use PulseBanner for free forever 🎉 OR you can unlock even more awesome features and kindly support the creators with a PulseBanner Membership.
                     </Text>
-                </VStack>
+                </Center>
+            </Container>
 
-                <Container centerContent maxW="container.lg" experimental_spaceY="6">
-                    <Heading size="xl" textAlign="center" h="full">
-                        PulseBanner Memberships
-                    </Heading>
-                </Container>
-
+            <VStack spacing={[6, 12]} w="full">
                 {AnnualBillingControl}
                 <Center w={['auto', 'auto', 'auto', '5xl']}>
-                    <SimpleGrid columns={[1, 1, 1, 2]} spacing="4" w="full">
+                    <SimpleGrid columns={[1, 1, 1, 3]} spacing="4" w="full">
+                        <WrapItem key="free" w="full" h="full">
+                            <Card props={{ w: 'full', h: 'full' }}>
+                                <Box w="full" experimental_spaceY={4}>
+                                    <Flex direction="row" justify="space-between" alignItems="center">
+                                        <VStack alignItems="start" spacing={0}>
+                                            <Heading size="lg">Free</Heading>
+                                            <Text>Features with limited customization</Text>
+                                        </VStack>
+                                    </Flex>
+                                </Box>
+                                <Flex direction="row" justify="space-between" alignItems="center" justifyContent="center">
+                                    <VStack spacing={0} cursor="pointer">
+                                        <Stack direction={['column', 'row']} alignItems={['center', 'center']} w="full" spacing={[0, 2]}>
+                                            <Text
+                                                fontSize="2xl"
+                                                fontWeight="extrabold"
+                                                lineHeight="tight"
+                                                as={chakra.span}
+                                                bg="green.200"
+                                                px="1"
+                                                py="0.5"
+                                                mb="4"
+                                                rounded="md"
+                                                color="black"
+                                            >
+                                                Free
+                                            </Text>
+                                        </Stack>
+                                    </VStack>
+                                </Flex>
+
+                                <Box flexGrow={2}>
+                                    <Heading size="md">{"What's included"}</Heading>
+                                    <List>
+                                        {['Live Banner', 'Name Changer'].map((feature) => (
+                                            <ListItem key={feature}>
+                                                <ListIcon color="green.200" as={CheckIcon} />
+                                                {feature}
+                                            </ListItem>
+                                        ))}
+                                    </List>
+                                </Box>
+
+                                <Box justifySelf="flex-end">
+                                    <Flex w="full" justifyContent="space-between">
+                                        <Spacer />
+                                        {session ? (
+                                            <></>
+                                        ) : (
+                                            <Button fontWeight="bold" colorScheme="green" rightIcon={<FaArrowRight />}>
+                                                Sign up
+                                            </Button>
+                                        )}
+                                    </Flex>
+                                </Box>
+                            </Card>
+                        </WrapItem>
                         {sortProductsByPrice(products).map((product) => (
                             <ProductCard key={product.id} product={product} billingInterval={billingInterval} handlePricingClick={handlePricingClick} />
                         ))}
