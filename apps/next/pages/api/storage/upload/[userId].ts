@@ -3,6 +3,7 @@ import NextCors from 'nextjs-cors';
 import { env } from 'process';
 import imageToBase64 from 'image-to-base64';
 import { createS3 } from '@app/util/database/s3ClientHelper';
+import { sendError } from '@app/util/discord/sendError';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
@@ -22,14 +23,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const imageBase64 = imageUrl === 'empty' ? 'empty' : await imageToBase64(imageUrl);
 
     const s3 = createS3(env.DO_SPACE_ENDPOINT, env.DO_ACCESS_KEY, env.DO_SECRET);
+
     s3.upload({ Bucket: bucketName, Key: userId, Body: imageBase64 }, null, (err, _data) => {
         if (err) {
-            console.log('error: ', err);
-            res.status(400).send('Error uploading image to s3 storage');
+            sendError(err, 'Error uploading image to S3');
+            res.status(500).send('Error uploading image to s3 storage');
+        } else {
+            console.log(`Uploaded image ${imageUrl}.`);
+            res.status(201).end();
         }
     });
-
-    console.log(`Uploaded image ${imageUrl}.`);
-
-    res.status(201).end();
 }
