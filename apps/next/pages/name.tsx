@@ -11,7 +11,6 @@ import {
     Button,
     Center,
     Container,
-    Divider,
     Flex,
     FormControl,
     FormHelperText,
@@ -37,7 +36,7 @@ import { GetServerSideProps } from 'next';
 import { getSession } from 'next-auth/react';
 import router from 'next/router';
 import { useState } from 'react';
-import { FaDiscord, FaEdit, FaPlay, FaStop } from 'react-icons/fa';
+import { FaDiscord, FaPlay, FaStop } from 'react-icons/fa';
 import useSWR from 'swr';
 import FakeTweet from 'fake-tweet';
 import 'fake-tweet/build/index.css';
@@ -335,6 +334,7 @@ export default function Page({ twitterName, twitterProfile }: Props) {
                                                     aria-label="Edit"
                                                     leftIcon={<EditIcon />}
                                                     onClick={() => {
+                                                        trackEvent('click', 'edit-name');
                                                         showPricing();
                                                     }}
                                                 >
