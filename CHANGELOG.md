@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Changed
 - Promo sticky text shorter for mobile
+- Added umami event for edit name text
+
+## Fixed 
+- username streamdown logs
 
 ## [0.3.0]
 
