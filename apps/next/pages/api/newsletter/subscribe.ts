@@ -15,16 +15,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     // communicate with revue
-    const response = await axios.post(
-        'https://www.getrevue.co/api/v2/subscribers',
-        {
-            email: req.body.email,
-            double_opt_in: false,
-        },
-        {
-            headers: { Authorization: `Bearer ${env.REVUE_API_KEY}` },
-        }
-    );
+    try {
+        const response = await axios.post(
+            'https://www.getrevue.co/api/v2/subscribers',
+            {
+                email: req.body.email,
+                double_opt_in: false,
+            },
+            {
+                headers: { Authorization: `Token ${env.REVUE_API_KEY}` },
+            }
+            );
+            res.status(response.status).send(response.status !== 200 ? 'Failure' : 'Success');
+    } catch (e) {
+        console.log('err: ', e);
+        res.status(400);
+    }
 
-    res.status(response.status).send(response.status !== 200 ? 'Failure' : 'Success');
 }

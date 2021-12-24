@@ -186,12 +186,29 @@ export default NextAuth({
                 getBanner(twitterProvider.oauth_token, twitterProvider.oauth_token_secret, twitterProvider.providerAccountId).then((bannerUrl) => {
                     const bucketName = env.BANNER_BACKUP_BUCKET;
 
-                    localAxios.put(`/api/storage/upload/${message.user.id}?imageUrl=${bannerUrl}&bucket=${bucketName}`).then((resp) => {
-                        console.log('Uploaded Twitter banner on new user signup.');
-                    }).catch((reason) => {
-                        sendError(reason, 'Error uploading Twitter banner to backup bucket on new user signup');
-                    });
+                    localAxios
+                        .put(`/api/storage/upload/${message.user.id}?imageUrl=${bannerUrl}&bucket=${bucketName}`)
+                        .then((resp) => {
+                            console.log('Uploaded Twitter banner on new user signup.');
+                        })
+                        .catch((reason) => {
+                            sendError(reason, 'Error uploading Twitter banner to backup bucket on new user signup');
+                        });
                 });
+
+                // subscribe user email to the newsletter
+                if (message.user.email && message.user.email.indexOf('@') > -1) {
+                    localAxios
+                        .post('/api/newsletter/subscribe', { email: message.user.email })
+                        .then((resp) => {
+                            console.log('response here: ', resp);
+                            console.log(`Added user email ${message.user.email} to newsletter`);
+                        })
+                        .catch((reason) => {
+                            console.log('Not able to sign user up for newsletter: ', reason);
+                            // sendError()
+                        });
+                }
             }
         },
     },
