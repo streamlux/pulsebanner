@@ -31,8 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (imageBase64) {
         console.log('Successfully downloaded original image from S3.');
     } else {
-        console.error('Failed to download original image from S3.');
-        res.status(404).send('Failed to get original image from S3.');
+        res.status(404).send('Unable to find user in database for banner on streamdown');
     }
 
     // add check for if it is 'empty' string, then we just set back to default (remove the current banner)

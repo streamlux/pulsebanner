@@ -4,7 +4,8 @@ import TwitterProvider from 'next-auth/providers/twitter';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import prisma from '@app/util/ssr/prisma';
 import { nanoid } from 'nanoid';
-import { getBanner } from '@app/util/twitter/twitterHelpers';
+import { getBanner, getTwitterProfilePic } from '@app/util/twitter/twitterHelpers';
+import { localAxios } from '@app/util/axios';
 import { AccessToken, accessTokenIsExpired, refreshUserToken, StaticAuthProvider } from '@twurple/auth';
 import { sendMessage } from '@app/util/discord/sendMessage';
 import { sendError } from '@app/util/discord/sendError';
@@ -185,22 +186,40 @@ export default NextAuth({
             if (message.isNewUser === true && message.account.provider === 'twitter') {
                 const twitterProvider = message.account;
                 getBanner(twitterProvider.oauth_token, twitterProvider.oauth_token_secret, twitterProvider.providerAccountId).then((bannerUrl) => {
-
                     if (bannerUrl === 'empty') {
-                        uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, 'empty').then(() => {
-                            console.log('Uploaded empty banner on new user signup.');
-                        }).catch((reason) => {
-                            sendError(reason, 'Error uploading empty banner to backup bucket on new user signup');
-                        });
+                        uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, 'empty')
+                            .then(() => {
+                                console.log('Uploaded empty banner on new user signup.');
+                            })
+                            .catch((reason) => {
+                                sendError(reason, 'Error uploading empty banner to backup bucket on new user signup');
+                            });
                     } else {
                         imageToBase64(bannerUrl).then((base64: string) => {
-                            uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, base64).then(() => {
-                                console.log('Uploaded Twitter banner on new user signup.');
-                            }).catch((reason) => {
-                                sendError(reason, 'Error uploading Twitter banner to backup bucket on new user signup');
-                            });
+                            uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, base64)
+                                .then(() => {
+                                    console.log('Uploaded Twitter banner on new user signup.');
+                                })
+                                .catch((reason) => {
+                                    sendError(reason, 'Error uploading Twitter banner to backup bucket on new user signup');
+                                });
                         });
                     }
+                });
+
+                // potentially add in the providerAccountId
+                getTwitterProfilePic(twitterProvider.oauth_token, twitterProvider.oauth_token_secret, twitterProvider.providerAccountId).then((profilePicUrl) => {
+                    const bucketName = env.PROFILE_PIC_BACKUP_BUCKET;
+
+                    // need to change this to not use this endpoint and call helper method
+                    localAxios
+                        .put(`/api/storage/upload/${message.user.id}?imageUrl=${profilePicUrl}&bucket=${bucketName}`)
+                        .then((resp) => {
+                            console.log('Uploaded Twitter profile picture on new user signup.');
+                        })
+                        .catch((reason) => {
+                            sendError(reason, 'Error uploading Twitter profile picture to backup bucket on new user signup');
+                        });
                 });
             }
         },

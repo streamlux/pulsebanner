@@ -55,6 +55,7 @@ model User {
   tweet               Tweet?
   twitterName         TwitterName?
   twitterOriginalName TwitterOriginalName?
+  profilePic          ProfilePic?
   partner             Boolean              @default(false)
 
   @@map("users")
@@ -129,6 +130,15 @@ model TwitterOriginalName {
   originalName String @map("original_name")
 
   @@map("original_name")
+}
+
+// profilePic feature for users
+model ProfilePic {
+  id      String  @id @default(cuid())
+  userId  String  @unique(map: "twitter_profile_picture") @map("user_id")
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enabled Boolean @default(false)
+  
 }
 
 // Stripe models

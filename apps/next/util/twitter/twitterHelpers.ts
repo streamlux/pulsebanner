@@ -120,3 +120,30 @@ export async function updateTwitterName(oauth_token: string, oauth_token_secret:
     }
     return 200;
 }
+
+// should return similar to getBanner
+export async function getTwitterProfilePic(oauth_token: string, oauth_token_secret: string, providerAccountId: string): Promise<string> {
+    const client = createTwitterClient(oauth_token, oauth_token_secret);
+
+    try {
+        // await client.accountsAndUsers.accountUpdateProfileImage();
+    } catch (e) {
+        console.log('error getting twitter profile pic: ', e);
+        return 'failed';
+    }
+    return 'succeeded';
+}
+
+export async function updateProfilePic(oauth_token: string, oauth_token_secret: string, image: string): Promise<TwitterResponseCode> {
+    const client = createTwitterClient(oauth_token, oauth_token_secret);
+
+    try {
+        await client.accountsAndUsers.accountUpdateProfileImage({
+            image: image,
+        });
+    } catch (e) {
+        console.log('error updating twitter profile pic: ', e);
+        return 400;
+    }
+    return 200;
+}
