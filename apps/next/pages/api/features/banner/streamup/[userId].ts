@@ -11,7 +11,7 @@ import { env } from 'process';
 import imageToBase64 from 'image-to-base64';
 import { uploadBase64 } from '@app/util/s3/upload';
 
-type TemplateRequestBody = {
+export type TemplateRequestBody = {
     foregroundId: string;
     backgroundId: string;
     foregroundProps: Record<string, unknown>;

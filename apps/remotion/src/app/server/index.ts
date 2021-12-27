@@ -18,7 +18,7 @@ let browser: Browser | undefined;
 const getBrowser = async (): Promise<Browser> => {
     browser ||= await openBrowser('chrome');
     return browser as Browser;
-}
+};
 
 dotenv.config();
 
@@ -77,58 +77,8 @@ app.use(
         windowMs: 1 * 60 * 1000,
         max: 20,
         onLimitReached: () => {
-            console.log('Rate limit reached')
-        }
-    })
-);
-
-// NOTE: This get endpoint will be removed/should be taken out when we don't need for testing
-
-// The image is rendered when /[CompositionName].[imageformat] is called.
-// Props are passed via query string.
-app.get(
-    `/:${Params.compositionname}.:${Params.format}(png|jpe?g)`,
-    handler(async (req, res) => {
-        const inputProps = req.query;
-        const compName = req.params[Params.compositionname];
-        const imageFormat = getImageType(req.params[Params.format]);
-
-        res.set('content-type', getMimeType(imageFormat));
-
-        // Calculate a unique identifier for our image,
-        // if it exists, return it from cache
-        const hash = getImageHash(
-            JSON.stringify({
-                compName,
-                imageFormat,
-                inputProps,
-            })
-        );
-
-        const output = path.join(await tmpDir, hash);
-        const puppeteerInstance = await getBrowser();
-        const webpackBundle = await webpackBundling;
-        const composition = await getComp(compName, inputProps);
-        await new Promise<void>((resolve, reject) => {
-            renderStill({
-                composition,
-                webpackBundle,
-                puppeteerInstance,
-                output,
-                inputProps,
-                imageFormat,
-                onError: (err) => {
-                    reject(err);
-                },
-                envVariables: {},
-            })
-                .then((res) => resolve(res))
-                .catch((err) => reject(err));
-        });
-
-        await sendFile(res, fs.createReadStream(output));
-        // await saveToCache(hash, await fs.promises.readFile(output));
-        await fs.promises.unlink(output);
+            console.log('Rate limit reached');
+        },
     })
 );
 
@@ -148,6 +98,69 @@ app.post(
         // hard coded info as we only use one composition composer and generate different templates from there by passing the different props
         const imageFormat = 'png';
         const compName = 'pulsebanner';
+        const inputProps = req.body;
+
+        res.set('content-type', getMimeType(imageFormat));
+
+        // Calculate a unique identifier for our image,
+        // if it exists, return it from cache
+        const hash = getImageHash(
+            JSON.stringify({
+                compName,
+                imageFormat,
+                inputProps,
+            })
+        );
+
+        const output = path.join(await tmpDir, hash);
+
+        const webpackBundle = await webpackBundling;
+        const puppeteerInstance = await getBrowser();
+        const composition = await getComp(compName, inputProps);
+        await new Promise<void>((resolve, reject) => {
+            renderStill({
+                puppeteerInstance,
+                composition,
+                webpackBundle,
+                output,
+                inputProps,
+                imageFormat,
+                onError: (err) => {
+                    reject(err);
+                },
+                envVariables: {},
+            })
+                .then((res) => resolve(res))
+                .catch((err) => reject(err));
+        });
+
+        console.log(output);
+        const imageBase64 = fs.readFileSync(output, { encoding: 'base64' });
+
+        const endMs = Date.now();
+
+        console.log(`Done rendering in ${endMs - startMs}ms`);
+
+        res.send(imageBase64);
+    })
+);
+
+/**
+ * Format for what we are going to pass in
+ * Req Body
+ * TemplateId, Thumbnail URL, Twitch info
+ */
+// api call (POST) to here sending the required information
+app.post(
+    '/getProfilePic',
+    handler(async (req, res) => {
+        const startMs = Date.now();
+        const requestBody = req.body;
+        console.log('requestBody: ', requestBody);
+
+        // hard coded info as we only use one composition composer and generate different templates from there by passing the different props
+        const imageFormat = 'png';
+        const compName = 'twitterProfilePic';
         const inputProps = req.body;
 
         res.set('content-type', getMimeType(imageFormat));

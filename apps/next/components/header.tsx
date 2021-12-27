@@ -134,6 +134,14 @@ export default function Header() {
                                             </NextLink>
                                         </WrapItem>
                                         <WrapItem>
+                                            <NextLink href="/profile" passHref>
+                                                <HStack>
+                                                    <Link>Profile</Link>
+                                                    <Tag colorScheme="green">NEW</Tag>
+                                                </HStack>
+                                            </NextLink>
+                                        </WrapItem>
+                                        <WrapItem>
                                             <NextLink href="/pricing" passHref>
                                                 <Link>Pricing</Link>
                                             </NextLink>
@@ -224,6 +232,15 @@ export default function Header() {
                                 </HStack>
                             </NextLink>
                         </WrapItem>
+                        <WrapItem>
+                            <NextLink href="/profile" passHref>
+                                <HStack>
+                                    <Link>Profile</Link>
+                                    <Tag colorScheme="green">NEW</Tag>
+                                </HStack>
+                            </NextLink>
+                        </WrapItem>
+
                         <WrapItem>
                             <NextLink href="/pricing" passHref>
                                 <Link>Pricing</Link>

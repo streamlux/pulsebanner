@@ -5,6 +5,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 import { AxiosResponse } from 'axios';
 import { env } from 'process';
+import { TemplateRequestBody } from '../../banner/streamup/[userId]';
+import { Prisma } from '@prisma/client';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
@@ -35,8 +37,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         await localAxios.put(`/api/storage/upload/${userId}?imageUrl=${profilePicUrl}&bucket=${bucketName}`);
 
-        // update remotion here to craft the image and pass back right props. may/should be new endpoint
-        const response: AxiosResponse<string> = await remotionAxios.post('/getTemplate', { test: 'tester' });
+        const templateobj: TemplateRequestBody = {
+            backgroundId: profilePicEntry.backgroundId ?? 'CSSBackground',
+            foregroundId: profilePicEntry.foregroundId ?? 'ProfilePic',
+            foregroundProps: { ...(profilePicEntry.foregroundProps as Prisma.JsonObject) } ?? {},
+            backgroundProps: (profilePicEntry.backgroundProps as Prisma.JsonObject) ?? {},
+        };
+
+        // make sure we can still hit this endpoint
+        const response: AxiosResponse<string> = await remotionAxios.post('/getProfilePic', templateobj);
         // think this needs to be a url
         const image: string = response.data;
 

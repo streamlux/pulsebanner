@@ -43,7 +43,7 @@ import { Banner } from '@prisma/client';
 import prisma from '@app/util/ssr/prisma';
 import { localAxios } from '@app/util/axios';
 import router from 'next/router';
-import RemotionPreview from '@pulsebanner/remotion/preview';
+import { RemotionPreview } from '@pulsebanner/remotion/preview';
 import { Composer } from '@pulsebanner/remotion/components';
 import { NextSeo } from 'next-seo';
 import NextLink from 'next/link';
