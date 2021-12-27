@@ -14,10 +14,6 @@ handler.delete(async (req: AppNextApiRequest, res: NextApiResponse): Promise<voi
     // delete all webhooks
     await localAxios.delete('/api/twitch/subscription');
 
-    // delete images in s3
-    await localAxios.post(`/api/storage/delete/${userId}`);
-
-
     // delete objects from s3
     const s3 = createS3(env.DO_SPACE_ENDPOINT, env.DO_ACCESS_KEY, env.DO_SECRET);
 
