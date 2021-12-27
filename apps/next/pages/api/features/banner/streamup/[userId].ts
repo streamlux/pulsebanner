@@ -2,12 +2,14 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 import { TwitterResponseCode, updateBanner, getBanner } from '@app/util/twitter/twitterHelpers';
 import { getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
-import { localAxios, remotionAxios, twitchAxios } from '@app/util/axios';
+import { remotionAxios, twitchAxios } from '@app/util/axios';
 import { Prisma } from '@prisma/client';
 import { getAccountsById } from '@app/util/getAccountsById';
 import { TwitchClientAuthService } from '@app/services/TwitchClientAuthService';
 import { AxiosResponse } from 'axios';
 import { env } from 'process';
+import imageToBase64 from 'image-to-base64';
+import { uploadBase64 } from '@app/util/s3/upload';
 
 type TemplateRequestBody = {
     foregroundId: string;
@@ -35,6 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const twitterInfo = await getTwitterInfo(userId, true);
 
+    // get the banner info saved in Banner table
     const bannerEntry = await getBannerEntry(userId);
     if (bannerEntry === null || twitterInfo === null) {
         return res.status(400).send('Could not find banner entry or twitter info for user');
@@ -60,9 +63,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const bannerUrl: string = await getBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
     const bucketName = env.IMAGE_BUCKET_NAME;
     // store the current banner in s3
-    await localAxios.put(`/api/storage/upload/${userId}?imageUrl=${bannerUrl}&bucket=${bucketName}`);
-
-    // get the banner info saved in Banner table
+    const dataToUpload: string = bannerUrl === 'empty' ? 'empty' : await imageToBase64(bannerUrl);
+    try {
+        await uploadBase64(bucketName, userId, dataToUpload);
+    } catch (e) {
+        console.error('Error uploading original banner to S3.');
+        return res.status(500).send('Error uploading original banner to S3.');
+    }
 
     // construct template object
     const templateObj: TemplateRequestBody = {
