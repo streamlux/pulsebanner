@@ -1,4 +1,5 @@
 import { TwitterClient } from 'twitter-api-client';
+import { sendError } from '../discord/sendError';
 
 export type TwitterResponseCode = 200 | 400;
 
@@ -21,6 +22,7 @@ export async function getBanner(oauth_token: string, oauth_token_secret: string,
         imageUrl = response.sizes['1500x500'].url;
         console.log('imageUrl: ', imageUrl);
     } catch (e) {
+        handleTwitterApiError(e);
         console.log('User does not have a banner setup. Will save empty for later: ', e);
         imageUrl = 'empty';
     }
@@ -37,7 +39,7 @@ export async function updateBanner(oauth_token: string, oauth_token_secret: stri
         try {
             await client.accountsAndUsers.accountRemoveProfileBanner();
         } catch (e) {
-            console.log('error: ', e);
+            handleTwitterApiError(e);
             return 400;
         }
     } else {
@@ -46,17 +48,7 @@ export async function updateBanner(oauth_token: string, oauth_token_secret: stri
                 banner: bannerBase64,
             });
         } catch (e) {
-            if ('errors' in e) {
-                // Twitter API error
-                if (e.errors[0].code === 88)
-                    // rate limit exceeded
-                    console.log('Rate limit will reset on', new Date(e._headers.get('x-rate-limit-reset') * 1000));
-                // some other kind of error, e.g. read-only API trying to POST
-                else console.log('Other error');
-            } else {
-                // non-API error, e.g. network problem or invalid JSON in response
-                console.log('Non api error');
-            }
+            handleTwitterApiError(e);
             console.log('failed to update banner');
             return 400;
         }
@@ -76,6 +68,7 @@ export async function tweetStreamStatusLive(oauth_token: string, oauth_token_sec
     } catch (e) {
         // there could be a problem with how long the string is
         console.log('error with publishing the tweet: ', e);
+        handleTwitterApiError(e);
         return 400;
     }
     return 200;
@@ -91,6 +84,7 @@ export async function tweetStreamStatusOffline(oauth_token: string, oauth_token_
     } catch (e) {
         // there could be a problem with how long the string is
         console.log('error with publishing the tweet: ', e);
+        handleTwitterApiError(e);
         return 400;
     }
     return 200;
@@ -105,6 +99,7 @@ export async function getCurrentTwitterName(oauth_token: string, oauth_token_sec
         return name;
     } catch (e) {
         console.log('Errror getting twitter name: ', e);
+        handleTwitterApiError(e);
         return '';
     }
 }
@@ -116,7 +111,30 @@ export async function updateTwitterName(oauth_token: string, oauth_token_secret:
         await client.accountsAndUsers.accountUpdateProfile({ name: name });
     } catch (e) {
         console.log('error updating twitter name: ', e);
+        handleTwitterApiError(e, 'Updating Twitter name');
         return 400;
     }
     return 200;
+}
+
+function handleTwitterApiError(e: { errors?: { message: string, code: number }[], _headers?: any }, context?: string) {
+    if ('errors' in e) {
+        // Twitter API error
+        if (e.errors[0].code === 88) {
+
+            // rate limit exceeded
+            console.error('Rate limit error, code 88. Rate limit will reset on', new Date(e._headers.get('x-rate-limit-reset') * 1000));
+            sendError({ ...e.errors[0], name: 'TwitterRateLimitError' }, context);
+        } else if (e.errors[0].code === 89) {
+            // Invalid or expired token error
+            sendError({ ...e.errors[0], name: 'TwitterAPIInvalidTokenError' }, 'Invalid or expired token error. Context: ' + context);
+        }
+        // some other kind of error, e.g. read-only API trying to POST
+        else {
+            sendError(e as any, 'Other Twitter API error occured. Context: ' + context);
+        }
+    } else {
+        // non-API error, e.g. network problem or invalid JSON in response
+        sendError(e as any, 'Non Twitter API error occured. Context: ' + context);
+    }
 }
