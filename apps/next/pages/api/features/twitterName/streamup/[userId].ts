@@ -1,6 +1,7 @@
 import { getTwitterInfo, getTwitterName, updateOriginalTwitterNameDB } from '@app/util/database/postgresHelpers';
 import { getCurrentTwitterName, updateTwitterName } from '@app/util/twitter/twitterHelpers';
 import { TwitterName } from '@prisma/client';
+import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 
@@ -27,11 +28,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!twitterNameSettings.enabled) {
         return res.status(400).send('Feature not enabled.');
     }
-    console.log(`Changing Twitter name from '${currentTwitterName}' to '${twitterNameSettings.streamName}'.`);
+
+    let updatedTwitterLiveName = undefined;
+    if (twitterNameSettings.streamName && currentTwitterName && twitterNameSettings.streamName.indexOf(currentTwitterName) === -1) {
+        // check if they are premium. if they are premium, we cannot do anything
+        const response = await axios.get('/api/user/subscription');
+        if (response.data.plan && response.data.plan === 'Free') {
+            updatedTwitterLiveName = `🔴 Live now | ${currentTwitterName}`;
+            console.log(`Changing Twitter name from '${currentTwitterName}' to '${updatedTwitterLiveName}'.`);
+        }
+    } else {
+        console.log(`Changing Twitter name from '${currentTwitterName}' to '${twitterNameSettings.streamName}'.`);
+    }
 
     // If it is not found return immediately and do not update normal twitter name
     if (twitterNameSettings && currentTwitterName !== '') {
-        if (twitterNameSettings.streamName) {
+        if (updatedTwitterLiveName !== undefined) {
+            // post to twitter
+            const response = await updateTwitterName(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, updatedTwitterLiveName);
+
+            if (response === 200) {
+                await updateOriginalTwitterNameDB(userId, currentTwitterName);
+                console.log('Successfully updated Twitter name on streamup.');
+                return res.status(200).end();
+            }
+        } else if (twitterNameSettings.streamName) {
             // post to twitter
             const response = await updateTwitterName(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterNameSettings.streamName);
 
