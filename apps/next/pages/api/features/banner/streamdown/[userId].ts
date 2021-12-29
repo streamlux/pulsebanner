@@ -36,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // add check for if it is 'empty' string, then we just set back to default (remove the current banner)
-    const bannerStatus: TwitterResponseCode = await updateBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, imageBase64);
+    const bannerStatus: TwitterResponseCode = await updateBanner(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, imageBase64);
     if (bannerStatus === 200) {
         res.status(200).send('Successfully set banner back to original image.');
     } else {
