@@ -1,7 +1,7 @@
+import { productPlan } from '@app/util/database/paymentHelpers';
 import { getTwitterInfo, getTwitterName, updateOriginalTwitterNameDB } from '@app/util/database/postgresHelpers';
 import { getCurrentTwitterName, updateTwitterName } from '@app/util/twitter/twitterHelpers';
 import { TwitterName } from '@prisma/client';
-import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 
@@ -32,16 +32,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let updatedTwitterLiveName = undefined;
     if (twitterNameSettings.streamName && currentTwitterName && twitterNameSettings.streamName.indexOf(currentTwitterName) === -1) {
         // check if they are premium. if they are premium, we cannot do anything
-        const response = await axios.get('/api/user/subscription');
-        if (response.data.plan && response.data.plan === 'Free') {
+        const plan = await productPlan(userId);
+
+        if (!plan.partner && plan.plan === 'Free') {
             updatedTwitterLiveName = `🔴 Live now | ${currentTwitterName}`;
             console.log(`Changing Twitter name from '${currentTwitterName}' to '${updatedTwitterLiveName}'.`);
+        } else {
+            console.log(`Changing Twitter name from '${currentTwitterName}' to '${twitterNameSettings.streamName}'.`);
         }
     } else {
         console.log(`Changing Twitter name from '${currentTwitterName}' to '${twitterNameSettings.streamName}'.`);
     }
 
-    // If it is not found return immediately and do not update normal twitter name
+    // If it is not found return immediately and do not update normal twitwyter name
     if (twitterNameSettings && currentTwitterName !== '') {
         if (updatedTwitterLiveName !== undefined) {
             // post to twitter
