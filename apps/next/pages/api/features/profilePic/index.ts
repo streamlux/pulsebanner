@@ -1,12 +1,13 @@
 import { updateTwitchSubscriptions } from '@app/services/updateTwitchSubscriptions';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import prisma from '@app/util/ssr/prisma';
+import { ProfileImage } from '@prisma/client';
 
 const handler = createAuthApiHandler();
 
 // Create or update existing profile picture with url and templateId
 handler.post(async (req, res) => {
-    await prisma.profilePic.upsert({
+    await prisma.profileImage.upsert({
         where: {
             userId: req.session.userId,
         },
@@ -30,7 +31,7 @@ handler.post(async (req, res) => {
 
 // Get profile pic
 handler.get(async (req, res) => {
-    const profilePic = await prisma.profilePic.findFirst({
+    const profilePic = await prisma.profileImage.findFirst({
         where: {
             userId: req.session.userId,
         },
@@ -48,7 +49,7 @@ handler.get(async (req, res) => {
 
 // Delete profile pic
 handler.delete(async (req, res) => {
-    await prisma.profilePic.delete({
+    await prisma.profileImage.delete({
         where: {
             userId: req.session.userId,
         },
@@ -60,22 +61,22 @@ handler.delete(async (req, res) => {
 // Toggle enabled/disabled
 // then update twitch subscriptions
 handler.put(async (req, res) => {
-    const userId = req.session.userId;
+    const userId: string = req.session.userId;
 
     // get the users profile pic
-    const profilePic = await prisma.profilePic.findFirst({
+    const profileImage: ProfileImage = await prisma.profileImage.findFirst({
         where: {
             userId,
         },
     });
 
-    if (profilePic) {
-        await prisma.profilePic.update({
+    if (profileImage) {
+        await prisma.profileImage.update({
             where: {
                 userId,
             },
             data: {
-                enabled: !profilePic.enabled,
+                enabled: !profileImage.enabled,
             },
         });
 

@@ -1,4 +1,4 @@
-import { Banner, ProfilePic, ProfilePicRendered, Tweet, TwitterName, TwitterOriginalName } from '@prisma/client';
+import { Banner, ProfileImage, RenderedProfileImage, Tweet, TwitterName, TwitterOriginalName } from '@prisma/client';
 import prisma from '../ssr/prisma';
 
 export type PostgresTwitterInfo = {
@@ -76,8 +76,8 @@ export const updateOriginalTwitterNameDB = async (userId: string, name: string):
     });
 };
 
-export const getProfilePicEntry = async (userId: string): Promise<ProfilePic> => {
-    const profilePic = await prisma.profilePic?.findFirst({
+export const getProfilePicEntry = async (userId: string): Promise<ProfileImage> => {
+    const profilePic = await prisma.profileImage.findFirst({
         where: {
             userId: userId,
         },
@@ -86,8 +86,8 @@ export const getProfilePicEntry = async (userId: string): Promise<ProfilePic> =>
     return profilePic;
 };
 
-export const getProfilePicRendered = async (userId: string): Promise<ProfilePicRendered> => {
-    const profilePicRendered = await prisma.profilePicRendered?.findFirst({
+export const getProfilePicRendered = async (userId: string): Promise<RenderedProfileImage> => {
+    const profilePicRendered = await prisma.renderedProfileImage.findFirst({
         where: {
             userId: userId,
         },
@@ -97,7 +97,7 @@ export const getProfilePicRendered = async (userId: string): Promise<ProfilePicR
 };
 
 export const updateProfilePicRenderedDB = async (userId: string): Promise<void> => {
-    await prisma.profilePicRendered?.upsert({
+    await prisma.renderedProfileImage.upsert({
         where: {
             userId: userId,
         },

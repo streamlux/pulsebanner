@@ -1,13 +1,11 @@
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 import { discordLink } from '@app/util/constants';
 import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
-import { getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import prisma from '@app/util/ssr/prisma';
-import { createTwitterClient } from '@app/util/twitter/twitterHelpers';
 import { trackEvent } from '@app/util/umami/trackEvent';
 import { Button, Heading, useBoolean, useBreakpoint, HStack, Flex, Box, useDisclosure, Text, useToast, VStack, Link, Container, Center, Stack, Spacer } from '@chakra-ui/react';
-import { ProfilePic } from '@prisma/client';
+import { ProfileImage } from '@prisma/client';
 import axios from 'axios';
 import { GetServerSideProps } from 'next';
 import { getSession } from 'next-auth/react';
@@ -24,7 +22,7 @@ import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/
 import { useState } from 'react';
 
 interface Props {
-    profilePic: ProfilePic;
+    profilePic: ProfileImage;
 }
 
 const profileEndpoint = '/api/features/profilePic';
@@ -55,7 +53,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     })) as any;
 
     if (session) {
-        const profilePic = await prisma.profilePic.findUnique({
+        const profilePic = await prisma.profileImage.findUnique({
             where: {
                 userId: session.userId,
             },
