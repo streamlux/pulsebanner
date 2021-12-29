@@ -127,6 +127,7 @@ export default NextAuth({
                     userId: user.id,
                 },
             });
+
             session.user['role'] = user.role;
             session.userId = user.id;
             session.user['id'] = user.id;
@@ -167,6 +168,10 @@ export default NextAuth({
                         }
                     }
                 }
+                // we want to also store whether the user needs to fix authentication with twitter so we can handle on frontend
+                if (account.provider === 'twitter') {
+                    session.reconnect_twitter = account.reconnect_twitter;
+                }
             });
             return session;
         },
@@ -184,21 +189,24 @@ export default NextAuth({
             // we automatically upload the user's banner to s3 storage on first sign in
             if (message.isNewUser === true && message.account.provider === 'twitter') {
                 const twitterProvider = message.account;
-                getBanner(twitterProvider.oauth_token, twitterProvider.oauth_token_secret, twitterProvider.providerAccountId).then((bannerUrl) => {
-
+                getBanner(message.user.id, twitterProvider.oauth_token, twitterProvider.oauth_token_secret, twitterProvider.providerAccountId).then((bannerUrl) => {
                     if (bannerUrl === 'empty') {
-                        uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, 'empty').then(() => {
-                            console.log('Uploaded empty banner on new user signup.');
-                        }).catch((reason) => {
-                            sendError(reason, 'Error uploading empty banner to backup bucket on new user signup');
-                        });
+                        uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, 'empty')
+                            .then(() => {
+                                console.log('Uploaded empty banner on new user signup.');
+                            })
+                            .catch((reason) => {
+                                sendError(reason, 'Error uploading empty banner to backup bucket on new user signup');
+                            });
                     } else {
                         imageToBase64(bannerUrl).then((base64: string) => {
-                            uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, base64).then(() => {
-                                console.log('Uploaded Twitter banner on new user signup.');
-                            }).catch((reason) => {
-                                sendError(reason, 'Error uploading Twitter banner to backup bucket on new user signup');
-                            });
+                            uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, base64)
+                                .then(() => {
+                                    console.log('Uploaded Twitter banner on new user signup.');
+                                })
+                                .catch((reason) => {
+                                    sendError(reason, 'Error uploading Twitter banner to backup bucket on new user signup');
+                                });
                         });
                     }
                 });

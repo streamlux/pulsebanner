@@ -20,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const twitterInfo = await getTwitterInfo(userId);
 
     // get the current twitter name
-    const currentTwitterName = await getCurrentTwitterName(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    const currentTwitterName = await getCurrentTwitterName(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
 
     // get the twitter stream name specified in table
     const twitterNameSettings: TwitterName = await getTwitterName(userId);
@@ -33,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (twitterNameSettings && currentTwitterName !== '') {
         if (twitterNameSettings.streamName) {
             // post to twitter
-            const response = await updateTwitterName(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterNameSettings.streamName);
+            const response = await updateTwitterName(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterNameSettings.streamName);
 
             if (response === 200) {
                 await updateOriginalTwitterNameDB(userId, currentTwitterName);

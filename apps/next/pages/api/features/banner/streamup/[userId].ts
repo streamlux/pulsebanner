@@ -60,7 +60,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const streamThumbnailUrl: string = streamThumbnailUrlTemplate.replace('{width}', '440').replace('{height}', '248');
 
     // call twitter api to get imageUrl and convert to base64
-    const bannerUrl: string = await getBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
+    const bannerUrl: string = await getBanner(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
     const bucketName = env.IMAGE_BUCKET_NAME;
     // store the current banner in s3
     const dataToUpload: string = bannerUrl === 'empty' ? 'empty' : await imageToBase64(bannerUrl);
@@ -85,6 +85,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const base64Image: string = response.data;
 
     // post this base64 image to twitter
-    const bannerStatus: TwitterResponseCode = await updateBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, base64Image);
+    const bannerStatus: TwitterResponseCode = await updateBanner(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, base64Image);
     return bannerStatus === 200 ? res.status(200).send('Set banner to given template') : res.status(400).send('Unable to set banner');
 }
