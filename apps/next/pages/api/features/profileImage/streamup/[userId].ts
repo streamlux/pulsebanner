@@ -6,7 +6,7 @@ import NextCors from 'nextjs-cors';
 import { AxiosResponse } from 'axios';
 import { env } from 'process';
 import { TemplateRequestBody } from '../../banner/streamup/[userId]';
-import { Prisma } from '@prisma/client';
+import { Prisma, RenderedProfileImage } from '@prisma/client';
 import imageToBase64 from 'image-to-base64';
 import { uploadBase64 } from '@app/util/s3/upload';
 import { download } from '@app/util/s3/download';
@@ -17,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await NextCors(req, res, {
         // Options
         // methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-        methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+        methods: ['GET', 'POST'],
         origin: '*',
         optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
     });
@@ -33,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (userId) {
         const profilePicEntry = await getProfilePicEntry(userId);
-        const profilePicRendered = await getProfilePicRendered(userId); // compare to updatedAt time and only update if later
+        const profilePicRendered: RenderedProfileImage | null = await getProfilePicRendered(userId); // compare to updatedAt time and only update if later
         const twitterInfo = await getTwitterInfo(userId, true);
 
         if (profilePicEntry === null || twitterInfo === null) {
@@ -70,7 +70,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // if we do not have anything stored for the current profilePicRendered, do not have a cachedImage, or have updated the settings recently, re-render
         if (profilePicRendered === null || cachedImage === undefined || Date.parse(profilePicRendered.lastRendered.toString()) < Date.parse(profilePicEntry.updatedAt.toString())) {
-            console.log('generating new profile picture as cache is not valid');
+
+            if (profilePicRendered === null || cachedImage === undefined) {
+                console.log('Cache miss: Rendering profile image for the first time.');
+            } else {
+                console.log('Cache miss: Rendering profile picture cached image has been invalidated.');
+            }
+
             const response: AxiosResponse<string> = await remotionAxios.post('/getProfilePic', templateObj);
             const base64Image: string = response.data;
 
@@ -82,6 +88,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
 
             return profilePictureStatus === 200 ? res.status(200).send('Set profile picture to given template.') : res.status(400).send('Unable to set profile picture.');
+        } else {
+            console.log('Cache hit: not re-rendering profile image.');
         }
 
         // otherwise, update the profilePicture with the cachedImage

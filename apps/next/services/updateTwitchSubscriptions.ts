@@ -12,7 +12,7 @@ const featureSubscriptionTypes: Record<Features, string[]> = {
     banner: streamUpAndDown,
     tweet: streamUpAndDown,
     twitterName: streamUpAndDown,
-    profilePic: streamUpAndDown,
+    profileImage: streamUpAndDown,
 };
 
 /**

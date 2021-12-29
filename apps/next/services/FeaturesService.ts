@@ -1,7 +1,7 @@
 import prisma from '@app/util/ssr/prisma';
 import type { Prisma } from '@prisma/client';
-export type Features = keyof Pick<Prisma.UserInclude, 'banner' | 'tweet' | 'twitterName' | 'profilePic'>;
-const features: Features[] = ['banner', 'tweet', 'twitterName', 'profilePic'];
+export type Features = keyof Pick<Prisma.UserInclude, 'banner' | 'tweet' | 'twitterName' | 'profileImage'>;
+const features: Features[] = ['banner', 'tweet', 'twitterName', 'profileImage'];
 
 export class FeaturesService {
     /**
@@ -17,7 +17,7 @@ export class FeaturesService {
                 banner: true,
                 tweet: true,
                 twitterName: true,
-                profilePic: true,
+                profileImage: true
             },
             rejectOnNotFound: true,
         });

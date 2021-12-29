@@ -25,7 +25,7 @@ interface Props {
     profilePic: ProfileImage;
 }
 
-const profileEndpoint = '/api/features/profilePic';
+const profileEndpoint = '/api/features/profileImage';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ProfilePic';
 const defaultBackground: keyof typeof BackgroundTemplates = 'GradientBackground';
 

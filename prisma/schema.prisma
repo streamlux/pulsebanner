@@ -55,8 +55,8 @@ model User {
   tweet               Tweet?
   twitterName         TwitterName?
   twitterOriginalName TwitterOriginalName?
-  profilePic          ProfileImage?
-  ProfilePicRendered  RenderedProfileImage?
+  profileImage        ProfileImage?
+  renderedProfilePic  RenderedProfileImage?
   partner             Boolean               @default(false)
 
   @@map("users")

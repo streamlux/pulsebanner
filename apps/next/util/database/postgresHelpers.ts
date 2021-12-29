@@ -86,7 +86,12 @@ export const getProfilePicEntry = async (userId: string): Promise<ProfileImage> 
     return profilePic;
 };
 
-export const getProfilePicRendered = async (userId: string): Promise<RenderedProfileImage> => {
+/**
+ *
+ * @param userId
+ * @returns null if it doesn't exist
+ */
+export const getProfilePicRendered = async (userId: string): Promise<RenderedProfileImage | null> => {
     const profilePicRendered = await prisma.renderedProfileImage.findFirst({
         where: {
             userId: userId,
