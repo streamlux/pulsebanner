@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Promo sticky text shorter for mobile
 - Added umami event for edit name text
 - Refactor s3 endpoints into utils
+- Improved Twitter API error logging
 
 ## Fixed 
 - username streamdown logs
