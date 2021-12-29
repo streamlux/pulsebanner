@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.3.1] - 2021-12-29
+
 ## Changed
 - Promo sticky text shorter for mobile
 - Added umami event for edit name text
@@ -16,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Fixed 
 - username streamdown logs
 
-## [0.3.0]
+## [0.3.0] - 2021-12-20
 
 ### Added
 - Holiday decorations
