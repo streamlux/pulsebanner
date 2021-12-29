@@ -9,4 +9,3 @@ registerRoot(() => {
         </>
     );
 });
-// registerRoot(RemotionProfilePicture);

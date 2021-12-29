@@ -5,7 +5,6 @@ import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import prisma from '@app/util/ssr/prisma';
 import { nanoid } from 'nanoid';
 import { getBanner, getTwitterProfilePic } from '@app/util/twitter/twitterHelpers';
-import { localAxios } from '@app/util/axios';
 import { AccessToken, accessTokenIsExpired, refreshUserToken, StaticAuthProvider } from '@twurple/auth';
 import { sendMessage } from '@app/util/discord/sendMessage';
 import { sendError } from '@app/util/discord/sendError';
@@ -209,17 +208,17 @@ export default NextAuth({
 
                 // potentially add in the providerAccountId
                 getTwitterProfilePic(twitterProvider.oauth_token, twitterProvider.oauth_token_secret, twitterProvider.providerAccountId).then((profilePicUrl) => {
-                    const bucketName = env.PROFILE_PIC_BACKUP_BUCKET;
-
-                    // need to change this to not use this endpoint and call helper method
-                    localAxios
-                        .put(`/api/storage/upload/${message.user.id}?imageUrl=${profilePicUrl}&bucket=${bucketName}`)
-                        .then((resp) => {
-                            console.log('Uploaded Twitter profile picture on new user signup.');
-                        })
-                        .catch((reason) => {
-                            sendError(reason, 'Error uploading Twitter profile picture to backup bucket on new user signup');
-                        });
+                    console.log('the profile pic url: ', profilePicUrl); // this was returning null for non-existent user
+                    imageToBase64(profilePicUrl).then((base64: string) => {
+                        uploadBase64(env.PROFILE_PIC_BACKUP_BUCKET, message.user.id, base64)
+                            .then(() => {
+                                console.log('Uploading profile picture on new user signup.');
+                            })
+                            .catch((reason) => {
+                                sendError(reason, 'Error uplaoding Twitter profile picture to backup bucket on new user signup');
+                                console.log('Error uplaoding Twitter profile picture to backup bucket on new user signup');
+                            });
+                    });
                 });
             }
         },

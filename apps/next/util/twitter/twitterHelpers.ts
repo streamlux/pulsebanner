@@ -121,29 +121,52 @@ export async function updateTwitterName(oauth_token: string, oauth_token_secret:
     return 200;
 }
 
-// should return similar to getBanner
 export async function getTwitterProfilePic(oauth_token: string, oauth_token_secret: string, providerAccountId: string): Promise<string> {
     const client = createTwitterClient(oauth_token, oauth_token_secret);
 
     try {
-        // await client.accountsAndUsers.accountUpdateProfileImage();
+        const response = await client.accountsAndUsers.usersShow({ user_id: providerAccountId });
+        const profilePic = response.profile_image_url_https;
+        return profilePic;
     } catch (e) {
-        console.log('error getting twitter profile pic: ', e);
-        return 'failed';
+        console.log('error getting twitter profile pic, setting to empty: ', e);
+        return 'empty';
     }
-    return 'succeeded';
 }
 
-export async function updateProfilePic(oauth_token: string, oauth_token_secret: string, image: string): Promise<TwitterResponseCode> {
+export async function updateProfilePic(oauth_token: string, oauth_token_secret: string, profilePicBase64: string): Promise<TwitterResponseCode> {
     const client = createTwitterClient(oauth_token, oauth_token_secret);
 
-    try {
-        await client.accountsAndUsers.accountUpdateProfileImage({
-            image: image,
-        });
-    } catch (e) {
-        console.log('error updating twitter profile pic: ', e);
-        return 400;
+    // this will only be hit or used on streamdown.See if we even need this by changing to user? Not sure how to test this really
+    if (profilePicBase64 === 'empty') {
+        try {
+            await client.accountsAndUsers.accountUpdateProfileImage({
+                image: profilePicBase64,
+            });
+        } catch (e) {
+            console.log('Error updating empty profile image: ', e);
+        }
+    } else {
+        try {
+            await client.accountsAndUsers.accountUpdateProfileImage({
+                image: profilePicBase64,
+            });
+        } catch (e) {
+            if ('errors' in e) {
+                // Twitter API error
+                if (e.errors[0].code === 88)
+                    // rate limit exceeded
+                    console.log('Rate limit will reset on', new Date(e._headers.get('x-rate-limit-reset') * 1000));
+                // some other kind of error, e.g. read-only API trying to POST
+                else console.log('Other error');
+            } else {
+                // non-API error, e.g. network problem or invalid JSON in response
+                console.log('Non api error');
+            }
+            console.log('failed to update profile picture');
+            return 400;
+        }
     }
+    console.log('success updating profile picture');
     return 200;
 }

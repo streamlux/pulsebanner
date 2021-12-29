@@ -64,25 +64,17 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         if (profilePic) {
             return {
                 props: {
-                    profilePic: {
-                        ...defaultProfilePicSettings,
-                    },
+                    profilePic,
                 },
             };
         }
-
+    } else {
         return {
             props: {
-                profilePic,
+                profilePic: {},
             },
         };
     }
-
-    return {
-        props: {
-            profilePic: {},
-        },
-    };
 };
 
 export default function Page({ profilePic }: Props) {

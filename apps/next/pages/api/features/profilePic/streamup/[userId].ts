@@ -1,5 +1,5 @@
-import { localAxios, remotionAxios } from '@app/util/axios';
-import { getProfilePicEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
+import { remotionAxios } from '@app/util/axios';
+import { getProfilePicEntry, getProfilePicRendered, getTwitterInfo, updateProfilePicRenderedDB } from '@app/util/database/postgresHelpers';
 import { getTwitterProfilePic, TwitterResponseCode, updateProfilePic } from '@app/util/twitter/twitterHelpers';
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
@@ -7,6 +7,9 @@ import { AxiosResponse } from 'axios';
 import { env } from 'process';
 import { TemplateRequestBody } from '../../banner/streamup/[userId]';
 import { Prisma } from '@prisma/client';
+import imageToBase64 from 'image-to-base64';
+import { uploadBase64 } from '@app/util/s3/upload';
+import { download } from '@app/util/s3/download';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
@@ -19,38 +22,71 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
     });
 
+    // logic for this
+    /**
+    when a user goes live, we check the timestamp of when they last edited their profile picture settings
+    if the timestamp is more recent than the timestamp of the generated profile picture (if one exists) then we need to regenerate their profile picture with the updated settings
+    else we can use the already generated profile picture (aka. cached)
+     */
+
     const userId: string = req.query.userId as string;
 
     if (userId) {
         const profilePicEntry = await getProfilePicEntry(userId);
+        const profilePicRendered = await getProfilePicRendered(userId); // compare to updatedAt time and only update if later
         const twitterInfo = await getTwitterInfo(userId, true);
 
         if (profilePicEntry === null || twitterInfo === null) {
             res.status(400).send('Unable to get profilePicEntry or twitterInfo for user on streamup');
         }
 
+        // profile pic bucket name
+        const profilePicBucketName: string = env.PROFILE_PIC_BUCKET_NAME;
+        const profilePicCacheBucketName: string = env.PROFILE_PIC_CACHE_BUCKET;
+
         // get the existing profile pic
         const profilePicUrl: string = await getTwitterProfilePic(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
 
-        // store the existing one in s3
-        const bucketName: string = env.PROFILE_PIC_BUCKET_NAME;
+        //upload profilePicUrl as base64 to s3 storage
+        const dataToUpload: string = profilePicUrl === 'empty' ? 'empty' : await imageToBase64(profilePicUrl);
+        try {
+            await uploadBase64(profilePicBucketName, userId, dataToUpload);
+        } catch (e) {
+            console.error('Error uploading original profile picture to S3.');
+            return res.status(500).send('Error uploading original banner to S3.');
+        }
 
-        await localAxios.put(`/api/storage/upload/${userId}?imageUrl=${profilePicUrl}&bucket=${bucketName}`);
-
-        const templateobj: TemplateRequestBody = {
+        const templateObj: TemplateRequestBody = {
             backgroundId: profilePicEntry.backgroundId ?? 'CSSBackground',
             foregroundId: profilePicEntry.foregroundId ?? 'ProfilePic',
             foregroundProps: { ...(profilePicEntry.foregroundProps as Prisma.JsonObject) } ?? {},
             backgroundProps: (profilePicEntry.backgroundProps as Prisma.JsonObject) ?? {},
         };
 
-        // make sure we can still hit this endpoint
-        const response: AxiosResponse<string> = await remotionAxios.post('/getProfilePic', templateobj);
-        // think this needs to be a url
-        const image: string = response.data;
+        // check here if we have previously rendered the profile picture. Update if they have saved more recent than what we have saved in the render time
 
-        // don't think we can update with base64, needs to be actual image
-        const profilePicStatus: TwitterResponseCode = await updateProfilePic(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, image);
-        return profilePicStatus === 200 ? res.status(200).send('Set profile pic to given template') : res.status(400).send('Unable to set profile pic');
+        // if we do not have the image in s3, we also need to remove it
+        const cachedImage: string | undefined = await download(profilePicCacheBucketName, userId);
+
+        // if we do not have anything stored for the current profilePicRendered, do not have a cachedImage, or have updated the settings recently, re-render
+        if (profilePicRendered === null || cachedImage === undefined || Date.parse(profilePicRendered.lastRendered.toString()) < Date.parse(profilePicEntry.updatedAt.toString())) {
+            console.log('generating new profile picture as cache is not valid');
+            const response: AxiosResponse<string> = await remotionAxios.post('/getProfilePic', templateObj);
+            const base64Image: string = response.data;
+
+            const profilePictureStatus: TwitterResponseCode = await updateProfilePic(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, base64Image);
+            // update the last render time table and upload this image to s3
+            if (profilePictureStatus === 200) {
+                await updateProfilePicRenderedDB(userId);
+                await uploadBase64(profilePicCacheBucketName, userId, base64Image);
+            }
+
+            return profilePictureStatus === 200 ? res.status(200).send('Set profile picture to given template.') : res.status(400).send('Unable to set profile picture.');
+        }
+
+        // otherwise, update the profilePicture with the cachedImage
+        console.log('Image is valid, updating from cache');
+        const profilePictureStatus: TwitterResponseCode = await updateProfilePic(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, cachedImage);
+        return profilePictureStatus === 200 ? res.status(200).send('Set profile picture to given template.') : res.status(400).send('Unable to set profile picture.');
     }
 }

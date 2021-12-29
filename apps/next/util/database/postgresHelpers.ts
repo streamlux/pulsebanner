@@ -1,4 +1,4 @@
-import { Banner, ProfilePic, Tweet, TwitterName, TwitterOriginalName } from '@prisma/client';
+import { Banner, ProfilePic, ProfilePicRendered, Tweet, TwitterName, TwitterOriginalName } from '@prisma/client';
 import prisma from '../ssr/prisma';
 
 export type PostgresTwitterInfo = {
@@ -84,4 +84,29 @@ export const getProfilePicEntry = async (userId: string): Promise<ProfilePic> =>
     });
 
     return profilePic;
+};
+
+export const getProfilePicRendered = async (userId: string): Promise<ProfilePicRendered> => {
+    const profilePicRendered = await prisma.profilePicRendered?.findFirst({
+        where: {
+            userId: userId,
+        },
+    });
+
+    return profilePicRendered;
+};
+
+export const updateProfilePicRenderedDB = async (userId: string): Promise<void> => {
+    await prisma.profilePicRendered?.upsert({
+        where: {
+            userId: userId,
+        },
+        create: {
+            userId: userId,
+            lastRendered: new Date(),
+        },
+        update: {
+            lastRendered: new Date(),
+        },
+    });
 };

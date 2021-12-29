@@ -1,8 +1,9 @@
-import { localAxios } from "@app/util/axios";
-import { getProfilePicEntry, getTwitterInfo } from "@app/util/database/postgresHelpers";
-import { TwitterResponseCode, updateProfilePic } from "@app/util/twitter/twitterHelpers";
-import { NextApiRequest, NextApiResponse } from "next";
-import NextCors from "nextjs-cors";
+import { getProfilePicEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
+import { download } from '@app/util/s3/download';
+import { TwitterResponseCode, updateProfilePic } from '@app/util/twitter/twitterHelpers';
+import { NextApiRequest, NextApiResponse } from 'next';
+import NextCors from 'nextjs-cors';
+import { env } from 'process';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
@@ -17,6 +18,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const userId: string = req.query.userId as string;
 
+    const bucketName: string = env.PROFILE_PIC_BUCKET_NAME;
+
     if (userId) {
         const profilePicInfo = await getProfilePicEntry(userId);
 
@@ -27,14 +30,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         // get the original image from the
-        const response = await localAxios.get(`/api/storage/download/${userId}`);
-        if (response.status === 200) {
-            console.log('Found user in db and got image');
-        } else {
-            res.status(404).send('Unable to find user in database for profile pic on streamdown');
+        // const response = await localAxios.get(`/api/storage/download/${userId}`);
+        const base64Image: string | undefined = await download(bucketName, userId);
+
+        if (base64Image === undefined) {
+            console.log('Unable to find user in database for profile picture on streamdown. This can be caused by the user enabling the feature while currently live.');
+            res.status(404).send('Unable to find user in database for profile pic on streamdown. This can be caused by the user enabling the feature while currently live.');
         }
 
-        const profilePicStatus: TwitterResponseCode = await updateProfilePic(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, response.data);
+        const profilePicStatus: TwitterResponseCode = await updateProfilePic(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, base64Image);
         return profilePicStatus === 200 ? res.status(200).send('Set profile pic back to original image') : res.status(400).send('Unable to set profile pic to original image');
     }
 }

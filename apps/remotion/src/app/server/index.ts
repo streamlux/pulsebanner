@@ -9,9 +9,8 @@ import os from 'os';
 import path from 'path';
 import { handler } from './handler';
 import { helpText } from './help-text';
-import { getImageType, getMimeType } from './image-types';
+import { getMimeType } from './image-types';
 import { getImageHash } from './make-hash';
-import { sendFile } from './send-file';
 import { Browser } from 'puppeteer-core';
 
 let browser: Browser | undefined;
@@ -45,11 +44,6 @@ let webpackBundling = bundle(bundlePath, undefined, {
 app.use(express.json());
 
 const tmpDir = fs.promises.mkdtemp(path.join(os.tmpdir(), 'remotion-'));
-
-enum Params {
-    compositionname,
-    format,
-}
 
 webpackBundling.then(() => {
     console.log('Done bundling.');
