@@ -40,13 +40,13 @@ model Session {
 }
 
 model User {
-  id                  String               @id @default(cuid())
+  id                  String                @id @default(cuid())
   name                String?
-  email               String?              @unique
+  email               String?               @unique
   emailVerified       DateTime?
   image               String?
-  createdAt           DateTime             @default(now()) @map("created_at")
-  role                Role                 @default(user)
+  createdAt           DateTime              @default(now()) @map("created_at")
+  role                Role                  @default(user)
   accounts            Account[]
   sessions            Session[]
   customer            Customer?
@@ -55,9 +55,9 @@ model User {
   tweet               Tweet?
   twitterName         TwitterName?
   twitterOriginalName TwitterOriginalName?
-  profilePic          ProfilePic?
-  ProfilePicRendered  ProfilePicRendered?
-  partner             Boolean              @default(false)
+  profilePic          ProfileImage?
+  ProfilePicRendered  RenderedProfileImage?
+  partner             Boolean               @default(false)
 
   @@map("users")
 }
@@ -133,8 +133,8 @@ model TwitterOriginalName {
   @@map("original_name")
 }
 
-// profilePic feature for users
-model ProfilePic {
+/// Twitter profile image feature
+model ProfileImage {
   id              String   @id @default(cuid())
   userId          String   @unique(map: "twitter_profile_picture") @map("user_id")
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -144,14 +144,18 @@ model ProfilePic {
   backgroundId    String
   backgroundProps Json
   foregroundProps Json
+
+  @@map("profile_img")
 }
 
 // track when the last time the profile pic was rendered
-model ProfilePicRendered {
+model RenderedProfileImage {
   id           String   @id @default(cuid())
-  userId       String   @unique(map: "profile_picture_rendered") @map("user_id")
+  userId       String   @unique @map("user_id")
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   lastRendered DateTime @default(now()) @map("last_rendered")
+
+  @@map("rendered_profile_img")
 }
 
 // Stripe models
