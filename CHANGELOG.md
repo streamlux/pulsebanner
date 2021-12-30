@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Fixed
+ - Bug with Twitter name not updating properly if they change their twitter name manually on Twitter
+
 ## [0.3.1] - 2021-12-29
 
 ## Changed
