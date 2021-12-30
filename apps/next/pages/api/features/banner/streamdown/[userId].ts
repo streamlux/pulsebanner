@@ -2,7 +2,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 import { TwitterResponseCode, updateBanner } from '@app/util/twitter/twitterHelpers';
 import { getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
-import { localAxios } from '@app/util/axios';
+import { env } from 'process';
+import { download } from '@app/util/s3/download';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
@@ -25,16 +26,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).send('Could not find banner entry or token info for user');
     }
 
-    // query the original banner image from the db
-    const response = await localAxios.get(`/api/storage/download/${userId}`);
-    if (response.status === 200) {
-        console.log('Found user in db and got image');
+    // Download original image from S3.
+    const imageBase64: string = await download(env.IMAGE_BUCKET_NAME, userId);
+    if (imageBase64) {
+        console.log('Successfully downloaded original image from S3.');
     } else {
-        res.status(404).send('Unable to find user in database for streamdown');
+        console.error('Failed to download original image from S3.');
+        return res.status(404).send('Failed to get original image from S3.');
     }
 
     // add check for if it is 'empty' string, then we just set back to default (remove the current banner)
-
-    const bannerStatus: TwitterResponseCode = await updateBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, response.data);
-    return bannerStatus === 200 ? res.status(200).send('Set banner back to original image') : res.status(400).send('Unable to set banner to original image');
+    const bannerStatus: TwitterResponseCode = await updateBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, imageBase64);
+    if (bannerStatus === 200) {
+        return res.status(200).send('Successfully set banner back to original image.');
+    } else {
+        console.error('Failed to set banner back original image.');
+        return res.status(400).send('Failed to set banner to original image.');
+    }
 }
