@@ -1,5 +1,4 @@
 import { TwitterClient } from 'twitter-api-client';
-import { getAccountTwitterTokenStatus, updateAccountTwitterToken } from '../database/postgresHelpers';
 import { sendError } from '../discord/sendError';
 
 export type TwitterResponseCode = 200 | 400;
@@ -59,7 +58,13 @@ export async function updateBanner(userId: string, oauth_token: string, oauth_to
 }
 
 // pass in the twitch url here that we will get from somewhere the user uploads it (TBD)
-export async function tweetStreamStatusLive(userId: string, oauth_token: string, oauth_token_secret: string, streamLink?: string, tweetContent?: string): Promise<TwitterResponseCode> {
+export async function tweetStreamStatusLive(
+    userId: string,
+    oauth_token: string,
+    oauth_token_secret: string,
+    streamLink?: string,
+    tweetContent?: string
+): Promise<TwitterResponseCode> {
     const client = createTwitterClient(oauth_token, oauth_token_secret);
 
     try {
@@ -75,7 +80,13 @@ export async function tweetStreamStatusLive(userId: string, oauth_token: string,
     return 200;
 }
 
-export async function tweetStreamStatusOffline(userId: string, oauth_token: string, oauth_token_secret: string, streamLink?: string, tweetContent?: string): Promise<TwitterResponseCode> {
+export async function tweetStreamStatusOffline(
+    userId: string,
+    oauth_token: string,
+    oauth_token_secret: string,
+    streamLink?: string,
+    tweetContent?: string
+): Promise<TwitterResponseCode> {
     const client = createTwitterClient(oauth_token, oauth_token_secret);
 
     try {
@@ -118,23 +129,35 @@ export async function updateTwitterName(userId: string, oauth_token: string, oau
     return 200;
 }
 
+export async function validateAuthentication(oauth_token: string, oauth_token_secret: string): Promise<boolean> {
+    const client = createTwitterClient(oauth_token, oauth_token_secret);
+    // if we get a vaild response, we know they are verified and have not revoked the application. They could be still signed in at this point regardless
+    try {
+        await client.accountsAndUsers.accountVerifyCredentials();
+    } catch (e) {
+        // any failure (regardless or error code) make them re-authenticate
+        console.log('unsuccessful twitter authentication, requiring re-authentication.');
+        return false;
+    }
+    return true;
+}
+
 // would need to pass in the userId here
-async function handleTwitterApiError(userId: string, e: { errors?: { message: string, code: number }[], _headers?: any }, context?: string) {
+async function handleTwitterApiError(userId: string, e: { errors?: { message: string; code: number }[]; _headers?: any }, context?: string) {
     if ('errors' in e) {
         // Twitter API error
         if (e.errors[0].code === 88) {
-
             // rate limit exceeded
             console.error('Rate limit error, code 88. Rate limit will reset on', new Date(e._headers.get('x-rate-limit-reset') * 1000));
             sendError({ ...e.errors[0], name: 'TwitterRateLimitError' }, context);
         } else if (e.errors[0].code === 89) {
             // Invalid or expired token error.
             // check the db to see if they currently have an invalid token stored. Do not write if they do
-            const tokenInvalid = await getAccountTwitterTokenStatus(userId);
-            // only update if it is not stored (i.e. false)
-            if (tokenInvalid === false) {
-                await updateAccountTwitterToken(userId, true);
-            }
+            // const tokenInvalid = await getAccountTwitterTokenStatus(userId);
+            // // only update if it is not stored (i.e. false)
+            // if (tokenInvalid === false) {
+            //     await updateAccountTwitterToken(userId, true);
+            // }
 
             sendError({ ...e.errors[0], name: 'TwitterAPIInvalidTokenError' }, 'Invalid or expired token error. Context: ' + context);
         }

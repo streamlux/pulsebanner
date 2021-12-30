@@ -4,13 +4,14 @@ import TwitterProvider from 'next-auth/providers/twitter';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import prisma from '@app/util/ssr/prisma';
 import { nanoid } from 'nanoid';
-import { getBanner } from '@app/util/twitter/twitterHelpers';
+import { getBanner, validateAuthentication } from '@app/util/twitter/twitterHelpers';
 import { AccessToken, accessTokenIsExpired, refreshUserToken, StaticAuthProvider } from '@twurple/auth';
 import { sendMessage } from '@app/util/discord/sendMessage';
 import { sendError } from '@app/util/discord/sendError';
 import { env } from 'process';
 import { uploadBase64 } from '@app/util/s3/upload';
 import imageToBase64 from 'image-to-base64';
+import { addTwitterReauth, existingTwitterAuthIssue } from '@app/util/database/postgresHelpers';
 
 // File contains options and hooks for next-auth, the authentication package
 // we are using to handle signup, signin, etc.
@@ -169,9 +170,20 @@ export default NextAuth({
                     }
                 }
                 // we want to also store whether the user needs to fix authentication with twitter so we can handle on frontend
-                if (account.provider === 'twitter') {
-                    session.reconnect_twitter = account.reconnect_twitter;
-                }
+                // if (account.provider === 'twitter') {
+                //     // NOTE: We need to sign them out of the app, then delete their account information. Then, we have them re-authenticate with twitter
+                //     const validToken = await validateAuthentication(account.oauth_token, account.oauth_token_secret);
+                //     console.log('valid token: ', validToken);
+                // if they do not have a valid token, we need to put it in the database if not already there
+                //     if (!validToken) {
+                //         // if we already have them as invalid, do not perform write operation
+                //         const registeredInvalid = await existingTwitterAuthIssue(account.userId);
+                //         if (!registeredInvalid) {
+                //             await addTwitterReauth(user.id, user.email);
+                //             console.log('successfully stored user with twitter authentication issues');
+                //         }
+                //     }
+                // }
             });
             return session;
         },

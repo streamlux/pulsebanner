@@ -77,33 +77,30 @@ export const updateOriginalTwitterNameDB = async (userId: string, name: string):
     });
 };
 
-export const getAccountTwitterTokenStatus = async (userId: string): Promise<boolean> => {
-    const response = await prisma.account?.findFirst({
+export const existingTwitterAuthIssue = async (userId: string): Promise<boolean> => {
+    const response = await prisma.reauthenticateUsers.findFirst({
         where: {
             userId: userId,
-            provider: 'twitter',
-        },
-        select: {
-            reconnect_twitter: true,
         },
     });
 
-    if (response !== null && response.reconnect_twitter === true) {
-        return true;
+    if (response === null) {
+        return false;
     }
-    return false;
+    return true;
 };
 
-// we have to make sure to delete the old twitter info from the db
-export const updateAccountTwitterToken = async (userId: string, tokenStatus: boolean): Promise<void> => {
-    // this is a hacky way to not have to fetch the id. Since userId is not unique (also stores twitch), we must use updatemany and just get twitter (should only be one)
-    await prisma.account?.updateMany({
+export const addTwitterReauth = async (userId: string, email?: string): Promise<void> => {
+    await prisma.reauthenticateUsers?.upsert({
         where: {
             userId: userId,
-            provider: 'twitter',
         },
-        data: {
-            reconnect_twitter: tokenStatus,
+        create: {
+            userId: userId,
+            email: email,
+        },
+        update: {
+            email: email,
         },
     });
 };

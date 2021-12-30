@@ -8,7 +8,7 @@ generator client {
 }
 
 model Account {
-  id                 String   @id @default(cuid())
+  id                 String  @id @default(cuid())
   userId             String
   type               String
   provider           String
@@ -22,7 +22,6 @@ model Account {
   session_state      String?
   oauth_token_secret String?
   oauth_token        String?
-  reconnect_twitter  Boolean?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -31,12 +30,11 @@ model Account {
 }
 
 model Session {
-  id                String   @id @default(cuid())
-  sessionToken      String   @unique
-  userId            String
-  expires           DateTime
-  reconnect_twitter Boolean?
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
 }
@@ -57,9 +55,18 @@ model User {
   tweet               Tweet?
   twitterName         TwitterName?
   twitterOriginalName TwitterOriginalName?
+  ReauthenticateUsers ReauthenticateUsers?
   partner             Boolean              @default(false)
 
   @@map("users")
+}
+
+// we do not need to store the 'status'. We will delete them from this table once they have authenticated properly
+model ReauthenticateUsers {
+  id     String @id @default(cuid())
+  userId String @unique(map: "reauthenticated_user_id_unique") @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email  String?
 }
 
 enum Role {

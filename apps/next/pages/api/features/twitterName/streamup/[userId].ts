@@ -48,7 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (twitterNameSettings && currentTwitterName !== '') {
         if (updatedTwitterLiveName !== undefined) {
             // post to twitter
-            const response = await updateTwitterName(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, updatedTwitterLiveName);
+            const response = await updateTwitterName(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, updatedTwitterLiveName);
 
             if (response === 200) {
                 await updateOriginalTwitterNameDB(userId, currentTwitterName);
