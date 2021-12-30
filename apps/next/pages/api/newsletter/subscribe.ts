@@ -14,6 +14,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
     });
 
+    console.log('request body: ', req.body);
+
     // communicate with revue
     try {
         const response = await axios.post(
@@ -23,13 +25,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 double_opt_in: false,
             },
             {
-                headers: { Authorization: `Token ${env.REVUE_API_KEY}` },
+                headers: { Authorization: `Bearer ${env.REVUE_API_KEY}` },
             }
-            );
-            res.status(response.status).send(response.status !== 200 ? 'Failure' : 'Success');
+        );
+        return res.status(response.status).send(response.status !== 200 ? 'Failure' : 'Success');
     } catch (e) {
-        console.log('err: ', e);
-        res.status(400);
+        console.log('issue signing user up for newsletter. Email already in use.');
+        return res.status(400);
     }
-
 }

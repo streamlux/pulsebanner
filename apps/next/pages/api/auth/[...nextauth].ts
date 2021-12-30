@@ -201,7 +201,6 @@ export default NextAuth({
                     localAxios
                         .post('/api/newsletter/subscribe', { email: message.user.email })
                         .then((resp) => {
-                            console.log('response here: ', resp);
                             console.log(`Added user email ${message.user.email} to newsletter`);
                         })
                         .catch((reason) => {
