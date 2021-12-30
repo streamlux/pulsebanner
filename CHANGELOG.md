@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## Fixed
+- Return on error for banner streamdown
+
 ## [0.3.1] - 2021-12-29
 
 ## Changed
