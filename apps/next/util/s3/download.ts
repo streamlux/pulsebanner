@@ -11,7 +11,7 @@ export async function download(bucket: string, key: string): Promise<string | un
         const result: PromiseResult<S3.GetObjectOutput, AWSError> = await s3.getObject({ Bucket: bucket, Key: key }).promise();
         return result.Body.toString();
     } catch (e) {
-        console.error('Failed to get object from S3. ', e.message);
+        console.error('Failed to get object from S3. ', e);
         return undefined;
     }
 }
