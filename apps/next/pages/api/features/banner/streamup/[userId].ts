@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
-import { TwitterResponseCode, updateBanner, getBanner } from '@app/util/twitter/twitterHelpers';
-import { getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
+import { TwitterResponseCode, updateBanner, getBanner, validateAuthentication } from '@app/util/twitter/twitterHelpers';
+import { flipFeatureEnabled, getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { remotionAxios, twitchAxios } from '@app/util/axios';
 import { Prisma } from '@prisma/client';
 import { getAccountsById } from '@app/util/getAccountsById';
@@ -31,11 +31,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const userId: string = req.query.userId as string;
 
-
     const accounts = await getAccountsById(userId);
     const twitchUserId = accounts['twitch'].providerAccountId;
 
     const twitterInfo = await getTwitterInfo(userId, true);
+
+    // if they are not authenticated with twitter, return 401 and turn off the feature
+    const validatedTwitter = await validateAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    if (!validatedTwitter) {
+        await flipFeatureEnabled(userId, 'banner');
+        console.log('Unauthenticated Twitter. Disabling feature banner and requiring re-auth.');
+        return res.status(401).send('Unauthenticated Twitter. Disabling feature and requiring re-auth.');
+    }
 
     // get the banner info saved in Banner table
     const bannerEntry = await getBannerEntry(userId);

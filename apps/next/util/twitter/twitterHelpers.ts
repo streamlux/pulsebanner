@@ -159,14 +159,14 @@ async function handleTwitterApiError(userId: string, e: { errors?: { message: st
             //     await updateAccountTwitterToken(userId, true);
             // }
 
-            sendError({ ...e.errors[0], name: 'TwitterAPIInvalidTokenError' }, 'Invalid or expired token error. Context: ' + context);
+            sendError({ ...e.errors[0], name: 'TwitterAPIInvalidTokenError' }, `Invalid or expired token error. userId: ${userId}\t Context: ${context}`);
         }
         // some other kind of error, e.g. read-only API trying to POST
         else {
-            sendError(e as any, 'Other Twitter API error occured. Context: ' + context);
+            sendError(e as any, `Other Twitter API error occured. userId: ${userId}\t Context: ${context}`);
         }
     } else {
         // non-API error, e.g. network problem or invalid JSON in response
-        sendError(e as any, 'Non Twitter API error occured. Context: ' + context);
+        sendError(e as any, `Non Twitter API error occured. userId: ${userId}\t Context: ${context}`);
     }
 }

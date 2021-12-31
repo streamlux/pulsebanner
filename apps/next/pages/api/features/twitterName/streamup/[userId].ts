@@ -1,6 +1,6 @@
 import { productPlan } from '@app/util/database/paymentHelpers';
-import { getTwitterInfo, getTwitterName, updateOriginalTwitterNameDB } from '@app/util/database/postgresHelpers';
-import { getCurrentTwitterName, updateTwitterName } from '@app/util/twitter/twitterHelpers';
+import { flipFeatureEnabled, getTwitterInfo, getTwitterName, updateOriginalTwitterNameDB } from '@app/util/database/postgresHelpers';
+import { getCurrentTwitterName, updateTwitterName, validateAuthentication } from '@app/util/twitter/twitterHelpers';
 import { TwitterName } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
@@ -19,6 +19,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const userId: string = req.query.userId as string;
 
     const twitterInfo = await getTwitterInfo(userId);
+
+    // if they are not authenticated with twitter, return 401 and turn off the feature
+    const validatedTwitter = await validateAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    if (!validatedTwitter) {
+        await flipFeatureEnabled(userId, 'name');
+        console.log('Unauthenticated Twitter. Disabling feature name and requiring re-auth.');
+        return res.status(401).send('Unauthenticated Twitter. Disabling feature and requiring re-auth.');
+    }
 
     // get the current twitter name
     const currentTwitterName = await getCurrentTwitterName(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret);

@@ -1,4 +1,5 @@
-import { Banner, Tweet, TwitterName, TwitterOriginalName } from '@prisma/client';
+import { updateTwitchSubscriptions } from '@app/services/updateTwitchSubscriptions';
+import { Account, Banner, Tweet, TwitterName, TwitterOriginalName } from '@prisma/client';
 import prisma from '../ssr/prisma';
 
 export type PostgresTwitterInfo = {
@@ -103,4 +104,78 @@ export const addTwitterReauth = async (userId: string, email?: string): Promise<
             email: email,
         },
     });
+};
+
+export const removeTwitterReauth = async (userId: string): Promise<void> => {
+    try {
+        await prisma.reauthenticateUsers?.delete({
+            where: {
+                userId: userId,
+            },
+        });
+    } catch (e) {
+        // catch DNE error, can be expected if everything is fine for the user
+    }
+};
+
+export const getAccountInfo = async (userId: string): Promise<Partial<Account>> => {
+    const response = await prisma.account.findFirst({
+        where: {
+            userId: userId,
+            provider: 'twitter',
+        },
+        select: {
+            oauth_token: true,
+            oauth_token_secret: true,
+        },
+    });
+    return response;
+};
+
+export const flipFeatureEnabled = async (userId: string, feature: string): Promise<void> => {
+    if (feature === 'banner') {
+        const banner = await prisma.banner.findFirst({
+            where: {
+                userId,
+            },
+        });
+
+        if (banner) {
+            await prisma.banner.update({
+                where: {
+                    userId,
+                },
+                data: {
+                    enabled: !banner.enabled,
+                },
+            });
+
+            // Update twitch subscriptions since we might
+            // need to delete subscriptions if they disabled the banner
+            // or create subscriptions if they enabled the banner
+            await updateTwitchSubscriptions(userId);
+        }
+    } else if (feature === 'name') {
+        const twitterName = await prisma.twitterName.findFirst({
+            where: {
+                userId,
+            },
+        });
+
+        if (twitterName) {
+            await prisma.twitterName.update({
+                where: {
+                    userId,
+                },
+                data: {
+                    enabled: !twitterName.enabled,
+                },
+            });
+
+            // Update twitch subscriptions since we might
+            // need to delete subscriptions if they disabled the banner
+            // or create subscriptions if they enabled the banner
+            await updateTwitchSubscriptions(userId);
+        }
+    }
 };

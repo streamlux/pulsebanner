@@ -15,13 +15,13 @@ handler.post(async (req, res) => {
             backgroundId: req.body.backgroundId,
             foregroundId: req.body.foregroundId,
             backgroundProps: req.body.backgroundProps,
-            foregroundProps: req.body.foregroundProps
+            foregroundProps: req.body.foregroundProps,
         },
         update: {
             backgroundId: req.body.backgroundId,
             foregroundId: req.body.foregroundId,
             backgroundProps: req.body.backgroundProps,
-            foregroundProps: req.body.foregroundProps
+            foregroundProps: req.body.foregroundProps,
         },
     });
 
@@ -39,7 +39,7 @@ handler.get(async (req, res) => {
             backgroundId: true,
             backgroundProps: true,
             foregroundId: true,
-            foregroundProps: true
+            foregroundProps: true,
         },
     });
 
@@ -60,14 +60,13 @@ handler.delete(async (req, res) => {
 // Toggle enabled/disabled
 // then update twitch subscriptions
 handler.put(async (req, res) => {
-
     const userId = req.session.userId;
 
     // get the users banner
     const banner = await prisma.banner.findFirst({
         where: {
             userId,
-        }
+        },
     });
 
     if (banner) {

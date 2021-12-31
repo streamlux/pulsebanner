@@ -47,6 +47,9 @@ import RemotionPreview from '@pulsebanner/remotion/preview';
 import { Composer } from '@pulsebanner/remotion/components';
 import { NextSeo } from 'next-seo';
 import NextLink from 'next/link';
+import { createTwitterClient } from '@app/util/twitter/twitterHelpers';
+import { addTwitterReauth, getTwitterInfo, removeTwitterReauth } from '@app/util/database/postgresHelpers';
+import { ReconnectTwitterModal } from '@app/modules/onboard/ReconnectTwitterModal';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
@@ -72,6 +75,7 @@ const defaultBannerSettings: BannerSettings = {
 
 interface Props {
     banner: Banner;
+    reAuthRequired?: boolean;
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -85,6 +89,29 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 userId: session.userId,
             },
         });
+
+        const twitterInfo = await getTwitterInfo(session.userId, true);
+
+        let client = undefined;
+
+        try {
+            client = createTwitterClient(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+            // if they are successfully able to pass this, we know they have proper tokens
+            await client.accountsAndUsers.accountVerifyCredentials();
+            // check if they are in the db and remove if they are
+            await removeTwitterReauth(session.userId);
+            // potentially send verification email that they have be re-authenticated
+        } catch (e) {
+            await addTwitterReauth(session.userId, session.user.email);
+            return {
+                props: {
+                    banner: {
+                        ...defaultBannerSettings,
+                    },
+                    reAuthRequired: true,
+                },
+            };
+        }
 
         if (banner) {
             if ((banner.foregroundProps as any).username === 'Username Here!') {
@@ -153,7 +180,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
 };
 
-export default function Page({ banner }: Props) {
+export default function Page({ banner, reAuthRequired }: Props) {
     const { data: sessionInfo } = useSession();
 
     const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
@@ -290,6 +317,7 @@ export default function Page({ banner }: Props) {
             />
             <DisableBannerModal isOpen={disableBannerIsOpen} onClose={disableBannerOnClose} />
             <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} />
+            {reAuthRequired ? <ReconnectTwitterModal callbackUrl="/banner" session={session} isOpen={isOpen} onClose={onClose} /> : <></>}
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
                 <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
                     <Box maxW="xl">

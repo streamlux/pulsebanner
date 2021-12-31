@@ -4,14 +4,14 @@ import TwitterProvider from 'next-auth/providers/twitter';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import prisma from '@app/util/ssr/prisma';
 import { nanoid } from 'nanoid';
-import { getBanner, validateAuthentication } from '@app/util/twitter/twitterHelpers';
+import { getBanner } from '@app/util/twitter/twitterHelpers';
 import { AccessToken, accessTokenIsExpired, refreshUserToken, StaticAuthProvider } from '@twurple/auth';
 import { sendMessage } from '@app/util/discord/sendMessage';
 import { sendError } from '@app/util/discord/sendError';
 import { env } from 'process';
 import { uploadBase64 } from '@app/util/s3/upload';
 import imageToBase64 from 'image-to-base64';
-import { addTwitterReauth, existingTwitterAuthIssue } from '@app/util/database/postgresHelpers';
+import { getAccountInfo } from '@app/util/database/postgresHelpers';
 
 // File contains options and hooks for next-auth, the authentication package
 // we are using to handle signup, signin, etc.
@@ -174,7 +174,7 @@ export default NextAuth({
                 //     // NOTE: We need to sign them out of the app, then delete their account information. Then, we have them re-authenticate with twitter
                 //     const validToken = await validateAuthentication(account.oauth_token, account.oauth_token_secret);
                 //     console.log('valid token: ', validToken);
-                // if they do not have a valid token, we need to put it in the database if not already there
+                //     // if they do not have a valid token, we need to put it in the database if not already there
                 //     if (!validToken) {
                 //         // if we already have them as invalid, do not perform write operation
                 //         const registeredInvalid = await existingTwitterAuthIssue(account.userId);
@@ -222,6 +222,33 @@ export default NextAuth({
                         });
                     }
                 });
+                // we need to update the account info if twitter oauth isn't matching
+            } else if (message.isNewUser === false && message.account.provider === 'twitter') {
+                getAccountInfo(message.user.id)
+                    .then((response) => {
+                        // if we are able to find it, we need to check if the oauth matches and update the account table if it doesn't
+                        if (response && (response?.oauth_token !== message.account.oauth_token || response?.oauth_token_secret !== message.account.oauth_token_secret)) {
+                            // hack...they should not have 2 twitter accounts under one userid
+                            prisma.account
+                                .updateMany({
+                                    where: {
+                                        userId: message.user.id,
+                                        provider: 'twitter',
+                                    },
+                                    data: {
+                                        oauth_token: message.account.oauth_token,
+                                        oauth_token_secret: message.account.oauth_token_secret,
+                                    },
+                                })
+                                .then((response) => {
+                                    console.log('Successfully updated oauth info for application');
+                                })
+                                .catch((err) => {
+                                    console.log('error updating oauth info for account');
+                                });
+                        }
+                    })
+                    .catch();
             }
         },
     },

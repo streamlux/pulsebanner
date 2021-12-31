@@ -42,16 +42,18 @@ import FakeTweet from 'fake-tweet';
 import 'fake-tweet/build/index.css';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
 import { createTwitterClient } from '@app/util/twitter/twitterHelpers';
-import { getTwitterInfo } from '@app/util/database/postgresHelpers';
+import { addTwitterReauth, getTwitterInfo, removeTwitterReauth } from '@app/util/database/postgresHelpers';
 import { format } from 'date-fns';
 import { NextSeo } from 'next-seo';
 const nameEndpoint = '/api/features/twitterName';
 const maxNameLength = 50;
 import NextLink from 'next/link';
+import { ReconnectTwitterModal } from '@app/modules/onboard/ReconnectTwitterModal';
 
 interface Props {
     twitterName: TwitterName;
     twitterProfile: any;
+    reAuthRequired?: boolean;
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -60,28 +62,40 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     })) as any;
 
     if (session) {
-        console.log('we have a session');
         const twitterName = await prisma.twitterName.findUnique({
             where: {
                 userId: session.userId,
             },
         });
-        console.log('twtier Name : ', twitterName);
 
         const twitterInfo = await getTwitterInfo(session.userId, true);
-        console.log('twtier: ', twitterInfo);
-        const client = createTwitterClient(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
 
-        const response = await client.accountsAndUsers.accountVerifyCredentials();
-        console.log('response: ', response); // not getting here
+        let client = undefined;
+        // first try and update the db table if they are not authed properly
+        // const authIssueExist = await existingTwitterAuthIssue(session.userId);
+        try {
+            client = createTwitterClient(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+            // if they are successfully able to pass this, we know they have proper tokens
+            await client.accountsAndUsers.accountVerifyCredentials();
+            // check if they are in the db and remove if they are
+            await removeTwitterReauth(session.userId);
+            // potentially send verification email that they have be re-authenticated
+        } catch (e) {
+            await addTwitterReauth(session.userId, session.user.email);
+            return {
+                props: {
+                    twitterName: {},
+                    twitterProfile: {},
+                    reAuthRequired: true,
+                },
+            };
+        }
 
         const twitterProfile = (
             await client.accountsAndUsers.usersLookup({
                 user_id: twitterInfo.providerAccountId,
             })
         )?.[0];
-
-        console.log('twitterProfile: ', twitterProfile);
 
         if (twitterName) {
             return {
@@ -119,8 +133,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 // NOTE: We should potentially allow them to change what it is reverted back to. Would make it easier to handle in the UI and passing it around
 
-export default function Page({ twitterName, twitterProfile }: Props) {
-    console.log('heeere');
+export default function Page({ twitterName, twitterProfile, reAuthRequired }: Props) {
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('/name');
 
     const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
@@ -272,6 +285,7 @@ export default function Page({ twitterName, twitterProfile }: Props) {
             />
             <PaymentModal isOpen={pricingIsOpen} onClose={pricingClose} />
             <ConnectTwitchModal callbackUrl="/name" session={session} isOpen={isOpen} onClose={onClose} />
+            {reAuthRequired ? <ReconnectTwitterModal callbackUrl="/name" session={session} isOpen={isOpen} onClose={onClose} /> : <></>}
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
                 <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
                     <Box maxW="xl">

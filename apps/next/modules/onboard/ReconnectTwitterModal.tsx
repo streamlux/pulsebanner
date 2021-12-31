@@ -2,7 +2,7 @@
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, VStack, Button, Center, Text, Link, Flex, Spacer } from '@chakra-ui/react';
 import { Account, Session } from '@prisma/client';
 import { signIn } from 'next-auth/react';
-import { FaTwitter, FaCheck, FaTwitch } from 'react-icons/fa';
+import { FaTwitter } from 'react-icons/fa';
 import NextLink from 'next/link';
 
 interface ConnectTwitchModalProps {
@@ -12,14 +12,14 @@ interface ConnectTwitchModalProps {
     callbackUrl?: string;
 }
 
-export const ReconnectTwitterModal: React.FC<ConnectTwitchModalProps> = ({ session, isOpen, onClose, callbackUrl = '/banner' }) => {
+export const ReconnectTwitterModal: React.FC<ConnectTwitchModalProps> = ({ session, isOpen, onClose, callbackUrl = '/3,443,652' }) => {
     return (
-        <Modal onClose={onClose} size={'xl'} isOpen={isOpen}>
+        <Modal onClose={onClose} size={'xl'} isOpen={true}>
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>
-                    <Center>Almost there!</Center>
-                    <Center>Connect to all platforms to continue.</Center>
+                    <Center>Oops! Reconnect Twitter</Center>
+                    <Center>Connect to Twitter to use PulseBanner!</Center>
                 </ModalHeader>
                 <ModalCloseButton />
                 <ModalCloseButton />
@@ -28,33 +28,18 @@ export const ReconnectTwitterModal: React.FC<ConnectTwitchModalProps> = ({ sessi
                         <VStack>
                             <Button
                                 onClick={
-                                    session?.accounts?.twitter
-                                        ? undefined
-                                        : () =>
-                                              signIn('twitter', {
-                                                  callbackUrl: `${callbackUrl}?modal=true`,
-                                              })
+
+                                    () => {
+                                        signIn('twitter', {
+                                            callbackUrl: `${callbackUrl}`,
+                                        });
+                                    }
                                 }
                                 colorScheme="twitter"
                                 leftIcon={<FaTwitter />}
-                                rightIcon={session?.accounts?.twitter ? <FaCheck /> : undefined}
                             >
-                                Connect to Twitter
+                                Reconnect to Twitter
                             </Button>
-                            {session && (
-                                <Button
-                                    onClick={() =>
-                                        signIn('twitch', {
-                                            callbackUrl,
-                                        })
-                                    }
-                                    colorScheme="twitch"
-                                    leftIcon={<FaTwitch />}
-                                    rightIcon={session?.accounts?.twitch ? <FaCheck /> : undefined}
-                                >
-                                    Connect to Twitch
-                                </Button>
-                            )}
                         </VStack>
                         <Center mt="4">
                             <Text fontSize="sm">
