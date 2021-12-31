@@ -60,20 +60,28 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     })) as any;
 
     if (session) {
+        console.log('we have a session');
         const twitterName = await prisma.twitterName.findUnique({
             where: {
                 userId: session.userId,
             },
         });
+        console.log('twtier Name : ', twitterName);
 
         const twitterInfo = await getTwitterInfo(session.userId, true);
+        console.log('twtier: ', twitterInfo);
         const client = createTwitterClient(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+
+        const response = await client.accountsAndUsers.accountVerifyCredentials();
+        console.log('response: ', response); // not getting here
 
         const twitterProfile = (
             await client.accountsAndUsers.usersLookup({
                 user_id: twitterInfo.providerAccountId,
             })
         )?.[0];
+
+        console.log('twitterProfile: ', twitterProfile);
 
         if (twitterName) {
             return {
@@ -112,6 +120,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 // NOTE: We should potentially allow them to change what it is reverted back to. Would make it easier to handle in the UI and passing it around
 
 export default function Page({ twitterName, twitterProfile }: Props) {
+    console.log('heeere');
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('/name');
 
     const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
