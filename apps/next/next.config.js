@@ -24,7 +24,7 @@ const nextConfig = {
             {
                 source: '/',
                 destination: '/banner',
-                permanent: true,
+                permanent: false,
             },
         ]
     },

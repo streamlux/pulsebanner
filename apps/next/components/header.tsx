@@ -160,6 +160,7 @@ export default function Header() {
                                         Subscribe for updates
                                     </Button>
                                 )} */}
+
                                 <IconButton
                                     size={breakpoint === 'base' ? 'sm' : 'md'}
                                     aria-label="Toggle theme"
@@ -169,6 +170,7 @@ export default function Header() {
                                 >
                                     Toggle {colorMode === 'light' ? 'Dark' : 'Light'}
                                 </IconButton>
+
                                 {!session && (
                                     <Button
                                         as={Link}
@@ -209,27 +211,30 @@ export default function Header() {
                 </Center>
             </header>
             {breakpointValue.mobile && (
-                <Center id="nav-links" fontSize="lg" className={`nojs-show ${!session && loading ? styles.loading : styles.loaded}`}>
-                    <Wrap spacing={['8', '16', '20', '24']}>
-                        <WrapItem>
-                            <NextLink href="/banner" passHref>
-                                <Link>Banner</Link>
-                            </NextLink>
-                        </WrapItem>
-                        <WrapItem>
-                            <NextLink href="/name" passHref>
-                                <HStack>
-                                    <Link>Name Changer</Link>
-                                    <Tag colorScheme="green">NEW</Tag>
-                                </HStack>
-                            </NextLink>
-                        </WrapItem>
-                        <WrapItem>
-                            <NextLink href="/pricing" passHref>
-                                <Link>Pricing</Link>
-                            </NextLink>
-                        </WrapItem>
-                    </Wrap>
+                <Center>
+                    <Box background={colorMode === 'dark' ? 'gray.700' : 'blackAlpha.200'} maxW="container.lg" py="2" px="8" rounded="md">
+                        <Center id="nav-links" fontSize="md" className={`nojs-show ${!session && loading ? styles.loading : styles.loaded}`}>
+                            <Wrap spacing={['4', '16', '20', '24']}>
+                                <WrapItem>
+                                    <NextLink href="/banner" passHref>
+                                        <Link>Banner</Link>
+                                    </NextLink>
+                                </WrapItem>
+                                <WrapItem>
+                                    <NextLink href="/name" passHref>
+                                        <HStack>
+                                            <Link>Name Changer</Link>
+                                        </HStack>
+                                    </NextLink>
+                                </WrapItem>
+                                <WrapItem>
+                                    <NextLink href="/pricing" passHref>
+                                        <Link>Pricing</Link>
+                                    </NextLink>
+                                </WrapItem>
+                            </Wrap>
+                        </Center>
+                    </Box>
                 </Center>
             )}
             {holidayDecor && (
