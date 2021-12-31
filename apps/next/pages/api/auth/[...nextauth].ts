@@ -216,7 +216,6 @@ export default NextAuth({
                         })
                         .catch((reason) => {
                             console.log('Not able to sign user up for newsletter: ', reason);
-                            // sendError()
                         });
                 }
             }
