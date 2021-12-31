@@ -12,6 +12,7 @@ import { env } from 'process';
 import { uploadBase64 } from '@app/util/s3/upload';
 import imageToBase64 from 'image-to-base64';
 import { getAccountInfo } from '@app/util/database/postgresHelpers';
+import { localAxios } from '@app/util/axios';
 
 // File contains options and hooks for next-auth, the authentication package
 // we are using to handle signup, signin, etc.
@@ -222,6 +223,17 @@ export default NextAuth({
                         });
                     }
                 });
+                // subscribe user email to the newsletter
+                if (message.user.email && message.user.email.indexOf('@') > -1) {
+                    localAxios
+                        .post('/api/newsletter/subscribe', { email: message.user.email })
+                        .then((resp) => {
+                            console.log(`Added user email ${message.user.email} to newsletter`);
+                        })
+                        .catch((reason) => {
+                            console.log('Not able to sign user up for newsletter: ', reason);
+                        });
+                }
                 // we need to update the account info if twitter oauth isn't matching
             } else if (message.isNewUser === false && message.account.provider === 'twitter') {
                 getAccountInfo(message.user.id)
