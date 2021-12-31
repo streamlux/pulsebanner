@@ -14,8 +14,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
     });
 
-    console.log('request body: ', req.body);
-
     // communicate with revue
     try {
         const response = await axios.post(
