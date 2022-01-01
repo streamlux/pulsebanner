@@ -46,7 +46,7 @@ export default function App({ Component, pageProps }) {
                     {/* )} */}
                 </ChakraProvider>
             </SessionProvider>
-            {holidayDecor && <div suppressHydrationWarning={true}>{process.browser && <Snow snowflakeCount={100} radius={[0.5, 2]} speed={[1, 2]} wind={[-0.5, 0.5]} />}</div>}
+            {holidayDecor && <div suppressHydrationWarning={true}>{process.browser && <Snow snowflakeCount={70} radius={[0.5, 2]} speed={[1, 2]} wind={[-0.5, 0.5]} />}</div>}
         </>
     );
 }
