@@ -78,46 +78,6 @@ export const updateOriginalTwitterNameDB = async (userId: string, name: string):
     });
 };
 
-export const existingTwitterAuthIssue = async (userId: string): Promise<boolean> => {
-    const response = await prisma.reauthenticateUsers.findFirst({
-        where: {
-            userId: userId,
-        },
-    });
-
-    if (response === null) {
-        return false;
-    }
-    return true;
-};
-
-export const addTwitterReauth = async (userId: string, email?: string): Promise<void> => {
-    await prisma.reauthenticateUsers?.upsert({
-        where: {
-            userId: userId,
-        },
-        create: {
-            userId: userId,
-            email: email,
-        },
-        update: {
-            email: email,
-        },
-    });
-};
-
-export const removeTwitterReauth = async (userId: string): Promise<void> => {
-    try {
-        await prisma.reauthenticateUsers?.delete({
-            where: {
-                userId: userId,
-            },
-        });
-    } catch (e) {
-        // catch DNE error, can be expected if everything is fine for the user
-    }
-};
-
 export const getAccountInfo = async (userId: string): Promise<Partial<Account>> => {
     const response = await prisma.account.findFirst({
         where: {

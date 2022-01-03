@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
-import { TwitterResponseCode, updateBanner } from '@app/util/twitter/twitterHelpers';
-import { getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
+import { TwitterResponseCode, updateBanner, validateAuthentication } from '@app/util/twitter/twitterHelpers';
+import { flipFeatureEnabled, getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { env } from 'process';
 import { download } from '@app/util/s3/download';
 
@@ -21,6 +21,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const bannerEntry = await getBannerEntry(userId);
 
     const twitterInfo = await getTwitterInfo(userId);
+
+    const validatedTwitter = await validateAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    if (!validatedTwitter) {
+        await flipFeatureEnabled(userId, 'banner');
+        return res.status(401).send('Unauthenticated Twitter. Disabling feature banner and requiring re-auth.');
+    }
 
     if (bannerEntry === null || twitterInfo === null) {
         return res.status(400).send('Could not find banner entry or token info for user');

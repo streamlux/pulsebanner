@@ -40,8 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const validatedTwitter = await validateAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
     if (!validatedTwitter) {
         await flipFeatureEnabled(userId, 'banner');
-        console.log('Unauthenticated Twitter. Disabling feature banner and requiring re-auth.');
-        return res.status(401).send('Unauthenticated Twitter. Disabling feature and requiring re-auth.');
+        return res.status(401).send('Unauthenticated Twitter. Disabling feature banner and requiring re-auth.');
     }
 
     // get the banner info saved in Banner table

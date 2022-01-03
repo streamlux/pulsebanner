@@ -1,6 +1,7 @@
 import { updateTwitchSubscriptions } from '@app/services/updateTwitchSubscriptions';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import prisma from '@app/util/ssr/prisma';
+import { validateAuthentication } from '@app/util/twitter/twitterHelpers';
 
 const handler = createAuthApiHandler();
 
@@ -8,6 +9,32 @@ const handler = createAuthApiHandler();
 handler.post(async (req, res) => {
     const userId = req.session?.userId;
     const streamName = req.body.streamName ?? '';
+
+    if (!userId) {
+        return res.send(404);
+    }
+
+    // validate twitter here before saving
+    const userInfo = await prisma.account.findFirst({
+        where: {
+            userId: userId,
+            provider: 'twitter',
+        },
+        select: {
+            oauth_token: true,
+            oauth_token_secret: true,
+        },
+    });
+
+    if (userInfo && userInfo.oauth_token && userInfo.oauth_token_secret) {
+        const valid = await validateAuthentication(userInfo.oauth_token, userInfo.oauth_token_secret);
+        if (!valid) {
+            // send 401 if not authenticated
+            return res.send(401);
+        }
+    } else {
+        return res.send(404);
+    }
 
     if (userId) {
         // we should see if they have anything in their
@@ -60,6 +87,32 @@ handler.delete(async (req, res) => {
 
 handler.put(async (req, res) => {
     const userId = req.session.userId;
+
+    if (!userId) {
+        return res.send(404);
+    }
+
+    // validate twitter here before saving
+    const userInfo = await prisma.account.findFirst({
+        where: {
+            userId: userId,
+            provider: 'twitter',
+        },
+        select: {
+            oauth_token: true,
+            oauth_token_secret: true,
+        },
+    });
+
+    if (userInfo && userInfo.oauth_token && userInfo.oauth_token_secret) {
+        const valid = await validateAuthentication(userInfo.oauth_token, userInfo.oauth_token_secret);
+        if (!valid) {
+            // send 401 if not authenticated
+            return res.send(401);
+        }
+    } else {
+        return res.send(404);
+    }
 
     const twitterName = await prisma.twitterName.findFirst({
         where: {

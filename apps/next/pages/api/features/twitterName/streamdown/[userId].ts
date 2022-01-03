@@ -1,5 +1,5 @@
-import { getOriginalTwitterName, getTwitterInfo } from '@app/util/database/postgresHelpers';
-import { getCurrentTwitterName, updateTwitterName } from '@app/util/twitter/twitterHelpers';
+import { flipFeatureEnabled, getOriginalTwitterName, getTwitterInfo } from '@app/util/database/postgresHelpers';
+import { getCurrentTwitterName, updateTwitterName, validateAuthentication } from '@app/util/twitter/twitterHelpers';
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 
@@ -19,6 +19,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const userId: string = req.query.userId as string;
 
     const twitterInfo = await getTwitterInfo(userId);
+
+    const validatedTwitter = await validateAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    if (!validatedTwitter) {
+        await flipFeatureEnabled(userId, 'banner');
+        return res.status(401).send('Unauthenticated Twitter. Disabling feature banner and requiring re-auth.');
+    }
 
     if (twitterInfo) {
         // call our db to get the original twitter name

@@ -55,18 +55,9 @@ model User {
   tweet               Tweet?
   twitterName         TwitterName?
   twitterOriginalName TwitterOriginalName?
-  reauthenticateUsers ReauthenticateUsers?
   partner             Boolean              @default(false)
 
   @@map("users")
-}
-
-// we do not need to store the 'status'. We will delete them from this table once they have authenticated properly
-model ReauthenticateUsers {
-  id     String  @id @default(cuid())
-  userId String  @unique(map: "reauthenticated_user_id_unique") @map("user_id")
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  email  String?
 }
 
 enum Role {

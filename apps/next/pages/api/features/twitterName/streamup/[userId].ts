@@ -24,7 +24,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const validatedTwitter = await validateAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
     if (!validatedTwitter) {
         await flipFeatureEnabled(userId, 'name');
-        console.log('Unauthenticated Twitter. Disabling feature name and requiring re-auth.');
         return res.status(401).send('Unauthenticated Twitter. Disabling feature and requiring re-auth.');
     }
 

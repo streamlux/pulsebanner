@@ -12,7 +12,7 @@ interface ConnectTwitchModalProps {
     callbackUrl?: string;
 }
 
-export const ReconnectTwitterModal: React.FC<ConnectTwitchModalProps> = ({ session, isOpen, onClose, callbackUrl = '/3,443,652' }) => {
+export const ReconnectTwitterModal: React.FC<ConnectTwitchModalProps> = ({ session, isOpen, onClose, callbackUrl = '/banner' }) => {
     return (
         <Modal onClose={onClose} size={'xl'} isOpen={true}>
             <ModalOverlay />
@@ -27,14 +27,11 @@ export const ReconnectTwitterModal: React.FC<ConnectTwitchModalProps> = ({ sessi
                     <Flex h="full" direction="column" justifyContent="space-between">
                         <VStack>
                             <Button
-                                onClick={
-
-                                    () => {
-                                        signIn('twitter', {
-                                            callbackUrl: `${callbackUrl}`,
-                                        });
-                                    }
-                                }
+                                onClick={() => {
+                                    signIn('twitter', {
+                                        callbackUrl: `${callbackUrl}`,
+                                    });
+                                }}
                                 colorScheme="twitter"
                                 leftIcon={<FaTwitter />}
                             >

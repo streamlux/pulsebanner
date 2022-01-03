@@ -22,8 +22,7 @@ export async function getBanner(userId: string, oauth_token: string, oauth_token
         imageUrl = response.sizes['1500x500'].url;
         console.log('imageUrl: ', imageUrl);
     } catch (e) {
-        handleTwitterApiError(userId, e);
-        console.log('User does not have a banner setup. Will save empty for later: ', e);
+        console.log('User does not have a banner setup. Will save empty for later: ');
         imageUrl = 'empty';
     }
 
