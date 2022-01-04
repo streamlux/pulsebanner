@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## Fixed
+
+ - Disable features if they are enabled and oauth fails
+ - Prompt user to re-sign in to Twitter if oauth is failing
+
 ## [0.3.2] - 2021-12-31
+
 ## Fixed
 
 -   Return on error for banner streamdown
