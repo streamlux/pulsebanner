@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
-import { TwitterResponseCode, updateBanner, getBanner } from '@app/util/twitter/twitterHelpers';
-import { getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
+import { TwitterResponseCode, updateBanner, getBanner, validateAuthentication } from '@app/util/twitter/twitterHelpers';
+import { flipFeatureEnabled, getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { remotionAxios, twitchAxios } from '@app/util/axios';
 import { Prisma } from '@prisma/client';
 import { getAccountsById } from '@app/util/getAccountsById';
@@ -31,11 +31,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const userId: string = req.query.userId as string;
 
-
     const accounts = await getAccountsById(userId);
     const twitchUserId = accounts['twitch'].providerAccountId;
 
     const twitterInfo = await getTwitterInfo(userId, true);
+
+    // if they are not authenticated with twitter, return 401 and turn off the feature
+    const validatedTwitter = await validateAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    if (!validatedTwitter) {
+        await flipFeatureEnabled(userId, 'banner');
+        return res.status(401).send('Unauthenticated Twitter. Disabling feature banner and requiring re-auth.');
+    }
 
     // get the banner info saved in Banner table
     const bannerEntry = await getBannerEntry(userId);
@@ -60,7 +66,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const streamThumbnailUrl: string = streamThumbnailUrlTemplate.replace('{width}', '440').replace('{height}', '248');
 
     // call twitter api to get imageUrl and convert to base64
-    const bannerUrl: string = await getBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
+    const bannerUrl: string = await getBanner(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
     const bucketName = env.IMAGE_BUCKET_NAME;
     // store the current banner in s3
     const dataToUpload: string = bannerUrl === 'empty' ? 'empty' : await imageToBase64(bannerUrl);
@@ -85,6 +91,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const base64Image: string = response.data;
 
     // post this base64 image to twitter
-    const bannerStatus: TwitterResponseCode = await updateBanner(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, base64Image);
+    const bannerStatus: TwitterResponseCode = await updateBanner(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, base64Image);
     return bannerStatus === 200 ? res.status(200).send('Set banner to given template') : res.status(400).send('Unable to set banner');
 }
