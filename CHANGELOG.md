@@ -7,10 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.3.2] - 2021-12-31
 ## Fixed
 
 -   Return on error for banner streamdown
 -   Bug with Twitter name not updating properly if they change their twitter name manually on Twitter
+-   Newsletter signup
 
 ## [0.3.1] - 2021-12-29
 

@@ -41,7 +41,7 @@ export default function Layout({ children }) {
                         {children}
                     </Box>
                 </Flex>
-                {holidayDecor && isOpen && (
+                {holidayDecor && isOpen && breakpoint !== 'base' && (
                     <Portal>
                         <Box
                             sx={{ position: 'fixed', bottom: '0', right: '0' }}
