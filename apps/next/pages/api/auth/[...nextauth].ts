@@ -170,21 +170,6 @@ export default NextAuth({
                         }
                     }
                 }
-                // we want to also store whether the user needs to fix authentication with twitter so we can handle on frontend
-                // if (account.provider === 'twitter') {
-                //     // NOTE: We need to sign them out of the app, then delete their account information. Then, we have them re-authenticate with twitter
-                //     const validToken = await validateAuthentication(account.oauth_token, account.oauth_token_secret);
-                //     console.log('valid token: ', validToken);
-                //     // if they do not have a valid token, we need to put it in the database if not already there
-                //     if (!validToken) {
-                //         // if we already have them as invalid, do not perform write operation
-                //         const registeredInvalid = await existingTwitterAuthIssue(account.userId);
-                //         if (!registeredInvalid) {
-                //             await addTwitterReauth(user.id, user.email);
-                //             console.log('successfully stored user with twitter authentication issues');
-                //         }
-                //     }
-                // }
             });
             return session;
         },
