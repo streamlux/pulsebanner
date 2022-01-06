@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## Removed
+
+ - Disable winter sale
+ - Disable snow on website
+
 ## Fixed
 
  - Disable features if they are enabled and oauth fails
