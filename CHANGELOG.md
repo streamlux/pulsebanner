@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
  - Disable features if they are enabled and oauth fails
  - Prompt user to re-sign in to Twitter if oauth is failing
+ - Logging to check user banner is properly stored base64
 
 ## [0.3.2] - 2021-12-31
 
