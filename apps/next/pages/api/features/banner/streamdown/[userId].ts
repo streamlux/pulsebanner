@@ -4,6 +4,7 @@ import { TwitterResponseCode, updateBanner, validateAuthentication } from '@app/
 import { flipFeatureEnabled, getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { env } from 'process';
 import { download } from '@app/util/s3/download';
+import { checkValidDownload } from '@app/util/s3/validateHelpers';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
@@ -40,6 +41,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.error('Failed to download original image from S3.');
         return res.status(404).send('Failed to get original image from S3.');
     }
+
+    // validate the image is proper base64. If not, upload the signup image
+    // if (!checkValidDownload(imageBase64)) {
+    //     console.log('Invalid base64 in do. Uploading signup image');
+    //     const original = await download(env.BANNER_BACKUP_BUCKET, userId);
+    //     if (!checkValidDownload(original)) {
+    //         console.log('Failing streamdown. Invalid original image as well');
+    //         return res.status(400).send('Failing streamdown. Invalid original image as well');
+    //     } else {
+    //         imageBase64 = original;
+    //     }
+    // }
 
     // add check for if it is 'empty' string, then we just set back to default (remove the current banner)
     const bannerStatus: TwitterResponseCode = await updateBanner(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, imageBase64);
