@@ -10,7 +10,7 @@ import { AxiosResponse } from 'axios';
 import { env } from 'process';
 import imageToBase64 from 'image-to-base64';
 import { uploadBase64 } from '@app/util/s3/upload';
-import { download } from '@app/util/s3/download';
+// import { download } from '@app/util/s3/download';
 import { checkValidDownload } from '@app/util/s3/validateHelpers';
 
 type TemplateRequestBody = {
@@ -74,26 +74,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // https://stackoverflow.com/a/58158656/10237052
 
     // store the current banner in s3
-    let dataToUpload: string = bannerUrl === 'empty' ? 'empty' : await imageToBase64(bannerUrl);
-    // check if invalid base64
+    const dataToUpload: string = bannerUrl === 'empty' ? 'empty' : await imageToBase64(bannerUrl);
+
+    console.log('validation - dataToUpload correct on streamup: ', checkValidDownload(dataToUpload));
     if (!checkValidDownload(dataToUpload)) {
-        // attempt to re-fetch
-        const refetch = await imageToBase64(bannerUrl);
-        // check valid download once more
-        if (!checkValidDownload(refetch)) {
-            // if we are invalid again, fail the request
-            console.log('Corrupt base64 image. Uploading signup image');
-            const original = await download(env.BANNER_BACKUP_BUCKET, userId);
-            if (!checkValidDownload(original)) {
-                console.log('Corrupt signup image. Failing request');
-                return res.status(400).send('Corrupt signup image. Failing request');
-            } else {
-                dataToUpload = original;
-            }
-        } else {
-            dataToUpload = refetch;
-        }
+        // just print first 10 chars of base64 to see what is invalid
+        console.log(`incorrect data. userid: ${userId}\tdataToUpload: ${dataToUpload.substring(0, 10)} `);
     }
+    // check if invalid base64
+    // if (!checkValidDownload(dataToUpload)) {
+    //     // attempt to re-fetch
+    //     const refetch = await imageToBase64(bannerUrl);
+    //     // check valid download once more
+    //     if (!checkValidDownload(refetch)) {
+    //         // if we are invalid again, fail the request
+    //         console.log('Corrupt base64 image. Uploading signup image');
+    //         const original = await download(env.BANNER_BACKUP_BUCKET, userId);
+    //         if (!checkValidDownload(original)) {
+    //             console.log('Corrupt signup image. Failing request');
+    //             return res.status(400).send('Corrupt signup image. Failing request');
+    //         } else {
+    //             dataToUpload = original;
+    //         }
+    //     } else {
+    //         dataToUpload = refetch;
+    //     }
+    // }
 
     try {
         await uploadBase64(bucketName, userId, dataToUpload);
