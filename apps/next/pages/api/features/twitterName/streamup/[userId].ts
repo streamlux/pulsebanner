@@ -1,5 +1,6 @@
-import { getTwitterInfo, getTwitterName, updateOriginalTwitterNameDB } from '@app/util/database/postgresHelpers';
-import { getCurrentTwitterName, updateTwitterName } from '@app/util/twitter/twitterHelpers';
+import { productPlan } from '@app/util/database/paymentHelpers';
+import { flipFeatureEnabled, getTwitterInfo, getTwitterName, updateOriginalTwitterNameDB } from '@app/util/database/postgresHelpers';
+import { getCurrentTwitterName, updateTwitterName, validateAuthentication } from '@app/util/twitter/twitterHelpers';
 import { TwitterName } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
@@ -19,21 +20,51 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const twitterInfo = await getTwitterInfo(userId);
 
+    // if they are not authenticated with twitter, return 401 and turn off the feature
+    const validatedTwitter = await validateAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    if (!validatedTwitter) {
+        await flipFeatureEnabled(userId, 'name');
+        return res.status(401).send('Unauthenticated Twitter. Disabling feature and requiring re-auth.');
+    }
+
     // get the current twitter name
-    const currentTwitterName = await getCurrentTwitterName(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    const currentTwitterName = await getCurrentTwitterName(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
 
     // get the twitter stream name specified in table
     const twitterNameSettings: TwitterName = await getTwitterName(userId);
     if (!twitterNameSettings.enabled) {
         return res.status(400).send('Feature not enabled.');
     }
-    console.log(`Changing Twitter name from '${currentTwitterName}' to '${twitterNameSettings.streamName}'.`);
 
-    // If it is not found return immediately and do not update normal twitter name
+    let updatedTwitterLiveName = undefined;
+    if (twitterNameSettings.streamName && currentTwitterName && twitterNameSettings.streamName.indexOf(currentTwitterName) === -1) {
+        // check if they are premium. if they are premium, we cannot do anything
+        const plan = await productPlan(userId);
+
+        if (!plan.partner && plan.plan === 'Free') {
+            updatedTwitterLiveName = `🔴 Live now | ${currentTwitterName}`;
+            console.log(`Changing Twitter name from '${currentTwitterName}' to '${updatedTwitterLiveName}'.`);
+        } else {
+            console.log(`Changing Twitter name from '${currentTwitterName}' to '${twitterNameSettings.streamName}'.`);
+        }
+    } else {
+        console.log(`Changing Twitter name from '${currentTwitterName}' to '${twitterNameSettings.streamName}'.`);
+    }
+
+    // If it is not found return immediately and do not update normal twitwyter name
     if (twitterNameSettings && currentTwitterName !== '') {
-        if (twitterNameSettings.streamName) {
+        if (updatedTwitterLiveName !== undefined) {
             // post to twitter
-            const response = await updateTwitterName(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterNameSettings.streamName);
+            const response = await updateTwitterName(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, updatedTwitterLiveName);
+
+            if (response === 200) {
+                await updateOriginalTwitterNameDB(userId, currentTwitterName);
+                console.log('Successfully updated Twitter name on streamup.');
+                return res.status(200).end();
+            }
+        } else if (twitterNameSettings.streamName) {
+            // post to twitter
+            const response = await updateTwitterName(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterNameSettings.streamName);
 
             if (response === 200) {
                 await updateOriginalTwitterNameDB(userId, currentTwitterName);

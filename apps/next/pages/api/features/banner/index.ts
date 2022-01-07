@@ -1,11 +1,39 @@
 import prisma from '@app/util/ssr/prisma';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import { updateTwitchSubscriptions } from '@app/services/updateTwitchSubscriptions';
+import { validateAuthentication } from '@app/util/twitter/twitterHelpers';
 
 const handler = createAuthApiHandler();
 
 // Create or update existing banner with url and templateId
 handler.post(async (req, res) => {
+    const userId = req.session?.userId;
+    if (!userId) {
+        return res.send(404);
+    }
+
+    // validate twitter here before saving
+    const userInfo = await prisma.account.findFirst({
+        where: {
+            userId: userId,
+            provider: 'twitter',
+        },
+        select: {
+            oauth_token: true,
+            oauth_token_secret: true,
+        },
+    });
+
+    if (userInfo && userInfo.oauth_token && userInfo.oauth_token_secret) {
+        const valid = await validateAuthentication(userInfo.oauth_token, userInfo.oauth_token_secret);
+        if (!valid) {
+            // send 401 if not authenticated
+            return res.send(401);
+        }
+    } else {
+        return res.send(404);
+    }
+
     await prisma.banner.upsert({
         where: {
             userId: req.session.userId,
@@ -15,13 +43,13 @@ handler.post(async (req, res) => {
             backgroundId: req.body.backgroundId,
             foregroundId: req.body.foregroundId,
             backgroundProps: req.body.backgroundProps,
-            foregroundProps: req.body.foregroundProps
+            foregroundProps: req.body.foregroundProps,
         },
         update: {
             backgroundId: req.body.backgroundId,
             foregroundId: req.body.foregroundId,
             backgroundProps: req.body.backgroundProps,
-            foregroundProps: req.body.foregroundProps
+            foregroundProps: req.body.foregroundProps,
         },
     });
 
@@ -39,7 +67,7 @@ handler.get(async (req, res) => {
             backgroundId: true,
             backgroundProps: true,
             foregroundId: true,
-            foregroundProps: true
+            foregroundProps: true,
         },
     });
 
@@ -60,14 +88,39 @@ handler.delete(async (req, res) => {
 // Toggle enabled/disabled
 // then update twitch subscriptions
 handler.put(async (req, res) => {
-
     const userId = req.session.userId;
+
+    if (!userId) {
+        return res.send(404);
+    }
+
+    // validate twitter here before saving
+    const userInfo = await prisma.account.findFirst({
+        where: {
+            userId: userId,
+            provider: 'twitter',
+        },
+        select: {
+            oauth_token: true,
+            oauth_token_secret: true,
+        },
+    });
+
+    if (userInfo && userInfo.oauth_token && userInfo.oauth_token_secret) {
+        const valid = await validateAuthentication(userInfo.oauth_token, userInfo.oauth_token_secret);
+        if (!valid) {
+            // send 401 if not authenticated
+            return res.send(401);
+        }
+    } else {
+        return res.send(404);
+    }
 
     // get the users banner
     const banner = await prisma.banner.findFirst({
         where: {
             userId,
-        }
+        },
     });
 
     if (banner) {

@@ -11,6 +11,8 @@ import { sendError } from '@app/util/discord/sendError';
 import { env } from 'process';
 import { uploadBase64 } from '@app/util/s3/upload';
 import imageToBase64 from 'image-to-base64';
+import { getAccountInfo } from '@app/util/database/postgresHelpers';
+import { localAxios } from '@app/util/axios';
 
 // File contains options and hooks for next-auth, the authentication package
 // we are using to handle signup, signin, etc.
@@ -127,6 +129,7 @@ export default NextAuth({
                     userId: user.id,
                 },
             });
+
             session.user['role'] = user.role;
             session.userId = user.id;
             session.user['id'] = user.id;
@@ -184,24 +187,65 @@ export default NextAuth({
             // we automatically upload the user's banner to s3 storage on first sign in
             if (message.isNewUser === true && message.account.provider === 'twitter') {
                 const twitterProvider = message.account;
-                getBanner(twitterProvider.oauth_token, twitterProvider.oauth_token_secret, twitterProvider.providerAccountId).then((bannerUrl) => {
-
+                getBanner(message.user.id, twitterProvider.oauth_token, twitterProvider.oauth_token_secret, twitterProvider.providerAccountId).then((bannerUrl) => {
                     if (bannerUrl === 'empty') {
-                        uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, 'empty').then(() => {
-                            console.log('Uploaded empty banner on new user signup.');
-                        }).catch((reason) => {
-                            sendError(reason, 'Error uploading empty banner to backup bucket on new user signup');
-                        });
+                        uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, 'empty')
+                            .then(() => {
+                                console.log('Uploaded empty banner on new user signup.');
+                            })
+                            .catch((reason) => {
+                                sendError(reason, 'Error uploading empty banner to backup bucket on new user signup');
+                            });
                     } else {
                         imageToBase64(bannerUrl).then((base64: string) => {
-                            uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, base64).then(() => {
-                                console.log('Uploaded Twitter banner on new user signup.');
-                            }).catch((reason) => {
-                                sendError(reason, 'Error uploading Twitter banner to backup bucket on new user signup');
-                            });
+                            uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, base64)
+                                .then(() => {
+                                    console.log('Uploaded Twitter banner on new user signup.');
+                                })
+                                .catch((reason) => {
+                                    sendError(reason, 'Error uploading Twitter banner to backup bucket on new user signup');
+                                });
                         });
                     }
                 });
+                // subscribe user email to the newsletter
+                if (message.user.email && message.user.email.indexOf('@') > -1) {
+                    localAxios
+                        .post('/api/newsletter/subscribe', { email: message.user.email })
+                        .then((resp) => {
+                            console.log(`Added user email ${message.user.email} to newsletter`);
+                        })
+                        .catch((reason) => {
+                            console.log('Not able to sign user up for newsletter: ', reason);
+                        });
+                }
+                // we need to update the account info if twitter oauth isn't matching
+            } else if (message.isNewUser === false && message.account.provider === 'twitter') {
+                getAccountInfo(message.user.id)
+                    .then((response) => {
+                        // if we are able to find it, we need to check if the oauth matches and update the account table if it doesn't
+                        if (response && (response?.oauth_token !== message.account.oauth_token || response?.oauth_token_secret !== message.account.oauth_token_secret)) {
+                            // hack...they should not have 2 twitter accounts under one userid
+                            prisma.account
+                                .updateMany({
+                                    where: {
+                                        userId: message.user.id,
+                                        provider: 'twitter',
+                                    },
+                                    data: {
+                                        oauth_token: message.account.oauth_token,
+                                        oauth_token_secret: message.account.oauth_token_secret,
+                                    },
+                                })
+                                .then((response) => {
+                                    console.log('Successfully updated oauth info for application');
+                                })
+                                .catch((err) => {
+                                    console.log('error updating oauth info for account');
+                                });
+                        }
+                    })
+                    .catch();
             }
         },
     },

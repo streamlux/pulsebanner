@@ -47,6 +47,7 @@ import RemotionPreview from '@pulsebanner/remotion/preview';
 import { Composer } from '@pulsebanner/remotion/components';
 import { NextSeo } from 'next-seo';
 import NextLink from 'next/link';
+import { ReconnectTwitterModal } from '@app/modules/onboard/ReconnectTwitterModal';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
@@ -72,6 +73,7 @@ const defaultBannerSettings: BannerSettings = {
 
 interface Props {
     banner: Banner;
+    reAuthRequired?: boolean;
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -166,6 +168,7 @@ export default function Page({ banner }: Props) {
     const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>((banner?.foregroundId as Foreground) ?? defaultForeground);
     const [bgProps, setBgProps] = useState(banner.backgroundProps ?? (BackgroundTemplates[defaultBackground].defaultProps as any));
     const [fgProps, setFgProps] = useState(banner.foregroundProps ?? (ForegroundTemplates[defaultForeground].defaultProps as any));
+    const [reAuth, setReAuth] = useState(false);
 
     const BackgroundTemplate = BackgroundTemplates[bgId];
     const ForegroundTemplate = ForegroundTemplates[fgId];
@@ -190,6 +193,9 @@ export default function Page({ banner }: Props) {
         // ensure user is signed up before saving settings
         if (ensureSignUp()) {
             const response = await axios.post(bannerEndpoint, getUnsavedBanner());
+            if (response.data === 401) {
+                setReAuth(true);
+            }
         }
     };
 
@@ -203,7 +209,13 @@ export default function Page({ banner }: Props) {
             umami(banner && banner.enabled ? 'disable-banner' : 'enable-banner');
             on();
             await saveSettings();
-            await axios.put(bannerEndpoint);
+            const response = await axios.put(bannerEndpoint);
+            if (response.data === 401) {
+                setReAuth(true);
+                refreshData();
+                off();
+                return;
+            }
             refreshData();
             off();
             if (banner && banner.enabled) {
@@ -290,6 +302,7 @@ export default function Page({ banner }: Props) {
             />
             <DisableBannerModal isOpen={disableBannerIsOpen} onClose={disableBannerOnClose} />
             <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} />
+            {reAuth ? <ReconnectTwitterModal session={session} isOpen={isOpen} onClose={onClose} /> : <></>}
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
                 <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
                     <Box maxW="xl">
