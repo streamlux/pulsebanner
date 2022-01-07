@@ -19,15 +19,6 @@ const nextConfig = {
         // Important: return the modified config
         return config;
     },
-    async redirects() {
-        return [
-            {
-                source: '/',
-                destination: '/banner',
-                permanent: false,
-            },
-        ]
-    },
     // fix heap limit allocation failed issue with NextJS 12
     // https://github.com/vercel/next.js/issues/30330#issuecomment-952172377
     experimental: {
