@@ -26,6 +26,7 @@ import {
     PopoverHeader,
     PopoverTrigger,
     Flex,
+    ColorMode,
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import { signIn } from 'next-auth/react';
@@ -44,11 +45,9 @@ const showcaseOffline = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/landi
 const showcaseLight = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/showcase_light.webp';
 const showcaseLightOffline = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/showcase_offline_light.webp';
 
-export function SignUpSection() {
-    const { colorMode } = useColorMode();
-
+const SignUpSection: React.FC<{ colorMode: ColorMode }> = ({ colorMode }) => {
     return (
-        <Box experimental_spaceY={2} pt={['6']}>
+        <Box experimental_spaceY={2} pt={['6']} minW="12">
             <Heading textAlign="left">1 minute setup.</Heading>
             <Text fontSize="sm" textAlign="left" color={colorMode === 'dark' ? 'gray.300' : 'gray.700'}>
                 Use for free forever, upgrade anytime for{' '}
@@ -93,11 +92,11 @@ export function SignUpSection() {
             </Text>
         </Box>
     );
-}
+};
 
 export default function Page() {
     const { colorMode } = useColorMode();
-    const breakpoint = useBreakpoint();
+    const breakpoint = useBreakpoint('ssr');
 
     const [offline, setOffline] = useState(false);
 
@@ -145,7 +144,52 @@ export default function Page() {
                                             </Text>
                                         </HStack>
                                     </SimpleGrid>
-                                    {breakpoint !== 'base' && <SignUpSection />}
+                                    {breakpoint !== 'base' && (
+                                        <Box experimental_spaceY={2} pt={['6']} minW="12">
+                                            <Heading textAlign="left">1 minute setup.</Heading>
+                                            <Text fontSize="sm" textAlign="left" color={colorMode === 'dark' ? 'gray.300' : 'gray.700'}>
+                                                Use for free forever, upgrade anytime for{' '}
+                                                <Popover trigger="hover" placement="top">
+                                                    <PopoverTrigger>
+                                                        <Text fontSize="sm" as="span" textDecoration="underline" textDecorationStyle="dashed" textUnderlineOffset="2px">
+                                                            $5.99*/mo
+                                                        </Text>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent w="fit-content">
+                                                        <PopoverArrow />
+                                                        <PopoverBody w="fit-content">
+                                                            <Text>Personal plan, annual billing</Text>
+                                                        </PopoverBody>
+                                                    </PopoverContent>
+                                                </Popover>
+                                                .
+                                            </Text>
+
+                                            <Flex experimental_spaceX={12}>
+                                                <Button size="lg" colorScheme="twitter" leftIcon={<FaTwitter />} onClick={() => signIn('twitter')}>
+                                                    Sign in with Twitter
+                                                </Button>
+                                                <Box w="128px">
+                                                    {colorMode === 'dark' ? (
+                                                        <Image src={typeof twitterxtwitch === 'string' ? twitterxtwitch : twitterxtwitch.src} alt="Banner" />
+                                                    ) : (
+                                                        <Image src={typeof twitterxtwitchLight === 'string' ? twitterxtwitchLight : twitterxtwitchLight.src} alt="Banner" />
+                                                    )}
+                                                </Box>
+                                            </Flex>
+                                            <Text fontSize="xs" color={colorMode === 'dark' ? 'gray.400' : 'gray.600'}>
+                                                {'By signing up, you agree to our'}{' '}
+                                                <Link as={NextLink} href="/terms" passHref>
+                                                    <Link textDecoration="underline">Terms</Link>
+                                                </Link>{' '}
+                                                and{' '}
+                                                <Link as={NextLink} href="/privacy" passHref>
+                                                    <Link textDecoration="underline">Privacy Policy</Link>
+                                                </Link>
+                                                .
+                                            </Text>
+                                        </Box>
+                                    )}
                                 </Box>
                             </Center>
 
@@ -178,7 +222,52 @@ export default function Page() {
                             </Stack>
                         </Stack>
 
-                        {breakpoint === 'base' && <SignUpSection />}
+                        {breakpoint === 'base' && (
+                            <Box experimental_spaceY={2} pt={['6']} minW="12">
+                                <Heading textAlign="left">1 minute setup.</Heading>
+                                <Text fontSize="sm" textAlign="left" color={colorMode === 'dark' ? 'gray.300' : 'gray.700'}>
+                                    Use for free forever, upgrade anytime for{' '}
+                                    <Popover trigger="hover" placement="top">
+                                        <PopoverTrigger>
+                                            <Text fontSize="sm" as="span" textDecoration="underline" textDecorationStyle="dashed" textUnderlineOffset="2px">
+                                                $5.99*/mo
+                                            </Text>
+                                        </PopoverTrigger>
+                                        <PopoverContent w="fit-content">
+                                            <PopoverArrow />
+                                            <PopoverBody w="fit-content">
+                                                <Text>Personal plan, annual billing</Text>
+                                            </PopoverBody>
+                                        </PopoverContent>
+                                    </Popover>
+                                    .
+                                </Text>
+
+                                <Flex experimental_spaceX={12}>
+                                    <Button size="lg" colorScheme="twitter" leftIcon={<FaTwitter />} onClick={() => signIn('twitter')}>
+                                        Sign in with Twitter
+                                    </Button>
+                                    <Box w="128px">
+                                        {colorMode === 'dark' ? (
+                                            <Image src={typeof twitterxtwitch === 'string' ? twitterxtwitch : twitterxtwitch.src} alt="Banner" />
+                                        ) : (
+                                            <Image src={typeof twitterxtwitchLight === 'string' ? twitterxtwitchLight : twitterxtwitchLight.src} alt="Banner" />
+                                        )}
+                                    </Box>
+                                </Flex>
+                                <Text fontSize="xs" color={colorMode === 'dark' ? 'gray.400' : 'gray.600'}>
+                                    {'By signing up, you agree to our'}{' '}
+                                    <Link as={NextLink} href="/terms" passHref>
+                                        <Link textDecoration="underline">Terms</Link>
+                                    </Link>{' '}
+                                    and{' '}
+                                    <Link as={NextLink} href="/privacy" passHref>
+                                        <Link textDecoration="underline">Privacy Policy</Link>
+                                    </Link>
+                                    .
+                                </Text>
+                            </Box>
+                        )}
 
                         <Center>
                             <Container maxW="container.lg" w="90vw" experimental_spaceY={[16, 48]}>
