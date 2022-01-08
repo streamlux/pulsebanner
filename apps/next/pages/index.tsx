@@ -51,7 +51,7 @@ export default function Page() {
 
     const SignUpSection = (
         <Box experimental_spaceY={2} pt={['6']}>
-            <Heading textAlign="left">5 minute setup.</Heading>
+            <Heading textAlign="left">1 minute setup.</Heading>
             <Text fontSize="sm" textAlign="left" color={colorMode === 'dark' ? 'gray.300' : 'gray.700'}>
                 Use for free forever, upgrade anytime for{' '}
                 <Popover trigger="hover" placement="top">
@@ -100,7 +100,7 @@ export default function Page() {
         <VStack spacing="16">
             <Box>
                 <VStack>
-                    <Box centerContent w={['90vw', '80vw', '80vw', '80vw', '90vw', '90vw', '60vw']} maxW={1300} experimental_spaceY="16">
+                    <Box w={['90vw', '80vw', '80vw', '80vw', '90vw', '90vw', '60vw']} maxW={1300} experimental_spaceY="16">
                         <Stack direction={['column', 'column', 'column', 'column', 'row']} spacing={[8, 16]}>
                             <Center maxW={['100%', '100%', '100%', '100%', '47%']}>
                                 <Box experimental_spaceY={[4, 8]}>
@@ -202,9 +202,11 @@ export default function Page() {
                                             )}
                                         </Box>
                                     </Center>
-                                    <Button size="lg" rightIcon={<FaArrowRight />} colorScheme="green">
-                                        Customize your Live Banner
-                                    </Button>
+                                    <NextLink href="/banner">
+                                        <Button size="lg" rightIcon={<FaArrowRight />} colorScheme="green">
+                                            Customize your Live Banner
+                                        </Button>
+                                    </NextLink>
                                 </Box>
                                 <Box>
                                     <Box experimental_spaceY={4}>
@@ -224,9 +226,11 @@ export default function Page() {
                                     <Center py="8">
                                         <Image src={typeof profileImage === 'string' ? profileImage : profileImage.src} alt="Banner" w="80vw" maxW="800px" py="10" />
                                     </Center>
-                                    <Button size="lg" rightIcon={<FaArrowRight />} colorScheme="green">
-                                        Setup your Live Profile
-                                    </Button>
+                                    <NextLink href="/profile">
+                                        <Button size="lg" rightIcon={<FaArrowRight />} colorScheme="green">
+                                            Setup your Live Profile
+                                        </Button>
+                                    </NextLink>
                                 </Box>
                                 <Box>
                                     <Box experimental_spaceY={4}>
@@ -251,10 +255,11 @@ export default function Page() {
                                             <Image src={typeof nameChangerLight === 'string' ? nameChangerLight : nameChangerLight.src} alt="Banner" w="full" />
                                         )}
                                     </Center>
-
-                                    <Button size="lg" rightIcon={<FaArrowRight />} colorScheme="green">
-                                        Setup Name Changer
-                                    </Button>
+                                    <NextLink href="/name">
+                                        <Button size="lg" rightIcon={<FaArrowRight />} colorScheme="green">
+                                            Setup Name Changer
+                                        </Button>
+                                    </NextLink>
                                 </Box>
                             </Container>
                         </Center>

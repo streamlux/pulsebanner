@@ -34,7 +34,7 @@ import React from 'react';
 import { MoonIcon, SunIcon } from '@chakra-ui/icons';
 import { useAdmin } from '../util/hooks/useAdmin';
 import favicon from '@app/public/logo.webp';
-import { FaArrowRight, FaTwitter } from 'react-icons/fa';
+import { FaArrowRight, FaDiscord, FaTwitter } from 'react-icons/fa';
 import { MdEmail } from 'react-icons/md';
 import { NewsletterModal } from './newsletter/NewsletterModal';
 import { trackEvent } from '@app/util/umami/trackEvent';
@@ -160,6 +160,21 @@ export default function Header() {
                                         Subscribe for updates
                                     </Button>
                                 )} */}
+                                {breakpointValue.mobile && (
+                                    <IconButton
+                                        size="sm"
+                                        onClick={() => window.open('/discord', '_blank')}
+                                        aria-label="Discord"
+                                        title="Discord"
+                                        icon={<FaDiscord />}
+                                        className={trackEvent('click', 'discord-button')}
+                                    />
+                                )}
+                                {!breakpointValue.mobile && (
+                                    <Button onClick={() => window.open('/discord', '_blank')} leftIcon={<FaDiscord />} className={trackEvent('click', 'discord-button')}>
+                                        Join our Discord
+                                    </Button>
+                                )}
 
                                 <IconButton
                                     size={breakpoint === 'base' ? 'sm' : 'md'}
