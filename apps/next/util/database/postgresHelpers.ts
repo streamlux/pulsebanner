@@ -1,4 +1,5 @@
-import { Banner, ProfileImage, RenderedProfileImage, Tweet, TwitterName, TwitterOriginalName } from '@prisma/client';
+import { Account, Banner, ProfileImage, RenderedProfileImage, Tweet, TwitterName, TwitterOriginalName } from '@prisma/client';
+import { updateTwitchSubscriptions } from '@app/services/updateTwitchSubscriptions';
 import prisma from '../ssr/prisma';
 
 export type PostgresTwitterInfo = {
@@ -20,6 +21,7 @@ export const getTwitterInfo = async (userId: string, getProviderAccountId = fals
     const twitterInfo: PostgresTwitterInfo = await prisma.account?.findFirst({
         where: {
             userId: userId,
+            provider: 'twitter',
         },
         select: {
             oauth_token: true,
@@ -114,4 +116,65 @@ export const updateProfilePicRenderedDB = async (userId: string): Promise<void> 
             lastRendered: new Date(),
         },
     });
+}
+export const getAccountInfo = async (userId: string): Promise<Partial<Account>> => {
+    const response = await prisma.account.findFirst({
+        where: {
+            userId: userId,
+            provider: 'twitter',
+        },
+        select: {
+            oauth_token: true,
+            oauth_token_secret: true,
+        },
+    });
+    return response;
+};
+
+export const flipFeatureEnabled = async (userId: string, feature: string): Promise<void> => {
+    if (feature === 'banner') {
+        const banner = await prisma.banner.findFirst({
+            where: {
+                userId,
+            },
+        });
+
+        if (banner) {
+            await prisma.banner.update({
+                where: {
+                    userId,
+                },
+                data: {
+                    enabled: !banner.enabled,
+                },
+            });
+
+            // Update twitch subscriptions since we might
+            // need to delete subscriptions if they disabled the banner
+            // or create subscriptions if they enabled the banner
+            await updateTwitchSubscriptions(userId);
+        }
+    } else if (feature === 'name') {
+        const twitterName = await prisma.twitterName.findFirst({
+            where: {
+                userId,
+            },
+        });
+
+        if (twitterName) {
+            await prisma.twitterName.update({
+                where: {
+                    userId,
+                },
+                data: {
+                    enabled: !twitterName.enabled,
+                },
+            });
+
+            // Update twitch subscriptions since we might
+            // need to delete subscriptions if they disabled the banner
+            // or create subscriptions if they enabled the banner
+            await updateTwitchSubscriptions(userId);
+        }
+    }
 };

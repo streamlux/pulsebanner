@@ -28,6 +28,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // get the twitch info from tweetInfo here, then feed into tweetStreamStatusLive
 
-    const tweetStatus: TwitterResponseCode = await tweetStreamStatusLive(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    const tweetStatus: TwitterResponseCode = await tweetStreamStatusLive(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
     return tweetStatus === 200 ? res.status(200).send('Tweet successfully published') : res.status(400).send('Unable to publish tweet');
 }

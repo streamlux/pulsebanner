@@ -1,7 +1,7 @@
-import { useDisclosure } from "@chakra-ui/react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useDisclosure } from '@chakra-ui/react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 
 export function useConnectToTwitch(callbackUrl?: string) {
     const { data: session, status } = useSession({ required: false }) as any;
@@ -11,7 +11,7 @@ export function useConnectToTwitch(callbackUrl?: string) {
     const { modal } = router.query;
 
     useEffect(() => {
-        if (modal === 'true' && status !== "loading") {
+        if (modal === 'true' && status !== 'loading') {
             if (session && (!session?.accounts?.twitch || !session?.accounts?.twitter)) {
                 onOpen();
             }
@@ -32,6 +32,6 @@ export function useConnectToTwitch(callbackUrl?: string) {
         ensureSignUp,
         isOpen,
         onClose,
-        onOpen
-    }
+        onOpen,
+    };
 }

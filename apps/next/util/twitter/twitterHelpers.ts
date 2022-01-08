@@ -12,7 +12,7 @@ export const createTwitterClient = (oauth_token: string, oauth_token_secret: str
     });
 };
 
-export async function getBanner(oauth_token: string, oauth_token_secret: string, providerAccountId: string): Promise<string> {
+export async function getBanner(userId: string, oauth_token: string, oauth_token_secret: string, providerAccountId: string): Promise<string> {
     const client = createTwitterClient(oauth_token, oauth_token_secret);
     let imageUrl: string = undefined;
     try {
@@ -22,8 +22,7 @@ export async function getBanner(oauth_token: string, oauth_token_secret: string,
         imageUrl = response.sizes['1500x500'].url;
         console.log('imageUrl: ', imageUrl);
     } catch (e) {
-        handleTwitterApiError(e);
-        console.log('User does not have a banner setup. Will save empty for later: ', e);
+        console.log('User does not have a banner setup. Will save empty for later: ');
         imageUrl = 'empty';
     }
 
@@ -31,7 +30,7 @@ export async function getBanner(oauth_token: string, oauth_token_secret: string,
 }
 
 // pass it the banner so we can just upload the base64 or image url directly
-export async function updateBanner(oauth_token: string, oauth_token_secret: string, bannerBase64: string): Promise<TwitterResponseCode> {
+export async function updateBanner(userId: string, oauth_token: string, oauth_token_secret: string, bannerBase64: string): Promise<TwitterResponseCode> {
     const client = createTwitterClient(oauth_token, oauth_token_secret);
 
     // We store empty string if user did not have an existing banner
@@ -39,7 +38,7 @@ export async function updateBanner(oauth_token: string, oauth_token_secret: stri
         try {
             await client.accountsAndUsers.accountRemoveProfileBanner();
         } catch (e) {
-            handleTwitterApiError(e);
+            handleTwitterApiError(userId, e);
             return 400;
         }
     } else {
@@ -48,7 +47,7 @@ export async function updateBanner(oauth_token: string, oauth_token_secret: stri
                 banner: bannerBase64,
             });
         } catch (e) {
-            handleTwitterApiError(e);
+            handleTwitterApiError(userId, e);
             console.log('failed to update banner');
             return 400;
         }
@@ -58,7 +57,13 @@ export async function updateBanner(oauth_token: string, oauth_token_secret: stri
 }
 
 // pass in the twitch url here that we will get from somewhere the user uploads it (TBD)
-export async function tweetStreamStatusLive(oauth_token: string, oauth_token_secret: string, streamLink?: string, tweetContent?: string): Promise<TwitterResponseCode> {
+export async function tweetStreamStatusLive(
+    userId: string,
+    oauth_token: string,
+    oauth_token_secret: string,
+    streamLink?: string,
+    tweetContent?: string
+): Promise<TwitterResponseCode> {
     const client = createTwitterClient(oauth_token, oauth_token_secret);
 
     try {
@@ -68,13 +73,19 @@ export async function tweetStreamStatusLive(oauth_token: string, oauth_token_sec
     } catch (e) {
         // there could be a problem with how long the string is
         console.log('error with publishing the tweet: ', e);
-        handleTwitterApiError(e);
+        handleTwitterApiError(userId, e);
         return 400;
     }
     return 200;
 }
 
-export async function tweetStreamStatusOffline(oauth_token: string, oauth_token_secret: string, streamLink?: string, tweetContent?: string): Promise<TwitterResponseCode> {
+export async function tweetStreamStatusOffline(
+    userId: string,
+    oauth_token: string,
+    oauth_token_secret: string,
+    streamLink?: string,
+    tweetContent?: string
+): Promise<TwitterResponseCode> {
     const client = createTwitterClient(oauth_token, oauth_token_secret);
 
     try {
@@ -84,13 +95,13 @@ export async function tweetStreamStatusOffline(oauth_token: string, oauth_token_
     } catch (e) {
         // there could be a problem with how long the string is
         console.log('error with publishing the tweet: ', e);
-        handleTwitterApiError(e);
+        handleTwitterApiError(userId, e);
         return 400;
     }
     return 200;
 }
 
-export async function getCurrentTwitterName(oauth_token: string, oauth_token_secret: string): Promise<string> {
+export async function getCurrentTwitterName(userId: string, oauth_token: string, oauth_token_secret: string): Promise<string> {
     const client = createTwitterClient(oauth_token, oauth_token_secret);
 
     try {
@@ -99,25 +110,25 @@ export async function getCurrentTwitterName(oauth_token: string, oauth_token_sec
         return name;
     } catch (e) {
         console.log('Errror getting twitter name: ', e);
-        handleTwitterApiError(e);
+        handleTwitterApiError(userId, e);
         return '';
     }
 }
 
-export async function updateTwitterName(oauth_token: string, oauth_token_secret: string, name: string): Promise<TwitterResponseCode> {
+export async function updateTwitterName(userId: string, oauth_token: string, oauth_token_secret: string, name: string): Promise<TwitterResponseCode> {
     const client = createTwitterClient(oauth_token, oauth_token_secret);
 
     try {
         await client.accountsAndUsers.accountUpdateProfile({ name: name });
     } catch (e) {
         console.log('error updating twitter name: ', e);
-        handleTwitterApiError(e, 'Updating Twitter name');
+        await handleTwitterApiError(userId, e, 'Updating Twitter name');
         return 400;
     }
     return 200;
 }
 
-export async function getTwitterProfilePic(oauth_token: string, oauth_token_secret: string, providerAccountId: string): Promise<string> {
+export async function getTwitterProfilePic(userId: string, oauth_token: string, oauth_token_secret: string, providerAccountId: string): Promise<string> {
     const client = createTwitterClient(oauth_token, oauth_token_secret);
 
     try {
@@ -128,12 +139,12 @@ export async function getTwitterProfilePic(oauth_token: string, oauth_token_secr
         const profilePic = response.profile_image_url_https.replace('_normal', '');
         return profilePic;
     } catch (e) {
-        handleTwitterApiError(e, 'error getting twitter profile pic, setting to empty');
+        handleTwitterApiError(userId, e, 'error getting twitter profile pic, setting to empty');
         return 'empty';
     }
 }
 
-export async function updateProfilePic(oauth_token: string, oauth_token_secret: string, profilePicBase64: string): Promise<TwitterResponseCode> {
+export async function updateProfilePic(userId: string, oauth_token: string, oauth_token_secret: string, profilePicBase64: string): Promise<TwitterResponseCode> {
     const client = createTwitterClient(oauth_token, oauth_token_secret);
 
     // this will only be hit or used on streamdown.See if we even need this by changing to user? Not sure how to test this really
@@ -151,7 +162,7 @@ export async function updateProfilePic(oauth_token: string, oauth_token_secret: 
                 image: profilePicBase64,
             });
         } catch (e) {
-            handleTwitterApiError(e, 'Updating profile picture');
+            handleTwitterApiError(userId, e, 'Updating profile picture');
             return 400;
         }
     }
@@ -159,7 +170,8 @@ export async function updateProfilePic(oauth_token: string, oauth_token_secret: 
     return 200;
 }
 
-function handleTwitterApiError(e: { errors?: { message: string; code: number }[]; _headers?: any }, context?: string) {
+// would need to pass in the userId here
+async function handleTwitterApiError(userId: string, e: { errors?: { message: string; code: number }[]; _headers?: any }, context?: string) {
     if ('errors' in e) {
         // Twitter API error
         if (e.errors[0].code === 88) {
@@ -167,15 +179,22 @@ function handleTwitterApiError(e: { errors?: { message: string; code: number }[]
             console.error('Rate limit error, code 88. Rate limit will reset on', new Date(e._headers.get('x-rate-limit-reset') * 1000));
             sendError({ ...e.errors[0], name: 'TwitterRateLimitError' }, context);
         } else if (e.errors[0].code === 89) {
-            // Invalid or expired token error
-            sendError({ ...e.errors[0], name: 'TwitterAPIInvalidTokenError' }, 'Invalid or expired token error. Context: ' + context);
+            // Invalid or expired token error.
+            // check the db to see if they currently have an invalid token stored. Do not write if they do
+            // const tokenInvalid = await getAccountTwitterTokenStatus(userId);
+            // // only update if it is not stored (i.e. false)
+            // if (tokenInvalid === false) {
+            //     await updateAccountTwitterToken(userId, true);
+            // }
+
+            sendError({ ...e.errors[0], name: 'TwitterAPIInvalidTokenError' }, `Invalid or expired token error. userId: ${userId}\t Context: ${context}`);
         }
         // some other kind of error, e.g. read-only API trying to POST
         else {
-            sendError(e as any, 'Other Twitter API error occured. Context: ' + context);
+            sendError(e as any, `Other Twitter API error occured. userId: ${userId}\t Context: ${context}`);
         }
     } else {
         // non-API error, e.g. network problem or invalid JSON in response
-        sendError(e as any, 'Non Twitter API error occured. Context: ' + context);
+        sendError(e as any, `Non Twitter API error occured. userId: ${userId}\t Context: ${context}`);
     }
 }

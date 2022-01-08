@@ -41,17 +41,19 @@ import useSWR from 'swr';
 import FakeTweet from 'fake-tweet';
 import 'fake-tweet/build/index.css';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
-import { createTwitterClient } from '@app/util/twitter/twitterHelpers';
+import { createTwitterClient, validateAuthentication } from '@app/util/twitter/twitterHelpers';
 import { getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { format } from 'date-fns';
 import { NextSeo } from 'next-seo';
 const nameEndpoint = '/api/features/twitterName';
 const maxNameLength = 50;
 import NextLink from 'next/link';
+import { ReconnectTwitterModal } from '@app/modules/onboard/ReconnectTwitterModal';
 
 interface Props {
     twitterName: TwitterName;
     twitterProfile: any;
+    reAuthRequired?: boolean;
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -67,7 +69,18 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         });
 
         const twitterInfo = await getTwitterInfo(session.userId, true);
+
         const client = createTwitterClient(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+
+        const validate = await validateAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+        if (!validate) {
+            return {
+                props: {
+                    twitterName: {},
+                    twitterProfile: {},
+                },
+            };
+        }
 
         const twitterProfile = (
             await client.accountsAndUsers.usersLookup({
@@ -122,6 +135,7 @@ export default function Page({ twitterName, twitterProfile }: Props) {
 
     const defaultMessage = `🔴 Live now | ${twitterProfile.name ?? 'PulseBanner'}`;
     const [streamName, setStreamName] = useState(twitterName.streamName ?? defaultMessage);
+    const [reAuth, setReAuth] = useState(false);
 
     const toast = useToast();
 
@@ -147,6 +161,9 @@ export default function Page({ twitterName, twitterProfile }: Props) {
         // ensure user is signed up before saving settings
         if (ensureSignUp()) {
             const response = await axios.post(nameEndpoint, getUnsavedName());
+            if (response.data === 401) {
+                setReAuth(true);
+            }
         }
     };
 
@@ -164,12 +181,17 @@ export default function Page({ twitterName, twitterProfile }: Props) {
     };
 
     const toggle = async () => {
-        // ensure user is signed up before enabling banner
         if (ensureSignUp()) {
             umami(twitterName && twitterName.enabled ? 'disable-name' : 'enable-name');
             on();
             await saveSettings();
-            await axios.put(nameEndpoint);
+            const response = await axios.put(nameEndpoint);
+            if (response.data === 401) {
+                setReAuth(true);
+                refreshData();
+                off();
+                return;
+            }
             refreshData();
             off();
             if (twitterName && twitterName.enabled) {
@@ -263,6 +285,7 @@ export default function Page({ twitterName, twitterProfile }: Props) {
             />
             <PaymentModal isOpen={pricingIsOpen} onClose={pricingClose} />
             <ConnectTwitchModal callbackUrl="/name" session={session} isOpen={isOpen} onClose={onClose} />
+            {reAuth ? <ReconnectTwitterModal callbackUrl="/name" session={session} isOpen={isOpen} onClose={onClose} /> : <></>}
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
                 <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
                     <Box maxW="xl">
