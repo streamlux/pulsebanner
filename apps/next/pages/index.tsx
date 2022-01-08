@@ -25,6 +25,7 @@ import {
     PopoverContent,
     PopoverHeader,
     PopoverTrigger,
+    Flex,
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import { signIn } from 'next-auth/react';
@@ -43,13 +44,10 @@ const showcaseOffline = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/landi
 const showcaseLight = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/showcase_light.webp';
 const showcaseLightOffline = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/showcase_offline_light.webp';
 
-export default function Page() {
+export function SignUpSection() {
     const { colorMode } = useColorMode();
-    const breakpoint = useBreakpoint();
 
-    const [offline, setOffline] = useState(false);
-
-    const SignUpSection = (
+    return (
         <Box experimental_spaceY={2} pt={['6']}>
             <Heading textAlign="left">1 minute setup.</Heading>
             <Text fontSize="sm" textAlign="left" color={colorMode === 'dark' ? 'gray.300' : 'gray.700'}>
@@ -70,7 +68,7 @@ export default function Page() {
                 .
             </Text>
 
-            <HStack spacing={12}>
+            <Flex experimental_spaceX={12}>
                 <Button size="lg" colorScheme="twitter" leftIcon={<FaTwitter />} onClick={() => signIn('twitter')}>
                     Sign in with Twitter
                 </Button>
@@ -81,7 +79,7 @@ export default function Page() {
                         <Image src={typeof twitterxtwitchLight === 'string' ? twitterxtwitchLight : twitterxtwitchLight.src} alt="Banner" />
                     )}
                 </Box>
-            </HStack>
+            </Flex>
             <Text fontSize="xs" color={colorMode === 'dark' ? 'gray.400' : 'gray.600'}>
                 {'By signing up, you agree to our'}{' '}
                 <Link as={NextLink} href="/terms" passHref>
@@ -95,6 +93,13 @@ export default function Page() {
             </Text>
         </Box>
     );
+}
+
+export default function Page() {
+    const { colorMode } = useColorMode();
+    const breakpoint = useBreakpoint();
+
+    const [offline, setOffline] = useState(false);
 
     return (
         <VStack spacing="16">
@@ -140,13 +145,13 @@ export default function Page() {
                                             </Text>
                                         </HStack>
                                     </SimpleGrid>
-                                    {breakpoint !== 'base' && SignUpSection}
+                                    {breakpoint !== 'base' && <SignUpSection />}
                                 </Box>
                             </Center>
 
                             <Stack direction={['column-reverse', 'column-reverse', 'column-reverse', 'column-reverse', 'column']}>
                                 <Center>
-                                    <Box maxW="700px" p="2" rounded="lg" bg={offline ? 'gray.200' : undefined} className={!offline ? 'animated-gradient' : ''}>
+                                    <Box maxW="700px" p="2" rounded="lg" bg={offline ? 'gray.200' : undefined} className={!offline ? 'animated-gradient' : undefined}>
                                         {!offline ? (
                                             colorMode === 'dark' ? (
                                                 <Image rounded="lg" alt="showcase" src={showcase} />
@@ -173,7 +178,7 @@ export default function Page() {
                             </Stack>
                         </Stack>
 
-                        {breakpoint === 'base' && SignUpSection}
+                        {breakpoint === 'base' && <SignUpSection />}
 
                         <Center>
                             <Container maxW="container.lg" w="90vw" experimental_spaceY={[16, 48]}>
