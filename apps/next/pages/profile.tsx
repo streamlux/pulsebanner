@@ -27,7 +27,7 @@ interface Props {
 
 const profileEndpoint = '/api/features/profileImage';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ProfilePic';
-const defaultBackground: keyof typeof BackgroundTemplates = 'GradientBackground';
+const defaultBackground: keyof typeof BackgroundTemplates = 'ColorBackground';
 
 // these types are ids of foregrounds or backgrounds
 type Foreground = keyof typeof ForegroundTemplates;
@@ -82,9 +82,9 @@ export default function Page({ profilePic }: Props) {
     const { data: streamingState } = useSWR('streamState', async () => await (await fetch(`/api/twitch/streaming/${session?.user['id']}`)).json());
     const streaming = streamingState ? streamingState.isStreaming : false;
 
-    const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>((profilePic?.backgroundId as Background) ?? defaultBackground);
+    const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>(defaultBackground);
     const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>((profilePic?.foregroundId as Foreground) ?? defaultForeground);
-    const [bgProps, setBgProps] = useState(profilePic?.backgroundProps ?? (BackgroundTemplates[defaultBackground].defaultProps as any));
+    const [bgProps, setBgProps] = useState({ color: 'transparent' });
     const [fgProps, setFgProps] = useState(profilePic?.foregroundProps ?? (ForegroundTemplates[defaultForeground].defaultProps as any));
 
     const BackgroundTemplate = BackgroundTemplates[bgId];
@@ -233,8 +233,8 @@ export default function Page({ profilePic }: Props) {
                     {EnableButton}
                 </Flex>
                 <Flex w="full" rounded="md" direction="column">
-                    <Center w="full" maxH="320px">
-                        <RemotionProfilePreview compositionHeight={400} compositionWidth={1500}>
+                    <Box w="30%">
+                        <RemotionProfilePreview compositionHeight={400} compositionWidth={400}>
                             {' '}
                             {/* Change this to be something different dimensions */}
                             <Composer
@@ -246,7 +246,7 @@ export default function Page({ profilePic }: Props) {
                                 }}
                             />
                         </RemotionProfilePreview>
-                    </Center>
+                    </Box>
 
                     <Flex grow={1} p="4" my="4" rounded="md" bg="whiteAlpha.100" w="full" direction="column" minH="lg">
                         <FgForm

@@ -5,7 +5,7 @@ registerRoot(() => {
     return (
         <>
             <RemotionVideo />
-            <RemotionProfilePicture />;
+            <RemotionProfilePicture />
         </>
     );
 });

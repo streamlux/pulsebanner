@@ -122,7 +122,10 @@ export async function getTwitterProfilePic(oauth_token: string, oauth_token_secr
 
     try {
         const response = await client.accountsAndUsers.usersShow({ user_id: providerAccountId });
-        const profilePic = response.profile_image_url_https;
+
+        // https://developer.twitter.com/en/docs/twitter-api/v1/accounts-and-users/user-profile-images-and-banners
+        // remove '_normal' to get the original sized profile image
+        const profilePic = response.profile_image_url_https.replace('_normal', '');
         return profilePic;
     } catch (e) {
         handleTwitterApiError(e, 'error getting twitter profile pic, setting to empty');

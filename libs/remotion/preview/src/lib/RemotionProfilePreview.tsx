@@ -85,7 +85,7 @@ export const RemotionProfilePreview: React.FC<RemotionPreviewProps> = ({ childre
     }, [canvasSize, compositionHeight, compositionWidth]);
 
     return (
-        <div ref={container} style={{ ...outerStyle, ...{ width: '100%', maxWidth: '100%', maxHeight: '100%', margin: '0 1vw 0 1vw' } }}>
+        <div ref={container} style={{ ...outerStyle, ...{ width: '100%', maxWidth: '100%', maxHeight: '100%', margin: '0 1vw 0 1vw', borderRadius: '100%' } }}>
             <div style={outer}>
                 <div style={containerStyle} className="__remotion-player">
                     {children}
