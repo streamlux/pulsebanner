@@ -13,11 +13,14 @@ export default function Page() {
                     About
                 </Text>
                 <Text>
-                    The vision for Streamlux, LLC and its affiliates (&quot;PulseBanner&quot;, “we”, “us”, and “our”) is to bring enhanced experiences and simplify complex lighting
-                    systems for all streamers. As such, we provide a light effect design platform that you can use, among other things, to create light effects, connect to
-                    streaming events, and control your wifi-enabled smart lights. This Privacy Policy is designed to help you understand how we collect, use and share your personal
-                    information and to assist you in exercising the privacy rights available to you. If you have any questions or concerns about our policy, or our practices with
-                    regards to your personal information, please contact us at pulsebanner@streamlux.com.
+                    The vision for Streamlux, LLC and its affiliates (&quot;PulseBanner&quot;, “we”, “us”, and “our”) is to empower streamers on social media. As such, signing up
+                    for PulseBanner is done through Twitter and Twitch. Your privacy is important to us. It is PulseBanner&lsquo;s policy to respect your privacy regarding any
+                    information we may collect from you across our website, https://pulsebanner.com, and other sites we own and operate. This Privacy Policy is designed to help you
+                    understand how we collect, use and share your personal information and to assist you in exercising the privacy rights available to you. We only ask for personal
+                    information when we truly need it to provide a service to you. We collect it by fair and lawful means, with your knowledge and consent. We also let you know why
+                    we&lsquo;re collecting it and how it will be used. We do not share any personally identifying information publicly or with third-parties, except when required
+                    to by law. If you have any questions or concerns about our policy, or our practices with regards to your personal information, please contact us at
+                    pulsebanner@streamlux.com.
                 </Text>
                 <Text fontSize="lg" fontWeight="bold">
                     Scope
@@ -27,10 +30,6 @@ export default function Page() {
                     that we own or operate). This Privacy Policy does not apply to any third-party websites, services or applications, even if they are accessible through our
                     Services. In addition, capitalized terms not defined in this Privacy Policy will have the meaning set forth in our Terms of Service.
                 </Text>
-                <Text fontSize="lg" fontWeight="bold">
-                    Cookies
-                </Text>
-                <Text>pulsebanner.com does not use cookies and is GDPR compliant.</Text>
                 <Text fontSize="lg" fontWeight="bold">
                     Your Privacy Rights
                 </Text>
