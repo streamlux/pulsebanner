@@ -64,7 +64,7 @@ export default function Footer() {
                     </Wrap>
                 </Center>
                 <Center>
-                    <Text>© PulseBanner 2021. All rights reserved.</Text>
+                    <Text>© PulseBanner {new Date().getFullYear()}. All rights reserved.</Text>
                 </Center>
             </VStack>
         </footer>
