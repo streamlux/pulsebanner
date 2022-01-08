@@ -4,111 +4,159 @@ import {
     Center,
     Container,
     Heading,
-    Spacer,
     VStack,
     Text,
     Image,
     useColorMode,
-    Wrap,
-    WrapItem,
     Stack,
     Switch,
     FormControl,
     FormLabel,
     Tag,
     HStack,
+    SimpleGrid,
+    Icon,
+    useBreakpoint,
+    Link,
+    Popover,
+    PopoverArrow,
+    PopoverBody,
+    PopoverCloseButton,
+    PopoverContent,
+    PopoverHeader,
+    PopoverTrigger,
 } from '@chakra-ui/react';
-import React, { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
-import { signIn, useSession } from 'next-auth/react';
-import { FaTwitch, FaTwitter, FaCheck, FaArrowRight } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { FaTwitter, FaCheck, FaArrowRight } from 'react-icons/fa';
 import banner from '@app/public/banner.png';
-import bannerHover from '@app/public/banner_hover.png';
-import bannerLightPng from '@app/public/banner_light.png';
-import profileImage from '@app/public/profileimage.png';
-import nameChanger from '@app/public/namechanger.png';
-import nameChangerLight from '@app/public/namechanger_light.png';
-import twitterxtwitch from '@app/public/twitterxtwitch.png';
-import twitterxtwitchLight from '@app/public/twitterxtwitch_light.png';
-import showcase from '@app/public/showcase.png';
-import showcaseLight from '@app/public/showcase_light.png';
-import showcaseOffline from '@app/public/showcase_offline.png';
-import showcaseOfflineLight from '@app/public/showcase_offline_light.png';
+import bannerLightPng from '@app/public/landing/banner_light.png';
+import profileImage from '@app/public/landing/profileimage.png';
+import nameChanger from '@app/public/landing/namechanger.png';
+import nameChangerLight from '@app/public/landing/namechanger_light.png';
+import twitterxtwitch from '@app/public/landing/twitterxtwitch.png';
+import twitterxtwitchLight from '@app/public/landing/twitterxtwitch_light.png';
+import NextLink from 'next/link';
 
-function useHover<T>(): [MutableRefObject<T>, boolean] {
-    const [value, setValue] = useState<boolean>(false);
-    const ref: any = useRef<T | null>(null);
-    const handleMouseOver = (): void => setValue(true);
-    const handleMouseOut = (): void => setValue(false);
-    useEffect(
-        () => {
-            const node: any = ref.current;
-            if (node) {
-                node.addEventListener('mouseover', handleMouseOver);
-                node.addEventListener('mouseout', handleMouseOut);
-                return () => {
-                    node.removeEventListener('mouseover', handleMouseOver);
-                    node.removeEventListener('mouseout', handleMouseOut);
-                };
-            }
-        },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [ref.current] // Recall only if ref changes
-    );
-    return [ref, value];
-}
+const showcase = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/showcase.webp';
+const showcaseOffline = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/showcase_offline.webp';
+const showcaseLight = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/showcase_light.webp';
+const showcaseLightOffline = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/showcase_offline_light.webp';
 
 export default function Page() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: session } = useSession({ required: false }) as any;
-
     const { colorMode } = useColorMode();
+    const breakpoint = useBreakpoint();
 
     const [offline, setOffline] = useState(false);
+
+    const SignUpSection = (
+        <Box experimental_spaceY={2} pt={['6']}>
+            <Heading textAlign="left">5 minute setup.</Heading>
+            <Text fontSize="sm" textAlign="left" color={colorMode === 'dark' ? 'gray.300' : 'gray.700'}>
+                Use for free forever, upgrade anytime for{' '}
+                <Popover trigger="hover" placement="top">
+                    <PopoverTrigger>
+                        <Text fontSize="sm" as="span" textDecoration="underline" textDecorationStyle="dashed" textUnderlineOffset="2px">
+                            $5.99*/mo
+                        </Text>
+                    </PopoverTrigger>
+                    <PopoverContent w="fit-content">
+                        <PopoverArrow />
+                        <PopoverBody w="fit-content">
+                            <Text>Personal plan, annual billing</Text>
+                        </PopoverBody>
+                    </PopoverContent>
+                </Popover>
+                .
+            </Text>
+
+            <HStack spacing={12}>
+                <Button size="lg" colorScheme="twitter" leftIcon={<FaTwitter />} onClick={() => signIn('twitter')}>
+                    Sign in with Twitter
+                </Button>
+                <Box w="128px">
+                    {colorMode === 'dark' ? (
+                        <Image src={typeof twitterxtwitch === 'string' ? twitterxtwitch : twitterxtwitch.src} alt="Banner" />
+                    ) : (
+                        <Image src={typeof twitterxtwitchLight === 'string' ? twitterxtwitchLight : twitterxtwitchLight.src} alt="Banner" />
+                    )}
+                </Box>
+            </HStack>
+            <Text fontSize="xs" color={colorMode === 'dark' ? 'gray.400' : 'gray.600'}>
+                {'By signing up, you agree to our'}{' '}
+                <Link as={NextLink} href="/terms" passHref>
+                    <Link textDecoration="underline">Terms</Link>
+                </Link>{' '}
+                and{' '}
+                <Link as={NextLink} href="/privacy" passHref>
+                    <Link textDecoration="underline">Privacy Policy</Link>
+                </Link>
+                .
+            </Text>
+        </Box>
+    );
 
     return (
         <VStack spacing="16">
             <Box>
                 <VStack>
-                    <Container centerContent maxW="container.xl" experimental_spaceY="16">
-                        <Stack direction={['column', 'row']} spacing={16}>
-                            <Center>
-                                <Box experimental_spaceY={8}>
+                    <Box centerContent w={['90vw', '80vw', '80vw', '80vw', '90vw', '90vw', '60vw']} maxW={1300} experimental_spaceY="16">
+                        <Stack direction={['column', 'column', 'column', 'column', 'row']} spacing={[8, 16]}>
+                            <Center maxW={['100%', '100%', '100%', '100%', '47%']}>
+                                <Box experimental_spaceY={[4, 8]}>
                                     <Heading size="3xl" textAlign="left">
-                                        Stand out on Twitter
+                                        Stand out on{' '}
+                                        <Box as="span" color="twitter.400">
+                                            Twitter
+                                        </Box>
                                     </Heading>
-                                    <Heading size="lg" textAlign="left">
-                                        Sync your Twitter profile with Twitch
-                                    </Heading>
-                                    <Box maxW="200px" w="60vw">
-                                        {colorMode === 'dark' ? (
-                                            <Image src={typeof twitterxtwitch === 'string' ? twitterxtwitch : twitterxtwitch.src} alt="Banner" />
-                                        ) : (
-                                            <Image src={typeof twitterxtwitchLight === 'string' ? twitterxtwitchLight : twitterxtwitchLight.src} alt="Banner" />
-                                        )}
-                                    </Box>
-                                    <Box experimental_spaceY={4}>
-                                        <Text fontSize="xl" textAlign="left">
-                                            Use for free, upgrade anytime for $7.99/mo. No strings attached.
-                                        </Text>
-                                        <Button size="lg" colorScheme="green" rightIcon={<FaArrowRight />}>
-                                            Level up your Twitter game
-                                        </Button>
-                                    </Box>
+                                    <Text fontSize="2xl" textAlign="left" color={colorMode === 'dark' ? 'gray.200' : 'gray.600'}>
+                                        Sync your Twitter profile with your Twitch stream. Promote your stream like never before.
+                                    </Text>
+
+                                    <SimpleGrid w="fit-content" columns={[1, 1, 2, 2, 2]} spacingY={2} spacingX={6}>
+                                        <HStack>
+                                            <Text>
+                                                <Icon as={FaCheck} fontSize="sm" color="green.300" mr="1" />
+                                                Automatic Twitter banner
+                                            </Text>
+                                        </HStack>
+                                        <HStack>
+                                            <Text>
+                                                <Icon as={FaCheck} fontSize="sm" color="green.300" mr="1" />
+                                                Preview stream with thumbnail
+                                            </Text>
+                                        </HStack>
+                                        <HStack>
+                                            <Text>
+                                                <Icon as={FaCheck} fontSize="sm" color="green.300" mr="1" />
+                                                Twitter name change
+                                            </Text>
+                                        </HStack>
+                                        <HStack>
+                                            <Text>
+                                                <Icon as={FaCheck} fontSize="sm" color="green.300" mr="1" />
+                                                Automatic Twitter profile picture
+                                            </Text>
+                                        </HStack>
+                                    </SimpleGrid>
+                                    {breakpoint !== 'base' && SignUpSection}
                                 </Box>
                             </Center>
-                            <Box>
+
+                            <Stack direction={['column-reverse', 'column-reverse', 'column-reverse', 'column-reverse', 'column']}>
                                 <Center>
-                                    <Box maxW="600px" p="1" bg="green.200" rounded="lg">
+                                    <Box maxW="700px" p="2" rounded="lg" bg={offline ? 'gray.200' : undefined} className={!offline ? 'animated-gradient' : ''}>
                                         {!offline ? (
                                             colorMode === 'dark' ? (
-                                                <Image rounded="lg" alt="showcase" src={typeof showcase === 'string' ? showcase : showcase.src} />
+                                                <Image rounded="lg" alt="showcase" src={showcase} />
                                             ) : (
-                                                <Image rounded="lg" alt="showcase" src={typeof showcaseLight === 'string' ? showcaseLight : showcaseLight.src} />
+                                                <Image rounded="lg" alt="showcase" src={showcaseLight} />
                                             )
                                         ) : colorMode === 'dark' ? (
-                                            <Image rounded="lg" alt="showcase" src={typeof showcaseOffline === 'string' ? showcaseOffline : showcaseOffline.src} />
+                                            <Image rounded="lg" alt="showcase" src={showcaseOffline} />
                                         ) : (
-                                            <Image rounded="lg" alt="showcase" src={typeof showcaseOfflineLight === 'string' ? showcaseOfflineLight : showcaseOfflineLight.src} />
+                                            <Image rounded="lg" alt="showcase" src={showcaseLightOffline} />
                                         )}
                                     </Box>
                                 </Center>
@@ -122,30 +170,31 @@ export default function Page() {
                                         </FormControl>
                                     </Box>
                                 </Center>
-                            </Box>
+                            </Stack>
                         </Stack>
 
-                        <Center py="32">
-                            <Container maxW="container.lg" w="90vw" experimental_spaceY={48}>
+                        {breakpoint === 'base' && SignUpSection}
+
+                        <Center>
+                            <Container maxW="container.lg" w="90vw" experimental_spaceY={[16, 48]}>
                                 <Box>
                                     <Box experimental_spaceY={4}>
                                         <HStack>
                                             <Heading size="2xl" textAlign="left">
-                                                Twitter Live Banner
+                                                Live Banner
                                             </Heading>
 
                                             <Tag colorScheme="green" size="lg">
                                                 FREE
                                             </Tag>
                                         </HStack>
-                                        <Text size="lg">
-                                            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quibusdam similique iste, nostrum exercitationem qui ex sed repellendus velit
-                                            voluptate expedita beatae reprehenderit placeat unde quia rerum explicabo repellat reiciendis harum?
+                                        <Text fontSize="lg">
+                                            Sync your Twitter banner with your Twitch stream. Updates when you go live on Twitch, and changes back when your stream ends.
                                         </Text>
                                     </Box>
 
                                     <Center py="8">
-                                        <Box maxW="1000">
+                                        <Box maxW="1000" minW={['95vw', 'unset']}>
                                             {colorMode === 'dark' ? (
                                                 <Image src={typeof banner === 'string' ? banner : banner.src} alt="Banner" />
                                             ) : (
@@ -154,46 +203,45 @@ export default function Page() {
                                         </Box>
                                     </Center>
                                     <Button size="lg" rightIcon={<FaArrowRight />} colorScheme="green">
-                                        Setup Live Banner
+                                        Customize your Live Banner
                                     </Button>
                                 </Box>
                                 <Box>
                                     <Box experimental_spaceY={4}>
                                         <HStack>
                                             <Heading size="2xl" textAlign="left">
-                                                Twitter Live Profile
+                                                Live Profile
                                             </Heading>
 
                                             <Tag colorScheme="blue" size="lg">
                                                 Premium
                                             </Tag>
                                         </HStack>
-                                        <Text size="lg">
-                                            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quibusdam similique iste, nostrum exercitationem qui ex sed repellendus velit
-                                            voluptate expedita beatae reprehenderit placeat unde quia rerum explicabo repellat reiciendis harum?
+                                        <Text fontSize="lg">
+                                            Sync your Twitter profile picture with your Twitch stream. Updates when you go live on Twitch, and changes back when your stream ends.
                                         </Text>
                                     </Box>
                                     <Center py="8">
                                         <Image src={typeof profileImage === 'string' ? profileImage : profileImage.src} alt="Banner" w="80vw" maxW="800px" py="10" />
                                     </Center>
                                     <Button size="lg" rightIcon={<FaArrowRight />} colorScheme="green">
-                                        Setup Live Profile
+                                        Setup your Live Profile
                                     </Button>
                                 </Box>
                                 <Box>
                                     <Box experimental_spaceY={4}>
                                         <HStack>
                                             <Heading size="2xl" textAlign="left">
-                                                Twitter Name Changer
+                                                Name Changer
                                             </Heading>
 
                                             <Tag colorScheme="green" size="lg">
                                                 FREE
                                             </Tag>
                                         </HStack>
-                                        <Text size="lg">
-                                            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quibusdam similique iste, nostrum exercitationem qui ex sed repellendus velit
-                                            voluptate expedita beatae reprehenderit placeat unde quia rerum explicabo repellat reiciendis harum?
+                                        <Text fontSize="lg">
+                                            Automatically change your Twitter name when you start streaming, and automatically change it back when your stream ends. Completely
+                                            free, and no hassle!
                                         </Text>
                                     </Box>
                                     <Center py="16">
@@ -210,37 +258,27 @@ export default function Page() {
                                 </Box>
                             </Container>
                         </Center>
-                        <Box maxW="400px" w="60vw">
-                            {colorMode === 'dark' ? (
-                                <Image src={typeof twitterxtwitch === 'string' ? twitterxtwitch : twitterxtwitch.src} alt="Banner" />
-                            ) : (
-                                <Image src={typeof twitterxtwitchLight === 'string' ? twitterxtwitchLight : twitterxtwitchLight.src} alt="Banner" />
-                            )}
-                        </Box>
+                        <Center>
+                            <Box maxW="400px" w="60vw">
+                                {colorMode === 'dark' ? (
+                                    <Image src={typeof twitterxtwitch === 'string' ? twitterxtwitch : twitterxtwitch.src} alt="Banner" />
+                                ) : (
+                                    <Image src={typeof twitterxtwitchLight === 'string' ? twitterxtwitchLight : twitterxtwitchLight.src} alt="Banner" />
+                                )}
+                            </Box>
+                        </Center>
                         <Box>
-                            <Heading textAlign="center">5 minute setup.</Heading>
-                            <Text textAlign="center">Use it for free! Upgrade anytime for $7.99/mo.</Text>
                             <Center mt="8">
-                                <Button size="lg" leftIcon={<FaTwitter />}>
-                                    Level up your Twitter game
-                                </Button>
+                                <Box rounded="md" p="1" className="animated-gradient">
+                                    <Button size="lg" leftIcon={<FaTwitter />} colorScheme="twitter">
+                                        Sign in with Twitter
+                                    </Button>
+                                </Box>
                             </Center>
                         </Box>
-                    </Container>
+                    </Box>
                 </VStack>
             </Box>
-            <Center>
-                <Box>
-                    <VStack>
-                        <Button onClick={() => signIn('twitter')} colorScheme="twitter" leftIcon={<FaTwitter />} rightIcon={session?.accounts?.twitter ? <FaCheck /> : undefined}>
-                            Connect to Twitter
-                        </Button>
-                        <Button onClick={() => signIn('twitch')} colorScheme="twitch" leftIcon={<FaTwitch />} rightIcon={session?.accounts?.twitch ? <FaCheck /> : undefined}>
-                            Connect to Twitch
-                        </Button>
-                    </VStack>
-                </Box>
-            </Center>
         </VStack>
     );
 }
