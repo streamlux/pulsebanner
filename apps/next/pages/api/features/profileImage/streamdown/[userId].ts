@@ -38,7 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             res.status(404).send('Unable to find user in database for profile pic on streamdown. This can be caused by the user enabling the feature while currently live.');
         }
 
-        const profilePicStatus: TwitterResponseCode = await updateProfilePic(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, base64Image);
+        const profilePicStatus: TwitterResponseCode = await updateProfilePic(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, base64Image);
         return profilePicStatus === 200 ? res.status(200).send('Set profile pic back to original image') : res.status(400).send('Unable to set profile pic to original image');
     }
 }

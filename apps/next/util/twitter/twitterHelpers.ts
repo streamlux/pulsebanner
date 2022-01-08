@@ -170,6 +170,19 @@ export async function updateProfilePic(userId: string, oauth_token: string, oaut
     return 200;
 }
 
+export async function validateAuthentication(oauth_token: string, oauth_token_secret: string): Promise<boolean> {
+    const client = createTwitterClient(oauth_token, oauth_token_secret);
+    // if we get a vaild response, we know they are verified and have not revoked the application. They could be still signed in at this point regardless
+    try {
+        await client.accountsAndUsers.accountVerifyCredentials();
+    } catch (e) {
+        // any failure (regardless or error code) make them re-authenticate
+        console.log('unsuccessful twitter authentication, requiring re-authentication.');
+        return false;
+    }
+    return true;
+}
+
 // would need to pass in the userId here
 async function handleTwitterApiError(userId: string, e: { errors?: { message: string; code: number }[]; _headers?: any }, context?: string) {
     if ('errors' in e) {

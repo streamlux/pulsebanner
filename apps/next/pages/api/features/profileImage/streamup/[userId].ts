@@ -45,7 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const profilePicCacheBucketName: string = env.PROFILE_PIC_CACHE_BUCKET;
 
         // get the existing profile pic
-        const profilePicUrl: string = await getTwitterProfilePic(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
+        const profilePicUrl: string = await getTwitterProfilePic(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
 
         //upload profilePicUrl as base64 to s3 storage
         const dataToUpload: string = profilePicUrl === 'empty' ? 'empty' : await imageToBase64(profilePicUrl);
@@ -80,7 +80,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const response: AxiosResponse<string> = await remotionAxios.post('/getProfilePic', templateObj);
             const base64Image: string = response.data;
 
-            const profilePictureStatus: TwitterResponseCode = await updateProfilePic(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, base64Image);
+            const profilePictureStatus: TwitterResponseCode = await updateProfilePic(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, base64Image);
             // update the last render time table and upload this image to s3
             if (profilePictureStatus === 200) {
                 await updateProfilePicRenderedDB(userId);
@@ -94,7 +94,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // otherwise, update the profilePicture with the cachedImage
         console.log('Image is valid, updating from cache');
-        const profilePictureStatus: TwitterResponseCode = await updateProfilePic(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, cachedImage);
+        const profilePictureStatus: TwitterResponseCode = await updateProfilePic(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, cachedImage);
         return profilePictureStatus === 200 ? res.status(200).send('Set profile picture to given template.') : res.status(400).send('Unable to set profile picture.');
     }
 }

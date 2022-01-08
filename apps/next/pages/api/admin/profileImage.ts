@@ -1,12 +1,8 @@
-import { TwitchClientAuthService } from '@app/services/TwitchClientAuthService';
-import { remotionAxios, twitchAxios } from '@app/util/axios';
-import { getBannerEntry, getProfilePicEntry, getProfilePicRendered, getTwitterInfo } from '@app/util/database/postgresHelpers';
-import { getAccountsById } from '@app/util/getAccountsById';
-import { uploadBase64 } from '@app/util/s3/upload';
+import { remotionAxios } from '@app/util/axios';
+import { getProfilePicEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { getTwitterProfilePic } from '@app/util/twitter/twitterHelpers';
-import { Prisma, RenderedProfileImage } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { AxiosResponse } from 'axios';
-import imageToBase64 from 'image-to-base64';
 import { createAuthApiHandler } from '../../../util/ssr/createApiHandler';
 
 type TemplateRequestBody = {
@@ -25,11 +21,6 @@ handler.get(async (req, res) => {
 
     const userId = req.query.userId as string ?? req.session.userId;
 
-    const accounts = await getAccountsById(userId);
-    const twitchUserId = accounts['twitch'].providerAccountId;
-
-    const twitterInfo = await getTwitterInfo(userId, true);
-
     if (userId) {
         const profilePicEntry = await getProfilePicEntry(userId);
         const twitterInfo = await getTwitterInfo(userId, true);
@@ -40,7 +31,7 @@ handler.get(async (req, res) => {
 
 
         // get the existing profile pic
-        const profilePicUrl: string = await getTwitterProfilePic(twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
+        const profilePicUrl: string = await getTwitterProfilePic(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
 
         const templateObj: TemplateRequestBody = {
             backgroundId: profilePicEntry.backgroundId ?? 'ColorBackground',
