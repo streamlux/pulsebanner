@@ -50,10 +50,10 @@ export default function Page() {
     const [offline, setOffline] = useState(false);
 
     const SignUpButton = (
-        <Box experimental_spaceY={2} pt={['6']} minW="12">
+        <Box experimental_spaceY={2} pt={['6']} minW="12" color={colorMode === 'dark' ? 'gray.300' : 'gray.700'}>
             <Heading textAlign="left">1 minute setup.</Heading>
-            <Text as="span" fontSize="sm" textAlign="left" color={colorMode === 'dark' ? 'gray.300' : 'gray.700'}>
-                Use for free forever, upgrade anytime for{' '}
+            <Text as="span" fontSize="sm" textAlign="left">
+                Use for <strong>free forever</strong>, or upgrade anytime for{' '}
             </Text>
             <Popover trigger="hover" placement="top">
                 <PopoverTrigger>
@@ -70,17 +70,28 @@ export default function Page() {
             </Popover>
             <Text as="span">.</Text>
 
-            <Flex experimental_spaceX={12}>
-                <Button size="lg" colorScheme="twitter" leftIcon={<FaTwitter />} onClick={() => signIn('twitter')}>
+            <Flex experimental_spaceX={4}>
+                <Button
+                    size="lg"
+                    colorScheme="twitter"
+                    leftIcon={<FaTwitter />}
+                    onClick={() =>
+                        signIn('twitter', {
+                            callbackUrl: '/banner',
+                        })
+                    }
+                >
                     Sign in with Twitter
                 </Button>
-                <Box w="128px">
-                    {colorMode === 'dark' ? (
-                        <Image src={typeof twitterxtwitch === 'string' ? twitterxtwitch : twitterxtwitch.src} alt="Banner" />
-                    ) : (
-                        <Image src={typeof twitterxtwitchLight === 'string' ? twitterxtwitchLight : twitterxtwitchLight.src} alt="Banner" />
-                    )}
-                </Box>
+                <Center>
+                    <Box w="128px">
+                        {colorMode === 'dark' ? (
+                            <Image src={typeof twitterxtwitch === 'string' ? twitterxtwitch : twitterxtwitch.src} alt="Banner" />
+                        ) : (
+                            <Image src={typeof twitterxtwitchLight === 'string' ? twitterxtwitchLight : twitterxtwitchLight.src} alt="Banner" />
+                        )}
+                    </Box>
+                </Center>
             </Flex>
             <Text fontSize="xs" color={colorMode === 'dark' ? 'gray.400' : 'gray.600'}>
                 {'By signing up, you agree to our'}{' '}
@@ -130,7 +141,7 @@ export default function Page() {
                                         <HStack>
                                             <Text>
                                                 <Icon as={FaCheck} fontSize="sm" color="green.300" mr="1" />
-                                                Twitter name change
+                                                Twitter name changer
                                             </Text>
                                         </HStack>
                                         <HStack>
@@ -176,33 +187,43 @@ export default function Page() {
                         {breakpoint === 'base' && SignUpButton}
 
                         <Center>
-                            <SimpleGrid columns={[1, 1, 1, 3]} spacing={8} minH="52">
-                                <Testimonial
-                                    name="RheddGhost"
-                                    avatarSrc="https://pbs.twimg.com/profile_images/1463398985771671555/XoRT334S_400x400.jpg"
-                                    text="Thank YOU for giving us such a simple and effective service! You help make promotion so much easier!"
-                                    link="https://twitch.tv/RheddGhost"
-                                    linkText="twitch.tv/RheddGhost"
-                                />
-                                <Testimonial
-                                    name="ToxikHeat"
-                                    avatarSrc="https://pbs.twimg.com/profile_images/1470248868143058945/9-m5vB15_400x400.jpg"
-                                    text="I was gonna post a go live tweet but i dont need to because i use @PulseBanner ;) Why arent you using it??"
-                                    link="https://twitch.tv/toxikheat"
-                                    linkText="twitch.tv/toxikheat"
-                                />
-                                <Testimonial
-                                    name="EMGG Mayja"
-                                    avatarSrc="https://pbs.twimg.com/profile_images/1404907077030535178/BJFUwlgH_400x400.jpg"
-                                    text="The question isn't should I use PulseBanner, but why wouldn't I? No one else provides such an invaluable service!"
-                                    link="https://twitch.tv/worldofmayja"
-                                    linkText="twitch.tv/WorldOfMayja"
-                                />
-                            </SimpleGrid>
+                            <Box experimental_spaceY={4}>
+                                <SimpleGrid columns={[1, 1, 1, 3]} spacing={8} minH="52">
+                                    <Testimonial
+                                        name="RheddGhost"
+                                        avatarSrc="https://pbs.twimg.com/profile_images/1463398985771671555/XoRT334S_400x400.jpg"
+                                        text="Thank YOU for giving us such a simple and effective service! You help make promotion so much easier!"
+                                        link="https://twitch.tv/RheddGhost"
+                                        linkText="twitch.tv/RheddGhost"
+                                    />
+                                    <Testimonial
+                                        name="ToxikHeat"
+                                        avatarSrc="https://pbs.twimg.com/profile_images/1470248868143058945/9-m5vB15_400x400.jpg"
+                                        text="I was gonna post a go live tweet but i dont need to because i use @PulseBanner ;) Why arent you using it??"
+                                        link="https://twitch.tv/toxikheat"
+                                        linkText="twitch.tv/toxikheat"
+                                    />
+                                    <Testimonial
+                                        name="EMGG Mayja"
+                                        avatarSrc="https://pbs.twimg.com/profile_images/1404907077030535178/BJFUwlgH_400x400.jpg"
+                                        text="The question isn't should I use PulseBanner, but why wouldn't I? No one else provides such an invaluable service!"
+                                        link="https://twitch.tv/worldofmayja"
+                                        linkText="twitch.tv/WorldOfMayja"
+                                    />
+                                </SimpleGrid>
+                                <Center>
+                                    <HStack>
+                                        <Text>❤️ PulseBanner?</Text>
+                                        <Button size="sm" leftIcon={<FaTwitter />} colorScheme="twitter">
+                                            Tweet us
+                                        </Button>
+                                    </HStack>
+                                </Center>
+                            </Box>
                         </Center>
 
                         <Center>
-                            <Container maxW="container.lg" w="90vw" experimental_spaceY={[16, 48]}>
+                            <Container maxW="container.lg" w="90vw" experimental_spaceY={[16, 32]}>
                                 <Box>
                                     <Box experimental_spaceY={4}>
                                         <HStack>
@@ -289,7 +310,37 @@ export default function Page() {
                                 </Box>
                             </Container>
                         </Center>
-                        <Center>
+
+                        <Box>
+                            <Center>
+                                <Box experimental_spaceY={4}>
+                                    <Heading textAlign={'center'}>Ready to bring your Twitter profile to life?</Heading>
+                                    <Center>
+                                        <Text fontSize="xl" textAlign={'center'} maxW="3xl">
+                                            {
+                                                'PulseBanner is the best way to get your stream noticed on Twitter. Created for creators by creators. We are loved by hundreds Twitch streamers. Get started now 👇'
+                                            }
+                                        </Text>
+                                    </Center>
+                                </Box>
+                            </Center>
+                            <Center mt="8">
+                                <Button
+                                    size="lg"
+                                    leftIcon={<FaTwitter />}
+                                    colorScheme="twitter"
+                                    onClick={() =>
+                                        signIn('twitter', {
+                                            callbackUrl: '/banner',
+                                        })
+                                    }
+                                >
+                                    Sign in with Twitter
+                                </Button>
+                            </Center>
+                        </Box>
+
+                        <Center py="4">
                             <Box maxW="400px" w="60vw">
                                 {colorMode === 'dark' ? (
                                     <Image src={typeof twitterxtwitch === 'string' ? twitterxtwitch : twitterxtwitch.src} alt="Banner" />
@@ -298,15 +349,6 @@ export default function Page() {
                                 )}
                             </Box>
                         </Center>
-                        <Box>
-                            <Center mt="8">
-                                <Box rounded="md" p="1" className="animated-gradient">
-                                    <Button size="lg" leftIcon={<FaTwitter />} colorScheme="twitter">
-                                        Sign in with Twitter
-                                    </Button>
-                                </Box>
-                            </Center>
-                        </Box>
                     </Box>
                 </VStack>
             </Box>
