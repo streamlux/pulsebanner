@@ -148,13 +148,13 @@ export default function Page() {
                     ))}
             </Head>
             <NextSeo
-                title="PulseBanner"
+                title="Stand out on Twitter"
                 openGraph={{
                     site_name: 'PulseBanner',
                     type: 'website',
                     url: 'https://pulsebanner.com/',
                     title: 'PulseBanner - Stand out on Twitter',
-                    description: 'Stand out on Twitter and attract more viewers to your stream from Twitter',
+                    description: 'Stand out on Twitter and attract more viewers to your stream',
                     images: [
                         {
                             url: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/seo/pulsebanner_og.webp',
