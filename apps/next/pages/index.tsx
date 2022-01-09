@@ -70,6 +70,7 @@ const landingPageAsset = (name: string) => `https://pb-static.sfo3.cdn.digitaloc
 
 import Head from 'next/head';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
+import { NextSeo } from 'next-seo';
 
 export default function Page() {
     const { colorMode } = useColorMode();
@@ -146,6 +147,28 @@ export default function Page() {
                         <link key={asset.src} rel="preload" href={asset.src} as="image" />
                     ))}
             </Head>
+            <NextSeo
+                title="PulseBanner"
+                openGraph={{
+                    site_name: 'PulseBanner',
+                    type: 'website',
+                    url: 'https://pulsebanner.com/',
+                    title: 'PulseBanner - Stand out on Twitter',
+                    description: 'Stand out on Twitter and attract more viewers to your stream from Twitter',
+                    images: [
+                        {
+                            url: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/seo/pulsebanner_og.webp',
+                            width: 1200,
+                            height: 627,
+                            alt: 'Stand out on Twitter with PulseBanner!',
+                        },
+                    ],
+                }}
+                twitter={{
+                    site: '@PulseBanner',
+                    cardType: 'summary_large_image',
+                }}
+            />
             <VStack spacing="16">
                 <Box>
                     <VStack>
