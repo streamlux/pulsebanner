@@ -21,12 +21,9 @@ import {
     Popover,
     PopoverArrow,
     PopoverBody,
-    PopoverCloseButton,
     PopoverContent,
-    PopoverHeader,
     PopoverTrigger,
     Flex,
-    ColorMode,
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import { signIn } from 'next-auth/react';
@@ -39,33 +36,39 @@ import nameChangerLight from '@app/public/landing/namechanger_light.png';
 import twitterxtwitch from '@app/public/landing/twitterxtwitch.png';
 import twitterxtwitchLight from '@app/public/landing/twitterxtwitch_light.png';
 import NextLink from 'next/link';
+import { Testimonial } from '@app/components/landing/Testimonial';
 
 const showcase = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/showcase.webp';
 const showcaseOffline = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/showcase_offline.webp';
 const showcaseLight = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/showcase_light.webp';
 const showcaseLightOffline = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/showcase_offline_light.webp';
 
-const SignUpSection: React.FC<{ colorMode: ColorMode }> = ({ colorMode }) => {
-    return (
+export default function Page() {
+    const { colorMode } = useColorMode();
+    const breakpoint = useBreakpoint('ssr');
+
+    const [offline, setOffline] = useState(false);
+
+    const SignUpButton = (
         <Box experimental_spaceY={2} pt={['6']} minW="12">
             <Heading textAlign="left">1 minute setup.</Heading>
-            <Text fontSize="sm" textAlign="left" color={colorMode === 'dark' ? 'gray.300' : 'gray.700'}>
+            <Text as="span" fontSize="sm" textAlign="left" color={colorMode === 'dark' ? 'gray.300' : 'gray.700'}>
                 Use for free forever, upgrade anytime for{' '}
-                <Popover trigger="hover" placement="top">
-                    <PopoverTrigger>
-                        <Text fontSize="sm" as="span" textDecoration="underline" textDecorationStyle="dashed" textUnderlineOffset="2px">
-                            $5.99*/mo
-                        </Text>
-                    </PopoverTrigger>
-                    <PopoverContent w="fit-content">
-                        <PopoverArrow />
-                        <PopoverBody w="fit-content">
-                            <Text>Personal plan, annual billing</Text>
-                        </PopoverBody>
-                    </PopoverContent>
-                </Popover>
-                .
             </Text>
+            <Popover trigger="hover" placement="top">
+                <PopoverTrigger>
+                    <Text fontSize="sm" as="span" textDecoration="underline" textDecorationStyle="dashed" textUnderlineOffset="2px">
+                        $5.99*/mo
+                    </Text>
+                </PopoverTrigger>
+                <PopoverContent w="fit-content">
+                    <PopoverArrow />
+                    <PopoverBody w="fit-content">
+                        <Text>Personal plan, annual billing</Text>
+                    </PopoverBody>
+                </PopoverContent>
+            </Popover>
+            <Text as="span">.</Text>
 
             <Flex experimental_spaceX={12}>
                 <Button size="lg" colorScheme="twitter" leftIcon={<FaTwitter />} onClick={() => signIn('twitter')}>
@@ -92,13 +95,6 @@ const SignUpSection: React.FC<{ colorMode: ColorMode }> = ({ colorMode }) => {
             </Text>
         </Box>
     );
-};
-
-export default function Page() {
-    const { colorMode } = useColorMode();
-    const breakpoint = useBreakpoint('ssr');
-
-    const [offline, setOffline] = useState(false);
 
     return (
         <VStack spacing="16">
@@ -144,52 +140,7 @@ export default function Page() {
                                             </Text>
                                         </HStack>
                                     </SimpleGrid>
-                                    {breakpoint !== 'base' && (
-                                        <Box experimental_spaceY={2} pt={['6']} minW="12">
-                                            <Heading textAlign="left">1 minute setup.</Heading>
-                                            <Text fontSize="sm" textAlign="left" color={colorMode === 'dark' ? 'gray.300' : 'gray.700'}>
-                                                Use for free forever, upgrade anytime for{' '}
-                                                <Popover trigger="hover" placement="top">
-                                                    <PopoverTrigger>
-                                                        <Text fontSize="sm" as="span" textDecoration="underline" textDecorationStyle="dashed" textUnderlineOffset="2px">
-                                                            $5.99*/mo
-                                                        </Text>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent w="fit-content">
-                                                        <PopoverArrow />
-                                                        <PopoverBody w="fit-content">
-                                                            <Text>Personal plan, annual billing</Text>
-                                                        </PopoverBody>
-                                                    </PopoverContent>
-                                                </Popover>
-                                                .
-                                            </Text>
-
-                                            <Flex experimental_spaceX={12}>
-                                                <Button size="lg" colorScheme="twitter" leftIcon={<FaTwitter />} onClick={() => signIn('twitter')}>
-                                                    Sign in with Twitter
-                                                </Button>
-                                                <Box w="128px">
-                                                    {colorMode === 'dark' ? (
-                                                        <Image src={typeof twitterxtwitch === 'string' ? twitterxtwitch : twitterxtwitch.src} alt="Banner" />
-                                                    ) : (
-                                                        <Image src={typeof twitterxtwitchLight === 'string' ? twitterxtwitchLight : twitterxtwitchLight.src} alt="Banner" />
-                                                    )}
-                                                </Box>
-                                            </Flex>
-                                            <Text fontSize="xs" color={colorMode === 'dark' ? 'gray.400' : 'gray.600'}>
-                                                {'By signing up, you agree to our'}{' '}
-                                                <Link as={NextLink} href="/terms" passHref>
-                                                    <Link textDecoration="underline">Terms</Link>
-                                                </Link>{' '}
-                                                and{' '}
-                                                <Link as={NextLink} href="/privacy" passHref>
-                                                    <Link textDecoration="underline">Privacy Policy</Link>
-                                                </Link>
-                                                .
-                                            </Text>
-                                        </Box>
-                                    )}
+                                    {breakpoint !== 'base' && SignUpButton}
                                 </Box>
                             </Center>
 
@@ -222,52 +173,33 @@ export default function Page() {
                             </Stack>
                         </Stack>
 
-                        {breakpoint === 'base' && (
-                            <Box experimental_spaceY={2} pt={['6']} minW="12">
-                                <Heading textAlign="left">1 minute setup.</Heading>
-                                <Text fontSize="sm" textAlign="left" color={colorMode === 'dark' ? 'gray.300' : 'gray.700'}>
-                                    Use for free forever, upgrade anytime for{' '}
-                                    <Popover trigger="hover" placement="top">
-                                        <PopoverTrigger>
-                                            <Text fontSize="sm" as="span" textDecoration="underline" textDecorationStyle="dashed" textUnderlineOffset="2px">
-                                                $5.99*/mo
-                                            </Text>
-                                        </PopoverTrigger>
-                                        <PopoverContent w="fit-content">
-                                            <PopoverArrow />
-                                            <PopoverBody w="fit-content">
-                                                <Text>Personal plan, annual billing</Text>
-                                            </PopoverBody>
-                                        </PopoverContent>
-                                    </Popover>
-                                    .
-                                </Text>
+                        {breakpoint === 'base' && SignUpButton}
 
-                                <Flex experimental_spaceX={12}>
-                                    <Button size="lg" colorScheme="twitter" leftIcon={<FaTwitter />} onClick={() => signIn('twitter')}>
-                                        Sign in with Twitter
-                                    </Button>
-                                    <Box w="128px">
-                                        {colorMode === 'dark' ? (
-                                            <Image src={typeof twitterxtwitch === 'string' ? twitterxtwitch : twitterxtwitch.src} alt="Banner" />
-                                        ) : (
-                                            <Image src={typeof twitterxtwitchLight === 'string' ? twitterxtwitchLight : twitterxtwitchLight.src} alt="Banner" />
-                                        )}
-                                    </Box>
-                                </Flex>
-                                <Text fontSize="xs" color={colorMode === 'dark' ? 'gray.400' : 'gray.600'}>
-                                    {'By signing up, you agree to our'}{' '}
-                                    <Link as={NextLink} href="/terms" passHref>
-                                        <Link textDecoration="underline">Terms</Link>
-                                    </Link>{' '}
-                                    and{' '}
-                                    <Link as={NextLink} href="/privacy" passHref>
-                                        <Link textDecoration="underline">Privacy Policy</Link>
-                                    </Link>
-                                    .
-                                </Text>
-                            </Box>
-                        )}
+                        <Center>
+                            <SimpleGrid columns={[1, 1, 1, 3]} spacing={8} minH="52">
+                                <Testimonial
+                                    name="RheddGhost"
+                                    avatarSrc="https://pbs.twimg.com/profile_images/1463398985771671555/XoRT334S_400x400.jpg"
+                                    text="Thank YOU for giving us such a simple and effective service! You help make promotion so much easier!"
+                                    link="https://twitch.tv/RheddGhost"
+                                    linkText="twitch.tv/RheddGhost"
+                                />
+                                <Testimonial
+                                    name="ToxikHeat"
+                                    avatarSrc="https://pbs.twimg.com/profile_images/1470248868143058945/9-m5vB15_400x400.jpg"
+                                    text="I was gonna post a go live tweet but i dont need to because i use @PulseBanner ;) Why arent you using it??"
+                                    link="https://twitch.tv/toxikheat"
+                                    linkText="twitch.tv/toxikheat"
+                                />
+                                <Testimonial
+                                    name="EMGG Mayja"
+                                    avatarSrc="https://pbs.twimg.com/profile_images/1404907077030535178/BJFUwlgH_400x400.jpg"
+                                    text="The question isn't should I use PulseBanner, but why wouldn't I? No one else provides such an invaluable service!"
+                                    link="https://twitch.tv/worldofmayja"
+                                    linkText="twitch.tv/WorldOfMayja"
+                                />
+                            </SimpleGrid>
+                        </Center>
 
                         <Center>
                             <Container maxW="container.lg" w="90vw" experimental_spaceY={[16, 48]}>
