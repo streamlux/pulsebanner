@@ -12,7 +12,7 @@ type TestimonialProps = {
 export const Testimonial: FC<TestimonialProps> = ({ name, link, avatarSrc, text, linkText }): ReactElement => {
     const { colorMode } = useColorMode();
     return (
-        <Box rounded="md" p="3" bg={colorMode === 'dark' ? 'whiteAlpha.200' : 'blackAlpha.50'} w="sm">
+        <Box rounded="md" p="3" bg={colorMode === 'dark' ? 'whiteAlpha.200' : 'blackAlpha.50'} maxW="sm" w="90vw" h="52">
             <Flex justifyContent="space-between" direction="column" h="full">
                 <Center>
                     <Text fontSize={['lg', 'xl']} textAlign="center">

@@ -127,10 +127,7 @@ export default function Header() {
                                         </WrapItem>
                                         <WrapItem>
                                             <NextLink href="/name" passHref>
-                                                <HStack>
-                                                    <Link>Name Changer</Link>
-                                                    <Tag colorScheme="green">NEW</Tag>
-                                                </HStack>
+                                                <Link>Name Changer</Link>
                                             </NextLink>
                                         </WrapItem>
                                         <WrapItem>
@@ -227,9 +224,9 @@ export default function Header() {
             </header>
             {breakpointValue.mobile && (
                 <Center>
-                    <Box background={colorMode === 'dark' ? 'gray.700' : 'blackAlpha.200'} maxW="container.lg" py="2" px="8" rounded="md">
+                    <Box background={colorMode === 'dark' ? 'gray.700' : 'blackAlpha.200'} w="full" mx="2" py="2" px="8" rounded="md">
                         <Center id="nav-links" fontSize="md" className={`nojs-show ${!session && loading ? styles.loading : styles.loaded}`}>
-                            <Wrap spacing={['4', '16', '20', '24']}>
+                            <Wrap spacing={['8', '16', '20', '24']}>
                                 <WrapItem>
                                     <NextLink href="/banner" passHref>
                                         <Link>Banner</Link>
