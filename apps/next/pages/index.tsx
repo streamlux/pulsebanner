@@ -30,13 +30,6 @@ import {
 import React, { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { FaTwitter, FaCheck, FaArrowRight } from 'react-icons/fa';
-import banner from '@app/public/banner.png';
-import bannerLightPng from '@app/public/landing/banner_light.png';
-import profileImage from '@app/public/landing/profileimage.png';
-import nameChanger from '@app/public/landing/namechanger.png';
-import nameChangerLight from '@app/public/landing/namechanger_light.png';
-import twitterxtwitch from '@app/public/landing/twitterxtwitch.png';
-import twitterxtwitchLight from '@app/public/landing/twitterxtwitch_light.png';
 import NextLink from 'next/link';
 import { Testimonial } from '@app/components/landing/Testimonial';
 
@@ -73,13 +66,18 @@ const staticAssets: Record<string, StaticAsset> = {
     },
 };
 
+const landingPageAsset = (name: string) => `https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/${name}.webp`;
+
 import Head from 'next/head';
+import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
 
 export default function Page() {
     const { colorMode } = useColorMode();
     const breakpoint = useBreakpoint('ssr');
 
     const [offline, setOffline] = useState(false);
+
+    const tweetText = 'Stand out on Twitter with @PulseBanner!\n\nMagically ✨ sync your Twitter profile to #Twitch! Get it for free today at pulsebanner.com!\n\n#PulseBanner';
 
     const SignUpButton = (
         <Box experimental_spaceY={2} pt={['6']} minW="12" color={colorMode === 'dark' ? 'gray.300' : 'gray.700'}>
@@ -118,18 +116,18 @@ export default function Page() {
                 <Center>
                     <Box w="128px">
                         {colorMode === 'dark' ? (
-                            <Image src={typeof twitterxtwitch === 'string' ? twitterxtwitch : twitterxtwitch.src} alt="Banner" />
+                            <Image src={landingPageAsset('twitterxtwitch')} alt="Banner" />
                         ) : (
-                            <Image src={typeof twitterxtwitchLight === 'string' ? twitterxtwitchLight : twitterxtwitchLight.src} alt="Banner" />
+                            <Image src={landingPageAsset('twitterxtwitch_light')} alt="Banner" />
                         )}
                     </Box>
                 </Center>
             </Flex>
             <Text fontSize="xs" color={colorMode === 'dark' ? 'gray.400' : 'gray.600'}>
                 {'By signing up, you agree to our'}{' '}
-                <Link as={NextLink} href="/terms" passHref>
+                <Box as={NextLink} href="/terms" passHref>
                     <Link textDecoration="underline">Terms</Link>
-                </Link>{' '}
+                </Box>{' '}
                 and{' '}
                 <Link as={NextLink} href="/privacy" passHref>
                     <Link textDecoration="underline">Privacy Policy</Link>
@@ -261,9 +259,11 @@ export default function Page() {
                                     <Center>
                                         <HStack>
                                             <Text>❤️ PulseBanner?</Text>
-                                            <Button size="sm" leftIcon={<FaTwitter />} colorScheme="twitter">
-                                                Tweet us!
-                                            </Button>
+                                            <NextLink passHref href="https://twitter.com/PulseBanner?ref_src=twsrc%5Etfw">
+                                                <Button as="a" target="_blank" size="sm" leftIcon={<FaTwitter />} colorScheme="twitter">
+                                                    Tweet us!
+                                                </Button>
+                                            </NextLink>
                                         </HStack>
                                     </Center>
                                 </Box>
@@ -290,14 +290,14 @@ export default function Page() {
                                         <Center py="8">
                                             <Box maxW="1000" minW={['95vw', 'unset']}>
                                                 {colorMode === 'dark' ? (
-                                                    <Image src={typeof banner === 'string' ? banner : banner.src} alt="Banner" />
+                                                    <Image src={landingPageAsset('banner')} alt="Banner" />
                                                 ) : (
-                                                    <Image src={typeof bannerLightPng === 'string' ? bannerLightPng : bannerLightPng.src} alt="Banner" />
+                                                    <Image src={landingPageAsset('banner_light')} alt="Banner" />
                                                 )}
                                             </Box>
                                         </Center>
-                                        <NextLink href="/banner">
-                                            <Button size="lg" rightIcon={<FaArrowRight />} colorScheme="green">
+                                        <NextLink passHref href="/banner">
+                                            <Button as="a" size="lg" rightIcon={<FaArrowRight />} colorScheme="green">
                                                 Customize your Live Banner
                                             </Button>
                                         </NextLink>
@@ -318,7 +318,7 @@ export default function Page() {
                                             </Text>
                                         </Box>
                                         <Center py="8">
-                                            <Image src={typeof profileImage === 'string' ? profileImage : profileImage.src} alt="Banner" w="80vw" maxW="800px" py="10" />
+                                            <Image src={landingPageAsset('profileimage')} alt="Banner" w="80vw" maxW="800px" py="10" />
                                         </Center>
                                         {/* <NextLink href="/profile">
                                         <Button size="lg" rightIcon={<FaArrowRight />} colorScheme="green" disabled>
@@ -348,13 +348,13 @@ export default function Page() {
                                         </Box>
                                         <Center py="16">
                                             {colorMode === 'dark' ? (
-                                                <Image src={typeof nameChanger === 'string' ? nameChanger : nameChanger.src} alt="Banner" w="full" />
+                                                <Image src={landingPageAsset('namechanger')} alt="Banner" w="full" />
                                             ) : (
-                                                <Image src={typeof nameChangerLight === 'string' ? nameChangerLight : nameChangerLight.src} alt="Banner" w="full" />
+                                                <Image src={landingPageAsset('namechanger_light')} alt="Banner" w="full" />
                                             )}
                                         </Center>
-                                        <NextLink href="/name">
-                                            <Button size="lg" rightIcon={<FaArrowRight />} colorScheme="green">
+                                        <NextLink passHref href="/name">
+                                            <Button as="a" size="lg" rightIcon={<FaArrowRight />} colorScheme="green">
                                                 Setup Name Changer
                                             </Button>
                                         </NextLink>
@@ -394,11 +394,26 @@ export default function Page() {
                             <Center py="4">
                                 <Box maxW="400px" w="60vw">
                                     {colorMode === 'dark' ? (
-                                        <Image src={typeof twitterxtwitch === 'string' ? twitterxtwitch : twitterxtwitch.src} alt="Banner" />
+                                        <Image src={landingPageAsset('twitterxtwitch')} alt="Banner" />
                                     ) : (
-                                        <Image src={typeof twitterxtwitchLight === 'string' ? twitterxtwitchLight : twitterxtwitchLight.src} alt="Banner" />
+                                        <Image src={landingPageAsset('twitterxtwitch_light')} alt="Banner" />
                                     )}
                                 </Box>
+                            </Center>
+
+                            <Center>
+                                <ShareToTwitter
+                                    tweetPreview={
+                                        <Text>
+                                            Stand out on Twitter with <Link color="twitter.400">@PulseBanner</Link>! <br />
+                                            Magically ✨ sync your Twitter profile with <Link color="twitter.400">#Twitch</Link>. Get it for free today at{' '}
+                                            <Link color="twitter.500">pulsebanner.com</Link>!
+                                            <br />
+                                            <Link color="twitter.500">#PulseBanner</Link>
+                                        </Text>
+                                    }
+                                    tweetText={tweetText}
+                                />
                             </Center>
                         </Box>
                     </VStack>

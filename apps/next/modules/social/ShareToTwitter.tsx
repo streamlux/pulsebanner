@@ -1,6 +1,7 @@
 import { shareOnTwitterLink } from '@app/util/constants';
 import { Box, Button, HStack, Link, VStack, Text, Heading, Center } from '@chakra-ui/react';
 import React, { ReactElement, FC, ReactNode } from 'react';
+import NextLink from 'next/link';
 
 function createIntent(tweetText: string): string {
     const encodedText = encodeURIComponent(tweetText);
@@ -28,11 +29,11 @@ export const ShareToTwitter: FC<ShareToTwitterProps> = ({ tweetText, tweetPrevie
                     <br />
                     (you can change the text)
                 </Text>
-                <Link color="blue.400" fontWeight="bold" isExternal href={createIntent(tweetText)}>
-                    <Button as="a" colorScheme="twitter">
+                <NextLink href={createIntent(tweetText)} passHref>
+                    <Button as="a" target="_blank" colorScheme="twitter">
                         Tweet ❤️
                     </Button>
-                </Link>
+                </NextLink>
             </HStack>
         </VStack>
     );
