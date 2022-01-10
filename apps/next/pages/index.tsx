@@ -71,6 +71,7 @@ const landingPageAsset = (name: string) => `https://pb-static.sfo3.cdn.digitaloc
 import Head from 'next/head';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
 import { NextSeo } from 'next-seo';
+import { trackEvent } from '@app/util/umami/trackEvent';
 
 export default function Page() {
     const { colorMode } = useColorMode();
@@ -106,11 +107,12 @@ export default function Page() {
                     size="lg"
                     colorScheme="twitter"
                     leftIcon={<FaTwitter />}
-                    onClick={() =>
+                    className={trackEvent('click', 'umami--click--hero-signup')}
+                    onClick={() => {
                         signIn('twitter', {
                             callbackUrl: '/banner',
-                        })
-                    }
+                        });
+                    }}
                 >
                     Sign in with Twitter
                 </Button>
@@ -235,8 +237,17 @@ export default function Page() {
                                     <Center w="full" py="2">
                                         <Box>
                                             <FormControl display="flex" alignItems="center">
-                                                <Switch id="live-profile" colorScheme="red" size="lg" defaultChecked={!offline} onChange={() => setOffline(!offline)} />
-                                                <FormLabel htmlFor="live-profile" mb="0" ml="2">
+                                                <Switch
+                                                    id="preview"
+                                                    colorScheme="red"
+                                                    size="lg"
+                                                    defaultChecked={!offline}
+                                                    onChange={() => {
+                                                        umami('toggle-preview');
+                                                        setOffline(!offline);
+                                                    }}
+                                                />
+                                                <FormLabel htmlFor="preview" mb="0" ml="2">
                                                     Preview Live Profile
                                                 </FormLabel>
                                             </FormControl>
@@ -283,7 +294,7 @@ export default function Page() {
                                         <HStack>
                                             <Text>❤️ PulseBanner?</Text>
                                             <NextLink passHref href="https://twitter.com/PulseBanner?ref_src=twsrc%5Etfw">
-                                                <Button as="a" target="_blank" size="sm" leftIcon={<FaTwitter />} colorScheme="twitter">
+                                                <Button as="a" target="_blank" size="sm" leftIcon={<FaTwitter />} colorScheme="twitter" className={trackEvent('click', 'tweet-us')}>
                                                     Tweet us!
                                                 </Button>
                                             </NextLink>
@@ -320,7 +331,7 @@ export default function Page() {
                                             </Box>
                                         </Center>
                                         <NextLink passHref href="/banner">
-                                            <Button as="a" size="lg" rightIcon={<FaArrowRight />} colorScheme="green">
+                                            <Button as="a" size="lg" rightIcon={<FaArrowRight />} colorScheme="green" className={trackEvent('click', 'customize-banner')}>
                                                 Customize your Live Banner
                                             </Button>
                                         </NextLink>
@@ -377,7 +388,7 @@ export default function Page() {
                                             )}
                                         </Center>
                                         <NextLink passHref href="/name">
-                                            <Button as="a" size="lg" rightIcon={<FaArrowRight />} colorScheme="green">
+                                            <Button as="a" size="lg" rightIcon={<FaArrowRight />} colorScheme="green" className={trackEvent('click', 'setup-name-changer')}>
                                                 Setup Name Changer
                                             </Button>
                                         </NextLink>
@@ -403,11 +414,12 @@ export default function Page() {
                                         size="lg"
                                         leftIcon={<FaTwitter />}
                                         colorScheme="twitter"
-                                        onClick={() =>
+                                        onClick={() => {
+                                            umami('signup-bottom');
                                             signIn('twitter', {
                                                 callbackUrl: '/banner',
-                                            })
-                                        }
+                                            });
+                                        }}
                                     >
                                         Sign in with Twitter
                                     </Button>

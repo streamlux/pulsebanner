@@ -24,7 +24,7 @@ import {
     useToast,
     Stack,
 } from '@chakra-ui/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
 import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
@@ -181,6 +181,12 @@ export default function Page({ banner }: Props) {
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch();
 
     const [isToggling, { on, off }] = useBoolean(false);
+
+    useEffect(() => {
+        axios.post('/').then(() => {
+            console.log('attempt to clear 301 redirect from cache');
+        });
+    }, []);
 
     const getUnsavedBanner = () => ({
         foregroundId: fgId,

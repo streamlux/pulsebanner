@@ -26,7 +26,7 @@ const nextConfig = {
                 destination: 'https://discord.gg/JU4McuJQt4',
                 permanent: false,
                 statusCode: 307
-            },
+            }
         ]
     },
     // fix heap limit allocation failed issue with NextJS 12
