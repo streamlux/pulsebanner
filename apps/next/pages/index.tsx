@@ -414,8 +414,8 @@ export default function Page() {
                                         size="lg"
                                         leftIcon={<FaTwitter />}
                                         colorScheme="twitter"
+                                        className={trackEvent('click', 'bottom-signup')}
                                         onClick={() => {
-                                            umami('signup-bottom');
                                             signIn('twitter', {
                                                 callbackUrl: '/banner',
                                             });
