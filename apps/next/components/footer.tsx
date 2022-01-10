@@ -15,18 +15,18 @@ export default function Footer() {
                     <Heading fontSize="lg">Connect with us! 🤠</Heading>
                     <Wrap justify="center">
                         <WrapItem>
-                            <Link isExternal href="https://twitter.com/PulseBanner?ref_src=twsrc%5Etfw">
-                                <Button colorScheme="twitter" leftIcon={<FaTwitter />} as="a">
+                            <NextLink passHref href="https://twitter.com/PulseBanner?ref_src=twsrc%5Etfw">
+                                <Button as="a" target="_blank" colorScheme="twitter" leftIcon={<FaTwitter />}>
                                     Follow us on Twitter
                                 </Button>
-                            </Link>
+                            </NextLink>
                         </WrapItem>
                         <WrapItem>
-                            <Link isExternal href={discordLink}>
-                                <Button as="a" leftIcon={<FaDiscord />}>
+                            <NextLink passHref href={discordLink}>
+                                <Button as="a" target="_blank" leftIcon={<FaDiscord />}>
                                     Join our Discord
                                 </Button>
-                            </Link>
+                            </NextLink>
                         </WrapItem>
                     </Wrap>
                 </VStack>
@@ -69,7 +69,7 @@ export default function Footer() {
                     </Wrap>
                 </Center>
                 <Center>
-                    <Text>© PulseBanner 2021. All rights reserved.</Text>
+                    <Text>© {new Date().getFullYear()} PulseBanner. All rights reserved.</Text>
                 </Center>
             </VStack>
         </footer>

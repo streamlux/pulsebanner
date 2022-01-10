@@ -34,7 +34,7 @@ import React from 'react';
 import { MoonIcon, SunIcon } from '@chakra-ui/icons';
 import { useAdmin } from '../util/hooks/useAdmin';
 import favicon from '@app/public/logo.webp';
-import { FaArrowRight, FaTwitter } from 'react-icons/fa';
+import { FaArrowRight, FaDiscord, FaTwitter } from 'react-icons/fa';
 import { MdEmail } from 'react-icons/md';
 import { NewsletterModal } from './newsletter/NewsletterModal';
 import { trackEvent } from '@app/util/umami/trackEvent';
@@ -107,7 +107,7 @@ export default function Header() {
                                 <LinkBox h="full" w="min">
                                     <HStack height="100%">
                                         <Image alt="PulseBanner logo" src={favicon.src} height="40px" width="40px" />
-                                        <NextLink href="/banner" passHref>
+                                        <NextLink href="/" passHref>
                                             <LinkOverlay>
                                                 <Heading size="md" as="h1">
                                                     PulseBanner
@@ -127,10 +127,7 @@ export default function Header() {
                                         </WrapItem>
                                         <WrapItem>
                                             <NextLink href="/name" passHref>
-                                                <HStack>
-                                                    <Link>Name Changer</Link>
-                                                    <Tag colorScheme="green">NEW</Tag>
-                                                </HStack>
+                                                <Link>Name Changer</Link>
                                             </NextLink>
                                         </WrapItem>
                                         <WrapItem>
@@ -160,6 +157,22 @@ export default function Header() {
                                         Subscribe for updates
                                     </Button>
                                 )} */}
+                                {breakpointValue.mobile && (
+                                    <IconButton
+                                        size="sm"
+                                        onClick={() => window.open('/discord', '_blank')}
+                                        aria-label="Discord"
+                                        title="Discord"
+                                        icon={<FaDiscord />}
+                                        className={trackEvent('click', 'discord-button')}
+                                    />
+                                )}
+                                {!breakpointValue.mobile && (
+                                    <Button onClick={() => window.open('/discord', '_blank')} leftIcon={<FaDiscord />} className={trackEvent('click', 'discord-button')}>
+                                        Join our Discord
+                                    </Button>
+                                )}
+
                                 <IconButton
                                     size={breakpoint === 'base' ? 'sm' : 'md'}
                                     aria-label="Toggle theme"
@@ -169,6 +182,7 @@ export default function Header() {
                                 >
                                     Toggle {colorMode === 'light' ? 'Dark' : 'Light'}
                                 </IconButton>
+
                                 {!session && (
                                     <Button
                                         as={Link}
@@ -209,27 +223,30 @@ export default function Header() {
                 </Center>
             </header>
             {breakpointValue.mobile && (
-                <Center id="nav-links" fontSize="lg" className={`nojs-show ${!session && loading ? styles.loading : styles.loaded}`}>
-                    <Wrap spacing={['8', '16', '20', '24']}>
-                        <WrapItem>
-                            <NextLink href="/banner" passHref>
-                                <Link>Banner</Link>
-                            </NextLink>
-                        </WrapItem>
-                        <WrapItem>
-                            <NextLink href="/name" passHref>
-                                <HStack>
-                                    <Link>Name Changer</Link>
-                                    <Tag colorScheme="green">NEW</Tag>
-                                </HStack>
-                            </NextLink>
-                        </WrapItem>
-                        <WrapItem>
-                            <NextLink href="/pricing" passHref>
-                                <Link>Pricing</Link>
-                            </NextLink>
-                        </WrapItem>
-                    </Wrap>
+                <Center>
+                    <Box background={colorMode === 'dark' ? 'gray.700' : 'blackAlpha.200'} w="full" mx="2" py="2" px="8" rounded="md">
+                        <Center id="nav-links" fontSize="md" className={`nojs-show ${!session && loading ? styles.loading : styles.loaded}`}>
+                            <Wrap spacing={['8', '16', '20', '24']}>
+                                <WrapItem>
+                                    <NextLink href="/banner" passHref>
+                                        <Link>Banner</Link>
+                                    </NextLink>
+                                </WrapItem>
+                                <WrapItem>
+                                    <NextLink href="/name" passHref>
+                                        <HStack>
+                                            <Link>Name Changer</Link>
+                                        </HStack>
+                                    </NextLink>
+                                </WrapItem>
+                                <WrapItem>
+                                    <NextLink href="/pricing" passHref>
+                                        <Link>Pricing</Link>
+                                    </NextLink>
+                                </WrapItem>
+                            </Wrap>
+                        </Center>
+                    </Box>
                 </Center>
             )}
             {holidayDecor && (

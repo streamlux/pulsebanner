@@ -5,7 +5,7 @@ import { NextSeoProps } from "next-seo"
 const seoOptions: NextSeoProps = {
 
     // Basic information https://github.com/garmeeh/next-seo#add-seo-to-page
-    description: "Easily attract more viewers to your stream from Twitter.",
+    description: "Stand out on Twitter and attract more viewers to your stream",
     titleTemplate: 'PulseBanner - %s',
     defaultTitle: 'PulseBanner',
     twitter: {
@@ -18,11 +18,11 @@ const seoOptions: NextSeoProps = {
         site_name: 'PulseBanner',
         type: 'website',
         url: 'https://pulsebanner.com/',
-        title: 'PulseBanner - Twitter Live Banner for Twitch',
-        description: 'Easily attract more viewers to your stream from Twitter',
+        title: 'PulseBanner - Stand out on Twitter',
+        description: 'Stand out on Twitter and attract more viewers to your stream',
         images: [
             {
-                url: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/pulsebanner_og.webp',
+                url: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/seo/pulsebanner_og.webp',
                 width: 1200,
                 height: 627,
                 alt: 'PulseBanner automates your Twitter banner for free.',
