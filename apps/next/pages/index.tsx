@@ -243,7 +243,6 @@ export default function Page() {
                                                     size="lg"
                                                     defaultChecked={!offline}
                                                     onChange={() => {
-                                                        umami('toggle-preview');
                                                         setOffline(!offline);
                                                     }}
                                                 />
