@@ -65,6 +65,7 @@ jobs:
                   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
                   NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${{ secrets.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}
                   NEXT_PUBLIC_UMAMI_SRC: ${{ secrets.NEXT_PUBLIC_UMAMI_SRC }}
+                  DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
             # This creates docker tags
             # https://github.com/docker/build-push-action/blob/master/docs/advanced/tags-labels.md

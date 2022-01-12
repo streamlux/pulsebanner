@@ -31,7 +31,13 @@ export default function App({ Component, pageProps }) {
                 <link rel="shortcut icon" sizes="192x192" href={favicon.src} />
                 <link rel="apple-touch-icon" href={favicon.src} />
             </Head>
-            <Script key="umami" strategy="afterInteractive" data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID} src={process.env.NEXT_PUBLIC_UMAMI_SRC} />
+            <Script
+                key="umami"
+                strategy="afterInteractive"
+                data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
+                src={process.env.NEXT_PUBLIC_UMAMI_SRC}
+                data-host-url="https://u.pulsebanner.com"
+            />
             {/* https://github.com/garmeeh/next-seo */}
             <DefaultSeo {...seoOptions} />
             <SessionProvider session={pageProps.session}>
