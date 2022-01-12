@@ -232,21 +232,24 @@ export default function Page({ profilePic }: Props) {
                     </Box>
                     {EnableButton}
                 </Flex>
+
                 <Flex w="full" rounded="md" direction="column">
-                    <Box w="30%">
-                        <RemotionProfilePreview compositionHeight={400} compositionWidth={400}>
-                            {' '}
-                            {/* Change this to be something different dimensions */}
-                            <Composer
-                                {...{
-                                    backgroundId: bgId,
-                                    foregroundId: fgId,
-                                    backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
-                                    foregroundProps: { ...ForegroundTemplates[fgId].defaultProps, ...fgProps },
-                                }}
-                            />
-                        </RemotionProfilePreview>
-                    </Box>
+                    <Center>
+                        <Box w="30%" minW="150px">
+                            <RemotionProfilePreview compositionHeight={400} compositionWidth={400}>
+                                {' '}
+                                {/* Change this to be something different dimensions */}
+                                <Composer
+                                    {...{
+                                        backgroundId: bgId,
+                                        foregroundId: fgId,
+                                        backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
+                                        foregroundProps: { ...ForegroundTemplates[fgId].defaultProps, ...fgProps },
+                                    }}
+                                />
+                            </RemotionProfilePreview>
+                        </Box>
+                    </Center>
 
                     <Flex grow={1} p="4" my="4" rounded="md" bg="whiteAlpha.100" w="full" direction="column" minH="lg">
                         <FgForm
