@@ -2,6 +2,7 @@ import { updateTwitchSubscriptions } from '@app/services/updateTwitchSubscriptio
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import prisma from '@app/util/ssr/prisma';
 import { ProfileImage } from '@prisma/client';
+import { productPlan } from '@app/util/database/paymentHelpers';
 
 const handler = createAuthApiHandler();
 
@@ -70,7 +71,16 @@ handler.put(async (req, res) => {
         },
     });
 
+
     if (profileImage) {
+        if (!profileImage.enabled) {
+            const subscription = await productPlan(userId);
+            if (subscription.plan === 'Free' && !(subscription.partner)) {
+                res.send(400);
+                return;
+            }
+
+        }
         await prisma.profileImage.update({
             where: {
                 userId,
