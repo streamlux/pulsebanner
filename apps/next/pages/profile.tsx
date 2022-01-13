@@ -172,11 +172,12 @@ export default function Page({ profilePic }: Props) {
         </VStack>
     );
 
-    const tweetText = 'I just setup my auto updating Twitter profile picture for #Twitch using @PulseBanner.\n\n#PulseBanner';
+    const tweetText = 'I just setup my @PulseBanner auto updating Twitter profile picture for #Twitch using PulseBanner.com!\n\n#PulseBanner';
 
     const TweetPreview = (
         <Text fontSize="lg" as="i">
-            I just setup my auto updating Twitter profile picture for <Link color="twitter.500">#Twitch</Link> using <Link color="twitter.500">@PulseBanner</Link>.
+            I just setup my <Link color="twitter.500">@PulseBanner</Link> auto updating Twitter profile picture for <Link color="twitter.500">#Twitch</Link> using{' '}
+            <Link color="twitter.500">PulseBanner.com</Link>!
             <br />
             <Link color="twitter.500">#PulseBanner</Link>
         </Text>
