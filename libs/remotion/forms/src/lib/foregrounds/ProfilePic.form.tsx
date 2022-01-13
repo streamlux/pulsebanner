@@ -122,7 +122,7 @@ export const ProfilePic: LayerForm<typeof ForegroundComponents.ProfilePic> = ({ 
                             <CustomColorPicker
                                 hideCustom
                                 colors={['#ff0000', '#0000ff', '#9600ee']}
-                                color={props.fontColor}
+                                color={props.liveBackgroundColor}
                                 onChangeColor={(c) => onChangeProps({ liveBackgroundColor: c })}
                                 showPricing={showPricing}
                                 availableFeature={accountLevel !== 'Free'}
