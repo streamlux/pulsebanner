@@ -294,7 +294,7 @@ export default function Page({ banner }: Props) {
                     description: 'Easily attract more viewers to your stream from Twitter',
                     images: [
                         {
-                            url: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/pulsebanner_og.webp',
+                            url: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/seo/pulsebanner_og.webp',
                             width: 1200,
                             height: 627,
                             alt: 'PulseBanner automates your Twitter banner for free.',
