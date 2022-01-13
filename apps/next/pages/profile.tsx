@@ -190,12 +190,12 @@ export default function Page({ profilePic }: Props) {
                 openGraph={{
                     site_name: 'PulseBanner',
                     type: 'website',
-                    url: 'https://pulsebanner.com/banner',
+                    url: 'https://pulsebanner.com/profile',
                     title: 'PulseBanner - Twitter Live Profile Picture for Twitch',
                     description: 'Easily attract more viewers to your stream from Twitter',
                     images: [
                         {
-                            url: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/pulsebanner_og.webp',
+                            url: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/seo/pulsebanner_og.webp',
                             width: 1200,
                             height: 627,
                             alt: 'PulseBanner automates your Twitter profile picture.',
@@ -251,29 +251,32 @@ export default function Page({ profilePic }: Props) {
                         </Box>
                     </Center>
 
-                    <Flex grow={1} p="4" my="4" rounded="md" bg="whiteAlpha.100" w="full" direction="column" minH="lg">
-                        <FgForm
-                            setProps={(s) => {
-                                console.log('set props', s);
-                                setFgProps(s);
-                            }}
-                            props={{ ...ForegroundTemplates[fgId].defaultProps, ...fgProps }}
-                            showPricing={showPricing}
-                            accountLevel={paymentPlan}
-                        />
-                        <Flex justifyContent="space-between" direction={['column', 'row']}>
-                            <Spacer />
-                            <HStack>
-                                <Button my="2" onClick={saveSettings} className={trackEvent('click', 'save-settings-button')}>
-                                    Save settings
-                                </Button>
-                            </HStack>
+                    <Center>
+                        <Flex grow={1} p="4" my="4" rounded="md" bg="whiteAlpha.100" w="fit-content" direction="column">
+                            <FgForm
+                                setProps={(s) => {
+                                    console.log('set props', s);
+                                    setFgProps(s);
+                                }}
+                                props={{ ...ForegroundTemplates[fgId].defaultProps, ...fgProps }}
+                                showPricing={showPricing}
+                                accountLevel={paymentPlan}
+                            />
+                            <Flex justifyContent="space-between" direction={['column', 'row']}>
+                                <Spacer />
+                                <HStack>
+                                    <Button my="2" onClick={saveSettings} className={trackEvent('click', 'save-settings-button')}>
+                                        Save settings
+                                    </Button>
+                                </HStack>
+                            </Flex>
                         </Flex>
-                    </Flex>
+                    </Center>
                 </Flex>
+
                 <Center>
                     <Stack direction={['column', 'row']}>
-                        <Text textAlign="center">Like Live Banner? Check out {breakpoint === 'base' ? '👇' : '👉'} </Text>
+                        <Text textAlign="center">Like Live Profile? Check out {breakpoint === 'base' ? '👇' : '👉'} </Text>
                         <NextLink passHref href="/banner">
                             <Link color="blue.300" fontWeight="bold" fontSize={['md', 'lg']}>
                                 PulseBanner Twitter Live Banner ✨
