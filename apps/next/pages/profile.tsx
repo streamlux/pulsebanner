@@ -96,6 +96,7 @@ export default function Page({ profilePic }: Props) {
     const breakpoint = useBreakpoint();
 
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch();
+    const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
 
     const [isToggling, { on, off }] = useBoolean(false);
 
@@ -108,7 +109,7 @@ export default function Page({ profilePic }: Props) {
     });
 
     const saveSettings = async () => {
-        if (ensureSignUp()) {
+        if (ensureSignUp() && showPricing()) {
             const response = await axios.post(profileEndpoint, getUnsavedProfilePic());
         }
     };
@@ -118,7 +119,7 @@ export default function Page({ profilePic }: Props) {
     };
 
     const toggle = async () => {
-        if (ensureSignUp()) {
+        if (ensureSignUp() && (profilePic.enabled || showPricing())) {
             umami(profilePic && profilePic.enabled ? 'disable-profile' : 'enable-profile');
             on();
             await saveSettings();
@@ -140,11 +141,10 @@ export default function Page({ profilePic }: Props) {
         }
     };
 
-    const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
     // const { isOpen: disableProfilePicIsOpen, onClose: disableProfilePicOnClose, onToggle: profilePicDisabledToggle } = useDisclosure();
 
     const showPricing: (force?: boolean) => boolean = (force?: boolean) => {
-        if (force) {
+        if (force || (paymentPlan === 'Free' && !paymentPlanResponse.partner)) {
             umami('show-pricing-modal');
             pricingToggle();
             return false;
@@ -172,12 +172,11 @@ export default function Page({ profilePic }: Props) {
         </VStack>
     );
 
-    const tweetText = 'I just setup my auto updating Twitter banner for #Twitch using @PulseBanner. Get it for free at pulsebanner.com!\n\n#PulseBanner';
+    const tweetText = 'I just setup my auto updating Twitter profile picture for #Twitch using @PulseBanner.\n\n#PulseBanner';
 
     const TweetPreview = (
         <Text fontSize="lg" as="i">
-            I just setup my auto updating Twitter profile picture for <Link color="twitter.500">#Twitch</Link> using <Link color="twitter.500">@PulseBanner</Link>. Get it at{' '}
-            <Link color="twitter.500">pulsebanner.com</Link>!
+            I just setup my auto updating Twitter profile picture for <Link color="twitter.500">#Twitch</Link> using <Link color="twitter.500">@PulseBanner</Link>.
             <br />
             <Link color="twitter.500">#PulseBanner</Link>
         </Text>
@@ -223,11 +222,11 @@ export default function Page({ profilePic }: Props) {
                             <Text textAlign={['center', 'left']} h="full">
                                 Need help? 👉{' '}
                             </Text>
-                            <Link isExternal href={discordLink}>
-                                <Button as="a" size="sm" colorScheme="gray" rightIcon={<FaDiscord />}>
+                            <NextLink passHref href={discordLink}>
+                                <Button as="a" target="_blank" size="sm" colorScheme="gray" rightIcon={<FaDiscord />}>
                                     Join our Discord
                                 </Button>
-                            </Link>
+                            </NextLink>
                         </HStack>
                     </Box>
                     {EnableButton}
@@ -272,6 +271,22 @@ export default function Page({ profilePic }: Props) {
                             </Flex>
                         </Flex>
                     </Center>
+                </Flex>
+
+                <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
+                    <Box maxW="xl">
+                        <HStack pt={['2', '2']} pb={['2', '0']}>
+                            <Text textAlign={['center', 'left']} h="full">
+                                Have feedback? 👉{' '}
+                            </Text>
+                            <NextLink passHref href={discordLink}>
+                                <Button as="a" target="_blank" size="sm" colorScheme="gray" rightIcon={<FaDiscord />}>
+                                    Join our Discord
+                                </Button>
+                            </NextLink>
+                        </HStack>
+                    </Box>
+                    {EnableButton}
                 </Flex>
 
                 <Center>

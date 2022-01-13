@@ -124,7 +124,7 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
                                         <Box flexGrow={2}>
                                             <Heading size="md">{"What's included"}</Heading>
                                             <List>
-                                                {['Live Banner', 'Name Changer'].map((feature) => (
+                                                {['Twitter Live Banner', 'Twitter Name Changer'].map((feature) => (
                                                     <ListItem key={feature}>
                                                         <ListIcon color="green.200" as={CheckIcon} />
                                                         {feature}
