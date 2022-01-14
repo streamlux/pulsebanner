@@ -41,7 +41,7 @@ import useSWR from 'swr';
 import FakeTweet from 'fake-tweet';
 import 'fake-tweet/build/index.css';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
-import { createTwitterClient, validateAuthentication } from '@app/util/twitter/twitterHelpers';
+import { createTwitterClient, validateTwitterAuthentication } from '@app/util/twitter/twitterHelpers';
 import { getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { format } from 'date-fns';
 import { NextSeo } from 'next-seo';
@@ -72,7 +72,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
         const client = createTwitterClient(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
 
-        const validate = await validateAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+        const validate = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
         if (!validate) {
             return {
                 props: {

@@ -20,9 +20,12 @@ import { RemotionProfilePreview } from '@pulsebanner/remotion/preview';
 import { Composer } from '@pulsebanner/remotion/components';
 import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
 import { useState } from 'react';
+import { getTwitterInfo, PostgresTwitterInfo } from '@app/util/database/postgresHelpers';
+import { getTwitterProfilePic, validateTwitterAuthentication } from '@app/util/twitter/twitterHelpers';
 
 interface Props {
     profilePic: ProfileImage;
+    twitterPic: string;
 }
 
 const profileEndpoint = '/api/features/profileImage';
@@ -53,16 +56,39 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     })) as any;
 
     if (session) {
-        const profilePic = await prisma.profileImage.findUnique({
+        const twitterInfo: PostgresTwitterInfo = await getTwitterInfo(session.userId, true);
+        const isTwitterAuthValid: boolean = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+
+        // if Twitter auth is invalid
+        if (!isTwitterAuthValid) {
+            return {
+                props: {
+                    twitterPic: undefined,
+                    twitterProfile: {},
+                },
+            };
+        }
+
+        const profilePic: ProfileImage = await prisma.profileImage.findUnique({
             where: {
                 userId: session.userId,
             },
         });
 
+        // https url of twitter profile picture
+        const twitterProfilePic: string = await getTwitterProfilePic(session.userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
+
         if (profilePic) {
             return {
                 props: {
                     profilePic,
+                },
+            };
+        } else {
+            return {
+                props: {
+                    profilePic: {},
+                    twitterPic: twitterProfilePic,
                 },
             };
         }
@@ -74,8 +100,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
 };
 
-export default function Page({ profilePic }: Props) {
-    // this feature is paid only...we should lock down entire page
+export default function Page({ profilePic, twitterPic }: Props) {
     const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
     const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
 
@@ -85,7 +110,10 @@ export default function Page({ profilePic }: Props) {
     const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>(defaultBackground);
     const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>((profilePic?.foregroundId as Foreground) ?? defaultForeground);
     const [bgProps, setBgProps] = useState({ color: 'transparent' });
-    const [fgProps, setFgProps] = useState(profilePic?.foregroundProps ?? (ForegroundTemplates[defaultForeground].defaultProps as any));
+    const [fgProps, setFgProps] = useState({
+        ...(profilePic?.foregroundProps ?? (ForegroundTemplates[defaultForeground].defaultProps as any)),
+        ...(twitterPic ? { imageUrl: twitterPic } : {}),
+    });
 
     const BackgroundTemplate = BackgroundTemplates[bgId];
     const ForegroundTemplate = ForegroundTemplates[fgId];
@@ -105,7 +133,7 @@ export default function Page({ profilePic }: Props) {
         foregroundId: fgId,
         backgroundId: bgId,
         backgroundProps: { ...BackgroundTemplate.defaultProps, ...bgProps },
-        foregroundProps: { ...ForegroundTemplate.defaultProps, ...fgProps },
+        foregroundProps: { ...ForegroundTemplate.defaultProps, ...fgProps, imUrl: twitterPic },
     });
 
     const saveSettings = async () => {
@@ -141,10 +169,17 @@ export default function Page({ profilePic }: Props) {
         }
     };
 
-    // const { isOpen: disableProfilePicIsOpen, onClose: disableProfilePicOnClose, onToggle: profilePicDisabledToggle } = useDisclosure();
+    const refreshProfilePicture = async () => {
+        if (ensureSignUp() && showPricing()) {
+            await axios.put('/api/features/profileImage/refresh');
+            window.location.reload();
+        }
+    };
 
+    // const { isOpen: disableProfilePicIsOpen, onClose: disableProfilePicOnClose, onToggle: profilePicDisabledToggle } = useDisclosure();
+    const qualified = !(paymentPlan === 'Free' && !paymentPlanResponse?.partner);
     const showPricing: (force?: boolean) => boolean = (force?: boolean) => {
-        if (force || (paymentPlan === 'Free' && !paymentPlanResponse.partner)) {
+        if (force || !qualified) {
             umami('show-pricing-modal');
             pricingToggle();
             return false;
@@ -202,12 +237,8 @@ export default function Page({ profilePic }: Props) {
                         },
                     ],
                 }}
-                twitter={{
-                    site: '@PulseBanner',
-                    cardType: 'summary_large_image',
-                }}
             />
-            <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} />
+            <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} callbackUrl="/profile" />
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
                 <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
                     <Box maxW="xl">
@@ -265,6 +296,9 @@ export default function Page({ profilePic }: Props) {
                             <Flex justifyContent="space-between" direction={['column', 'row']}>
                                 <Spacer />
                                 <HStack>
+                                    <Button my="2" onClick={refreshProfilePicture} disabled={!session || !qualified} className={trackEvent('click', 'save-settings-button')}>
+                                        Refresh image
+                                    </Button>
                                     <Button my="2" onClick={saveSettings} className={trackEvent('click', 'save-settings-button')}>
                                         Save settings
                                     </Button>

@@ -41,7 +41,7 @@ handler.get(async (req, res) => {
             backgroundId: true,
             foregroundId: true,
             backgroundProps: true,
-            foregroundProps: true,
+            foregroundProps: true
         },
     });
 

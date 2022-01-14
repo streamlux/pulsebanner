@@ -1,7 +1,9 @@
+import { AppNextApiRequest } from '@app/middlewares/auth';
 import { remotionAxios } from '@app/util/axios';
-import { getProfilePicEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
+import { getProfilePicEntry, getTwitterInfo, PostgresTwitterInfo } from '@app/util/database/postgresHelpers';
+import prisma from '@app/util/ssr/prisma';
 import { getTwitterProfilePic } from '@app/util/twitter/twitterHelpers';
-import { Prisma } from '@prisma/client';
+import { Prisma, ProfileImage } from '@prisma/client';
 import { AxiosResponse } from 'axios';
 import { createAuthApiHandler } from '../../../util/ssr/createApiHandler';
 
@@ -29,14 +31,10 @@ handler.get(async (req, res) => {
             res.status(400).send('Unable to get profilePicEntry or twitterInfo for user on streamup');
         }
 
-
-        // get the existing profile pic
-        const profilePicUrl: string = await getTwitterProfilePic(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
-
         const templateObj: TemplateRequestBody = {
             backgroundId: profilePicEntry.backgroundId ?? 'ColorBackground',
             foregroundId: profilePicEntry.foregroundId ?? 'ProfilePic',
-            foregroundProps: { ...(profilePicEntry.foregroundProps as Prisma.JsonObject), imageUrl: profilePicUrl } ?? {},
+            foregroundProps: { ...(profilePicEntry.foregroundProps as Prisma.JsonObject) } ?? {},
             backgroundProps: { ...(profilePicEntry.backgroundProps as Prisma.JsonObject) } ?? {},
         };
 

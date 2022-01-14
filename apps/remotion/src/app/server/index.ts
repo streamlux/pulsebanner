@@ -13,6 +13,10 @@ import { getMimeType } from './image-types';
 import { getImageHash } from './make-hash';
 import { Browser } from 'puppeteer-core';
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import queue from 'express-queue';
+
 let browser: Browser | undefined;
 const getBrowser = async (): Promise<Browser> => {
     browser ||= await openBrowser('chrome');
@@ -84,6 +88,7 @@ app.use(
 // api call (POST) to here sending the required information
 app.post(
     '/getTemplate',
+    queue({ activeLimit: 1, queuedLimit: -1 }),
     handler(async (req, res) => {
         const startMs = Date.now();
         const requestBody = req.body;
@@ -145,8 +150,8 @@ app.post(
  * TemplateId, Thumbnail URL, Twitch info
  */
 // api call (POST) to here sending the required information
-app.post(
-    '/getProfilePic',
+app.post('/getProfilePic',
+    queue({ activeLimit: 1, queuedLimit: -1 }),
     handler(async (req, res) => {
         const startMs = Date.now();
         const requestBody = req.body;

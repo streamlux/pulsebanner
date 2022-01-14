@@ -45,6 +45,7 @@
         "eslint": "^7.15.0",
         "execa": "^6.0.0",
         "express": "^4.17.1",
+        "express-queue": "^0.0.12",
         "express-rate-limit": "^5.3.0",
         "fake-tweet": "^0.1.16",
         "framer-motion": "^4.1.17",

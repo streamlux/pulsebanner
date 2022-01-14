@@ -170,7 +170,14 @@ export async function updateProfilePic(userId: string, oauth_token: string, oaut
     return 200;
 }
 
-export async function validateAuthentication(oauth_token: string, oauth_token_secret: string): Promise<boolean> {
+/**
+ * Verifies that we still have proper Twitter authentication
+ *
+ * @param oauth_token
+ * @param oauth_token_secret
+ * @returns
+ */
+export async function validateTwitterAuthentication(oauth_token: string, oauth_token_secret: string): Promise<boolean> {
     const client = createTwitterClient(oauth_token, oauth_token_secret);
     // if we get a vaild response, we know they are verified and have not revoked the application. They could be still signed in at this point regardless
     try {
