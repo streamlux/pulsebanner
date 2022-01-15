@@ -22,7 +22,7 @@ import Header from './header';
 import Footer from './footer';
 import { FaArrowRight } from 'react-icons/fa';
 import NextLink from 'next/link';
-import { holidayDecor, promoCode } from '@app/util/constants';
+import { holidayDecor, promo, promoCode } from '@app/util/constants';
 
 export default function Layout({ children }) {
     const { colorMode } = useColorMode();
@@ -41,7 +41,7 @@ export default function Layout({ children }) {
                         {children}
                     </Box>
                 </Flex>
-                {holidayDecor && isOpen && breakpoint !== 'base' && (
+                {promo && isOpen && breakpoint !== 'base' && (
                     <Portal>
                         <Box
                             sx={{ position: 'fixed', bottom: '0', right: '0' }}
@@ -60,7 +60,7 @@ export default function Layout({ children }) {
                                         <Tag color="black" fontWeight="bold" colorScheme="green" bg={colorMode === 'dark' ? 'green.100' : undefined}>
                                             {promoCode}
                                         </Tag>{' '}
-                                        {'at checkout to save 25% on your first 3 months! Ends 11:59 PT Jan 5'}
+                                        {'at checkout to save 20% on your first month! Ends 11:59 PT Jan 16'}
                                     </Text>
                                     {breakpoint === 'base' && (
                                         <Center>

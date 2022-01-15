@@ -38,7 +38,7 @@ import { FaArrowRight, FaDiscord, FaTwitter } from 'react-icons/fa';
 import { MdEmail } from 'react-icons/md';
 import { NewsletterModal } from './newsletter/NewsletterModal';
 import { trackEvent } from '@app/util/umami/trackEvent';
-import { holidayDecor, promoCode } from '@app/util/constants';
+import { holidayDecor, promo, promoCode } from '@app/util/constants';
 
 // The approach used in this component shows how to built a sign in and sign out
 // component that works on pages which support both client and server side
@@ -265,17 +265,17 @@ export default function Header() {
                     </Box>
                 </Center>
             )}
-            {holidayDecor && (
+            {promo && (
                 <Center pt={['4', '2']}>
                     <Box px="4" py="2" mx="4" color={colorMode === 'dark' ? 'black' : 'black'} w={['fit-content']} bg="green.200" rounded="lg">
                         <Center h="full">
                             <Stack direction={['column', 'column', 'row']}>
                                 <Text textAlign="center" pt="1" fontSize={['sm', 'md']}>
-                                    {'Holiday sale! Use code'}{' '}
+                                    {'Sale! Use code'}{' '}
                                     <Tag color="black" fontWeight="bold" colorScheme="green" bg={colorMode === 'dark' ? 'green.100' : undefined}>
                                         {promoCode}
                                     </Tag>{' '}
-                                    {'at checkout to save 25% on your first 3 months!'}
+                                    {'at checkout to save 20% on your first month!'}
                                 </Text>
                                 <NextLink href="/pricing" passHref>
                                     <Button rightIcon={<FaArrowRight />} colorScheme="whiteAlpha" bg="green.100" size="sm" color="black">
