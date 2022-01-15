@@ -46,7 +46,7 @@ import favicon from '@app/public/logo.webp';
 import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
 import { NextSeo } from 'next-seo';
 import { Card } from '@app/components/Card';
-import { CheckIcon } from '@chakra-ui/icons';
+import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
 
 type Props = {
     products: (Product & { prices: Price[] })[];
@@ -259,10 +259,14 @@ const Page: NextPage<Props> = ({ products }) => {
                                     <List>
                                         {['Twitter Live Banner', 'Twitter Name Changer'].map((feature) => (
                                             <ListItem key={feature}>
-                                                <ListIcon color="green.200" as={CheckIcon} />
+                                                <ListIcon color="green.300" as={CheckIcon} />
                                                 {feature}
                                             </ListItem>
                                         ))}
+                                        <ListItem key="profile image">
+                                            <ListIcon color="red.400" as={CloseIcon} />
+                                            Live Twitter Profile Picture
+                                        </ListItem>
                                     </List>
                                 </Box>
 

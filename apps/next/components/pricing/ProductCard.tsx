@@ -86,7 +86,7 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
                     <List>
                         {featureDescriptionMapping[product.name].map((feature) => (
                             <ListItem key={feature}>
-                                <ListIcon color="green.200" as={CheckIcon} />
+                                <ListIcon color="green.300" as={CheckIcon} />
                                 {feature}
                             </ListItem>
                         ))}

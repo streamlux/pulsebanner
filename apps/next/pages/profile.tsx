@@ -4,7 +4,25 @@ import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import prisma from '@app/util/ssr/prisma';
 import { trackEvent } from '@app/util/umami/trackEvent';
-import { Button, Heading, useBoolean, useBreakpoint, HStack, Flex, Box, useDisclosure, Text, useToast, VStack, Link, Container, Center, Stack, Spacer } from '@chakra-ui/react';
+import {
+    Button,
+    Heading,
+    useBoolean,
+    useBreakpoint,
+    HStack,
+    Flex,
+    Box,
+    useDisclosure,
+    Text,
+    useToast,
+    VStack,
+    Link,
+    Container,
+    Center,
+    Stack,
+    Spacer,
+    Tag,
+} from '@chakra-ui/react';
 import { ProfileImage } from '@prisma/client';
 import axios from 'axios';
 import { GetServerSideProps } from 'next';
@@ -242,9 +260,14 @@ export default function Page({ profilePic, twitterPic }: Props) {
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
                 <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
                     <Box maxW="xl">
-                        <Heading as="h1" fontSize={['2xl', '3xl']} alignSelf={['center', 'end']} pb={[0, 2]}>
-                            Twitch Profile Picture
-                        </Heading>
+                        <HStack>
+                            <Heading as="h1" fontSize={['2xl', '3xl']} alignSelf={['center', 'end']} pb={[0, 2]}>
+                                Twitter Profile Picture
+                            </Heading>
+                            <Tag colorScheme="blue" size="lg">
+                                Premium
+                            </Tag>
+                        </HStack>
                         <Heading fontSize="md" fontWeight="normal" as="h2">
                             Your Twitter profile picture will update when you start broadcasting on Twitch. Your profile picture will revert back to your current profile image when
                             your stream ends.
@@ -296,7 +319,7 @@ export default function Page({ profilePic, twitterPic }: Props) {
                             <Flex justifyContent="space-between" direction={['column', 'row']}>
                                 <Spacer />
                                 <HStack>
-                                    <Button my="2" onClick={refreshProfilePicture} disabled={!session || !qualified} className={trackEvent('click', 'save-settings-button')}>
+                                    <Button my="2" onClick={refreshProfilePicture} disabled={!session || !qualified} className={trackEvent('click', 'refresh-image-button')}>
                                         Refresh image
                                     </Button>
                                     <Button my="2" onClick={saveSettings} className={trackEvent('click', 'save-settings-button')}>
@@ -323,6 +346,13 @@ export default function Page({ profilePic, twitterPic }: Props) {
                     </Box>
                     {EnableButton}
                 </Flex>
+
+                <Center>
+                    <Text>
+                        Important note: If you update your Twitter profile picture and want your Live Profile Picture to update to use the new picture, click the Refresh Image
+                        button.
+                    </Text>
+                </Center>
 
                 <Center>
                     <Stack direction={['column', 'row']}>

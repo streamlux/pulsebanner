@@ -4,7 +4,6 @@ import { TwitterResponseCode, updateBanner, validateTwitterAuthentication } from
 import { flipFeatureEnabled, getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { env } from 'process';
 import { download } from '@app/util/s3/download';
-import { checkValidDownload } from '@app/util/s3/validateHelpers';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware

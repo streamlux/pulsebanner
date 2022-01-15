@@ -107,7 +107,7 @@ export default function Page() {
                     size="lg"
                     colorScheme="twitter"
                     leftIcon={<FaTwitter />}
-                    className={trackEvent('click', 'umami--click--hero-signup')}
+                    className={trackEvent('click', 'hero-signup')}
                     onClick={() => {
                         signIn('twitter', {
                             callbackUrl: '/banner',
@@ -353,15 +353,11 @@ export default function Page() {
                                         <Center py="8">
                                             <Image src={landingPageAsset('profileimage')} alt="Banner" w="80vw" maxW="800px" py="10" />
                                         </Center>
-                                        {/* <NextLink href="/profile">
-                                        <Button size="lg" rightIcon={<FaArrowRight />} colorScheme="green" disabled>
-                                            Setup your Live Profile
-                                        </Button>
-                                    </NextLink> */}
-
-                                        <Button size="lg" colorScheme="green" disabled _disabled={{ colorScheme: 'green' }}>
-                                            Coming soon!
-                                        </Button>
+                                        <NextLink passHref href="/profile">
+                                            <Button as="a" size="lg" rightIcon={<FaArrowRight />} colorScheme="green">
+                                                Setup your Live Profile
+                                            </Button>
+                                        </NextLink>
                                     </Box>
                                     <Box>
                                         <Box experimental_spaceY={4}>
