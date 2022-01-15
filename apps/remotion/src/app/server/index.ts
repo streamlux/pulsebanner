@@ -13,9 +13,9 @@ import { getMimeType } from './image-types';
 import { getImageHash } from './make-hash';
 import { Browser } from 'puppeteer-core';
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import queue from 'express-queue';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const queue = require('express-queue');
+const queueMw = queue({ activeLimit: 1, queuedLimit: -1 });
 
 let browser: Browser | undefined;
 const getBrowser = async (): Promise<Browser> => {
@@ -88,8 +88,11 @@ app.use(
 // api call (POST) to here sending the required information
 app.post(
     '/getTemplate',
-    queue({ activeLimit: 1, queuedLimit: -1 }),
+    queueMw,
     handler(async (req, res) => {
+
+        console.log(`Request queue length: ${queueMw.queue.getLength()}`);
+
         const startMs = Date.now();
         const requestBody = req.body;
         console.log('requestBody: ', requestBody);
@@ -151,8 +154,11 @@ app.post(
  */
 // api call (POST) to here sending the required information
 app.post('/getProfilePic',
-    queue({ activeLimit: 1, queuedLimit: -1 }),
+    queueMw,
     handler(async (req, res) => {
+
+        console.log(`Request queue length: ${queueMw.queue.getLength()}`);
+
         const startMs = Date.now();
         const requestBody = req.body;
         console.log('requestBody: ', requestBody);
