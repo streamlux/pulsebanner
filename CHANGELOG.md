@@ -7,21 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.5.0] - 2022-01-14
+
+### Added
+
+- Profile picture feature
+- Remotion queues responses
+
 ## [0.4.3] - 2022-01-09
 
-## Fix
+### Fix
 
 - Prevent umami script from being blocked by adblock
 
 ## [0.4.2] - 2022-01-09
 
-## Fix
+### Fix
 
 - Fix Deploy to Production GitHub Action
 
 ## [0.4.1] - 2022-01-09
 
-## Fix
+### Fix
 
 - GitHub action by locking `@prisma/client` and `prisma` to `3.1.1`.
 
