@@ -128,7 +128,56 @@ export async function updateTwitterName(userId: string, oauth_token: string, oau
     return 200;
 }
 
-export async function validateAuthentication(oauth_token: string, oauth_token_secret: string): Promise<boolean> {
+export async function getTwitterProfilePic(userId: string, oauth_token: string, oauth_token_secret: string, providerAccountId: string): Promise<string> {
+    const client = createTwitterClient(oauth_token, oauth_token_secret);
+
+    try {
+        const response = await client.accountsAndUsers.usersShow({ user_id: providerAccountId });
+
+        // https://developer.twitter.com/en/docs/twitter-api/v1/accounts-and-users/user-profile-images-and-banners
+        // remove '_normal' to get the original sized profile image
+        const profilePic = response.profile_image_url_https.replace('_normal', '');
+        return profilePic;
+    } catch (e) {
+        handleTwitterApiError(userId, e, 'error getting twitter profile pic, setting to empty');
+        return 'empty';
+    }
+}
+
+export async function updateProfilePic(userId: string, oauth_token: string, oauth_token_secret: string, profilePicBase64: string): Promise<TwitterResponseCode> {
+    const client = createTwitterClient(oauth_token, oauth_token_secret);
+
+    // this will only be hit or used on streamdown.See if we even need this by changing to user? Not sure how to test this really
+    if (profilePicBase64 === 'empty') {
+        try {
+            await client.accountsAndUsers.accountUpdateProfileImage({
+                image: profilePicBase64,
+            });
+        } catch (e) {
+            console.log('Error updating empty profile image: ', e);
+        }
+    } else {
+        try {
+            await client.accountsAndUsers.accountUpdateProfileImage({
+                image: profilePicBase64,
+            });
+        } catch (e) {
+            handleTwitterApiError(userId, e, 'Updating profile picture');
+            return 400;
+        }
+    }
+    console.log('success updating profile picture');
+    return 200;
+}
+
+/**
+ * Verifies that we still have proper Twitter authentication
+ *
+ * @param oauth_token
+ * @param oauth_token_secret
+ * @returns
+ */
+export async function validateTwitterAuthentication(oauth_token: string, oauth_token_secret: string): Promise<boolean> {
     const client = createTwitterClient(oauth_token, oauth_token_secret);
     // if we get a vaild response, we know they are verified and have not revoked the application. They could be still signed in at this point regardless
     try {

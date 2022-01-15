@@ -1,7 +1,7 @@
 import prisma from '@app/util/ssr/prisma';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import { updateTwitchSubscriptions } from '@app/services/updateTwitchSubscriptions';
-import { validateAuthentication } from '@app/util/twitter/twitterHelpers';
+import { validateTwitterAuthentication } from '@app/util/twitter/twitterHelpers';
 
 const handler = createAuthApiHandler();
 
@@ -25,7 +25,7 @@ handler.post(async (req, res) => {
     });
 
     if (userInfo && userInfo.oauth_token && userInfo.oauth_token_secret) {
-        const valid = await validateAuthentication(userInfo.oauth_token, userInfo.oauth_token_secret);
+        const valid = await validateTwitterAuthentication(userInfo.oauth_token, userInfo.oauth_token_secret);
         if (!valid) {
             // send 401 if not authenticated
             return res.send(401);
@@ -107,7 +107,7 @@ handler.put(async (req, res) => {
     });
 
     if (userInfo && userInfo.oauth_token && userInfo.oauth_token_secret) {
-        const valid = await validateAuthentication(userInfo.oauth_token, userInfo.oauth_token_secret);
+        const valid = await validateTwitterAuthentication(userInfo.oauth_token, userInfo.oauth_token_secret);
         if (!valid) {
             // send 401 if not authenticated
             return res.send(401);

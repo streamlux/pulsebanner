@@ -1,220 +1,247 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
-  oauth_token_secret String?
-  oauth_token        String?
+    id                 String  @id @default(cuid())
+    userId             String
+    type               String
+    provider           String
+    providerAccountId  String
+    refresh_token      String?
+    access_token       String?
+    expires_at         Int?
+    token_type         String?
+    scope              String?
+    id_token           String?
+    session_state      String?
+    oauth_token_secret String?
+    oauth_token        String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([provider, providerAccountId])
-  @@map("accounts")
+    @@unique([provider, providerAccountId])
+    @@map("accounts")
 }
 
 model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    id           String   @id @default(cuid())
+    sessionToken String   @unique
+    userId       String
+    expires      DateTime
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("sessions")
+    @@map("sessions")
 }
 
 model User {
-  id                  String               @id @default(cuid())
-  name                String?
-  email               String?              @unique
-  emailVerified       DateTime?
-  image               String?
-  createdAt           DateTime             @default(now()) @map("created_at")
-  role                Role                 @default(user)
-  accounts            Account[]
-  sessions            Session[]
-  customer            Customer?
-  subscription        Subscription?
-  banner              Banner?
-  tweet               Tweet?
-  twitterName         TwitterName?
-  twitterOriginalName TwitterOriginalName?
-  partner             Boolean              @default(false)
+    id                  String                @id @default(cuid())
+    name                String?
+    email               String?               @unique
+    emailVerified       DateTime?
+    image               String?
+    createdAt           DateTime              @default(now()) @map("created_at")
+    role                Role                  @default(user)
+    accounts            Account[]
+    sessions            Session[]
+    customer            Customer?
+    subscription        Subscription?
+    banner              Banner?
+    tweet               Tweet?
+    twitterName         TwitterName?
+    twitterOriginalName TwitterOriginalName?
+    profileImage        ProfileImage?
+    renderedProfilePic  RenderedProfileImage?
+    partner             Boolean               @default(false)
 
-  @@map("users")
+    @@map("users")
 }
 
 enum Role {
-  user
-  admin
+    user
+    admin
 }
 
 model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
+    identifier String
+    token      String   @unique
+    expires    DateTime
 
-  @@unique([identifier, token])
-  @@map("verification_requests")
+    @@unique([identifier, token])
+    @@map("verification_requests")
 }
 
 model Banner {
-  id              String   @id @default(cuid())
-  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
-  userId          String   @unique(map: "banners_user_id_unique") @map("user_id")
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  enabled         Boolean  @default(false)
-  foregroundId    String
-  backgroundId    String
-  backgroundProps Json
-  foregroundProps Json
+    id              String   @id @default(cuid())
+    updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+    userId          String   @unique(map: "banners_user_id_unique") @map("user_id")
+    user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    enabled         Boolean  @default(false)
+    foregroundId    String
+    backgroundId    String
+    backgroundProps Json
+    foregroundProps Json
 
-  @@map("banners")
+    @@map("banners")
 }
 
 model Tweet {
-  id       String  @id @default(cuid())
-  userId   String  @unique(map: "tweets_user_id_unique") @map("user_id")
-  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  template String  @map("template")
-  enabled  Boolean @default(false)
-  twitch   Twitch?
+    id       String  @id @default(cuid())
+    userId   String  @unique(map: "tweets_user_id_unique") @map("user_id")
+    user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    template String  @map("template")
+    enabled  Boolean @default(false)
+    twitch   Twitch?
 
-  @@map("tweets")
+    @@map("tweets")
 }
 
 // particular to twitch
 model Twitch {
-  id        String  @id @default(cuid())
-  userId    String  @unique(map: "twitch_user_id_unique") @map("user_id")
-  tweet     Tweet   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  streamUrl String?
-  tweetInfo String? // Needs to be enforced to 280 character limit
+    id        String  @id @default(cuid())
+    userId    String  @unique(map: "twitch_user_id_unique") @map("user_id")
+    tweet     Tweet   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    streamUrl String?
+    tweetInfo String? // Needs to be enforced to 280 character limit
 
-  @@map("twitch")
+    @@map("twitch")
 }
 
 model TwitterName {
-  id         String   @id @default(cuid())
-  userId     String   @unique(map: "twitter_username_user_id_unique") @map("user_id")
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  enabled    Boolean  @default(false)
-  streamName String   @map("stream_name")
-  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+    id         String   @id @default(cuid())
+    userId     String   @unique(map: "twitter_username_user_id_unique") @map("user_id")
+    user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    enabled    Boolean  @default(false)
+    streamName String   @map("stream_name")
+    updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
 
-  @@map("username")
+    @@map("username")
 }
 
 // separate this out since we do not need to save this when they save their settings. Makes fetching easier
 model TwitterOriginalName {
-  id           String @id @default(cuid())
-  userId       String @unique(map: "twitter_original_username_user_id_unique") @map("user_id")
-  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  originalName String @map("original_name")
+    id           String @id @default(cuid())
+    userId       String @unique(map: "twitter_original_username_user_id_unique") @map("user_id")
+    user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    originalName String @map("original_name")
 
-  @@map("original_name")
+    @@map("original_name")
+}
+
+/// Twitter profile image feature
+model ProfileImage {
+    id              String   @id @default(cuid())
+    userId          String   @unique(map: "twitter_profile_picture") @map("user_id")
+    user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    enabled         Boolean  @default(false)
+    updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+    foregroundId    String
+    backgroundId    String
+    backgroundProps Json
+    foregroundProps Json
+
+    @@map("profile_img")
+}
+
+// track when the last time the profile pic was rendered
+model RenderedProfileImage {
+    id           String   @id @default(cuid())
+    userId       String   @unique @map("user_id")
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    lastRendered DateTime @default(now()) @map("last_rendered")
+
+    @@map("rendered_profile_img")
 }
 
 // Stripe models
 // Below models taken from https://github.com/gmpetrov/ultimate-saas-ts/blob/master/prisma/schema.prisma
 
 model Customer {
-  id        String   @id @default(cuid())
-  userId    String   @unique(map: "customers_user_id_unique") @map("user_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @map("updated_at")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    id        String   @id @default(cuid())
+    userId    String   @unique(map: "customers_user_id_unique") @map("user_id")
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @default(now()) @map("updated_at")
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("customers")
+    @@map("customers")
 }
 
 model Product {
-  id          String   @id @default(cuid())
-  active      Boolean  @default(false)
-  name        String
-  description String?
-  image       String?
-  metadata    Json?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @default(now()) @map("updated_at")
-  prices      Price[]
+    id          String   @id @default(cuid())
+    active      Boolean  @default(false)
+    name        String
+    description String?
+    image       String?
+    metadata    Json?
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @default(now()) @map("updated_at")
+    prices      Price[]
 
-  @@map("products")
+    @@map("products")
 }
 
 model Price {
-  id                String         @id @default(cuid())
-  productId         String         @map("product_id")
-  active            Boolean        @default(false)
-  currency          String
-  interval          PriceInterval?
-  unitAmount        Int?           @map("unit_amount")
-  interval_count    Int?
-  trial_period_days Int?
-  type              PriceType?
-  createdAt         DateTime       @default(now()) @map("created_at")
-  updatedAt         DateTime       @default(now()) @map("updated_at")
-  product           Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
-  subscriptions     Subscription[]
+    id                String         @id @default(cuid())
+    productId         String         @map("product_id")
+    active            Boolean        @default(false)
+    currency          String
+    interval          PriceInterval?
+    unitAmount        Int?           @map("unit_amount")
+    interval_count    Int?
+    trial_period_days Int?
+    type              PriceType?
+    createdAt         DateTime       @default(now()) @map("created_at")
+    updatedAt         DateTime       @default(now()) @map("updated_at")
+    product           Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+    subscriptions     Subscription[]
 
-  @@map("prices")
+    @@map("prices")
 }
 
 model Subscription {
-  id                   String             @id @default(cuid())
-  userId               String             @unique(map: "subscriptions_user_id_unique") @map("user_id")
-  priceId              String
-  status               SubscriptionStatus
-  start_date           DateTime?
-  ended_at             DateTime?
-  trial_end            DateTime?
-  trial_start          DateTime?
-  cancel_at            DateTime?
-  cancel_at_period_end Boolean?
-  canceled_at          DateTime?
-  metadata             Json?
-  createdAt            DateTime           @default(now()) @map("created_at")
-  updatedAt            DateTime           @default(now()) @map("updated_at")
-  price                Price              @relation(fields: [priceId], references: [id])
-  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+    id                   String             @id @default(cuid())
+    userId               String             @unique(map: "subscriptions_user_id_unique") @map("user_id")
+    priceId              String
+    status               SubscriptionStatus
+    start_date           DateTime?
+    ended_at             DateTime?
+    trial_end            DateTime?
+    trial_start          DateTime?
+    cancel_at            DateTime?
+    cancel_at_period_end Boolean?
+    canceled_at          DateTime?
+    metadata             Json?
+    createdAt            DateTime           @default(now()) @map("created_at")
+    updatedAt            DateTime           @default(now()) @map("updated_at")
+    price                Price              @relation(fields: [priceId], references: [id])
+    user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("subscriptions")
+    @@map("subscriptions")
 }
 
 enum PriceType {
-  recurring
-  one_time
+    recurring
+    one_time
 }
 
 enum SubscriptionStatus {
-  active
-  canceled
-  incomplete
-  incomplete_expired
-  past_due
-  trialing
-  unpaid
+    active
+    canceled
+    incomplete
+    incomplete_expired
+    past_due
+    trialing
+    unpaid
 }
 
 enum PriceInterval {
-  day
-  month
-  week
-  year
+    day
+    month
+    week
+    year
 }

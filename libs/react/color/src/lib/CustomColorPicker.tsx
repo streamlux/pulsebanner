@@ -1,4 +1,4 @@
-import { Box, HStack, Button, useDisclosure, Stack } from '@chakra-ui/react';
+import { Box, HStack, Button, useDisclosure, Stack, Wrap, WrapItem } from '@chakra-ui/react';
 import React, { ReactElement, FC, useState } from 'react';
 import { SwatchGroup, CustomColorModal } from '../index';
 import { CgColorPicker } from 'react-icons/cg';
@@ -25,18 +25,23 @@ export const CustomColorPicker: FC<CustomColorPickerProps> = ({ colors, color, o
     };
     return (
         <Box>
-            <Stack direction={['column', 'row']}>
-                <SwatchGroup
-                    colors={swatchColors}
-                    onChange={(color) => {
-                        onChangeColor(color);
-                    }}
-                    value={color}
-                />
-                <Button w="fit-content" aria-label="Color picker" leftIcon={<CgColorPicker />} onClick={onCustomColor}>
-                    Custom
-                </Button>
-            </Stack>
+            <Wrap>
+                <WrapItem>
+                    <SwatchGroup
+                        colors={swatchColors}
+                        onChange={(color) => {
+                            onChangeColor(color);
+                        }}
+                        value={color}
+                    />
+                </WrapItem>
+                <WrapItem>
+                    <Button w="fit-content" aria-label="Color picker" leftIcon={<CgColorPicker />} onClick={onCustomColor}>
+                        Custom
+                    </Button>
+                </WrapItem>
+            </Wrap>
+            <Stack direction={['row', 'row']}></Stack>
 
             <CustomColorModal
                 isOpen={isModalOpen}

@@ -1,4 +1,11 @@
-import {registerRoot} from 'remotion';
-import {RemotionVideo} from './Stills';
+import { registerRoot } from 'remotion';
+import { RemotionProfilePicture, RemotionVideo } from './Stills';
 
-registerRoot(RemotionVideo);
+registerRoot(() => {
+    return (
+        <>
+            <RemotionVideo />
+            <RemotionProfilePicture />
+        </>
+    );
+});

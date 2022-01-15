@@ -121,6 +121,14 @@ export default function Header() {
                                 <Center id="nav-links" fontSize="lg">
                                     <Wrap spacing={['2', '4', '8', '10']}>
                                         <WrapItem>
+                                            <NextLink href="/profile" passHref>
+                                                <HStack>
+                                                    <Link>Profile Picture</Link>
+                                                    <Tag colorScheme="green">NEW</Tag>
+                                                </HStack>
+                                            </NextLink>
+                                        </WrapItem>
+                                        <WrapItem>
                                             <NextLink href="/banner" passHref>
                                                 <Link>Banner</Link>
                                             </NextLink>
@@ -130,6 +138,7 @@ export default function Header() {
                                                 <Link>Name Changer</Link>
                                             </NextLink>
                                         </WrapItem>
+
                                         <WrapItem>
                                             <NextLink href="/pricing" passHref>
                                                 <Link>Pricing</Link>
@@ -224,9 +233,16 @@ export default function Header() {
             </header>
             {breakpointValue.mobile && (
                 <Center>
-                    <Box background={colorMode === 'dark' ? 'gray.700' : 'blackAlpha.200'} w="full" mx="2" py="2" px="8" rounded="md">
-                        <Center id="nav-links" fontSize="md" className={`nojs-show ${!session && loading ? styles.loading : styles.loaded}`}>
-                            <Wrap spacing={['8', '16', '20', '24']}>
+                    <Box background={colorMode === 'dark' ? 'gray.700' : 'blackAlpha.200'} w="full" mx="2" py="2" px={['2', '8']} rounded="md">
+                        <Center id="nav-links" fontSize={['sm', 'md']} className={`nojs-show ${!session && loading ? styles.loading : styles.loaded}`}>
+                            <Wrap spacing={['4', '16', '20', '24']}>
+                                <WrapItem>
+                                    <NextLink href="/profile" passHref>
+                                        <HStack>
+                                            <Link>Profile Pic</Link>
+                                        </HStack>
+                                    </NextLink>
+                                </WrapItem>
                                 <WrapItem>
                                     <NextLink href="/banner" passHref>
                                         <Link>Banner</Link>

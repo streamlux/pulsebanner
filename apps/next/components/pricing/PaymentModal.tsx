@@ -1,7 +1,7 @@
 import { Price, PriceInterval, Product } from '.prisma/client';
 import { holidayDecor, promoCode } from '@app/util/constants';
 import { trackEvent } from '@app/util/umami/trackEvent';
-import { CheckIcon } from '@chakra-ui/icons';
+import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
 import { HStack, SimpleGrid, Stack, VStack } from '@chakra-ui/layout';
 import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay } from '@chakra-ui/modal';
 import { Box, Center, chakra, Flex, Heading, List, ListIcon, ListItem, Switch, Tag, Text, useColorMode, WrapItem } from '@chakra-ui/react';
@@ -124,12 +124,16 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
                                         <Box flexGrow={2}>
                                             <Heading size="md">{"What's included"}</Heading>
                                             <List>
-                                                {['Live Banner', 'Name Changer'].map((feature) => (
+                                                {['Twitter Live Banner', 'Twitter Name Changer'].map((feature) => (
                                                     <ListItem key={feature}>
-                                                        <ListIcon color="green.200" as={CheckIcon} />
+                                                        <ListIcon color="green.300" as={CheckIcon} />
                                                         {feature}
                                                     </ListItem>
                                                 ))}
+                                                <ListItem key="profile image">
+                                                    <ListIcon color="red.400" as={CloseIcon} />
+                                                    Live Twitter Profile Picture
+                                                </ListItem>
                                             </List>
                                         </Box>
 

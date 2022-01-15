@@ -9,16 +9,19 @@ import os from 'os';
 import path from 'path';
 import { handler } from './handler';
 import { helpText } from './help-text';
-import { getImageType, getMimeType } from './image-types';
+import { getMimeType } from './image-types';
 import { getImageHash } from './make-hash';
-import { sendFile } from './send-file';
 import { Browser } from 'puppeteer-core';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const queue = require('express-queue');
+const queueMw = queue({ activeLimit: 1, queuedLimit: -1 });
 
 let browser: Browser | undefined;
 const getBrowser = async (): Promise<Browser> => {
     browser ||= await openBrowser('chrome');
     return browser as Browser;
-}
+};
 
 dotenv.config();
 
@@ -46,11 +49,6 @@ app.use(express.json());
 
 const tmpDir = fs.promises.mkdtemp(path.join(os.tmpdir(), 'remotion-'));
 
-enum Params {
-    compositionname,
-    format,
-}
-
 webpackBundling.then(() => {
     console.log('Done bundling.');
 });
@@ -77,21 +75,32 @@ app.use(
         windowMs: 1 * 60 * 1000,
         max: 20,
         onLimitReached: () => {
-            console.log('Rate limit reached')
-        }
+            console.log('Rate limit reached');
+        },
     })
 );
 
-// NOTE: This get endpoint will be removed/should be taken out when we don't need for testing
-
-// The image is rendered when /[CompositionName].[imageformat] is called.
-// Props are passed via query string.
-app.get(
-    `/:${Params.compositionname}.:${Params.format}(png|jpe?g)`,
+/**
+ * Format for what we are going to pass in
+ * Req Body
+ * TemplateId, Thumbnail URL, Twitch info
+ */
+// api call (POST) to here sending the required information
+app.post(
+    '/getTemplate',
+    queueMw,
     handler(async (req, res) => {
-        const inputProps = req.query;
-        const compName = req.params[Params.compositionname];
-        const imageFormat = getImageType(req.params[Params.format]);
+
+        console.log(`Request queue length: ${queueMw.queue.getLength()}`);
+
+        const startMs = Date.now();
+        const requestBody = req.body;
+        console.log('requestBody: ', requestBody);
+
+        // hard coded info as we only use one composition composer and generate different templates from there by passing the different props
+        const imageFormat = 'png';
+        const compName = 'pulsebanner';
+        const inputProps = req.body;
 
         res.set('content-type', getMimeType(imageFormat));
 
@@ -106,14 +115,15 @@ app.get(
         );
 
         const output = path.join(await tmpDir, hash);
-        const puppeteerInstance = await getBrowser();
+
         const webpackBundle = await webpackBundling;
+        const puppeteerInstance = await getBrowser();
         const composition = await getComp(compName, inputProps);
         await new Promise<void>((resolve, reject) => {
             renderStill({
+                puppeteerInstance,
                 composition,
                 webpackBundle,
-                puppeteerInstance,
                 output,
                 inputProps,
                 imageFormat,
@@ -126,9 +136,14 @@ app.get(
                 .catch((err) => reject(err));
         });
 
-        await sendFile(res, fs.createReadStream(output));
-        // await saveToCache(hash, await fs.promises.readFile(output));
-        await fs.promises.unlink(output);
+        console.log(output);
+        const imageBase64 = fs.readFileSync(output, { encoding: 'base64' });
+
+        const endMs = Date.now();
+
+        console.log(`Done rendering in ${endMs - startMs}ms`);
+
+        res.send(imageBase64);
     })
 );
 
@@ -138,16 +153,19 @@ app.get(
  * TemplateId, Thumbnail URL, Twitch info
  */
 // api call (POST) to here sending the required information
-app.post(
-    '/getTemplate',
+app.post('/getProfilePic',
+    queueMw,
     handler(async (req, res) => {
+
+        console.log(`Request queue length: ${queueMw.queue.getLength()}`);
+
         const startMs = Date.now();
         const requestBody = req.body;
         console.log('requestBody: ', requestBody);
 
         // hard coded info as we only use one composition composer and generate different templates from there by passing the different props
         const imageFormat = 'png';
-        const compName = 'pulsebanner';
+        const compName = 'twitterProfilePic';
         const inputProps = req.body;
 
         res.set('content-type', getMimeType(imageFormat));

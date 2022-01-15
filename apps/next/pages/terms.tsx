@@ -68,9 +68,9 @@ export default function Page() {
                     You may cancel your subscription at any time but please note that such cancellation will be effective at the end of the then-current subscription period. YOU
                     WILL NOT RECEIVE A REFUND OF ANY PORTION OF THE SUBSCRIPTION FEE PAID FOR THE THEN-CURRENT SUBSCRIPTION PERIOD AT THE TIME OF CANCELLATION. To cancel, you can
                     either (i) email us at pulsebanner@streamlux.com and follow any instructions, if any, we provide to you in response to your cancellation request, or (ii)
-                    initiate a cancellation through your account settings within the Services. You will be responsible for all subscription fees (plus any applicable taxes and
-                    other charges) incurred for the then-current subscription period. If you cancel, we will allow you to utilize features associated with such subscription until
-                    the most recently paid-up subscription period ends. Cancelling your subscription won’t cancel your account.
+                    initiate a cancellation through your account settings. You will be responsible for all subscription fees (plus any applicable taxes and other charges) incurred
+                    for the then-current subscription period. If you cancel, we will allow you to utilize features associated with such subscription until the most recently paid-up
+                    subscription period ends. Cancelling your subscription won’t cancel your account.
                 </Text>
                 <Text fontSize="lg" fontWeight="bold">
                     5. Content and Content Rights

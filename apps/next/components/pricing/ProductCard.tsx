@@ -24,7 +24,7 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
         return null;
     }
 
-    const sharedFeatureList = ['Unlimited color options', 'Custom background image', 'Custom fonts', 'Name Changer ⭐ NEW'];
+    const sharedFeatureList = ['Live Twitter profile picture', 'Custom banner colors', 'Custom banner background image', 'Custom fonts!', 'Fully customize Name Changer'];
     const personalFeatureList = sharedFeatureList.concat(['High quality image rendering', 'Thumbnail refreshing (coming soon)']);
     const professionalFeatureList = sharedFeatureList.concat(['Remove watermark', 'Ultra high image quality', 'Unlock all features', 'Fast thumbnail refresh (coming soon)']);
 
@@ -86,7 +86,7 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
                     <List>
                         {featureDescriptionMapping[product.name].map((feature) => (
                             <ListItem key={feature}>
-                                <ListIcon color="green.200" as={CheckIcon} />
+                                <ListIcon color="green.300" as={CheckIcon} />
                                 {feature}
                             </ListItem>
                         ))}

@@ -8,6 +8,7 @@ import { trackEvent } from '@app/util/umami/trackEvent';
 import { EditIcon, StarIcon } from '@chakra-ui/icons';
 import {
     Box,
+    BoxProps,
     Button,
     Center,
     Container,
@@ -26,6 +27,7 @@ import {
     useBoolean,
     useBreakpoint,
     useColorMode,
+    useColorModeValue,
     useDisclosure,
     useToast,
     VStack,
@@ -41,7 +43,7 @@ import useSWR from 'swr';
 import FakeTweet from 'fake-tweet';
 import 'fake-tweet/build/index.css';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
-import { createTwitterClient, validateAuthentication } from '@app/util/twitter/twitterHelpers';
+import { createTwitterClient, validateTwitterAuthentication } from '@app/util/twitter/twitterHelpers';
 import { getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { format } from 'date-fns';
 import { NextSeo } from 'next-seo';
@@ -72,7 +74,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
         const client = createTwitterClient(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
 
-        const validate = await validateAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+        const validate = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
         if (!validate) {
             return {
                 props: {
@@ -126,7 +128,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 export default function Page({ twitterName, twitterProfile }: Props) {
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('/name');
-
+    const styles: BoxProps = useColorModeValue<BoxProps>(
+        {
+            border: '1px solid',
+            borderColor: 'gray.300',
+        },
+        {
+            background: 'whiteAlpha.100',
+        }
+    );
     const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
     const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
 
@@ -271,7 +281,7 @@ export default function Page({ twitterName, twitterProfile }: Props) {
                     description: 'Easily attract more viewers to your stream from Twitter',
                     images: [
                         {
-                            url: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/pulsebanner_name_og.webp',
+                            url: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/seo/pulsebanner_og.webp',
                             width: 1200,
                             height: 627,
                             alt: 'PulseBanner automates your Twitter Name for free.',
@@ -323,7 +333,7 @@ export default function Page({ twitterName, twitterProfile }: Props) {
                 </Center>
                 <Flex rounded="md" direction="column" w="full">
                     <Center w="full">
-                        <Flex grow={1} p="4" mb="8" rounded="md" bg="whiteAlpha.100" direction="column" maxW="container.sm" experimental_spaceY={4}>
+                        <Flex {...styles} grow={1} p="4" mb="8" rounded="md" direction="column" maxW="container.sm" experimental_spaceY={4}>
                             <HStack w="full">
                                 <FormControl id="name">
                                     <FormLabel>Live name</FormLabel>
