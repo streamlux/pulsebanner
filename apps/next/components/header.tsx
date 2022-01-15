@@ -144,6 +144,11 @@ export default function Header() {
                                                 <Link>Pricing</Link>
                                             </NextLink>
                                         </WrapItem>
+                                        <WrapItem>
+                                            <NextLink href="/affiliate" passHref>
+                                                <Link>Affiliate Program</Link>
+                                            </NextLink>
+                                        </WrapItem>
                                     </Wrap>
                                 </Center>
                             )}
@@ -258,6 +263,11 @@ export default function Header() {
                                 <WrapItem>
                                     <NextLink href="/pricing" passHref>
                                         <Link>Pricing</Link>
+                                    </NextLink>
+                                </WrapItem>
+                                <WrapItem>
+                                    <NextLink href="/affiliate" passHref>
+                                        <Link>Affiliate Program</Link>
                                     </NextLink>
                                 </WrapItem>
                             </Wrap>
