@@ -8,6 +8,7 @@ import { trackEvent } from '@app/util/umami/trackEvent';
 import { EditIcon, StarIcon } from '@chakra-ui/icons';
 import {
     Box,
+    BoxProps,
     Button,
     Center,
     Container,
@@ -26,6 +27,7 @@ import {
     useBoolean,
     useBreakpoint,
     useColorMode,
+    useColorModeValue,
     useDisclosure,
     useToast,
     VStack,
@@ -126,7 +128,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 export default function Page({ twitterName, twitterProfile }: Props) {
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('/name');
-
+    const styles: BoxProps = useColorModeValue<BoxProps>(
+        {
+            border: '1px solid',
+            borderColor: 'gray.300',
+        },
+        {
+            background: 'whiteAlpha.100',
+        }
+    );
     const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
     const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
 
@@ -323,7 +333,7 @@ export default function Page({ twitterName, twitterProfile }: Props) {
                 </Center>
                 <Flex rounded="md" direction="column" w="full">
                     <Center w="full">
-                        <Flex grow={1} p="4" mb="8" rounded="md" bg="whiteAlpha.100" direction="column" maxW="container.sm" experimental_spaceY={4}>
+                        <Flex {...styles} grow={1} p="4" mb="8" rounded="md" direction="column" maxW="container.sm" experimental_spaceY={4}>
                             <HStack w="full">
                                 <FormControl id="name">
                                     <FormLabel>Live name</FormLabel>

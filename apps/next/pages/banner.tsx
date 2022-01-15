@@ -23,6 +23,8 @@ import {
     Link,
     useToast,
     Stack,
+    BoxProps,
+    useColorModeValue,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
@@ -179,6 +181,16 @@ export default function Page({ banner }: Props) {
     const breakpoint = useBreakpoint();
 
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch();
+
+    const styles: BoxProps = useColorModeValue<BoxProps>(
+        {
+            border: '1px solid',
+            borderColor: 'gray.300',
+        },
+        {
+            background: 'whiteAlpha.100',
+        }
+    );
 
     const [isToggling, { on, off }] = useBoolean(false);
 
@@ -346,7 +358,7 @@ export default function Page({ banner }: Props) {
                         </RemotionPreview>
                     </Center>
 
-                    <Flex grow={1} p="4" my="4" rounded="md" bg="whiteAlpha.100" w="full" direction="column" minH="lg">
+                    <Flex {...styles} grow={1} p="4" my="4" rounded="md" w="full" direction="column" minH="lg">
                         <Tabs colorScheme="purple" flexGrow={1}>
                             <TabList>
                                 <Tab className={trackEvent('click', 'banner-tab')}>Banner</Tab>

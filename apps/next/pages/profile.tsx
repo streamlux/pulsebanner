@@ -22,6 +22,8 @@ import {
     Stack,
     Spacer,
     Tag,
+    useColorModeValue,
+    BoxProps,
 } from '@chakra-ui/react';
 import { ProfileImage } from '@prisma/client';
 import axios from 'axios';
@@ -132,6 +134,16 @@ export default function Page({ profilePic, twitterPic }: Props) {
         ...(profilePic?.foregroundProps ?? (ForegroundTemplates[defaultForeground].defaultProps as any)),
         ...(twitterPic ? { imageUrl: twitterPic } : {}),
     });
+
+    const styles: BoxProps = useColorModeValue<BoxProps>(
+        {
+            border: '1px solid',
+            borderColor: 'gray.300',
+        },
+        {
+            background: 'whiteAlpha.100',
+        }
+    );
 
     const BackgroundTemplate = BackgroundTemplates[bgId];
     const ForegroundTemplate = ForegroundTemplates[fgId];
@@ -306,7 +318,7 @@ export default function Page({ profilePic, twitterPic }: Props) {
                     </Center>
 
                     <Center>
-                        <Flex grow={1} p="4" my="4" rounded="md" bg="whiteAlpha.100" w="fit-content" direction="column">
+                        <Flex {...styles} grow={1} p="4" my="4" rounded="md" w="fit-content" direction="column">
                             <FgForm
                                 setProps={(s) => {
                                     console.log('set props', s);
