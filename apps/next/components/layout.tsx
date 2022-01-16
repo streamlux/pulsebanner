@@ -23,6 +23,7 @@ import Footer from './footer';
 import { FaArrowRight } from 'react-icons/fa';
 import NextLink from 'next/link';
 import { holidayDecor, promo, promoCode } from '@app/util/constants';
+import { useRouter } from 'next/router';
 
 export default function Layout({ children }) {
     const { colorMode } = useColorMode();
@@ -30,9 +31,11 @@ export default function Layout({ children }) {
         defaultIsOpen: true,
     });
     const breakpoint = useBreakpoint();
+    const router = useRouter();
+    const emgg = router.asPath === '/emgg';
     return (
         <>
-            <Flex direction="column" as={chakra.div} minH="100vh">
+            <Flex direction="column" as={chakra.div} minH="100vh" bg={emgg ? 'black' : undefined}>
                 <Box as={chakra.header}>
                     <Header />
                 </Box>
