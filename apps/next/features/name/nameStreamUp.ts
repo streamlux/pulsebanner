@@ -1,30 +1,17 @@
-import { productPlan } from '@app/util/database/paymentHelpers';
-import { flipFeatureEnabled, getTwitterInfo, getTwitterName, updateOriginalTwitterNameDB } from '@app/util/database/postgresHelpers';
-import { getCurrentTwitterName, updateTwitterName, validateTwitterAuthentication } from '@app/util/twitter/twitterHelpers';
-import { TwitterName } from '@prisma/client';
-import { NextApiRequest, NextApiResponse } from 'next';
-import NextCors from 'nextjs-cors';
+import { productPlan } from "@app/util/database/paymentHelpers";
+import { getTwitterInfo, flipFeatureEnabled, getTwitterName, updateOriginalTwitterNameDB } from "@app/util/database/postgresHelpers";
+import { validateTwitterAuthentication, getCurrentTwitterName, updateTwitterName } from "@app/util/twitter/twitterHelpers";
+import { TwitterName } from "@prisma/client";
+import { Feature } from "../Feature";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    // Run the cors middleware
-    // nextjs-cors uses the cors package, so we invite you to check the documentation https://github.com/expressjs/cors
-    await NextCors(req, res, {
-        // Options
-        // methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-        methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-        origin: '*',
-        optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
-    });
-
-    const userId: string = req.query.userId as string;
-
+const nameStreamUp: Feature<string> = async (userId: string): Promise<string> => {
     const twitterInfo = await getTwitterInfo(userId);
 
     // if they are not authenticated with twitter, return 401 and turn off the feature
     const validatedTwitter = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
     if (!validatedTwitter) {
         await flipFeatureEnabled(userId, 'name');
-        return res.status(401).send('Unauthenticated Twitter. Disabling feature and requiring re-auth.');
+        return 'Unauthenticated Twitter. Disabling feature and requiring re-auth.';
     }
 
     // get the current twitter name
@@ -33,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // get the twitter stream name specified in table
     const twitterNameSettings: TwitterName = await getTwitterName(userId);
     if (!twitterNameSettings.enabled) {
-        return res.status(400).send('Feature not enabled.');
+        return 'Feature not enabled.';
     }
 
     let updatedTwitterLiveName = undefined;
@@ -60,7 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (response === 200) {
                 await updateOriginalTwitterNameDB(userId, currentTwitterName);
                 console.log('Successfully updated Twitter name on streamup.');
-                return res.status(200).end();
+                return 'success';
             }
         } else if (twitterNameSettings.streamName) {
             // post to twitter
@@ -69,9 +56,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (response === 200) {
                 await updateOriginalTwitterNameDB(userId, currentTwitterName);
                 console.log('Successfully updated Twitter name on streamup.');
-                return res.status(200).end();
+                return 'success';
             }
         }
     }
-    return res.status(400).send('Error updating Twitter name on streamup');
+    return 'Error updating Twitter name on streamup';
 }
+
+export default nameStreamUp;
