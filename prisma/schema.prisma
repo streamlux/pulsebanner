@@ -40,24 +40,25 @@ model Session {
 }
 
 model User {
-    id                  String                @id @default(cuid())
-    name                String?
-    email               String?               @unique
-    emailVerified       DateTime?
-    image               String?
-    createdAt           DateTime              @default(now()) @map("created_at")
-    role                Role                  @default(user)
-    accounts            Account[]
-    sessions            Session[]
-    customer            Customer?
-    subscription        Subscription?
-    banner              Banner?
-    tweet               Tweet?
-    twitterName         TwitterName?
-    twitterOriginalName TwitterOriginalName?
-    profileImage        ProfileImage?
-    renderedProfilePic  RenderedProfileImage?
-    partner             Boolean               @default(false)
+    id                   String                @id @default(cuid())
+    name                 String?
+    email                String?               @unique
+    emailVerified        DateTime?
+    image                String?
+    createdAt            DateTime              @default(now()) @map("created_at")
+    role                 Role                  @default(user)
+    accounts             Account[]
+    sessions             Session[]
+    customer             Customer?
+    subscription         Subscription?
+    banner               Banner?
+    tweet                Tweet?
+    twitterName          TwitterName?
+    twitterOriginalName  TwitterOriginalName?
+    profileImage         ProfileImage?
+    renderedProfilePic   RenderedProfileImage?
+    affiliateInformation AffiliateInformation?
+    partner              Boolean               @default(false)
 
     @@map("users")
 }
@@ -156,6 +157,16 @@ model RenderedProfileImage {
     lastRendered DateTime @default(now()) @map("last_rendered")
 
     @@map("rendered_profile_img")
+}
+
+// we don't know if they are going to have created
+model AffiliateInformation {
+    id          String @id @default(cuid())
+    userId      String @unique @map("user_id")
+    user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    affiliateId Int
+
+    @@map("affiliate_information")
 }
 
 // Stripe models
