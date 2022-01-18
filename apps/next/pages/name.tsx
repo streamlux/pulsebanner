@@ -377,7 +377,8 @@ export default function Page({ twitterName, twitterProfile }: Props) {
                                     </HStack>
                                     <FormHelperText>
                                         Your Twitter name will change to this when you go live.{' '}
-                                        {!availableForAccount() && ' Become a PulseBanner Member to customize your Twitter Live Name.'}
+                                        {!availableForAccount() && ' Become a PulseBanner Member to customize your Twitter Live Name.'} Please note that a name greater than 50
+                                        characters will be shortened. This is Twitter&apos;s name length limit.
                                     </FormHelperText>
                                 </FormControl>
                             </HStack>
