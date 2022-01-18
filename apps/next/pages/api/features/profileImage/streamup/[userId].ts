@@ -65,8 +65,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // check here if we have previously rendered the profile picture. Update if they have saved more recent than what we have saved in the render time
 
-        // if we do not have the image in s3, we also need to remove it
-        const cachedImage: string | undefined = await download(profilePicCacheBucketName, userId);
+        let cachedImage: string | undefined = undefined;
+        try {
+            // if we do not have the image in s3, we also need to remove it
+            cachedImage = await download(profilePicCacheBucketName, userId);
+        } catch (e) {
+            // we hit this case only in the following situation
+            // a) The user does not have anything in the db for themselves (i.e. first time)
+        }
 
         // if we do not have anything stored for the current profilePicRendered, do not have a cachedImage, or have updated the settings recently, re-render
         if (profilePicRendered === null || cachedImage === undefined || Date.parse(profilePicRendered.lastRendered.toString()) < Date.parse(profilePicEntry.updatedAt.toString())) {
