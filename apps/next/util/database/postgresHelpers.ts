@@ -116,7 +116,7 @@ export const updateProfilePicRenderedDB = async (userId: string): Promise<void> 
             lastRendered: new Date(),
         },
     });
-}
+};
 export const getAccountInfo = async (userId: string): Promise<Partial<Account>> => {
     const response = await prisma.account.findFirst({
         where: {
@@ -175,6 +175,23 @@ export const flipFeatureEnabled = async (userId: string, feature: string): Promi
             // need to delete subscriptions if they disabled the banner
             // or create subscriptions if they enabled the banner
             await updateTwitchSubscriptions(userId);
+        }
+    } else if (feature === 'profileImage') {
+        const profileImage = await prisma.profileImage.findFirst({
+            where: {
+                userId,
+            },
+        });
+
+        if (profileImage) {
+            await prisma.profileImage.update({
+                where: {
+                    userId,
+                },
+                data: {
+                    enabled: !profileImage.enabled,
+                },
+            });
         }
     }
 };
