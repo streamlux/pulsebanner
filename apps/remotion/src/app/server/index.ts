@@ -12,6 +12,7 @@ import { helpText } from './help-text';
 import { getMimeType } from './image-types';
 import { getImageHash } from './make-hash';
 import { Browser } from 'puppeteer-core';
+import { logger } from './logger';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const queue = require('express-queue');
@@ -50,7 +51,7 @@ app.use(express.json());
 const tmpDir = fs.promises.mkdtemp(path.join(os.tmpdir(), 'remotion-'));
 
 webpackBundling.then(() => {
-    console.log('Done bundling.');
+    logger.info('Done bundling.');
 });
 
 const getComp = async (compName: string, inputProps: unknown) => {
@@ -75,7 +76,7 @@ app.use(
         windowMs: 1 * 60 * 1000,
         max: 20,
         onLimitReached: () => {
-            console.log('Rate limit reached');
+            logger.warn('Rate limit reached');
         },
     })
 );
@@ -91,11 +92,11 @@ app.post(
     queueMw,
     handler(async (req, res) => {
 
-        console.log(`Request queue length: ${queueMw.queue.getLength()}`);
 
         const startMs = Date.now();
         const requestBody = req.body;
-        console.log('requestBody: ', requestBody);
+        logger.info('Rendering banner', requestBody);
+        logger.info(`Request queue length: ${queueMw.queue.getLength()}`);
 
         // hard coded info as we only use one composition composer and generate different templates from there by passing the different props
         const imageFormat = 'png';
@@ -136,12 +137,14 @@ app.post(
                 .catch((err) => reject(err));
         });
 
-        console.log(output);
+        logger.info(output);
         const imageBase64 = fs.readFileSync(output, { encoding: 'base64' });
 
         const endMs = Date.now();
 
-        console.log(`Done rendering in ${endMs - startMs}ms`);
+        logger.info(`Done rendering.`, {
+            duration: endMs - startMs
+        });
 
         res.send(imageBase64);
     })
@@ -157,11 +160,11 @@ app.post('/getProfilePic',
     queueMw,
     handler(async (req, res) => {
 
-        console.log(`Request queue length: ${queueMw.queue.getLength()}`);
 
         const startMs = Date.now();
         const requestBody = req.body;
-        console.log('requestBody: ', requestBody);
+        logger.info('Rendering profile picture', requestBody);
+        logger.info(`Request queue length: ${queueMw.queue.getLength()}`);
 
         // hard coded info as we only use one composition composer and generate different templates from there by passing the different props
         const imageFormat = 'png';
@@ -202,12 +205,14 @@ app.post('/getProfilePic',
                 .catch((err) => reject(err));
         });
 
-        console.log(output);
+        logger.info(output);
         const imageBase64 = fs.readFileSync(output, { encoding: 'base64' });
 
         const endMs = Date.now();
 
-        console.log(`Done rendering in ${endMs - startMs}ms`);
+        logger.info(`Done rendering.`, {
+            duration: endMs - startMs
+        });
 
         res.send(imageBase64);
     })
@@ -234,7 +239,7 @@ app.get('/bundle', async (req, res) => {
     });
 
     webpackBundling.then(() => {
-        console.log('Done bundling.');
+        logger.info('Done bundling.');
     });
 
     res.redirect('/comps');
@@ -244,12 +249,12 @@ app.post('/bundle', (req, res) => {
     webpackBundling = bundle(bundlePath);
 
     webpackBundling.then(() => {
-        console.log('Done bundling.');
+        logger.info('Done bundling.');
     });
 
     res.sendStatus(200);
 });
 
 app.listen(port);
-console.log(helpText(Number(port)));
-console.info('Server template path: ', templatePath);
+logger.info(helpText(Number(port)));
+logger.info('Server template path: ', templatePath);
