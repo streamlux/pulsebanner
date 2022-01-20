@@ -9,22 +9,28 @@ export function createLogger(service: string, ddtags?: string): winston.Logger {
         format: winston.format.json(),
     });
 
-    logger.add(
-        new DatadogWinston({
-            apiKey: process.env.DATADOG_API_KEY,
-            hostname: process.env.SERVICE_ENV,
-            service,
-            ddsource: 'nodejs',
-            ddtags
-        }),
-    );
+    if (process.env.NODE_ENV !== 'development') {
+        try {
+
+            logger.add(
+                new DatadogWinston({
+                    apiKey: process.env.DATADOG_API_KEY,
+                    hostname: process.env.SERVICE_ENV,
+                    service,
+                    ddsource: 'nodejs',
+                    ddtags
+                }),
+            );
+        } catch (e) {
+            console.log("Couldn't load winston");
+        }
+    }
 
     logger.add(new winston.transports.Console({
         level: 'info',
         format: winston.format.simple()
     }));
 
-    // logger.transports[0].silent = process.env.NODE_ENV === 'development';
 
     return logger;
 }
