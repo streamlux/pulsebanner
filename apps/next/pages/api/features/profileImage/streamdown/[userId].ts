@@ -1,4 +1,5 @@
 import { getProfilePicEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
+import { logger } from '@app/util/logger';
 import { download } from '@app/util/s3/download';
 import { TwitterResponseCode, updateProfilePic } from '@app/util/twitter/twitterHelpers';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -38,7 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         if (base64Image === undefined) {
-            console.log('Unable to find user in database for profile picture on streamdown. This can be caused by the user enabling the feature while currently live.');
+            logger.info('Unable to find user in database for profile picture on streamdown. This can be caused by the user enabling the feature while currently live.');
             return res.status(404).send('Unable to find user in database for profile pic on streamdown. This can be caused by the user enabling the feature while currently live.');
         }
 

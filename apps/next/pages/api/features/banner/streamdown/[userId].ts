@@ -4,6 +4,7 @@ import { TwitterResponseCode, updateBanner, validateTwitterAuthentication } from
 import { flipFeatureEnabled, getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { env } from 'process';
 import { download } from '@app/util/s3/download';
+import { logger } from '@app/util/logger';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
@@ -35,9 +36,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Download original image from S3.
     const imageBase64: string = await download(env.IMAGE_BUCKET_NAME, userId);
     if (imageBase64) {
-        console.log('Successfully downloaded original image from S3.');
+        logger.info('Successfully downloaded original image from S3.', { userId });
     } else {
-        console.error('Failed to download original image from S3.');
+        logger.error('Failed to download original image from S3.', { userId });
         return res.status(404).send('Failed to get original image from S3.');
     }
 

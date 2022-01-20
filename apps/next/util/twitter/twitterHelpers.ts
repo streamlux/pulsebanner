@@ -1,5 +1,6 @@
 import { TwitterClient } from 'twitter-api-client';
 import { sendError } from '../discord/sendError';
+import { logger } from '../logger';
 
 export type TwitterResponseCode = 200 | 400;
 
@@ -20,9 +21,9 @@ export async function getBanner(userId: string, oauth_token: string, oauth_token
             user_id: providerAccountId,
         });
         imageUrl = response.sizes['1500x500'].url;
-        console.log('imageUrl: ', imageUrl);
+        logger.log('Fetched Twitter banner', { url: imageUrl, userId });
     } catch (e) {
-        console.log('User does not have a banner setup. Will save empty for later: ');
+        logger.info('User does not have a banner setup. Will save empty for later', { userId });
         imageUrl = 'empty';
     }
 
@@ -47,12 +48,11 @@ export async function updateBanner(userId: string, oauth_token: string, oauth_to
                 banner: bannerBase64,
             });
         } catch (e) {
-            handleTwitterApiError(userId, e);
-            console.log('failed to update banner');
+            handleTwitterApiError(userId, e, 'Updating banner');
             return 400;
         }
     }
-    console.log('success updating banner');
+    logger.info('Successfully updated banner', { userId });
     return 200;
 }
 
@@ -72,8 +72,7 @@ export async function tweetStreamStatusLive(
         });
     } catch (e) {
         // there could be a problem with how long the string is
-        console.log('error with publishing the tweet: ', e);
-        handleTwitterApiError(userId, e);
+        handleTwitterApiError(userId, e, 'Publishing tweet');
         return 400;
     }
     return 200;
@@ -94,8 +93,7 @@ export async function tweetStreamStatusOffline(
         });
     } catch (e) {
         // there could be a problem with how long the string is
-        console.log('error with publishing the tweet: ', e);
-        handleTwitterApiError(userId, e);
+        handleTwitterApiError(userId, e, 'Publishing tweet');
         return 400;
     }
     return 200;
@@ -109,7 +107,6 @@ export async function getCurrentTwitterName(userId: string, oauth_token: string,
         const name = account.name;
         return name;
     } catch (e) {
-        console.log('Errror getting twitter name: ', e);
         handleTwitterApiError(userId, e);
         return '';
     }
@@ -121,7 +118,6 @@ export async function updateTwitterName(userId: string, oauth_token: string, oau
     try {
         await client.accountsAndUsers.accountUpdateProfile({ name: name });
     } catch (e) {
-        console.log('error updating twitter name: ', e);
         await handleTwitterApiError(userId, e, 'Updating Twitter name');
         return 400;
     }
@@ -154,7 +150,7 @@ export async function updateProfilePic(userId: string, oauth_token: string, oaut
                 image: profilePicBase64,
             });
         } catch (e) {
-            console.log('Error updating empty profile image: ', e);
+            logger.error('Failed to update empty profile image', e);
         }
     } else {
         try {
@@ -166,7 +162,7 @@ export async function updateProfilePic(userId: string, oauth_token: string, oaut
             return 400;
         }
     }
-    console.log('success updating profile picture');
+    logger.info('Successfully updated profile picture', { userId });
     return 200;
 }
 
@@ -184,7 +180,7 @@ export async function validateTwitterAuthentication(oauth_token: string, oauth_t
         await client.accountsAndUsers.accountVerifyCredentials();
     } catch (e) {
         // any failure (regardless or error code) make them re-authenticate
-        console.log('unsuccessful twitter authentication, requiring re-authentication.');
+        logger.error('unsuccessful twitter authentication, requiring re-authentication.', e);
         return false;
     }
     return true;
@@ -196,7 +192,7 @@ async function handleTwitterApiError(userId: string, e: { errors?: { message: st
         // Twitter API error
         if (e.errors[0].code === 88) {
             // rate limit exceeded
-            console.error('Rate limit error, code 88. Rate limit will reset on', new Date(e._headers.get('x-rate-limit-reset') * 1000));
+            logger.error(`Rate limit error, code 88. Rate limit will reset on ${new Date(e._headers.get('x-rate-limit-reset') * 1000)}`, e);
             sendError({ ...e.errors[0], name: 'TwitterRateLimitError' }, context);
         } else if (e.errors[0].code === 89) {
             // Invalid or expired token error.
@@ -207,14 +203,17 @@ async function handleTwitterApiError(userId: string, e: { errors?: { message: st
             //     await updateAccountTwitterToken(userId, true);
             // }
 
+            logger.error('TwitterAPIInvalidTokenError: invalid or expired token error', { userId, e, context });
             sendError({ ...e.errors[0], name: 'TwitterAPIInvalidTokenError' }, `Invalid or expired token error. userId: ${userId}\t Context: ${context}`);
         }
         // some other kind of error, e.g. read-only API trying to POST
         else {
+            logger.error('Other Twitter API error occurred', { userId, e, context });
             sendError(e as any, `Other Twitter API error occured. userId: ${userId}\t Context: ${context}`);
         }
     } else {
         // non-API error, e.g. network problem or invalid JSON in response
+        logger.error('Non Twitter API error occured', { userId, e, context });
         sendError(e as any, `Non Twitter API error occured. userId: ${userId}\t Context: ${context}`);
     }
 }

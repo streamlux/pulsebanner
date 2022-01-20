@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { logger } from '../logger';
 
 declare global {
     // eslint-disable-next-line no-var
@@ -8,8 +9,8 @@ declare global {
 let numClients = 0;
 
 const createPrismaClient = () => {
-    console.log('Creating new Prisma client...');
-    console.log('Total clients: ', numClients);
+    logger.info('Creating new Prisma client...');
+    logger.info('Total clients: ', numClients);
     numClients++;
     return new PrismaClient();
 };
