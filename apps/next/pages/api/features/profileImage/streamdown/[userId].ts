@@ -29,13 +29,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(400).send('Could not find profile pic entry or twitter info for user');
         }
 
-        // get the original image from the
-        // const response = await localAxios.get(`/api/storage/download/${userId}`);
-        const base64Image: string | undefined = await download(bucketName, userId);
+        let base64Image: string | undefined = undefined;
+        try {
+            // get the original image from the
+            base64Image = await download(bucketName, userId);
+        } catch (e) {
+            // we should only hit this when the user has enabled the feature while streaming and then go offline
+        }
 
         if (base64Image === undefined) {
             console.log('Unable to find user in database for profile picture on streamdown. This can be caused by the user enabling the feature while currently live.');
-            res.status(404).send('Unable to find user in database for profile pic on streamdown. This can be caused by the user enabling the feature while currently live.');
+            return res.status(404).send('Unable to find user in database for profile pic on streamdown. This can be caused by the user enabling the feature while currently live.');
         }
 
         const profilePicStatus: TwitterResponseCode = await updateProfilePic(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, base64Image);

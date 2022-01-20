@@ -42,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const plan = await productPlan(userId);
 
         if (!plan.partner && plan.plan === 'Free') {
-            updatedTwitterLiveName = `🔴 Live now | ${currentTwitterName}`;
+            updatedTwitterLiveName = `🔴 Live now | ${currentTwitterName}`.substring(0, 50);
             console.log(`Changing Twitter name from '${currentTwitterName}' to '${updatedTwitterLiveName}'.`);
         } else {
             console.log(`Changing Twitter name from '${currentTwitterName}' to '${twitterNameSettings.streamName}'.`);
