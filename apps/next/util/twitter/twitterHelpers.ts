@@ -173,7 +173,7 @@ export async function updateProfilePic(userId: string, oauth_token: string, oaut
 /**
  * Verifies that we still have proper Twitter authentication
  *
- * @param oauth_token
+ *@param oauth_token
  * @param oauth_token_secret
  * @returns
  */
@@ -188,6 +188,19 @@ export async function validateTwitterAuthentication(oauth_token: string, oauth_t
         return false;
     }
     return true;
+}
+
+export async function getTwitterUserLink(oauth_token: string, oauth_token_secret: string): Promise<string | null> {
+    const client = createTwitterClient(oauth_token, oauth_token_secret);
+
+    try {
+        const response = await client.accountsAndUsers.accountVerifyCredentials();
+        const screenName = response.screen_name;
+        return `https://twitter.com/${screenName}`;
+    } catch (e) {
+        console.log('Error building twitter link');
+    }
+    return null;
 }
 
 // would need to pass in the userId here

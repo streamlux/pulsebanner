@@ -3,7 +3,12 @@ import NextCors from 'nextjs-cors';
 import crypto from 'crypto';
 import bodyParser from 'body-parser';
 import { Features, FeaturesService } from '@app/services/FeaturesService';
-import { localAxios } from '@app/util/axios';
+import { localAxios, twitchAxios } from '@app/util/axios';
+import { getTwitterInfo } from '@app/util/database/postgresHelpers';
+import { getTwitterUserLink } from '@app/util/twitter/twitterHelpers';
+import prisma from '@app/util/ssr/prisma';
+import { TwitchClientAuthService } from '@app/services/TwitchClientAuthService';
+import { getAccountsById } from '@app/util/getAccountsById';
 
 type VerificationBody = {
     challenge: string;
@@ -92,12 +97,93 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // get enabled features
         const features = await FeaturesService.listEnabled(userId);
         console.log('features enabled: ', features);
+
+        if (features.length !== 0) {
+            // first call twitter and try and get their twitter username. Handle all error codes gracefully and return null if any come
+            const twitterInfo = await getTwitterInfo(userId);
+            let twitterLink = null;
+            if (twitterInfo) {
+                twitterLink = await getTwitterUserLink(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+            }
+            // get the twitch username/stream link
+            const accounts = await getAccountsById(userId);
+            const twitchUserId = accounts['twitch'].providerAccountId;
+
+            let streamId = null;
+            let streamLink = null;
+            try {
+                const authedTwitchAxios = await TwitchClientAuthService.authAxios(twitchAxios);
+                const streamResponse = await authedTwitchAxios.get(`/helix/streams?id=${twitchUserId}`);
+
+                console.log('streamResponse data: ', streamResponse.data);
+
+                streamId = streamResponse.data?.data?.[0]?.id;
+                streamLink = streamResponse.data?.data?.[0].user_login ? `https://www.twitch.tv/${streamResponse.data?.data?.[0].user_login}` : undefined;
+            } catch (e) {
+                console.log('error: ', e);
+            }
+            if (streamStatus === 'stream.online') {
+                await prisma.liveUsers.upsert({
+                    where: {
+                        userId: userId,
+                    },
+                    create: {
+                        userId: userId,
+                        twitchUserId: twitchUserId,
+                        twitchStreamId: streamId,
+                        twitterLink: twitterLink,
+                        streamLink: streamLink,
+                        startTime: new Date(),
+                    },
+                    update: {},
+                });
+            }
+
+            if (streamStatus === 'stream.offline') {
+                // read the start time from the liveUsers table
+                const liveUser = await prisma.liveUsers.findFirst({
+                    where: {
+                        userId: userId,
+                    },
+                    select: {
+                        startTime: true,
+                    },
+                });
+
+                const startTime = liveUser !== null ? liveUser.startTime : null;
+
+                // create a new entry for past live streams to reference
+                await prisma.pastLiveUsers.create({
+                    data: {
+                        userId: userId,
+                        twitchStreamId: streamId,
+                        twitchUserId: twitchUserId,
+                        startTime: startTime,
+                        endTime: new Date(),
+                    },
+                });
+
+                // delete the user on stream.offline from the liveUsers table
+                await prisma.liveUsers.deleteMany({
+                    where: {
+                        userId: userId,
+                    },
+                });
+            }
+        }
+
         features.forEach(async (feature: Features) => {
             if (streamStatus === 'stream.online') {
+                const liveUser = await prisma.liveUsers.findFirst({
+                    where: {
+                        userId: userId,
+                    },
+                });
+
                 // Sometimes twitch sends more than one streamup notification, this causes issues for us
                 // to mitigate this, we only process the notification if the stream started within the last 10 minutes
                 const minutesSinceStreamStart: number = (Date.now() - new Date(req.body.event.started_at).getTime()) / (60 * 1000);
-                if (minutesSinceStreamStart > 10) {
+                if (minutesSinceStreamStart > 10 || liveUser !== null) {
                     console.log('Recieved streamup notification for stream that started more than 10 minutes ago. Will not process notification.');
 
                     res.status(200);
