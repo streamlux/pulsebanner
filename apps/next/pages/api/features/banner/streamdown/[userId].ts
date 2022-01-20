@@ -36,9 +36,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Download original image from S3.
     const imageBase64: string = await download(env.IMAGE_BUCKET_NAME, userId);
     if (imageBase64) {
-        logger.info('Successfully downloaded original image from S3.');
+        logger.info('Successfully downloaded original image from S3.', { userId });
     } else {
-        logger.error('Failed to download original image from S3.');
+        logger.error('Failed to download original image from S3.', { userId });
         return res.status(404).send('Failed to get original image from S3.');
     }
 

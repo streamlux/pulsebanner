@@ -166,7 +166,7 @@ export default NextAuth({
                         } catch (e) {
                             const msgs = [`Failed to refresh Twitch user access token for user: '${user.name}'.`];
                             const msg = msgs.join('\n');
-                            logger.error(msg, e);
+                            logger.error(msg, e, { userId: user.id });
                             sendError(e, msg);
                         }
                     }
@@ -192,20 +192,20 @@ export default NextAuth({
                     if (bannerUrl === 'empty') {
                         uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, 'empty')
                             .then(() => {
-                                logger.info('Uploaded empty banner on new user signup.');
+                                logger.info('Uploaded empty banner on new user signup.', { userId: message.user.id });
                             })
                             .catch((reason) => {
-                                logger.error('Error uploading empty banner to backup bucket on new user signup', reason);
+                                logger.error('Error uploading empty banner to backup bucket on new user signup', reason, { userId: message.user.id });
                                 sendError(reason, 'Error uploading empty banner to backup bucket on new user signup');
                             });
                     } else {
                         imageToBase64(bannerUrl).then((base64: string) => {
                             uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, base64)
                                 .then(() => {
-                                    logger.info('Uploaded Twitter banner on new user signup.')
+                                    logger.info('Uploaded Twitter banner on new user signup.', { userId: message.user.id })
                                 })
                                 .catch((reason) => {
-                                    logger.error('Error uploading Twitter banner to backup bucket on new user signup', reason);
+                                    logger.error('Error uploading Twitter banner to backup bucket on new user signup', reason, { userId: message.user.id });
                                     sendError(reason, 'Error uploading Twitter banner to backup bucket on new user signup');
                                 });
                         });
@@ -216,10 +216,10 @@ export default NextAuth({
                     localAxios
                         .post('/api/newsletter/subscribe', { email: message.user.email })
                         .then((resp) => {
-                            logger.info(`Added user email ${message.user.email} to newsletter`);
+                            logger.info(`Added user email ${message.user.email} to newsletter`, { userId: message.user.id });
                         })
                         .catch((reason) => {
-                            logger.error('Not able to sign user up for newsletter: ', reason);
+                            logger.error('Not able to sign user up for newsletter: ', reason, { userId: message.user.id });
                         });
                 }
                 // we need to update the account info if twitter oauth isn't matching
@@ -241,15 +241,15 @@ export default NextAuth({
                                     },
                                 })
                                 .then((response) => {
-                                    logger.info('Successfully updated oauth info for application');
+                                    logger.info('Successfully updated oauth info for application', { userId: message.user.id });
                                 })
                                 .catch((err) => {
-                                    logger.error('error updating oauth info for account', err);
+                                    logger.error('error updating oauth info for account', err, { userId: message.user.id });
                                 });
                         }
                     })
                     .catch((err) => {
-                        logger.error('Error getting account info when updating Twitter auth', err);
+                        logger.error('Error getting account info when updating Twitter auth', err, { userId: message.user.id });
                     });
             }
         },

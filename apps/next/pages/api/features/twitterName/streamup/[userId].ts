@@ -46,17 +46,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (!plan.partner && plan.plan === 'Free') {
             updatedTwitterLiveName = `🔴 Live now | ${currentTwitterName}`.substring(0, 50);
             logger.info(`Changing Twitter name from '${currentTwitterName}' to '${updatedTwitterLiveName}'.`, {
+                userId,
                 originalName: currentTwitterName,
                 liveName: updatedTwitterLiveName
             });
         } else {
             logger.info(`Changing Twitter name from '${currentTwitterName}' to '${twitterNameSettings.streamName}'.`, {
+                userId,
                 originalName: currentTwitterName,
                 liveName: twitterNameSettings.streamName
             });
         }
     } else {
         logger.info(`Changing Twitter name from '${currentTwitterName}' to '${twitterNameSettings.streamName}'.`, {
+            userId,
             originalName: currentTwitterName,
             liveName: twitterNameSettings.streamName
         });
