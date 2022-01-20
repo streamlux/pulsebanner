@@ -14,6 +14,7 @@ import {
     useDisclosure,
     CloseButton,
     Spacer,
+    Image,
     Center,
     useBreakpoint,
     HStack,
@@ -24,6 +25,7 @@ import { FaArrowRight } from 'react-icons/fa';
 import NextLink from 'next/link';
 import { holidayDecor, promo, promoCode } from '@app/util/constants';
 import { useRouter } from 'next/router';
+import emggLogo from '@app/public/emgg/logo.png';
 
 export default function Layout({ children }) {
     const { colorMode } = useColorMode();
@@ -36,10 +38,15 @@ export default function Layout({ children }) {
     return (
         <>
             <Flex direction="column" as={chakra.div} minH="100vh" bg={emgg ? 'black' : undefined}>
-                <Box as={chakra.header}>
+                {emgg && (
+                    <Box pos="absolute" zIndex={0} overflow="hidden" maxW="100vw" maxH="100%" top="7%">
+                        <Image alt="EMGG logo" src={typeof emggLogo === 'string' ? emggLogo : emggLogo.src} minWidth="100vw" opacity={0.5} />
+                    </Box>
+                )}
+                <Box as={chakra.header} zIndex={1}>
                     <Header />
                 </Box>
-                <Flex as={chakra.main} flex="1" px={['2', '8', '16', '36']} flexDirection="column">
+                <Flex zIndex={1} as={chakra.main} flex="1" px={['2', '8', '16', '36']} flexDirection="column">
                     <Box w="full" pt={['10', '20']}>
                         {children}
                     </Box>
@@ -47,6 +54,7 @@ export default function Layout({ children }) {
                 {promo && isOpen && breakpoint !== 'base' && (
                     <Portal>
                         <Box
+                            zIndex={1}
                             sx={{ position: 'fixed', bottom: '0', right: '0' }}
                             mb="4"
                             px="4"
@@ -86,7 +94,7 @@ export default function Layout({ children }) {
                     </Portal>
                 )}
 
-                <Box as={chakra.footer}>
+                <Box zIndex={1} as={chakra.footer}>
                     <Footer />
                 </Box>
             </Flex>

@@ -27,6 +27,7 @@ import {
     useColorModeValue,
     DarkMode,
     GlobalStyle,
+    useColorMode,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
@@ -54,7 +55,7 @@ import NextLink from 'next/link';
 import { ReconnectTwitterModal } from '@app/modules/onboard/ReconnectTwitterModal';
 
 const bannerEndpoint = '/api/features/banner';
-const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
+const defaultForeground: keyof typeof ForegroundTemplates = 'Emgg';
 const defaultBackground: keyof typeof BackgroundTemplates = 'GradientBackground';
 
 // these types are ids of foregrounds or backgrounds
@@ -164,7 +165,12 @@ export default function Page({ banner }: Props) {
 
     const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
     const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
+    const { colorMode, toggleColorMode } = useColorMode();
 
+    useEffect(() => {
+        if (colorMode === 'dark') return;
+        toggleColorMode();
+    });
     const { data: streamingState } = useSWR('streamState', async () => await (await fetch(`/api/twitch/streaming/${session?.user['id']}`)).json());
     const streaming = streamingState ? streamingState.isStreaming : false;
 
@@ -262,7 +268,8 @@ export default function Page({ banner }: Props) {
     const EnableButton = (
         <VStack>
             <Button
-                colorScheme={banner && banner.enabled ? 'red' : 'green'}
+                colorScheme={banner && banner.enabled ? 'red' : 'pink'}
+                bg={banner && banner.enabled ? 'red' : '#DC0963'}
                 justifySelf="flex-end"
                 isLoading={isToggling}
                 leftIcon={banner && banner.enabled ? <FaStop /> : <FaPlay />}
@@ -318,41 +325,44 @@ export default function Page({ banner }: Props) {
             <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} />
             {reAuth ? <ReconnectTwitterModal session={session} isOpen={isOpen} onClose={onClose} /> : <></>}
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
-                <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
-                    <Box maxW="xl">
-                        <Heading as="h1" fontSize={['2xl', '3xl']} alignSelf={['center', 'end']} pb={[0, 2]}>
-                            Twitch Live Banner
-                        </Heading>
-                        <Heading fontSize="md" fontWeight="normal" as="h2">
-                            Your Twitter banner will update when you start broadcasting on Twitch. Your banner will revert back to your current banner image when your stream ends.
-                        </Heading>
+                <Flex w="full" rounded="md" direction="column" bg="gray.800" p="4">
+                    <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
+                        <Box maxW="xl">
+                            <Heading as="h1" fontSize={['2xl', '3xl']} alignSelf={['center', 'end']} pb={[0, 2]}>
+                                EMGG Twitch Live Banner
+                            </Heading>
+                            <Heading fontSize="md" fontWeight="normal" as="h2">
+                                Your Twitter banner will update when you start broadcasting on Twitch. Your banner will revert back to your current banner image when your stream
+                                ends.
+                            </Heading>
 
-                        <HStack pt={['2', '2']} pb={['2', '0']}>
-                            <Text textAlign={['center', 'left']} h="full">
-                                Need help? 👉{' '}
-                            </Text>
-                            <Link isExternal href={discordLink}>
-                                <Button as="a" size="sm" colorScheme="gray" rightIcon={<FaDiscord />}>
-                                    Join our Discord
-                                </Button>
-                            </Link>
-                        </HStack>
+                            <HStack pt={['2', '2']} pb={['2', '0']}>
+                                <Text textAlign={['center', 'left']} h="full">
+                                    Need help? 👉{' '}
+                                </Text>
+                                <Link isExternal href={discordLink}>
+                                    <Button as="a" size="sm" colorScheme="gray" rightIcon={<FaDiscord />}>
+                                        Join our Discord
+                                    </Button>
+                                </Link>
+                            </HStack>
+                        </Box>
+                        {EnableButton}
+                    </Flex>
+                    <Box p="4">
+                        <Center w="full" maxH="320px">
+                            <RemotionPreview compositionHeight={500} compositionWidth={1500}>
+                                <Composer
+                                    {...{
+                                        backgroundId: bgId,
+                                        foregroundId: fgId,
+                                        backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
+                                        foregroundProps: { ...ForegroundTemplates[fgId].defaultProps, ...fgProps },
+                                    }}
+                                />
+                            </RemotionPreview>
+                        </Center>
                     </Box>
-                    {EnableButton}
-                </Flex>
-                <Flex w="full" rounded="md" direction="column">
-                    <Center w="full" maxH="320px">
-                        <RemotionPreview compositionHeight={500} compositionWidth={1500}>
-                            <Composer
-                                {...{
-                                    backgroundId: bgId,
-                                    foregroundId: fgId,
-                                    backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
-                                    foregroundProps: { ...ForegroundTemplates[fgId].defaultProps, ...fgProps },
-                                }}
-                            />
-                        </RemotionPreview>
-                    </Center>
 
                     <Flex {...styles} grow={1} p="4" my="4" rounded="md" w="full" direction="column" minH="lg">
                         <Tabs colorScheme="purple" flexGrow={1}>
@@ -363,6 +373,20 @@ export default function Page({ banner }: Props) {
 
                             <TabPanels flexGrow={1}>
                                 <TabPanel>
+                                    <FormLabel>Banner type</FormLabel>
+                                    <Select
+                                        value={fgId}
+                                        w="fit-content"
+                                        onChange={(e) => {
+                                            setFgId(e.target.value as keyof typeof ForegroundTemplates);
+                                        }}
+                                    >
+                                        {Object.entries(ForegroundTemplates).map(([key, value]) => (
+                                            <option key={key} value={key}>
+                                                {value.name}
+                                            </option>
+                                        ))}
+                                    </Select>
                                     <FgForm
                                         setProps={(s) => {
                                             console.log('set props', s);
