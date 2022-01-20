@@ -257,4 +257,4 @@ app.post('/bundle', (req, res) => {
 
 app.listen(port);
 logger.info(helpText(Number(port)));
-logger.info('Server template path: ', templatePath);
+logger.info(`Server template path: ${templatePath}`, { templatePath });

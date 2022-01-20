@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import { AccessToken, ClientCredentialsAuthProvider, accessTokenIsExpired } from "@twurple/auth";
+import { logger } from "@app/util/logger";
 
 export class TwitchClientAuthService {
     private static authProvider: ClientCredentialsAuthProvider | undefined;
@@ -34,12 +35,12 @@ export class TwitchClientAuthService {
         const token: AccessToken = await this._getAuthProvider().getAccessToken();
 
         if (accessTokenIsExpired(token)) {
-            console.log('TwitchClientAuthService: Twitch client app access token is expired. Refreshing...');
+            logger.info('TwitchClientAuthService: Twitch client app access token is expired. Refreshing...');
             return await this._getAuthProvider().refresh();
         };
 
         if (!(await this.isTokenValid(token))) {
-            console.log('TwitchClientAuthService: token is invalid. Getting new token...');
+            logger.info('TwitchClientAuthService: token is invalid. Getting new token...');
             return await this._getAuthProvider().refresh();
         }
 

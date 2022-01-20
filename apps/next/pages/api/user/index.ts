@@ -1,6 +1,7 @@
 import { AppNextApiRequest } from '@app/middlewares/admin';
 import { localAxios } from '@app/util/axios';
 import { createS3 } from '@app/util/database/s3ClientHelper';
+import { logger } from '@app/util/logger';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import prisma from '@app/util/ssr/prisma';
 import { NextApiResponse } from 'next';
@@ -22,7 +23,7 @@ handler.delete(async (req: AppNextApiRequest, res: NextApiResponse): Promise<voi
         const statusCode = response.$response.httpResponse.statusCode;
         return res.status(statusCode).send('S3 deletion completed');
     } catch (e) {
-        console.log('error deleting from s3: ', e);
+        logger.error('Error deleting from S3', e);
     }
 
     // delete user from database

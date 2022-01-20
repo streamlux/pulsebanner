@@ -1,5 +1,6 @@
 import { productPlan } from '@app/util/database/paymentHelpers';
 import { flipFeatureEnabled, getTwitterInfo, getTwitterName, updateOriginalTwitterNameDB } from '@app/util/database/postgresHelpers';
+import { logger } from '@app/util/logger';
 import { getCurrentTwitterName, updateTwitterName, validateTwitterAuthentication } from '@app/util/twitter/twitterHelpers';
 import { TwitterName } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -24,6 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const validatedTwitter = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
     if (!validatedTwitter) {
         await flipFeatureEnabled(userId, 'name');
+        logger.error('Unauthenticated Twitter. Disabling feature and requiring re-auth.');
         return res.status(401).send('Unauthenticated Twitter. Disabling feature and requiring re-auth.');
     }
 
@@ -43,12 +45,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         if (!plan.partner && plan.plan === 'Free') {
             updatedTwitterLiveName = `🔴 Live now | ${currentTwitterName}`.substring(0, 50);
-            console.log(`Changing Twitter name from '${currentTwitterName}' to '${updatedTwitterLiveName}'.`);
+            logger.info(`Changing Twitter name from '${currentTwitterName}' to '${updatedTwitterLiveName}'.`, {
+                originalName: currentTwitterName,
+                liveName: updatedTwitterLiveName
+            });
         } else {
-            console.log(`Changing Twitter name from '${currentTwitterName}' to '${twitterNameSettings.streamName}'.`);
+            logger.info(`Changing Twitter name from '${currentTwitterName}' to '${twitterNameSettings.streamName}'.`, {
+                originalName: currentTwitterName,
+                liveName: twitterNameSettings.streamName
+            });
         }
     } else {
-        console.log(`Changing Twitter name from '${currentTwitterName}' to '${twitterNameSettings.streamName}'.`);
+        logger.info(`Changing Twitter name from '${currentTwitterName}' to '${twitterNameSettings.streamName}'.`, {
+            originalName: currentTwitterName,
+            liveName: twitterNameSettings.streamName
+        });
     }
 
     // If it is not found return immediately and do not update normal twitwyter name
@@ -59,7 +70,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             if (response === 200) {
                 await updateOriginalTwitterNameDB(userId, currentTwitterName);
-                console.log('Successfully updated Twitter name on streamup.');
+                logger.info('Successfully updated Twitter name on streamup.');
                 return res.status(200).end();
             }
         } else if (twitterNameSettings.streamName) {
@@ -68,7 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             if (response === 200) {
                 await updateOriginalTwitterNameDB(userId, currentTwitterName);
-                console.log('Successfully updated Twitter name on streamup.');
+                logger.info('Successfully updated Twitter name on streamup.');
                 return res.status(200).end();
             }
         }

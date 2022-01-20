@@ -1,4 +1,5 @@
 import { flipFeatureEnabled, getOriginalTwitterName, getTwitterInfo } from '@app/util/database/postgresHelpers';
+import { logger } from '@app/util/logger';
 import { getCurrentTwitterName, updateTwitterName, validateTwitterAuthentication } from '@app/util/twitter/twitterHelpers';
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
@@ -33,12 +34,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // when received, post to twitter to update
         if (originalName) {
-            console.log(`Changing Twitter name from '${currentTwitterName}' to '${originalName.originalName}'.`);
+            logger.info(`Changing Twitter name from '${currentTwitterName}' to '${originalName.originalName}'.`, {
+                userId,
+                liveName: currentTwitterName,
+                originalName: originalName.originalName
+            });
             const response = await updateTwitterName(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, originalName.originalName);
 
             if (response === 200) {
                 // just return, we do not need to do anything to the db's on streamdown
-                console.log('Successfully updated Twitter name on streamdown.');
+                logger.info('Successfully updated Twitter name on streamdown.', { userId });
                 return res.status(200).send('success');
             }
         } else {
