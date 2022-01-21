@@ -5,7 +5,7 @@ import bodyParser from 'body-parser';
 import { Features, FeaturesService } from '@app/services/FeaturesService';
 import { localAxios } from '@app/util/axios';
 import prisma from '@app/util/ssr/prisma';
-import { getLiveUserInfo, liveUserOffline } from '@app/util/twitch/liveStreamHelpers';
+import { getLiveUserInfo, liveUserOffline, liveUserOnline } from '@app/util/twitch/liveStreamHelpers';
 import { logger } from '@app/util/logger';
 
 type VerificationBody = {
@@ -95,7 +95,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             if (userInfo !== undefined) {
                 if (streamStatus === 'stream.online') {
-                    await liveUserOffline(userId, userInfo);
+                    await liveUserOnline(userId, userInfo);
                 }
                 if (streamStatus === 'stream.offline') {
                     await liveUserOffline(userId, userInfo);
