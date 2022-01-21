@@ -1,3 +1,4 @@
+import { logger } from '@app/util/logger';
 import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
@@ -28,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         );
         return res.status(response.status).send(response.status !== 200 ? 'Failure' : 'Success');
     } catch (e) {
-        console.log('issue signing user up for newsletter. Email already in use.');
+        logger.error('Error signing user up for newsletter. Email already in use.', e);
         return res.status(400);
     }
 }

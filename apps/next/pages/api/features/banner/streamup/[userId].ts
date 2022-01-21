@@ -12,6 +12,7 @@ import imageToBase64 from 'image-to-base64';
 import { uploadBase64 } from '@app/util/s3/upload';
 // import { download } from '@app/util/s3/download';
 import { checkValidDownload } from '@app/util/s3/validateHelpers';
+import { logger } from '@app/util/logger';
 
 export type TemplateRequestBody = {
     foregroundId: string;
@@ -76,10 +77,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // store the current banner in s3
     const dataToUpload: string = bannerUrl === 'empty' ? 'empty' : await imageToBase64(bannerUrl);
 
-    console.log('validation - dataToUpload correct on streamup: ', checkValidDownload(dataToUpload));
+    logger.info('validation - dataToUpload correct on streamup: ', { valid: checkValidDownload(dataToUpload) });
     if (!checkValidDownload(dataToUpload)) {
         // just print first 10 chars of base64 to see what is invalid
-        console.log(`incorrect data. userid: ${userId}\tdataToUpload: ${dataToUpload.substring(0, 10)} `);
+        logger.warn(`incorrect data. userid: ${userId}\tdataToUpload: ${dataToUpload.substring(0, 10)} `, { userId, string: dataToUpload.substring(0, 10) });
     }
     // check if invalid base64
     // if (!checkValidDownload(dataToUpload)) {
@@ -104,7 +105,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
         await uploadBase64(bucketName, userId, dataToUpload);
     } catch (e) {
-        console.error('Error uploading original banner to S3.');
+        logger.error('Error uploading original banner to S3', { userId });
         return res.status(500).send('Error uploading original banner to S3.');
     }
 

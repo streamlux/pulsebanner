@@ -2,6 +2,7 @@ import { TwitchClientAuthService } from '@app/services/TwitchClientAuthService';
 import { twitchAxios } from '../axios';
 import { getTwitterInfo } from '../database/postgresHelpers';
 import { getAccountsById } from '../getAccountsById';
+import { logger } from '../logger';
 import prisma from '../ssr/prisma';
 import { getTwitterUserLink } from '../twitter/twitterHelpers';
 
@@ -22,11 +23,12 @@ export async function getLiveUserInfo(userId: string): Promise<LiveUserInfo | un
     // get the twitch username/stream link
     const accounts = await getAccountsById(userId);
     if (accounts === null) {
-        console.log('error getting info');
+        logger.error('Could not find any accounts for this user. ', { userId: userId });
     }
     const twitchUserId = accounts['twitch'].providerAccountId;
     if (twitchUserId === null) {
-        console.log('error gettging twitch');
+        logger.error('Could not find twitch account information.', { userId: userId });
+        return undefined;
     }
 
     let streamId = null;
@@ -36,12 +38,10 @@ export async function getLiveUserInfo(userId: string): Promise<LiveUserInfo | un
         const authedTwitchAxios = await TwitchClientAuthService.authAxios(twitchAxios);
         const streamResponse = await authedTwitchAxios.get(`/helix/streams?id=${twitchUserId}`);
 
-        console.log('streamResponse data: ', streamResponse.data);
-
         streamId = streamResponse.data?.data?.[0]?.id;
         streamLink = streamResponse.data?.data?.[0].user_login ? `https://www.twitch.tv/${streamResponse.data?.data?.[0].user_login}` : null;
     } catch (e) {
-        console.log('error: ', e);
+        logger.error('Error communicated with twitch: ', e, { userId: userId });
         return undefined;
     }
 
@@ -69,6 +69,7 @@ export async function liveUserOnline(userId: string, userInfo: LiveUserInfo): Pr
         },
         update: {},
     });
+    logger.info(`Completed update to live users table for user: ${userId}`, { userId: userId });
 }
 
 // change return value
@@ -99,4 +100,5 @@ export async function liveUserOffline(userId: string, userInfo: LiveUserInfo): P
             userId: userId,
         },
     });
+    logger.info(`Completed update to user offline table for user: ${userId}`, { userId: userId });
 }
