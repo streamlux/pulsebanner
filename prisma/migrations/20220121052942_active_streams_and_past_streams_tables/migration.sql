@@ -1,22 +1,3 @@
-/*
-  Warnings:
-
-  - You are about to drop the `ProfilePic` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `ProfilePicRendered` table. If the table is not empty, all the data it contains will be lost.
-
-*/
--- DropForeignKey
-ALTER TABLE "ProfilePic" DROP CONSTRAINT "ProfilePic_user_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "ProfilePicRendered" DROP CONSTRAINT "ProfilePicRendered_user_id_fkey";
-
--- DropTable
-DROP TABLE "ProfilePic";
-
--- DropTable
-DROP TABLE "ProfilePicRendered";
-
 -- CreateTable
 CREATE TABLE "profile_img" (
     "id" TEXT NOT NULL,
