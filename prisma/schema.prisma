@@ -58,7 +58,7 @@ model User {
     profileImage        ProfileImage?
     renderedProfilePic  RenderedProfileImage?
     liveStreams         LiveStreams?
-    pastStreams         PastStreams?
+    pastStreams         PastStreams[]
     partner             Boolean               @default(false)
 
     @@map("users")
@@ -176,7 +176,7 @@ model LiveStreams {
 
 model PastStreams {
     id             String    @id @default(cuid())
-    userId         String    @unique @map("user_id")
+    userId         String    @map("user_id")
     user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
     twitchUserId   String?
     twitchStreamId String?
