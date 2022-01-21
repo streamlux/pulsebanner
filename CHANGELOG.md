@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.5.3] - 2022-01-16
+
+### Added
+
+- Logging with Winston
+- Datadog log aggregation
+
+### Fixed
+
+- If Twitter name with "🔴 Live now |" prepended is over 50 characters, then truncate the name.
+- Removed some unnecessary Discord error logs
+
 ## [0.5.2] - 2022-01-16
 
 ### Removed
