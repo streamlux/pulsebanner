@@ -57,8 +57,8 @@ model User {
     twitterOriginalName TwitterOriginalName?
     profileImage        ProfileImage?
     renderedProfilePic  RenderedProfileImage?
-    liveUsers           LiveUsers?
-    pastLiveUsers       PastLiveUsers?
+    liveStreams           LiveStreams?
+    pastStreams       PastStreams?
     partner             Boolean               @default(false)
 
     @@map("users")
@@ -161,7 +161,7 @@ model RenderedProfileImage {
 }
 
 // track who is currently live streaming
-model LiveUsers {
+model LiveStreams {
     id             String    @id @default(cuid())
     userId         String    @unique @map("user_id")
     user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -171,10 +171,10 @@ model LiveUsers {
     twitchStreamId String?
     startTime      DateTime?
 
-    @@map("live_users")
+    @@map("live_streams")
 }
 
-model PastLiveUsers {
+model PastStreams {
     id             String    @id @default(cuid())
     userId         String    @unique @map("user_id")
     user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -183,7 +183,7 @@ model PastLiveUsers {
     startTime      DateTime?
     endTime        DateTime?
 
-    @@map("past_live_users")
+    @@map("past_streams")
 }
 
 // Stripe models
