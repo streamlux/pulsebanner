@@ -53,7 +53,6 @@ export async function getLiveUserInfo(userId: string): Promise<LiveUserInfo | un
     };
 }
 
-// change return value
 export async function liveUserOnline(userId: string, userInfo: LiveUserInfo): Promise<void> {
     await prisma.liveStreams.upsert({
         where: {
@@ -72,7 +71,6 @@ export async function liveUserOnline(userId: string, userInfo: LiveUserInfo): Pr
     logger.info(`Completed update to live users table for user: ${userId}`, { userId: userId });
 }
 
-// change return value
 export async function liveUserOffline(userId: string, userInfo: LiveUserInfo): Promise<void> {
     const liveUser = await prisma.liveStreams.findFirst({
         where: {

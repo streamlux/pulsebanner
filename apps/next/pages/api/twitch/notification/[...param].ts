@@ -93,6 +93,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (features.length !== 0) {
             const userInfo = await getLiveUserInfo(userId);
 
+            const liveUser = await prisma.liveStreams.findFirst({
+                where: {
+                    userId: userId,
+                },
+            });
+            // we need to check if the stream has been going in the past 10 mins and if we already have a live user before attempting to add again
+            // could add additional check to make sure the value has been removed from the db here but will not for now
+
+            // Sometimes twitch sends more than one streamup notification, this causes issues for us
+            // to mitigate this, we only process the notification if the stream started within the last 10 minutes
+            const minutesSinceStreamStart: number = (Date.now() - new Date(req.body.event.started_at).getTime()) / (60 * 1000);
+            if (minutesSinceStreamStart > 10 || liveUser !== null) {
+                logger.warn('Recieved streamup notification for stream that started more than 10 minutes ago. Will not process notification.', {
+                    minutesSinceStreamStart,
+                    userId,
+                });
+
+                res.status(200);
+                res.end();
+                return;
+            }
+
             if (userInfo !== undefined) {
                 if (streamStatus === 'stream.online') {
                     await liveUserOnline(userId, userInfo);
@@ -105,26 +127,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         features.forEach(async (feature: Features) => {
             if (streamStatus === 'stream.online') {
-                const liveUser = await prisma.liveStreams.findFirst({
-                    where: {
-                        userId: userId,
-                    },
-                });
-
-                // Sometimes twitch sends more than one streamup notification, this causes issues for us
-                // to mitigate this, we only process the notification if the stream started within the last 10 minutes
-                const minutesSinceStreamStart: number = (Date.now() - new Date(req.body.event.started_at).getTime()) / (60 * 1000);
-                if (minutesSinceStreamStart > 10 || liveUser !== null) {
-                    logger.warn('Recieved streamup notification for stream that started more than 10 minutes ago. Will not process notification.', {
-                        minutesSinceStreamStart,
-                        userId,
-                    });
-
-                    res.status(200);
-                    res.end();
-                    return;
-                }
-
                 const requestUrl = `/api/features/${feature}/streamup/${userId}`;
                 logger.info(`Making request to ${requestUrl}`, { requestUrl, userId, status: streamStatus });
                 await localAxios.post(requestUrl);
