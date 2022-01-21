@@ -105,7 +105,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         features.forEach(async (feature: Features) => {
             if (streamStatus === 'stream.online') {
-                const liveUser = await prisma.liveUsers.findFirst({
+                const liveUser = await prisma.liveStreams.findFirst({
                     where: {
                         userId: userId,
                     },

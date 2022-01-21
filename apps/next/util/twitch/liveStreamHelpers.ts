@@ -55,7 +55,7 @@ export async function getLiveUserInfo(userId: string): Promise<LiveUserInfo | un
 
 // change return value
 export async function liveUserOnline(userId: string, userInfo: LiveUserInfo): Promise<void> {
-    await prisma.liveUsers.upsert({
+    await prisma.liveStreams.upsert({
         where: {
             userId: userId,
         },
@@ -74,7 +74,7 @@ export async function liveUserOnline(userId: string, userInfo: LiveUserInfo): Pr
 
 // change return value
 export async function liveUserOffline(userId: string, userInfo: LiveUserInfo): Promise<void> {
-    const liveUser = await prisma.liveUsers.findFirst({
+    const liveUser = await prisma.liveStreams.findFirst({
         where: {
             userId: userId,
         },
@@ -85,7 +85,7 @@ export async function liveUserOffline(userId: string, userInfo: LiveUserInfo): P
 
     const startTime = liveUser !== null ? liveUser.startTime : null;
 
-    await prisma.pastLiveUsers.create({
+    await prisma.pastStreams.create({
         data: {
             userId: userId,
             twitchStreamId: userInfo.streamId,
@@ -95,7 +95,7 @@ export async function liveUserOffline(userId: string, userInfo: LiveUserInfo): P
         },
     });
 
-    await prisma.liveUsers.deleteMany({
+    await prisma.liveStreams.deleteMany({
         where: {
             userId: userId,
         },
