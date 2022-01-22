@@ -38,7 +38,7 @@ export async function getLiveUserInfo(userId: string): Promise<LiveUserInfo | un
         const authedTwitchAxios = await TwitchClientAuthService.authAxios(twitchAxios);
         const streamResponse = await authedTwitchAxios.get(`/helix/streams?user_id=${twitchUserId}`);
 
-        streamId = streamResponse.data?.data?.[0]?.id;
+        streamId = streamResponse.data?.data?.[0]?.id; // this will always be null on streamdown.
         if (streamResponse.data?.data.length !== 0) {
             streamLink = streamResponse.data?.data?.[0].user_login ? `https://www.twitch.tv/${streamResponse.data?.data?.[0].user_login}` : null;
         }
@@ -80,15 +80,18 @@ export async function liveUserOffline(userId: string, userInfo: LiveUserInfo): P
         },
         select: {
             startTime: true,
+            twitchStreamId: true,
         },
     });
 
     const startTime = liveUser !== null ? liveUser.startTime : null;
+    // We have to get this because it will be null on streamdown's in the userInfo section
+    const streamId = liveUser !== null ? liveUser.twitchStreamId : null;
 
     await prisma.pastStreams.create({
         data: {
             userId: userId,
-            twitchStreamId: userInfo.streamId,
+            twitchStreamId: streamId,
             twitchUserId: userInfo.twitchUserId,
             startTime: startTime,
             endTime: new Date(),
