@@ -36,7 +36,7 @@ export async function getLiveUserInfo(userId: string): Promise<LiveUserInfo | un
 
     try {
         const authedTwitchAxios = await TwitchClientAuthService.authAxios(twitchAxios);
-        const streamResponse = await authedTwitchAxios.get(`/helix/streams?id=${twitchUserId}`);
+        const streamResponse = await authedTwitchAxios.get(`/helix/streams?user_id=${twitchUserId}`);
 
         streamId = streamResponse.data?.data?.[0]?.id;
         streamLink = streamResponse.data?.data?.[0].user_login ? `https://www.twitch.tv/${streamResponse.data?.data?.[0].user_login}` : null;
