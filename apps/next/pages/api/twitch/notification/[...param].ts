@@ -93,7 +93,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (features.length !== 0) {
             const userInfo = await getLiveUserInfo(userId);
 
-            const liveUser = await prisma.liveStreams.findFirst({
+            const liveUser = await prisma.liveStreams.findUnique({
                 where: {
                     userId: userId,
                 },
