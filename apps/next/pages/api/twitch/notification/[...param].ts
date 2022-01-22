@@ -91,7 +91,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         logger.info(`Received ${streamStatus} notification for user ${userId}`, { status: streamStatus, userId, enabledFeatures: features });
 
         if (features.length !== 0) {
-            const userInfo = await getLiveUserInfo(userId, streamStatus === 'stream.online');
+            const userInfo = await getLiveUserInfo(userId);
 
             const liveUser = await prisma.liveStreams.findUnique({
                 where: {

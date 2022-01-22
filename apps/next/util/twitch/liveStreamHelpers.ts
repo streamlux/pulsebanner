@@ -13,7 +13,7 @@ export type LiveUserInfo = {
     twitchUserId: string | null;
 };
 
-export async function getLiveUserInfo(userId: string, isOnline: boolean): Promise<LiveUserInfo | undefined> {
+export async function getLiveUserInfo(userId: string): Promise<LiveUserInfo | undefined> {
     // first call twitter and try and get their twitter username. Handle all error codes gracefully and return null if any come
     const twitterInfo = await getTwitterInfo(userId);
     let twitterLink = null;
