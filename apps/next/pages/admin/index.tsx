@@ -18,7 +18,6 @@ export default function Page() {
                 <SimpleGrid columns={[1, 2]} spacing={[4, 8]}>
                     <QuickLinks />
                     <Database />
-                    <Webhooks />
                     <Session />
                     <Banner />
                 </SimpleGrid>

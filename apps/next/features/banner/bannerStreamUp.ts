@@ -61,6 +61,8 @@ const bannerStreamUp: Feature<string> = async (userId: string): Promise<string> 
 
     // https://stackoverflow.com/a/58158656/10237052
 
+    console.log('bannerUrl', bannerUrl);
+
     // store the current banner in s3
     const dataToUpload: string = bannerUrl === 'empty' ? 'empty' : await imageToBase64(bannerUrl);
 
