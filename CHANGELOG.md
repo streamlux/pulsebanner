@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.5.4] - 2022-01-22
+
 ### Added
 
  - Firm check of valid base64 image in DB and enable proper handling
