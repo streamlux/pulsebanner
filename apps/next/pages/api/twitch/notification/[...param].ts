@@ -91,7 +91,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         logger.info(`Received ${streamStatus} notification for user ${userId}`, { status: streamStatus, userId, enabledFeatures: features });
 
         if (features.length !== 0) {
-            const userInfo = await getLiveUserInfo(userId);
+            const userInfo = await getLiveUserInfo(userId, streamStatus === 'stream.online');
 
             const liveUser = await prisma.liveStreams.findUnique({
                 where: {
@@ -99,7 +99,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 },
             });
 
-            if (liveUser && userInfo) {
+            if (liveUser && userInfo && streamStatus === 'stream.online') {
                 // we need to verify that the liveUser in the table is from the same stream, otherwise they should be removed
                 const currentStreamId = userInfo.streamId;
                 const storedStreamId = liveUser.twitchStreamId;

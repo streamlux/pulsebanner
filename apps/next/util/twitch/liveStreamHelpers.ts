@@ -13,7 +13,7 @@ export type LiveUserInfo = {
     twitchUserId: string | null;
 };
 
-export async function getLiveUserInfo(userId: string): Promise<LiveUserInfo | undefined> {
+export async function getLiveUserInfo(userId: string, isOnline: boolean): Promise<LiveUserInfo | undefined> {
     // first call twitter and try and get their twitter username. Handle all error codes gracefully and return null if any come
     const twitterInfo = await getTwitterInfo(userId);
     let twitterLink = null;
@@ -39,9 +39,11 @@ export async function getLiveUserInfo(userId: string): Promise<LiveUserInfo | un
         const streamResponse = await authedTwitchAxios.get(`/helix/streams?user_id=${twitchUserId}`);
 
         streamId = streamResponse.data?.data?.[0]?.id;
-        streamLink = streamResponse.data?.data?.[0].user_login ? `https://www.twitch.tv/${streamResponse.data?.data?.[0].user_login}` : null;
+        if (streamResponse.data?.data.length !== 0) {
+            streamLink = streamResponse.data?.data?.[0].user_login ? `https://www.twitch.tv/${streamResponse.data?.data?.[0].user_login}` : null;
+        }
     } catch (e) {
-        logger.error('Error communicated with twitch: ', e, { userId: userId });
+        logger.error(`Error communicated with twitch: ${e}`, { userId: userId, error: e });
         return undefined;
     }
 
