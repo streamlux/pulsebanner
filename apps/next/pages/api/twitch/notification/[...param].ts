@@ -98,13 +98,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     userId: userId,
                 },
             });
-            // we need to check if the stream has been going in the past 10 mins and if we already have a live user before attempting to add again
-            // could add additional check to make sure the value has been removed from the db here but will not for now
+
+            if (liveUser && userInfo) {
+                // we need to verify that the liveUser in the table is from the same stream, otherwise they should be removed
+                const currentStreamId = userInfo.streamId;
+                const storedStreamId = liveUser.twitchStreamId;
+                // remove from liveUser table if the stored live user does not have the same streamId
+                if (currentStreamId !== storedStreamId) {
+                    await prisma.liveStreams.deleteMany({
+                        where: {
+                            userId: userId,
+                        },
+                    });
+                }
+            }
 
             // Sometimes twitch sends more than one streamup notification, this causes issues for us
             // to mitigate this, we only process the notification if the stream started within the last 10 minutes
+            // add check to this statement for liveUser when we want to depend on it
             const minutesSinceStreamStart: number = (Date.now() - new Date(req.body.event.started_at).getTime()) / (60 * 1000);
-            if (streamStatus === 'stream.online' && (minutesSinceStreamStart > 10 || liveUser !== null)) {
+            if (streamStatus === 'stream.online' && minutesSinceStreamStart > 10) {
                 logger.warn('Recieved streamup notification for stream that started more than 10 minutes ago. Will not process notification.', {
                     minutesSinceStreamStart,
                     userId,
