@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+ - Firm check of valid base64 image in DB and enable proper handling
+ - Live stream and previous stream tables to track active streamers
+
 ### Fixed
 
 - Actually truncate Twitter name
