@@ -104,7 +104,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             // Sometimes twitch sends more than one streamup notification, this causes issues for us
             // to mitigate this, we only process the notification if the stream started within the last 10 minutes
             const minutesSinceStreamStart: number = (Date.now() - new Date(req.body.event.started_at).getTime()) / (60 * 1000);
-            if (minutesSinceStreamStart > 10 || liveUser !== null) {
+            if (streamStatus === 'stream.online' && (minutesSinceStreamStart > 10 || liveUser !== null)) {
                 logger.warn('Recieved streamup notification for stream that started more than 10 minutes ago. Will not process notification.', {
                     minutesSinceStreamStart,
                     userId,
