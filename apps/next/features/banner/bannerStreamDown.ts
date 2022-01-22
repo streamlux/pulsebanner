@@ -3,6 +3,7 @@ import { download } from '@app/util/s3/download';
 import { validateTwitterAuthentication, TwitterResponseCode, updateBanner } from '@app/util/twitter/twitterHelpers';
 import { env } from 'process';
 import { Feature } from '../Feature';
+import { logger } from '@app/util/logger';
 
 const bannerStreamDown: Feature<string> = async (userId: string): Promise<string> => {
 
@@ -23,9 +24,9 @@ const bannerStreamDown: Feature<string> = async (userId: string): Promise<string
     // Download original image from S3.
     const imageBase64: string = await download(env.IMAGE_BUCKET_NAME, userId);
     if (imageBase64) {
-        console.log('Successfully downloaded original image from S3.');
+        logger.info('Successfully downloaded original image from S3.', { userId });
     } else {
-        console.error('Failed to download original image from S3.');
+        logger.error('Failed to download original image from S3.', { userId });
         return 'Failed to get original image from S3.';
     }
 

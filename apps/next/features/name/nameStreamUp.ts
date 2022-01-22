@@ -1,5 +1,6 @@
 import { productPlan } from "@app/util/database/paymentHelpers";
 import { getTwitterInfo, flipFeatureEnabled, getTwitterName, updateOriginalTwitterNameDB } from "@app/util/database/postgresHelpers";
+import { logger } from "@app/util/logger";
 import { validateTwitterAuthentication, getCurrentTwitterName, updateTwitterName } from "@app/util/twitter/twitterHelpers";
 import { TwitterName } from "@prisma/client";
 import { Feature } from "../Feature";
@@ -11,6 +12,7 @@ const nameStreamUp: Feature<string> = async (userId: string): Promise<string> =>
     const validatedTwitter = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
     if (!validatedTwitter) {
         await flipFeatureEnabled(userId, 'name');
+        logger.error('Unauthenticated Twitter. Disabling feature and requiring re-auth.');
         return 'Unauthenticated Twitter. Disabling feature and requiring re-auth.';
     }
 
@@ -29,13 +31,25 @@ const nameStreamUp: Feature<string> = async (userId: string): Promise<string> =>
         const plan = await productPlan(userId);
 
         if (!plan.partner && plan.plan === 'Free') {
-            updatedTwitterLiveName = `🔴 Live now | ${currentTwitterName}`;
-            console.log(`Changing Twitter name from '${currentTwitterName}' to '${updatedTwitterLiveName}'.`);
+            updatedTwitterLiveName = `🔴 Live now | ${currentTwitterName}`.substring(0, 49);
+            logger.info(`Changing Twitter name from '${currentTwitterName}' to '${updatedTwitterLiveName}'.`, {
+                userId,
+                originalName: currentTwitterName,
+                liveName: updatedTwitterLiveName
+            });
         } else {
-            console.log(`Changing Twitter name from '${currentTwitterName}' to '${twitterNameSettings.streamName}'.`);
+            logger.info(`Changing Twitter name from '${currentTwitterName}' to '${twitterNameSettings.streamName}'.`, {
+                userId,
+                originalName: currentTwitterName,
+                liveName: twitterNameSettings.streamName
+            });
         }
     } else {
-        console.log(`Changing Twitter name from '${currentTwitterName}' to '${twitterNameSettings.streamName}'.`);
+        logger.info(`Changing Twitter name from '${currentTwitterName}' to '${twitterNameSettings.streamName}'.`, {
+            userId,
+            originalName: currentTwitterName,
+            liveName: twitterNameSettings.streamName
+        });
     }
 
     // If it is not found return immediately and do not update normal twitwyter name
@@ -46,7 +60,7 @@ const nameStreamUp: Feature<string> = async (userId: string): Promise<string> =>
 
             if (response === 200) {
                 await updateOriginalTwitterNameDB(userId, currentTwitterName);
-                console.log('Successfully updated Twitter name on streamup.');
+                logger.info('Successfully updated Twitter name on streamup.');
                 return 'success';
             }
         } else if (twitterNameSettings.streamName) {
@@ -55,7 +69,7 @@ const nameStreamUp: Feature<string> = async (userId: string): Promise<string> =>
 
             if (response === 200) {
                 await updateOriginalTwitterNameDB(userId, currentTwitterName);
-                console.log('Successfully updated Twitter name on streamup.');
+                logger.info('Successfully updated Twitter name on streamup.');
                 return 'success';
             }
         }

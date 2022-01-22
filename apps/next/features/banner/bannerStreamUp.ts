@@ -1,4 +1,3 @@
-import { TemplateRequestBody } from "@app/pages/api/features/banner/streamup/[userId]";
 import { TwitchClientAuthService } from "@app/services/TwitchClientAuthService";
 import { twitchAxios, remotionAxios } from "@app/util/axios";
 import { getTwitterInfo, flipFeatureEnabled, getBannerEntry } from "@app/util/database/postgresHelpers";
@@ -11,8 +10,17 @@ import { AxiosResponse } from "axios";
 import imageToBase64 from "image-to-base64";
 import { env } from "process";
 import { Feature } from "../Feature";
+import { logger } from '@app/util/logger';
+
+export type TemplateRequestBody = {
+    foregroundId: string;
+    backgroundId: string;
+    foregroundProps: Record<string, unknown>;
+    backgroundProps: Record<string, unknown>;
+};
 
 const bannerStreamUp: Feature<string> = async (userId: string): Promise<string> => {
+
     const accounts = await getAccountsById(userId);
     const twitchUserId = accounts['twitch'].providerAccountId;
 
@@ -56,10 +64,10 @@ const bannerStreamUp: Feature<string> = async (userId: string): Promise<string> 
     // store the current banner in s3
     const dataToUpload: string = bannerUrl === 'empty' ? 'empty' : await imageToBase64(bannerUrl);
 
-    console.log('validation - dataToUpload correct on streamup: ', checkValidDownload(dataToUpload));
+    logger.info('validation - dataToUpload correct on streamup: ', { valid: checkValidDownload(dataToUpload) });
     if (!checkValidDownload(dataToUpload)) {
         // just print first 10 chars of base64 to see what is invalid
-        console.log(`incorrect data. userid: ${userId}\tdataToUpload: ${dataToUpload.substring(0, 10)} `);
+        logger.warn(`incorrect data. userid: ${userId}\tdataToUpload: ${dataToUpload.substring(0, 10)} `, { userId, string: dataToUpload.substring(0, 10) });
     }
     // check if invalid base64
     // if (!checkValidDownload(dataToUpload)) {
@@ -84,7 +92,7 @@ const bannerStreamUp: Feature<string> = async (userId: string): Promise<string> 
     try {
         await uploadBase64(bucketName, userId, dataToUpload);
     } catch (e) {
-        console.error('Error uploading original banner to S3.');
+        logger.error('Error uploading original banner to S3', { userId });
         return 'Error uploading original banner to S3.';
     }
 
