@@ -8,16 +8,22 @@ export function createLogger(service: string, ddtags?: string): winston.Logger {
         exitOnError: false,
         format: winston.format.json(),
     });
+    if (process.env.NODE_ENV !== 'development') {
+        try {
 
-    logger.add(
-        new DatadogWinston({
-            apiKey: process.env.DATADOG_API_KEY,
-            hostname: process.env.SERVICE_ENV,
-            service,
-            ddsource: 'nodejs',
-            ddtags
-        }),
-    );
+            logger.add(
+                new DatadogWinston({
+                    apiKey: process.env.DATADOG_API_KEY,
+                    hostname: process.env.SERVICE_ENV,
+                    service,
+                    ddsource: 'nodejs',
+                    ddtags
+                }),
+            );
+        } catch (e) {
+            console.log("Couldn't load winston");
+        }
+    }
 
     logger.add(new winston.transports.Console({
         level: 'info',

@@ -1,4 +1,4 @@
-import { TwitterClient } from 'twitter-api-client';
+import { TwitterClient, UsersLookup } from 'twitter-api-client';
 import { sendError } from '../discord/sendError';
 import { logger } from '../logger';
 
@@ -12,6 +12,18 @@ export const createTwitterClient = (oauth_token: string, oauth_token_secret: str
         accessTokenSecret: oauth_token_secret,
     });
 };
+
+export async function getUserInfo(userId: string, oauth_token: string, oauth_token_secret: string, providerAccountId: string): Promise<UsersLookup | undefined> {
+    const client = createTwitterClient(oauth_token, oauth_token_secret);
+    try {
+        const response = await client.accountsAndUsers.usersLookup({
+            user_id: providerAccountId,
+        });
+        return response[0];
+    } catch (e) {
+        return undefined;
+    }
+}
 
 export async function getBanner(userId: string, oauth_token: string, oauth_token_secret: string, providerAccountId: string): Promise<string> {
     const client = createTwitterClient(oauth_token, oauth_token_secret);
