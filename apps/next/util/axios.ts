@@ -1,4 +1,5 @@
 import axios, { AxiosError } from "axios";
+import { logger } from "./logger";
 
 export const twitchAxios = axios.create({
     baseURL: 'https://api.twitch.tv'
@@ -15,7 +16,7 @@ twitchAxios.interceptors.response.use(function (response) {
     errorLogs.push(`Error message: ${error.message}`);
     errorLogs.push(`Axios request config: ${JSON.stringify(error.config, null, 2)}`);
 
-    console.log(errorLogs.join('\n'));
+    logger.error('Error occured during request (twich axios)', { method: error.config.method, url: error.config.url, message: error.message, config: error.config });
 
     if (process.env.ENABLE_DISCORD_WEBHOOKS) {
         axios.post(process.env.DISCORD_ERROR_WEBHOOK_URL, {
@@ -29,9 +30,7 @@ export const localAxios = axios.create({
 });
 
 localAxios.interceptors.response.use(undefined, (error: AxiosError) => {
-    console.error('Error occured during request (local)');
-    console.error(`${error.config.method?.toUpperCase()} ${error.config.url}`);
-    console.error(error.message);
+    logger.error('Error occured during request (local)', { method: error.config.method, url: error.config.url, message: error.message });
 })
 
 export const remotionAxios = axios.create({

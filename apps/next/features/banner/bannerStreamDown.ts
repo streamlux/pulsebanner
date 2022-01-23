@@ -1,22 +1,11 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import NextCors from 'nextjs-cors';
-import { TwitterResponseCode, updateBanner, validateTwitterAuthentication } from '@app/util/twitter/twitterHelpers';
-import { flipFeatureEnabled, getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
-import { env } from 'process';
+import { getBannerEntry, getTwitterInfo, flipFeatureEnabled } from '@app/util/database/postgresHelpers';
 import { download } from '@app/util/s3/download';
+import { validateTwitterAuthentication, TwitterResponseCode, updateBanner } from '@app/util/twitter/twitterHelpers';
+import { env } from 'process';
+import { Feature } from '../Feature';
+import { logger } from '@app/util/logger';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    // Run the cors middleware
-    // nextjs-cors uses the cors package, so we invite you to check the documentation https://github.com/expressjs/cors
-    await NextCors(req, res, {
-        // Options
-        // methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-        methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-        origin: '*',
-        optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
-    });
-
-    const userId: string = req.query.userId as string;
+const bannerStreamDown: Feature<string> = async (userId: string): Promise<string> => {
 
     const bannerEntry = await getBannerEntry(userId);
 
@@ -25,20 +14,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const validatedTwitter = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
     if (!validatedTwitter) {
         await flipFeatureEnabled(userId, 'banner');
-        return res.status(401).send('Unauthenticated Twitter. Disabling feature banner and requiring re-auth.');
+        return 'Unauthenticated Twitter. Disabling feature banner and requiring re-auth.';
     }
 
     if (bannerEntry === null || twitterInfo === null) {
-        return res.status(400).send('Could not find banner entry or token info for user');
+        return 'Could not find banner entry or token info for user';
     }
 
     // Download original image from S3.
     const imageBase64: string = await download(env.IMAGE_BUCKET_NAME, userId);
     if (imageBase64) {
-        console.log('Successfully downloaded original image from S3.');
+        logger.info('Successfully downloaded original image from S3.', { userId });
     } else {
-        console.error('Failed to download original image from S3.');
-        return res.status(404).send('Failed to get original image from S3.');
+        logger.error('Failed to download original image from S3.', { userId });
+        return 'Failed to get original image from S3.';
     }
 
     // validate the image is proper base64. If not, upload the signup image
@@ -56,9 +45,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // add check for if it is 'empty' string, then we just set back to default (remove the current banner)
     const bannerStatus: TwitterResponseCode = await updateBanner(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, imageBase64);
     if (bannerStatus === 200) {
-        return res.status(200).send('Successfully set banner back to original image.');
+        return 'Successfully set banner back to original image.';
     } else {
         console.error('Failed to set banner back original image.');
-        return res.status(400).send('Failed to set banner to original image.');
+        return 'Failed to set banner to original image.';
     }
 }
+
+export default bannerStreamDown;

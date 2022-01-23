@@ -6,6 +6,7 @@ import { Account } from '@prisma/client';
 import { twitchAxios } from '@app/util/axios';
 import { TwitchClientAuthService } from '@app/services/TwitchClientAuthService';
 import { listSubscriptions } from '@app/util/twitch/listSubscriptions';
+import { logger } from '@app/util/logger';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
@@ -52,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             res.send(200);
         }
     } else {
-        console.log('this failed');
+        logger.error('this failed');
         res.send(401);
     }
 }

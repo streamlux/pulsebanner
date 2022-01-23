@@ -35,6 +35,10 @@ export default function Layout({ children }) {
     const breakpoint = useBreakpoint();
     const router = useRouter();
     const emgg = router.asPath === '/emgg';
+
+    const pagesWithoutPromo = ['/admin', '/admin/banner'];
+    const showPromo = promo && isOpen && breakpoint !== 'base' && !pagesWithoutPromo.includes(router.asPath);
+
     return (
         <>
             <Flex direction="column" as={chakra.div} minH="100vh" bg={emgg ? 'black' : undefined}>
@@ -51,7 +55,7 @@ export default function Layout({ children }) {
                         {children}
                     </Box>
                 </Flex>
-                {promo && isOpen && breakpoint !== 'base' && (
+                {showPromo && (
                     <Portal>
                         <Box
                             zIndex={1}
