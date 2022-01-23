@@ -2,11 +2,11 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 import crypto from 'crypto';
 import bodyParser from 'body-parser';
-import { Features, FeaturesService } from '@app/services/FeaturesService';
-import { localAxios } from '@app/util/axios';
+import { FeaturesService } from '@app/services/FeaturesService';
 import prisma from '@app/util/ssr/prisma';
 import { getLiveUserInfo, liveUserOffline, liveUserOnline } from '@app/util/twitch/liveStreamHelpers';
 import { logger } from '@app/util/logger';
+import { executeStreamDown, executeStreamUp } from '@app/features/executeFeatures';
 
 type VerificationBody = {
     challenge: string;
@@ -147,18 +147,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
         }
 
-        features.forEach(async (feature: Features) => {
-            if (streamStatus === 'stream.online') {
-                const requestUrl = `/api/features/${feature}/streamup/${userId}`;
-                logger.info(`Making request to ${requestUrl}`, { requestUrl, userId, status: streamStatus });
-                await localAxios.post(requestUrl);
-            }
-            if (streamStatus === 'stream.offline') {
-                const requestUrl = `/api/features/${feature}/streamdown/${userId}`;
-                logger.info(`Making request to ${requestUrl}`, { requestUrl, userId, status: streamStatus });
-                await localAxios.post(`/api/features/${feature}/streamdown/${userId}`);
-            }
-        });
+        if (streamStatus === 'stream.online') {
+            await executeStreamUp(userId);
+        } else if (streamStatus === 'stream.offline') {
+            await executeStreamDown(userId);
+        }
 
         res.status(200);
         res.end();

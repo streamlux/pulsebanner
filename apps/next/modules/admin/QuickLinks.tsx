@@ -8,6 +8,16 @@ export const QuickLinks: React.FC = () => (
         <Box>
             <UnorderedList>
                 <ListItem>
+                    <Link isExternal href="/admin/user">
+                        User dashboard
+                    </Link>
+                </ListItem>
+                <ListItem>
+                    <Link isExternal href="/admin/webhooks">
+                        Webhooks dashboard
+                    </Link>
+                </ListItem>
+                <ListItem>
                     <Link isExternal href="/api/admin/adminer">
                         Adminer
                         <ExternalLinkIcon mx="2px" />
