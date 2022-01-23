@@ -6,24 +6,16 @@ import {
     Heading,
     Input,
     FormControl,
-    FormLabel,
     Button,
-    Image,
     Text,
-    Link,
-    SimpleGrid,
-    HStack,
-    Avatar,
     Container,
     Stack,
     VStack,
-    ButtonGroup,
     Flex,
     Spacer,
     Table,
     Tbody,
     Td,
-    Tfoot,
     Th,
     Thead,
     Tr,
@@ -31,7 +23,6 @@ import {
     DrawerBody,
     DrawerCloseButton,
     DrawerContent,
-    DrawerFooter,
     DrawerHeader,
     DrawerOverlay,
     useDisclosure,
@@ -40,18 +31,8 @@ import {
 import { getSession } from 'next-auth/react';
 import { GetServerSideProps } from 'next';
 import { getAccountsById } from '@app/util/getAccountsById';
-import { getTwitterInfo } from '@app/util/database/postgresHelpers';
-import { download } from '@app/util/s3/download';
-import { env } from 'process';
-import { getBanner, getUserInfo } from '@app/util/twitter/twitterHelpers';
-import { TwitchClientAuthService } from '@app/services/TwitchClientAuthService';
-import { twitchAxios } from '@app/util/axios';
-import { UsersLookup } from 'twitter-api-client';
 import { useRouter } from 'next/router';
-import { Card } from '@app/components/Card';
 import axios from 'axios';
-import { Features } from '@app/services/FeaturesService';
-import prisma from '@app/util/ssr/prisma';
 import { User } from '@prisma/client';
 import { TwitchSubscriptionService } from '@app/services/TwitchSubscriptionService';
 import { Subscription } from '@app/types/twitch';
@@ -70,19 +51,27 @@ export const getServerSideProps: GetServerSideProps<PageProps | any> = async (co
     const userId = context.query.userId;
     const twitchSub = new TwitchSubscriptionService();
 
-    if (typeof userId === 'string') {
-        const accounts = await getAccountsById(userId);
-        const twitchUserId = accounts['twitch'].providerAccountId;
+    if (typeof userId === 'string' && userId !== '') {
+        try {
+            const accounts = await getAccountsById(userId);
+            const twitchUserId = accounts['twitch'].providerAccountId;
 
-        const twitchSub = new TwitchSubscriptionService();
-        const subscriptions = await twitchSub.getSubscriptions(twitchUserId);
+            const twitchSub = new TwitchSubscriptionService();
+            const subscriptions = await twitchSub.getSubscriptions(twitchUserId);
 
-        return {
-            props: {
-                userId,
-                subscriptions,
-            },
-        };
+            return {
+                props: {
+                    userId,
+                    subscriptions,
+                },
+            };
+        } catch (e) {
+            return {
+                props: {
+                    subscriptions: await twitchSub.getSubscriptions(),
+                },
+            };
+        }
     } else {
         return {
             props: {

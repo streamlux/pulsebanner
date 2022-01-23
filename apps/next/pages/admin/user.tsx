@@ -72,48 +72,54 @@ export const getServerSideProps: GetServerSideProps<PageProps | any> = async (co
         };
     }
 
-    const accounts = await getAccountsById(userId);
-    const twitchUserId = accounts['twitch'].providerAccountId;
-    const imageBase64: string = await download(env.IMAGE_BUCKET_NAME, userId);
-    const backupBase64: string = await download(env.BANNER_BACKUP_BUCKET, userId);
-    const twitterInfo = await getTwitterInfo(userId, true);
+    try {
+        const accounts = await getAccountsById(userId);
+        const twitchUserId = accounts['twitch'].providerAccountId;
+        const imageBase64: string = await download(env.IMAGE_BUCKET_NAME, userId);
+        const backupBase64: string = await download(env.BANNER_BACKUP_BUCKET, userId);
+        const twitterInfo = await getTwitterInfo(userId, true);
 
-    const user = await prisma.user.findUnique({
-        where: {
-            id: userId,
-        },
-    });
-
-    const authedTwitchAxios = await TwitchClientAuthService.authAxios(twitchAxios);
-
-    // get twitch stream info for user
-    // https://dev.twitch.tv/docs/api/reference#get-streams
-    const streamResponse = await authedTwitchAxios.get(`/helix/streams?user_id=${twitchUserId}`);
-    const bannerUrl: string = await getBanner(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
-
-    const userResponse = await authedTwitchAxios.get(`/helix/users?id=${twitchUserId}`);
-    const twitchUserInfo = userResponse.data.data[0];
-
-    const twitterUserInfo: UsersLookup = await getUserInfo(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
-
-    return {
-        props: {
-            userId,
-            user,
-            twitterInfo,
-            banner: {
-                currentSrc: bannerUrl,
-                backupBase64,
-                originalBase64: imageBase64,
+        const user = await prisma.user.findUnique({
+            where: {
+                id: userId,
             },
-            stream: {
-                online: !!streamResponse.data?.data?.[0],
-                stream: streamResponse.data?.data?.[0],
+        });
+
+        const authedTwitchAxios = await TwitchClientAuthService.authAxios(twitchAxios);
+
+        // get twitch stream info for user
+        // https://dev.twitch.tv/docs/api/reference#get-streams
+        const streamResponse = await authedTwitchAxios.get(`/helix/streams?user_id=${twitchUserId}`);
+        const bannerUrl: string = await getBanner(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
+
+        const userResponse = await authedTwitchAxios.get(`/helix/users?id=${twitchUserId}`);
+        const twitchUserInfo = userResponse.data.data[0];
+
+        const twitterUserInfo: UsersLookup = await getUserInfo(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
+
+        return {
+            props: {
+                userId,
+                user,
+                twitterInfo,
+                banner: {
+                    currentSrc: bannerUrl,
+                    backupBase64,
+                    originalBase64: imageBase64,
+                },
+                stream: {
+                    online: !!streamResponse.data?.data?.[0],
+                    stream: streamResponse.data?.data?.[0],
+                },
+                twitchUserInfo,
+                twitterUserInfo,
             },
-            twitchUserInfo,
-            twitterUserInfo,
-        },
-    };
+        };
+    } catch (e) {
+        return {
+            props: {},
+        };
+    }
 };
 
 export default function Page({ user, userId, banner, stream, twitchUserInfo, twitterUserInfo }: PageProps) {
