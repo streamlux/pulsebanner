@@ -2,8 +2,11 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 import crypto from 'crypto';
 import bodyParser from 'body-parser';
-import { executeStreamDown, executeStreamUp } from '@app/features/executeFeatures';
+import { FeaturesService } from '@app/services/FeaturesService';
+import prisma from '@app/util/ssr/prisma';
+import { getLiveUserInfo, liveUserOffline, liveUserOnline } from '@app/util/twitch/liveStreamHelpers';
 import { logger } from '@app/util/logger';
+import { executeStreamDown, executeStreamUp } from '@app/features/executeFeatures';
 
 type VerificationBody = {
     challenge: string;
@@ -59,7 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         messageTimestamp,
         messageType,
         body: req.body,
-        userId
+        userId,
     });
 
     if (!verifySignature(messageSignature, messageId, messageTimestamp, req['rawBody'])) {
@@ -82,26 +85,73 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const userId = param[1];
 
+        // get enabled features
+        const features = await FeaturesService.listEnabled(userId);
 
-        if (streamStatus === 'stream.online') {
+        logger.info(`Received ${streamStatus} notification for user ${userId}`, { status: streamStatus, userId, enabledFeatures: features });
+
+        if (features.length !== 0) {
+            const userInfo = await getLiveUserInfo(userId);
+
+            const liveUser = await prisma.liveStreams.findUnique({
+                where: {
+                    userId: userId,
+                },
+            });
+
+            if (liveUser && userInfo && streamStatus === 'stream.online') {
+                // we need to verify that the liveUser in the table is from the same stream, otherwise they should be removed
+                const currentStreamId = userInfo.streamId;
+                const storedStreamId = liveUser.twitchStreamId;
+                // remove from liveUser table if the stored live user does not have the same streamId
+                if (currentStreamId !== storedStreamId) {
+                    logger.error('User stored in liveUser table is invalid. Erasing from table because it is a new stream. ', {
+                        userId,
+                        streamLink: userInfo.streamLink,
+                        twitterLink: userInfo.twitterLink,
+                    });
+                    await prisma.liveStreams.deleteMany({
+                        where: {
+                            userId: userId,
+                        },
+                    });
+                }
+            }
+
+            // we have a soft check at the moment. Don't do anything in this situation but just log that it was hit. We will add to below statement in future after testing
+            if (streamStatus === 'stream.online' && liveUser) {
+                logger.warn('Recieved streamup notification for stream that is already stored in DB. Soft check.', { userId, liveUserTableId: liveUser.id });
+            }
+
             // Sometimes twitch sends more than one streamup notification, this causes issues for us
             // to mitigate this, we only process the notification if the stream started within the last 10 minutes
             const minutesSinceStreamStart: number = (Date.now() - new Date(req.body.event.started_at).getTime()) / (60 * 1000);
-            if (minutesSinceStreamStart > 10) {
-                logger.info('Recieved streamup notification for stream that started more than 10 minutes ago. Will not process notification.', {
-                    minutesSinceStreamStart
+            if (streamStatus === 'stream.online' && minutesSinceStreamStart > 10) {
+                logger.warn('Recieved streamup notification for stream that started more than 10 minutes ago. Will not process notification.', {
+                    minutesSinceStreamStart,
+                    userId,
                 });
+
                 res.status(200);
                 res.end();
                 return;
             }
 
-            await executeStreamUp(userId);
-        }
-        if (streamStatus === 'stream.offline') {
-            await executeStreamDown(userId)
+            if (userInfo !== undefined) {
+                if (streamStatus === 'stream.online') {
+                    await liveUserOnline(userId, userInfo);
+                }
+                if (streamStatus === 'stream.offline') {
+                    await liveUserOffline(userId, userInfo);
+                }
+            }
         }
 
+        if (streamStatus === 'stream.online') {
+            await executeStreamUp(userId);
+        } else if (streamStatus === 'stream.offline') {
+            await executeStreamDown(userId);
+        }
 
         res.status(200);
         res.end();

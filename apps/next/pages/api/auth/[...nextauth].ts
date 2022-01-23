@@ -202,7 +202,7 @@ export default NextAuth({
                         imageToBase64(bannerUrl).then((base64: string) => {
                             uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, base64)
                                 .then(() => {
-                                    logger.info('Uploaded Twitter banner on new user signup.', { userId: message.user.id })
+                                    logger.info('Uploaded Twitter banner on new user signup.', { userId: message.user.id });
                                 })
                                 .catch((reason) => {
                                     logger.error('Error uploading Twitter banner to backup bucket on new user signup', reason, { userId: message.user.id });
