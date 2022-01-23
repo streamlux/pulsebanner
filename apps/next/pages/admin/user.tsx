@@ -159,17 +159,31 @@ export default function Page({ user, userId, banner, stream, twitchUserInfo, twi
     };
 
     const testStreamDown = async (features?: Features[]) => {
-        const params = new URLSearchParams();
-        features?.forEach((feature) => params.append('features', feature));
-        await axios.post(`/api/admin/streamdown/ckxfdlid83820mmpjv3a6c74t?${params.toString()}`);
-        window.location.reload();
+        if (userIdInput) {
+            const params = new URLSearchParams();
+            features?.forEach((feature) => params.append('features', feature));
+            await axios.post(`/api/admin/streamdown/${userIdInput}?${params.toString()}`);
+            window.location.reload();
+        } else {
+            toast({
+                status: 'error',
+                title: 'Must have userId',
+            });
+        }
     };
 
     const testStreamUp = async (features?: Features[]) => {
-        const params = new URLSearchParams();
-        features?.forEach((feature) => params.append('features', feature));
-        await axios.post(`/api/admin/streamup/ckxfdlid83820mmpjv3a6c74t?${params.toString()}`);
-        window.location.reload();
+        if (userIdInput) {
+            const params = new URLSearchParams();
+            features?.forEach((feature) => params.append('features', feature));
+            await axios.post(`/api/admin/streamup/${userIdInput}?${params.toString()}`);
+            window.location.reload();
+        } else {
+            toast({
+                status: 'error',
+                title: 'Must have userId',
+            });
+        }
     };
 
     return (
