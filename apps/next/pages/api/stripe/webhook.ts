@@ -12,6 +12,7 @@ import { env } from 'process';
 import { TwitterResponseCode, updateProfilePic } from '@app/util/twitter/twitterHelpers';
 import { flipFeatureEnabled, getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { defaultBannerSettings } from '@app/pages/banner';
+import { logger } from '@app/util/logger';
 
 // Stripe requires the raw body to construct the event.
 export const config = {
@@ -49,8 +50,8 @@ handler.post(async (req, res) => {
     try {
         event = stripe.webhooks.constructEvent(buf, sig, process.env.STRIPE_WEBHOOK_SECRET);
     } catch (err) {
-        console.log(`❌ Error verifying webhook. Message: ${err?.message}`);
-        console.log('secret', process.env.STRIPE_WEBHOOK_SECRET);
+        logger.error(`❌ Error verifying webhook. Message: ${err?.message}`);
+        logger.error('secret', process.env.STRIPE_WEBHOOK_SECRET);
         return res.status(400).send(`Webhook Error: ${err?.message}`);
     }
 
@@ -311,7 +312,7 @@ handler.post(async (req, res) => {
                     throw new Error(`Unhandled relevant event! ${event.type}`);
             }
         } catch (error) {
-            console.log(error);
+            logger.error('Stripe webhook error', error);
             return res.status(400).send('Webhook error: "Webhook handler failed. View logs."');
         }
     }

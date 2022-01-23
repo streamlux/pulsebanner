@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.5.6] - 2022-01-22
+
+### Fixed
+
+ - Incorrect error log conditional
+
+## [0.5.5] - 2022-01-22
+
+### Fixed
+
+ - Twitch stream link fix
+
+## [0.5.4] - 2022-01-22
+
+### Added
+
+ - Firm check of valid base64 image in DB and enable proper handling
+ - Live stream and previous stream tables to track active streamers
+
+### Fixed
+
+- Actually truncate Twitter name
+
+## [0.5.3] - 2022-01-16
+
+### Added
+
+- Logging with Winston
+- Datadog log aggregation
+
+### Fixed
+
+- If Twitter name with "🔴 Live now |" prepended is over 50 characters, then truncate the name.
+- Removed some unnecessary Discord error logs
+
 ## [0.5.2] - 2022-01-16
 
 ### Removed
