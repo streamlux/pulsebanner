@@ -78,11 +78,11 @@ const bannerStreamUp: Feature<string> = async (userId: string): Promise<string> 
         // check valid download once more
         if (!checkValidDownload(refetch)) {
             // if we are invalid again, fail the request
-            console.log('Corrupt base64 image. Uploading signup image');
+            logger.error('Corrupt base64 image. Uploading signup image');
             const original = await download(env.BANNER_BACKUP_BUCKET, userId);
             if (!checkValidDownload(original)) {
-                console.log('Corrupt signup image. Failing request');
-                return res.status(400).send('Corrupt signup image. Failing request');
+                logger.error('Corrupt signup image. Failing request');
+                return 'Corrupt signup image. Failing request';
             } else {
                 dataToUpload = original;
             }
