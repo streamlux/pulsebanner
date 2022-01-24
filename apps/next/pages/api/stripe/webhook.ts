@@ -158,15 +158,15 @@ handler.post(async (req, res) => {
                                         base64Image
                                     );
                                     if (profilePicStatus === 200) {
-                                        console.log('Successfully reset profile picture on subscription deleted.');
+                                        logger.info('Successfully reset profile picture on subscription deleted.', { userId: userId });
                                     } else {
-                                        console.log('Error resetting profile picture on subscription deleted.');
+                                        logger.error('Error resetting profile picture on subscription deleted.', { userId: userId });
                                     }
                                 } else {
-                                    console.log('could not find a base64 original profile picture image.');
+                                    logger.error('could not find a base64 original profile picture image.', { userId: userId });
                                 }
                                 await flipFeatureEnabled(userId, 'profileImage');
-                                console.log('Profile image disabled on subscription cancelled.');
+                                logger.info('Profile image disabled on subscription cancelled.', { userId: userId });
                             }
 
                             // update the banner to default properties. It is too difficualt to tell what is default and what isn't individually.
@@ -185,9 +185,9 @@ handler.post(async (req, res) => {
                             });
 
                             if (bannerUpdate) {
-                                console.log('Banner reset back to default values on subscription cancelled.');
+                                logger.info(`Banner reset back to default values on subscription cancelled for user: ${userId}`, { userId: userId });
                             } else {
-                                console.log('No banner found on user subscription cancelled.');
+                                logger.error(`No banner found on user subscription cancelled. User: ${userId}`, { userId: userId });
                             }
 
                             // reset name feature to default value. Get their original name and then append to the front of that
@@ -209,7 +209,7 @@ handler.post(async (req, res) => {
                                 });
                             }
 
-                            console.log('Successfully reset name if needed. All features handled on subscription cancelled.');
+                            logger.info('Successfully reset name if needed. All features handled on subscription cancelled.', { userId: userId });
                         }
                     }
 
@@ -301,6 +301,7 @@ handler.post(async (req, res) => {
                         const userId = subscriptionInfo === null ? null : subscriptionInfo.userId;
                         // send webhook to discord saying someone subscribed
                         if (userId) {
+                            logger.info(`User successfully signed up for a membership. User: ${userId}`, { userId: userId });
                             prisma.subscription.count().then((value) => {
                                 sendMessage(`"${userId}" signed up for a premium plan! Total premium users: ${value}`, process.env.DISCORD_NEW_SUBSCRIBER_URL);
                             });

@@ -38,8 +38,6 @@ import axios from 'axios';
 import { Features } from '@app/services/FeaturesService';
 import prisma from '@app/util/ssr/prisma';
 import { User } from '@prisma/client';
-import { TwitchSubscriptionService } from '@app/services/TwitchSubscriptionService';
-import { Subscription } from '@app/types/twitch';
 
 type PageProps = {
     userId: string;
