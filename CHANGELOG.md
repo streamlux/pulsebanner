@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Handle and reset accordingly on cancelled PulseBanner membership
  - Logging to go through datadog instead of using console logs
 
+## [0.6.1] - 2022-01-22
+
+### Fixed
+
+- Remove hardcoded userId
+
 ## [0.6.0] - 2022-01-22
 
 ### Added

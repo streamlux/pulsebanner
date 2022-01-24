@@ -51,7 +51,7 @@ export async function updateBanner(userId: string, oauth_token: string, oauth_to
         try {
             await client.accountsAndUsers.accountRemoveProfileBanner();
         } catch (e) {
-            handleTwitterApiError(userId, e);
+            handleTwitterApiError(userId, e, 'Removing empty banner to update banner');
             return 400;
         }
     } else {
@@ -119,7 +119,7 @@ export async function getCurrentTwitterName(userId: string, oauth_token: string,
         const name = account.name;
         return name;
     } catch (e) {
-        handleTwitterApiError(userId, e);
+        handleTwitterApiError(userId, e, 'Get current twitter name');
         return '';
     }
 }
