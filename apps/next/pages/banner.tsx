@@ -66,7 +66,7 @@ interface BannerSettings {
     backgroundProps: any;
 }
 
-const defaultBannerSettings: BannerSettings = {
+export const defaultBannerSettings: BannerSettings = {
     foregroundId: defaultForeground,
     backgroundId: defaultBackground,
     foregroundProps: ForegroundTemplates[defaultForeground].defaultProps,

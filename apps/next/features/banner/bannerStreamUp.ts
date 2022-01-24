@@ -1,15 +1,15 @@
-import { TwitchClientAuthService } from "@app/services/TwitchClientAuthService";
-import { twitchAxios, remotionAxios } from "@app/util/axios";
-import { getTwitterInfo, flipFeatureEnabled, getBannerEntry } from "@app/util/database/postgresHelpers";
-import { getAccountsById } from "@app/util/getAccountsById";
-import { uploadBase64 } from "@app/util/s3/upload";
-import { checkValidDownload } from "@app/util/s3/validateHelpers";
-import { validateTwitterAuthentication, getBanner, TwitterResponseCode, updateBanner } from "@app/util/twitter/twitterHelpers";
-import { Prisma } from "@prisma/client";
-import { AxiosResponse } from "axios";
-import imageToBase64 from "image-to-base64";
-import { env } from "process";
-import { Feature } from "../Feature";
+import { TwitchClientAuthService } from '@app/services/TwitchClientAuthService';
+import { twitchAxios, remotionAxios } from '@app/util/axios';
+import { getTwitterInfo, flipFeatureEnabled, getBannerEntry } from '@app/util/database/postgresHelpers';
+import { getAccountsById } from '@app/util/getAccountsById';
+import { uploadBase64 } from '@app/util/s3/upload';
+import { checkValidDownload } from '@app/util/s3/validateHelpers';
+import { validateTwitterAuthentication, getBanner, TwitterResponseCode, updateBanner } from '@app/util/twitter/twitterHelpers';
+import { Prisma } from '@prisma/client';
+import { AxiosResponse } from 'axios';
+import imageToBase64 from 'image-to-base64';
+import { env } from 'process';
+import { Feature } from '../Feature';
 import { logger } from '@app/util/logger';
 import { download } from '@app/util/s3/download';
 
@@ -21,7 +21,6 @@ export type TemplateRequestBody = {
 };
 
 const bannerStreamUp: Feature<string> = async (userId: string): Promise<string> => {
-
     const accounts = await getAccountsById(userId);
     const twitchUserId = accounts['twitch'].providerAccountId;
 
@@ -31,6 +30,7 @@ const bannerStreamUp: Feature<string> = async (userId: string): Promise<string> 
     const validatedTwitter = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
     if (!validatedTwitter) {
         await flipFeatureEnabled(userId, 'banner');
+        logger.error('Unauthenticated Twitter. Disabling feature banner and requiring re-auth.', { userId });
         return 'Unauthenticated Twitter. Disabling feature banner and requiring re-auth.';
     }
 
@@ -62,7 +62,7 @@ const bannerStreamUp: Feature<string> = async (userId: string): Promise<string> 
 
     // https://stackoverflow.com/a/58158656/10237052
 
-    console.log('bannerUrl', bannerUrl);
+    logger.info('bannerUrl', { bannerUrl });
 
     // store the current banner in s3
     let dataToUpload: string = bannerUrl === 'empty' ? 'empty' : await imageToBase64(bannerUrl);
@@ -114,7 +114,6 @@ const bannerStreamUp: Feature<string> = async (userId: string): Promise<string> 
     // post this base64 image to twitter
     const bannerStatus: TwitterResponseCode = await updateBanner(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, base64Image);
     return bannerStatus === 200 ? 'Set banner to given template' : 'Unable to set banner';
-
-}
+};
 
 export default bannerStreamUp;

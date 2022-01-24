@@ -1,9 +1,6 @@
-import { AppNextApiRequest } from '@app/middlewares/auth';
 import { remotionAxios } from '@app/util/axios';
-import { getProfilePicEntry, getTwitterInfo, PostgresTwitterInfo } from '@app/util/database/postgresHelpers';
-import prisma from '@app/util/ssr/prisma';
-import { getTwitterProfilePic } from '@app/util/twitter/twitterHelpers';
-import { Prisma, ProfileImage } from '@prisma/client';
+import { getProfilePicEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
+import { Prisma } from '@prisma/client';
 import { AxiosResponse } from 'axios';
 import { createAuthApiHandler } from '../../../util/ssr/createApiHandler';
 
@@ -21,7 +18,7 @@ handler.get(async (req, res) => {
         res.send(401);
     }
 
-    const userId = req.query.userId as string ?? req.session.userId;
+    const userId = (req.query.userId as string) ?? req.session.userId;
 
     if (userId) {
         const profilePicEntry = await getProfilePicEntry(userId);
@@ -44,11 +41,10 @@ handler.get(async (req, res) => {
 
         res.writeHead(200, {
             'Content-Type': 'image/png',
-            'Content-Length': img.length
+            'Content-Length': img.length,
         });
         res.end(img);
     }
 });
 
 export default handler;
-

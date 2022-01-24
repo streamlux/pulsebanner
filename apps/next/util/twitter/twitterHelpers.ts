@@ -51,7 +51,7 @@ export async function updateBanner(userId: string, oauth_token: string, oauth_to
         try {
             await client.accountsAndUsers.accountRemoveProfileBanner();
         } catch (e) {
-            handleTwitterApiError(userId, e);
+            handleTwitterApiError(userId, e, 'Removing empty banner to update banner');
             return 400;
         }
     } else {
@@ -119,7 +119,7 @@ export async function getCurrentTwitterName(userId: string, oauth_token: string,
         const name = account.name;
         return name;
     } catch (e) {
-        handleTwitterApiError(userId, e);
+        handleTwitterApiError(userId, e, 'Get current twitter name');
         return '';
     }
 }
@@ -206,7 +206,7 @@ export async function getTwitterUserLink(oauth_token: string, oauth_token_secret
         const screenName = response.screen_name;
         return `https://twitter.com/${screenName}`;
     } catch (e) {
-        console.log('Error building twitter link');
+        logger.error('Error building twitter link.', { error: e });
     }
     return null;
 }
@@ -220,14 +220,6 @@ async function handleTwitterApiError(userId: string, e: { errors?: { message: st
             logger.error(`Rate limit error, code 88. Rate limit will reset on ${new Date(e._headers.get('x-rate-limit-reset') * 1000)}`, e);
             sendError({ ...e.errors[0], name: 'TwitterRateLimitError' }, context);
         } else if (e.errors[0].code === 89) {
-            // Invalid or expired token error.
-            // check the db to see if they currently have an invalid token stored. Do not write if they do
-            // const tokenInvalid = await getAccountTwitterTokenStatus(userId);
-            // // only update if it is not stored (i.e. false)
-            // if (tokenInvalid === false) {
-            //     await updateAccountTwitterToken(userId, true);
-            // }
-
             logger.error('TwitterAPIInvalidTokenError: invalid or expired token error', { userId, e, context });
             sendError({ ...e.errors[0], name: 'TwitterAPIInvalidTokenError' }, `Invalid or expired token error. userId: ${userId}\t Context: ${context}`);
         }

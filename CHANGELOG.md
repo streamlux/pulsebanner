@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+ - Handle and reset accordingly on cancelled PulseBanner membership
+ - Logging to go through datadog instead of using console logs
+
 ## [0.6.1] - 2022-01-22
 
 ### Fixed

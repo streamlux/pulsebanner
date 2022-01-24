@@ -1,13 +1,14 @@
-import { remotionAxios } from "@app/util/axios";
-import { getProfilePicEntry, getProfilePicRendered, getTwitterInfo, updateProfilePicRenderedDB } from "@app/util/database/postgresHelpers";
-import { download } from "@app/util/s3/download";
-import { uploadBase64 } from "@app/util/s3/upload";
-import { getTwitterProfilePic, TwitterResponseCode, updateProfilePic } from "@app/util/twitter/twitterHelpers";
-import { RenderedProfileImage, Prisma } from "@prisma/client";
-import { AxiosResponse } from "axios";
-import imageToBase64 from "image-to-base64";
-import { env } from "process";
-import { Feature } from "../Feature";
+import { remotionAxios } from '@app/util/axios';
+import { flipFeatureEnabled, getProfilePicEntry, getProfilePicRendered, getTwitterInfo, updateProfilePicRenderedDB } from '@app/util/database/postgresHelpers';
+import { logger } from '@app/util/logger';
+import { download } from '@app/util/s3/download';
+import { uploadBase64 } from '@app/util/s3/upload';
+import { getTwitterProfilePic, TwitterResponseCode, updateProfilePic, validateTwitterAuthentication } from '@app/util/twitter/twitterHelpers';
+import { RenderedProfileImage, Prisma } from '@prisma/client';
+import { AxiosResponse } from 'axios';
+import imageToBase64 from 'image-to-base64';
+import { env } from 'process';
+import { Feature } from '../Feature';
 
 export type TemplateRequestBody = {
     foregroundId: string;
@@ -21,7 +22,15 @@ const profileImageStreamUp: Feature<string> = async (userId: string): Promise<st
     const profilePicRendered: RenderedProfileImage | null = await getProfilePicRendered(userId); // compare to updatedAt time and only update if later
     const twitterInfo = await getTwitterInfo(userId, true);
 
+    const validatedTwitter = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    if (!validatedTwitter) {
+        await flipFeatureEnabled(userId, 'profileImage');
+        logger.error('Unauthenticated Twitter. Disabling feature profileImage and requiring re-auth.', { userId });
+        return 'Unauthenticated Twitter. Disabling feature profileImage and requiring re-auth.';
+    }
+
     if (profilePicEntry === null || twitterInfo === null) {
+        logger.error('Unable to get profilePicEntry or twitterInfo for user on streamup', { userId });
         return 'Unable to get profilePicEntry or twitterInfo for user on streamup';
     }
 
@@ -37,7 +46,7 @@ const profileImageStreamUp: Feature<string> = async (userId: string): Promise<st
     try {
         await uploadBase64(profilePicBucketName, userId, dataToUpload);
     } catch (e) {
-        console.error('Error uploading original profile picture to S3.');
+        logger.error('Error uploading original profile picture to S3.');
         return 'Error uploading original banner to S3.';
     }
 
@@ -55,11 +64,10 @@ const profileImageStreamUp: Feature<string> = async (userId: string): Promise<st
 
     // if we do not have anything stored for the current profilePicRendered, do not have a cachedImage, or have updated the settings recently, re-render
     if (profilePicRendered === null || cachedImage === undefined || Date.parse(profilePicRendered.lastRendered.toString()) < Date.parse(profilePicEntry.updatedAt.toString())) {
-
         if (profilePicRendered === null || cachedImage === undefined) {
-            console.log('Cache miss: Rendering profile image for the first time.');
+            logger.info('Cache miss: Rendering profile image for the first time.', { userId });
         } else {
-            console.log('Cache miss: Rendering profile picture cached image has been invalidated.');
+            logger.info('Cache miss: Rendering profile picture cached image has been invalidated.', { userId });
         }
 
         const response: AxiosResponse<string> = await remotionAxios.post('/getProfilePic', templateObj);
@@ -74,13 +82,13 @@ const profileImageStreamUp: Feature<string> = async (userId: string): Promise<st
 
         return profilePictureStatus === 200 ? 'Set profile picture to given template.' : 'Unable to set profile picture.';
     } else {
-        console.log('Cache hit: not re-rendering profile image.');
+        logger.info('Cache hit: not re-rendering profile image.');
     }
 
     // otherwise, update the profilePicture with the cachedImage
-    console.log('Image is valid, updating from cache');
+    logger.info('Image is valid, updating from cache');
     const profilePictureStatus: TwitterResponseCode = await updateProfilePic(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, cachedImage);
     return profilePictureStatus === 200 ? 'Set profile picture to given template.' : 'Unable to set profile picture.';
-}
+};
 
 export default profileImageStreamUp;

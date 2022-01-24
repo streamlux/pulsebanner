@@ -49,8 +49,6 @@ export async function updateTwitchSubscriptions(userId: string): Promise<void> {
     // get a list of subscriptions we need to delete by taking all existing subscriptions and excluding the ones we want to keep
     const subsToDelete = userSubscriptions.filter((sub) => !subscriptionIdsToKeep.includes(sub.id));
 
-    // console.log({ neededSubscriptionTypes, subscriptionIdsToKeep, subscriptionTypesToCreate, userSubscriptions, subsToDelete });
-
     const subscriptionService = new TwitchSubscriptionService();
     await subscriptionService.deleteMany(subsToDelete); // delete the ones we don't need anymore
 
