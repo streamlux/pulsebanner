@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Handle and reset accordingly on cancelled PulseBanner membership
  - Logging to go through datadog instead of using console logs
 
+### Changed
+
+- live_streams table soft check is now a hard check
+
 ## [0.6.1] - 2022-01-22
 
 ### Fixed
