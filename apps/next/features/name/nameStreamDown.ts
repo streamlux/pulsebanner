@@ -1,14 +1,16 @@
-import { getTwitterInfo, flipFeatureEnabled, getOriginalTwitterName } from "@app/util/database/postgresHelpers";
-import { validateTwitterAuthentication, getCurrentTwitterName, updateTwitterName } from "@app/util/twitter/twitterHelpers";
-import { Feature } from "../Feature";
+import { getTwitterInfo, flipFeatureEnabled, getOriginalTwitterName } from '@app/util/database/postgresHelpers';
+import { logger } from '@app/util/logger';
+import { validateTwitterAuthentication, getCurrentTwitterName, updateTwitterName } from '@app/util/twitter/twitterHelpers';
+import { Feature } from '../Feature';
 
 const nameStreamDown: Feature<string> = async (userId: string): Promise<string> => {
     const twitterInfo = await getTwitterInfo(userId);
 
     const validatedTwitter = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
     if (!validatedTwitter) {
-        await flipFeatureEnabled(userId, 'banner');
-        return 'Unauthenticated Twitter. Disabling feature banner and requiring re-auth.';
+        await flipFeatureEnabled(userId, 'name');
+        logger.error('Unauthenticated Twitter. Disabling feature name and requiring re-auth.', { userId });
+        return 'Unauthenticated Twitter. Disabling feature name and requiring re-auth.';
     }
 
     if (twitterInfo) {
@@ -18,19 +20,28 @@ const nameStreamDown: Feature<string> = async (userId: string): Promise<string> 
 
         // when received, post to twitter to update
         if (originalName) {
-            console.log(`Changing Twitter name from '${currentTwitterName}' to '${originalName.originalName}'.`);
+            logger.info(`Changing Twitter name from '${currentTwitterName}' to '${originalName.originalName}'.`, {
+                userId,
+                originalName: originalName.originalName,
+                liveName: currentTwitterName,
+            });
             const response = await updateTwitterName(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, originalName.originalName);
 
             if (response === 200) {
                 // just return, we do not need to do anything to the db's on streamdown
-                console.log('Successfully updated Twitter name on streamdown.');
+                logger.info('Successfully updated Twitter name on streamdown.', { userId });
                 return 'success';
             }
         } else {
+            logger.error('Original name not found in database.', {
+                userId,
+                liveName: currentTwitterName,
+            });
             return 'Original name not found in database.';
         }
     }
+    logger.error('Unsuccessful streamdown handling. Could not get twitterInfo and complete name change.', { userId });
     return 'Unsuccessful streamdown handling. Could not get twitterInfo.';
-}
+};
 
 export default nameStreamDown;

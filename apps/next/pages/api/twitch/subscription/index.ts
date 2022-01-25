@@ -53,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             res.send(200);
         }
     } else {
-        logger.error('this failed');
+        logger.error('this failed. Unable to get session for twitch subscriptions.');
         res.send(401);
     }
 }
