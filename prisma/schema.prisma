@@ -57,6 +57,8 @@ model User {
     twitterOriginalName  TwitterOriginalName?
     profileImage         ProfileImage?
     renderedProfilePic   RenderedProfileImage?
+    liveStreams          LiveStreams?
+    pastStreams          PastStreams[]
     affiliateInformation AffiliateInformation?
     partner              Boolean               @default(false)
 
@@ -167,6 +169,32 @@ model AffiliateInformation {
     affiliateId Int
 
     @@map("affiliate_information")
+}
+
+// track who is currently live streaming
+model LiveStreams {
+    id             String    @id @default(cuid())
+    userId         String    @unique @map("user_id")
+    user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    streamLink     String?
+    twitterLink    String?
+    twitchUserId   String?
+    twitchStreamId String?
+    startTime      DateTime?
+
+    @@map("live_streams")
+}
+
+model PastStreams {
+    id             String    @id @default(cuid())
+    userId         String    @map("user_id")
+    user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    twitchUserId   String?
+    twitchStreamId String?
+    startTime      DateTime?
+    endTime        DateTime?
+
+    @@map("past_streams")
 }
 
 // Stripe models

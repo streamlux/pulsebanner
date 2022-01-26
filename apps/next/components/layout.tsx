@@ -23,6 +23,7 @@ import Footer from './footer';
 import { FaArrowRight } from 'react-icons/fa';
 import NextLink from 'next/link';
 import { holidayDecor, promo, promoCode } from '@app/util/constants';
+import { useRouter } from 'next/router';
 
 export default function Layout({ children }) {
     const { colorMode } = useColorMode();
@@ -30,6 +31,11 @@ export default function Layout({ children }) {
         defaultIsOpen: true,
     });
     const breakpoint = useBreakpoint();
+    const router = useRouter();
+
+    const pagesWithoutPromo = ['/admin', '/admin/banner'];
+    const showPromo = promo && isOpen && breakpoint !== 'base' && !pagesWithoutPromo.includes(router.asPath);
+
     return (
         <>
             <Flex direction="column" as={chakra.div} minH="100vh">
@@ -41,7 +47,7 @@ export default function Layout({ children }) {
                         {children}
                     </Box>
                 </Flex>
-                {promo && isOpen && breakpoint !== 'base' && (
+                {showPromo && (
                     <Portal>
                         <Box
                             sx={{ position: 'fixed', bottom: '0', right: '0' }}

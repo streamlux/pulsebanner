@@ -5,6 +5,14 @@ import { timestampToDate } from '../../../util/common';
 import { createApiHandler } from '../../../util/ssr/createApiHandler';
 import stripe from '../../../util/ssr/stripe';
 import prisma from '../../../util/ssr/prisma';
+import { sendMessage } from '@app/util/discord/sendMessage';
+import { FeaturesService } from '@app/services/FeaturesService';
+import { download } from '@app/util/s3/download';
+import { env } from 'process';
+import { TwitterResponseCode, updateProfilePic } from '@app/util/twitter/twitterHelpers';
+import { flipFeatureEnabled, getTwitterInfo } from '@app/util/database/postgresHelpers';
+import { defaultBannerSettings } from '@app/pages/banner';
+import { logger } from '@app/util/logger';
 
 // Stripe requires the raw body to construct the event.
 export const config = {
@@ -42,8 +50,8 @@ handler.post(async (req, res) => {
     try {
         event = stripe.webhooks.constructEvent(buf, sig, process.env.STRIPE_WEBHOOK_SECRET);
     } catch (err) {
-        console.log(`❌ Error verifying webhook. Message: ${err?.message}`);
-        console.log('secret', process.env.STRIPE_WEBHOOK_SECRET);
+        logger.error(`❌ Error verifying webhook. Message: ${err?.message}`);
+        logger.error('secret', process.env.STRIPE_WEBHOOK_SECRET);
         return res.status(400).send(`Webhook Error: ${err?.message}`);
     }
 
@@ -109,11 +117,102 @@ handler.post(async (req, res) => {
                 case 'customer.subscription.deleted': {
                     const data = event.data.object as Stripe.Subscription;
 
+                    const subscriptionInfo = await prisma.subscription.findFirst({
+                        where: {
+                            id: data.id,
+                        },
+                    });
+
+                    const userId = subscriptionInfo === null ? null : subscriptionInfo.userId;
+
                     await prisma.subscription.delete({
                         where: {
                             id: data.id,
                         },
                     });
+
+                    /**
+                     * We need to handle when the user delete's their subscription. Steps to cleanup
+                     *
+                     * 1. Turn off pfp feature. We should probably do this gracefully by resetting it to their original image in the db.
+                     * 2. Reset their banner to be the default props. If they are live, it does not matter. Update what they have in the db directly.
+                     * 3. Reset name feature to be the default value. Again, handle if they are live gracefully by updating it right then to the default.
+                     */
+                    if (userId) {
+                        sendMessage(`"${userId}" unsubscribed from premium plan`, process.env.DISCORD_CANCELLED_SUBSCRIBER_URL);
+
+                        // get the user's twitter info
+                        const twitterInfo = await getTwitterInfo(userId);
+
+                        if (twitterInfo) {
+                            const enabledFeatures = await FeaturesService.listEnabled(userId);
+
+                            // disable the profile picture if it is enabled
+                            if (enabledFeatures.includes('profileImage')) {
+                                const base64Image: string | undefined = await download(env.PROFILE_PIC_BUCKET_NAME, userId);
+                                if (base64Image) {
+                                    const profilePicStatus: TwitterResponseCode = await updateProfilePic(
+                                        userId,
+                                        twitterInfo.oauth_token,
+                                        twitterInfo.oauth_token_secret,
+                                        base64Image
+                                    );
+                                    if (profilePicStatus === 200) {
+                                        logger.info('Successfully reset profile picture on subscription deleted.', { userId: userId });
+                                    } else {
+                                        logger.error('Error resetting profile picture on subscription deleted.', { userId: userId });
+                                    }
+                                } else {
+                                    logger.error('could not find a base64 original profile picture image.', { userId: userId });
+                                }
+                                await flipFeatureEnabled(userId, 'profileImage');
+                                logger.info('Profile image disabled on subscription cancelled.', { userId: userId });
+                            }
+
+                            // update the banner to default properties. It is too difficualt to tell what is default and what isn't individually.
+                            // if this returns null, the user never setup a banner. That is fine
+                            const bannerUpdate = await prisma.banner.update({
+                                where: {
+                                    userId: userId,
+                                },
+                                data: {
+                                    userId: userId,
+                                    backgroundId: defaultBannerSettings.backgroundId,
+                                    foregroundId: defaultBannerSettings.foregroundId,
+                                    foregroundProps: defaultBannerSettings.foregroundProps,
+                                    backgroundProps: defaultBannerSettings.backgroundProps,
+                                },
+                            });
+
+                            if (bannerUpdate) {
+                                logger.info(`Banner reset back to default values on subscription cancelled for user: ${userId}`, { userId: userId });
+                            } else {
+                                logger.error(`No banner found on user subscription cancelled. User: ${userId}`, { userId: userId });
+                            }
+
+                            // reset name feature to default value. Get their original name and then append to the front of that
+                            const twitterOriginalName = await prisma.twitterOriginalName.findFirst({
+                                where: {
+                                    userId: userId,
+                                },
+                            });
+
+                            if (twitterOriginalName && twitterOriginalName.originalName) {
+                                const newLiveName = `🔴 Live now | ${twitterOriginalName.originalName}`.substring(0, 50);
+                                await prisma.twitterName.update({
+                                    where: {
+                                        userId: userId,
+                                    },
+                                    data: {
+                                        streamName: newLiveName,
+                                    },
+                                });
+                            }
+
+                            logger.info('Successfully reset name if needed. All features handled on subscription cancelled.', { userId: userId });
+                        }
+                    }
+
                     break;
                 }
                 case 'customer.subscription.updated': {
@@ -193,6 +292,20 @@ handler.post(async (req, res) => {
                                 trial_end: timestampToDate(subscription.trial_end),
                             },
                         });
+
+                        const subscriptionInfo = await prisma.subscription.findUnique({
+                            where: {
+                                id: subscription.id,
+                            },
+                        });
+                        const userId = subscriptionInfo === null ? null : subscriptionInfo.userId;
+                        // send webhook to discord saying someone subscribed
+                        if (userId) {
+                            logger.info(`User successfully signed up for a membership. User: ${userId}`, { userId: userId });
+                            prisma.subscription.count().then((value) => {
+                                sendMessage(`"${userId}" signed up for a premium plan! Total premium users: ${value}`, process.env.DISCORD_NEW_SUBSCRIBER_URL);
+                            });
+                        }
                     }
 
                     break;
@@ -200,7 +313,7 @@ handler.post(async (req, res) => {
                     throw new Error(`Unhandled relevant event! ${event.type}`);
             }
         } catch (error) {
-            console.log(error);
+            logger.error('Stripe webhook error', error);
             return res.status(400).send('Webhook error: "Webhook handler failed. View logs."');
         }
     }

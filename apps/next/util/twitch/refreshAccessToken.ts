@@ -1,5 +1,6 @@
 import { Account } from "@prisma/client";
 import { getSecondsSinceEpoch } from "../common";
+import { logger } from "../logger";
 
 export async function refreshAccessToken(refreshToken: string): Promise<Pick<Account, 'access_token' | 'expires_at' | 'scope' | 'token_type' | 'refresh_token'>> {
     try {
@@ -33,6 +34,6 @@ export async function refreshAccessToken(refreshToken: string): Promise<Pick<Acc
             refresh_token: refreshedTokens.refresh_token ?? refreshToken, // Fall back to old refresh token
         };
     } catch (error) {
-        console.log('Error refreshing twitch access token: \n', error);
+        logger.error('Error refreshing twitch access token', error);
     }
 }

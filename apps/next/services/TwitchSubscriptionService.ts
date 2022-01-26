@@ -1,7 +1,8 @@
-import { Subscription } from '@app/types/twitch';
+import { GetSubscriptionsResponse, Subscription } from '@app/types/twitch';
 import { twitchAxios } from '@app/util/axios';
 import { TwitchClientAuthService } from './TwitchClientAuthService';
 import { execa } from 'execa';
+import { AxiosResponse } from 'axios';
 
 export class TwitchSubscriptionService {
     public async getAccessToken(): Promise<string> {
@@ -68,7 +69,43 @@ export class TwitchSubscriptionService {
     }
 
     public async deleteMany(subscriptions: Subscription[]): Promise<void> {
-        const deleteRequests = subscriptions.map((subscription) => this.deleteOne(subscription.id));
+        const deleteRequests: Promise<void>[] = subscriptions.map((subscription) => this.deleteOne(subscription.id));
         await Promise.all(deleteRequests);
+    }
+
+    public async getSubscriptions(twitchUserId?: string): Promise<Subscription[]> {
+        const accessToken: string = await this.getAccessToken();
+
+        const subscriptions: Subscription[] = [];
+        const firstResponse: AxiosResponse<GetSubscriptionsResponse> = await this.getSubscriptionsRequest(accessToken);
+        subscriptions.push(...this.getSubscriptionsFromResponse(firstResponse, twitchUserId));
+
+        let cursor: string | undefined = firstResponse.data.pagination.cursor;
+
+        // if it has a cursor, that means there are more pages of subcriptions
+        // see: https://dev.twitch.tv/docs/eventsub/manage-subscriptions#getting-the-list-of-events-you-subscribe-to
+        while (cursor !== undefined) {
+            const response: AxiosResponse<GetSubscriptionsResponse> = await this.getSubscriptionsRequest(accessToken, cursor);
+            subscriptions.push(...this.getSubscriptionsFromResponse(response, twitchUserId));
+            cursor = response.data.pagination.cursor;
+        }
+
+        return subscriptions;
+    }
+
+    private async getSubscriptionsRequest(accessToken: string, cursor?: string): Promise<AxiosResponse<GetSubscriptionsResponse>> {
+        const url: string = cursor ? `helix/eventsub/subscriptions?after=${cursor}` : 'helix/eventsub/subscriptions';
+        return await twitchAxios.get<GetSubscriptionsResponse>(url, {
+            headers: {
+                'Client-ID': process.env.TWITCH_CLIENT_ID,
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
+    }
+
+
+    private getSubscriptionsFromResponse(response: AxiosResponse<GetSubscriptionsResponse>, twitchUserId: string): Subscription[] {
+        const filterByUserId = (twitchUserId: string) => (subscription: Subscription) => subscription.condition.broadcaster_user_id === twitchUserId;
+        return twitchUserId ? response.data.data.filter(filterByUserId(twitchUserId)) : response.data.data;
     }
 }

@@ -3,9 +3,10 @@ import nc, { ErrorHandler } from 'next-connect';
 import auth, { AppNextApiRequest } from '../../middlewares/auth';
 import admin from '../../middlewares/admin';
 import NextCors from 'nextjs-cors';
+import { logger } from '../logger';
 
 export const onError: ErrorHandler<NextApiRequest, NextApiResponse> = (err, req, res, next) => {
-    console.log(err);
+    logger.error('Error handling API requet', err);
     res.status(500).end(err.toString());
 };
 
