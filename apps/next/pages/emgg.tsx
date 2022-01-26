@@ -4,17 +4,9 @@ import {
     Center,
     Container,
     Flex,
-    FormControl,
-    FormLabel,
     Heading,
     HStack,
-    Select,
     Spacer,
-    Tab,
-    TabList,
-    TabPanel,
-    TabPanels,
-    Tabs,
     useBoolean,
     useBreakpoint,
     Text,
@@ -24,9 +16,6 @@ import {
     useToast,
     Stack,
     BoxProps,
-    useColorModeValue,
-    DarkMode,
-    GlobalStyle,
     useColorMode,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
@@ -174,16 +163,16 @@ export default function Page({ banner }: Props) {
     const { data: streamingState } = useSWR('streamState', async () => await (await fetch(`/api/twitch/streaming/${session?.user['id']}`)).json());
     const streaming = streamingState ? streamingState.isStreaming : false;
 
-    const [bgId, setBgId] = useState<keyof typeof BackgroundTemplates>((banner?.backgroundId as Background) ?? defaultBackground);
-    const [fgId, setFgId] = useState<keyof typeof ForegroundTemplates>((banner?.foregroundId as Foreground) ?? defaultForeground);
-    const [bgProps, setBgProps] = useState(banner.backgroundProps ?? (BackgroundTemplates[defaultBackground].defaultProps as any));
+    const bgId = 'ImageBackground';
+    const fgId = 'Emgg';
+    const bgProps = {
+        src: 'https://cdn.discordapp.com/attachments/922692527625220126/932410278132477972/emgg.png',
+    };
     const [fgProps, setFgProps] = useState(banner.foregroundProps ?? (ForegroundTemplates[defaultForeground].defaultProps as any));
     const [reAuth, setReAuth] = useState(false);
 
     const BackgroundTemplate = BackgroundTemplates[bgId];
     const ForegroundTemplate = ForegroundTemplates[fgId];
-    const Form = BackgroundTemplate.form;
-    const FgForm = ForegroundTemplate.form;
 
     const toast = useToast();
     const breakpoint = useBreakpoint();
@@ -202,12 +191,33 @@ export default function Page({ banner }: Props) {
         });
     }, []);
 
-    const getUnsavedBanner = () => ({
+    const getUnsavedBanner: () => BannerSettings = () => ({
         foregroundId: fgId,
         backgroundId: bgId,
         backgroundProps: { ...BackgroundTemplate.defaultProps, ...bgProps },
         foregroundProps: { ...ForegroundTemplate.defaultProps, ...fgProps },
     });
+
+    const saveEmggBanner: () => Promise<void> = async (): Promise<void> => {
+        // ensure user is signed up before saving settings
+        if (ensureSignUp()) {
+            const bannerSettings: BannerSettings = {
+                foregroundProps: {
+                    ...(banner.foregroundProps as any),
+                },
+                foregroundId: 'Emgg',
+                backgroundId: 'ImageBackground',
+                backgroundProps: {
+                    src: 'https://cdn.discordapp.com/attachments/922692527625220126/932410278132477972/emgg.png',
+                },
+            };
+
+            const response = await axios.post(bannerEndpoint, bannerSettings);
+            if (response.data === 401) {
+                setReAuth(true);
+            }
+        }
+    };
 
     const saveSettings = async () => {
         // ensure user is signed up before saving settings
@@ -228,7 +238,7 @@ export default function Page({ banner }: Props) {
         if (ensureSignUp()) {
             umami(banner && banner.enabled ? 'disable-banner' : 'enable-banner');
             on();
-            await saveSettings();
+            await saveEmggBanner();
             const response = await axios.put(bannerEndpoint);
             if (response.data === 401) {
                 setReAuth(true);
@@ -252,6 +262,8 @@ export default function Page({ banner }: Props) {
             }
         }
     };
+
+    const FgForm = ForegroundTemplate.form;
 
     const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
     const { isOpen: disableBannerIsOpen, onClose: disableBannerOnClose, onToggle: bannerDisabledToggle } = useDisclosure();
@@ -364,79 +376,19 @@ export default function Page({ banner }: Props) {
                         </Center>
                     </Box>
 
-                    <Flex {...styles} grow={1} p="4" my="4" rounded="md" w="full" direction="column" minH="lg">
-                        <Tabs colorScheme="purple" flexGrow={1}>
-                            <TabList>
-                                <Tab className={trackEvent('click', 'banner-tab')}>Banner</Tab>
-                                <Tab className={trackEvent('click', 'background-tab')}>Background</Tab>
-                            </TabList>
-
-                            <TabPanels flexGrow={1}>
-                                <TabPanel>
-                                    <FormLabel>Banner type</FormLabel>
-                                    <Select
-                                        value={fgId}
-                                        w="fit-content"
-                                        onChange={(e) => {
-                                            setFgId(e.target.value as keyof typeof ForegroundTemplates);
-                                        }}
-                                    >
-                                        {Object.entries(ForegroundTemplates).map(([key, value]) => (
-                                            <option key={key} value={key}>
-                                                {value.name}
-                                            </option>
-                                        ))}
-                                    </Select>
-                                    <FgForm
-                                        setProps={(s) => {
-                                            console.log('set props', s);
-                                            setFgProps(s);
-                                        }}
-                                        props={{ ...ForegroundTemplates[fgId].defaultProps, ...fgProps }}
-                                        showPricing={showPricing}
-                                        accountLevel={paymentPlan}
-                                    />
-                                </TabPanel>
-                                <TabPanel>
-                                    <FormControl id="country">
-                                        <FormLabel>Background type</FormLabel>
-                                        <Select
-                                            value={bgId}
-                                            w="fit-content"
-                                            onChange={(e) => {
-                                                setBgId(e.target.value as keyof typeof BackgroundTemplates);
-                                            }}
-                                        >
-                                            {Object.entries(BackgroundTemplates).map(([key, value]) => (
-                                                <option key={key} value={key}>
-                                                    {value.name}
-                                                </option>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
-                                    <Box py="4">
-                                        <Form
-                                            setProps={(p) => {
-                                                setBgProps({ ...BackgroundTemplates[bgId].defaultProps, ...p });
-                                            }}
-                                            props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }}
-                                            showPricing={showPricing}
-                                            accountLevel={paymentPlan}
-                                        />
-                                    </Box>
-                                </TabPanel>
-                            </TabPanels>
-                        </Tabs>
-
+                    <Flex {...styles} grow={1} p="4" my="4" rounded="md" w="full" direction="column">
+                        <FgForm props={fgProps} setProps={setFgProps} showPricing={showPricing} accountLevel={paymentPlan} />
                         <Flex justifyContent="space-between" direction={['column', 'row']}>
                             <Spacer />
                             <HStack>
-                                <Button my="2" onClick={saveSettings} className={trackEvent('click', 'save-settings-button')}>
+                                <Button my="2" onClick={saveEmggBanner} className={trackEvent('click', 'save-settings-button')}>
                                     Save settings
                                 </Button>
                             </HStack>
                         </Flex>
                     </Flex>
+                    <Text>This banner that cannot be customized. Create your own custom banner</Text>
+
                     <Flex w="full" flexDirection={['column-reverse', 'row']} justifyContent="space-between">
                         <HStack pt={['2', '2']} pb={['2', '0']} h="full">
                             <Text textAlign={['center', 'left']} h="full">

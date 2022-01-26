@@ -25,6 +25,13 @@ import {
     Stack,
     BoxProps,
     useColorModeValue,
+    Modal,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    ModalOverlay,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
@@ -318,6 +325,36 @@ export default function Page({ banner }: Props) {
                     cardType: 'summary_large_image',
                 }}
             />
+            {/* <Modal isOpen={fgId === 'Emgg'} onClose={onClose}>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Custom Banner</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        <Text>You are currently using the EMGG Live Banner. To use a custom banner. Click Use Custom Banner to customize your own banner.</Text>
+                        <Button>Use Custom Banner</Button>
+                    </ModalBody>
+
+                    <ModalFooter>
+                        <Button
+                            colorScheme="blue"
+                            mr={3}
+                            onClick={() => {
+                                onClose();
+                                setBgId('GradientBackground');
+                                setFgId('ImLive');
+                            }}
+                        >
+                            Use Custom Banner
+                        </Button>
+                        <NextLink passHref href="/emgg">
+                            <Button as="a" variant="ghost">
+                                Keep using EMGG Banner
+                            </Button>
+                        </NextLink>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal> */}
             <DisableBannerModal isOpen={disableBannerIsOpen} onClose={disableBannerOnClose} />
             <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} />
             {reAuth ? <ReconnectTwitterModal session={session} isOpen={isOpen} onClose={onClose} /> : <></>}
@@ -359,54 +396,71 @@ export default function Page({ banner }: Props) {
                     </Center>
 
                     <Flex {...styles} grow={1} p="4" my="4" rounded="md" w="full" direction="column" minH="lg">
-                        <Tabs colorScheme="purple" flexGrow={1}>
-                            <TabList>
-                                <Tab className={trackEvent('click', 'banner-tab')}>Banner</Tab>
-                                <Tab className={trackEvent('click', 'background-tab')}>Background</Tab>
-                            </TabList>
+                        {fgId === 'Emgg' && (
+                            <Box>
+                                <Text>You are currently using the EMGG Live Banner. Click Use Custom Banner to customize your own banner.</Text>
+                                <Button
+                                    onClick={() => {
+                                        setBgId('GradientBackground');
+                                        setFgId('ImLive');
+                                    }}
+                                >
+                                    Use Custom Banner
+                                </Button>
+                            </Box>
+                        )}
 
-                            <TabPanels flexGrow={1}>
-                                <TabPanel>
-                                    <FgForm
-                                        setProps={(s) => {
-                                            console.log('set props', s);
-                                            setFgProps(s);
-                                        }}
-                                        props={{ ...ForegroundTemplates[fgId].defaultProps, ...fgProps }}
-                                        showPricing={showPricing}
-                                        accountLevel={paymentPlan}
-                                    />
-                                </TabPanel>
-                                <TabPanel>
-                                    <FormControl id="country">
-                                        <FormLabel>Background type</FormLabel>
-                                        <Select
-                                            value={bgId}
-                                            w="fit-content"
-                                            onChange={(e) => {
-                                                setBgId(e.target.value as keyof typeof BackgroundTemplates);
+                        {fgId !== 'Emgg' && (
+                            <Tabs colorScheme="purple" flexGrow={1}>
+                                <TabList>
+                                    <Tab className={trackEvent('click', 'banner-tab')}>Banner</Tab>
+                                    <Tab className={trackEvent('click', 'background-tab')}>Background</Tab>
+                                </TabList>
+
+                                <TabPanels flexGrow={1}>
+                                    <TabPanel>
+                                        <FgForm
+                                            setProps={(s) => {
+                                                console.log('set props', s);
+                                                setFgProps(s);
                                             }}
-                                        >
-                                            {Object.entries(BackgroundTemplates).map(([key, value]) => (
-                                                <option key={key} value={key}>
-                                                    {value.name}
-                                                </option>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
-                                    <Box py="4">
-                                        <Form
-                                            setProps={(p) => {
-                                                setBgProps({ ...BackgroundTemplates[bgId].defaultProps, ...p });
-                                            }}
-                                            props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }}
+                                            props={{ ...ForegroundTemplates[fgId].defaultProps, ...fgProps }}
                                             showPricing={showPricing}
                                             accountLevel={paymentPlan}
                                         />
-                                    </Box>
-                                </TabPanel>
-                            </TabPanels>
-                        </Tabs>
+                                    </TabPanel>
+                                    <TabPanel>
+                                        <FormControl id="country">
+                                            <FormLabel>Background type</FormLabel>
+                                            <Select
+                                                value={bgId}
+                                                w="fit-content"
+                                                onChange={(e) => {
+                                                    setBgId(e.target.value as keyof typeof BackgroundTemplates);
+                                                }}
+                                            >
+                                                {Object.entries(BackgroundTemplates).map(([key, value]) => (
+                                                    <option key={key} value={key}>
+                                                        {value.name}
+                                                    </option>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                        <Box py="4">
+                                            <Form
+                                                setProps={(p) => {
+                                                    setBgProps({ ...BackgroundTemplates[bgId].defaultProps, ...p });
+                                                }}
+                                                props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }}
+                                                showPricing={showPricing}
+                                                accountLevel={paymentPlan}
+                                            />
+                                        </Box>
+                                    </TabPanel>
+                                </TabPanels>
+                            </Tabs>
+                        )}
+
                         <Flex justifyContent="space-between" direction={['column', 'row']}>
                             <Spacer />
                             <HStack>

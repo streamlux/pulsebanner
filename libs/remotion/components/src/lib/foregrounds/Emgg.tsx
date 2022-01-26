@@ -104,7 +104,7 @@ export const Emgg: React.FC<ImLiveProps> = ({
                                     textTransform: 'uppercase',
                                 }}
                             >
-                                {'TheRealJJBTW'}
+                                {username}
                             </h1>
                         )}
                     </div>

@@ -20,23 +20,6 @@ export const Emgg: LayerForm<typeof ForegroundComponents.Emgg> = ({ props, setPr
 
     return (
         <Box w="full" experimental_spaceY={2}>
-            <Wrap spacing={4}>
-                <WrapItem>
-                    <FormControl id="email" w="full">
-                        <FormLabel>Text</FormLabel>
-                        <Input
-                            maxLength={36}
-                            maxWidth="xs"
-                            type="text"
-                            onChange={(e) => {
-                                setProps({ ...props, text: e.target.value });
-                            }}
-                            defaultValue={props.text}
-                        />
-                    </FormControl>
-                </WrapItem>
-            </Wrap>
-
             <HStack>
                 <Checkbox
                     colorScheme="purple"

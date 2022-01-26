@@ -17,7 +17,6 @@ export const ImageBackground: LayerForm<typeof BackgroundComponents.ImageBackgro
         Sky: 'http://2.bp.blogspot.com/-QkeZcIm3X_g/VJRzwWkYfXI/AAAAAAAAJWg/HhIgNTT6PtM/s1600/clouds-1500x500-twitter-header-04.jpg',
         Rainbow: 'https://www.designbolts.com/wp-content/uploads/2014/06/Colorful-twitter-header-banner.jpg',
         Night: 'http://1.bp.blogspot.com/-K4otZmbNpuE/U5cZmaTVi8I/AAAAAAAAHZk/PSq3iuY9zdA/s1600/twitter-header-1500x500-nature+(1).jpg',
-        EMGG: 'https://cdn.discordapp.com/attachments/922692527625220126/932410278132477972/emgg.png',
     };
 
     return (
@@ -30,7 +29,6 @@ export const ImageBackground: LayerForm<typeof BackgroundComponents.ImageBackgro
                             <Button onClick={() => setProps({ ...(props ?? {}), src: sampleImageMap['Sky'] })}>Sky</Button>
                             <Button onClick={() => setProps({ ...(props ?? {}), src: sampleImageMap['Rainbow'] })}>Rainbow</Button>
                             <Button onClick={() => setProps({ ...(props ?? {}), src: sampleImageMap['Night'] })}>Night</Button>
-                            <Button onClick={() => setProps({ ...(props ?? {}), src: sampleImageMap['EMGG'] })}>Night</Button>
                         </ButtonGroup>
                     </VStack>
                 </FormLabel>
