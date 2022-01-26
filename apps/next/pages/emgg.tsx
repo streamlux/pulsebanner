@@ -42,6 +42,7 @@ import { Composer } from '@pulsebanner/remotion/components';
 import { NextSeo } from 'next-seo';
 import NextLink from 'next/link';
 import { ReconnectTwitterModal } from '@app/modules/onboard/ReconnectTwitterModal';
+import { CheckIcon } from '@chakra-ui/icons';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'Emgg';
@@ -213,6 +214,7 @@ export default function Page({ banner }: Props) {
             };
 
             const response = await axios.post(bannerEndpoint, bannerSettings);
+            refreshData();
             if (response.data === 401) {
                 setReAuth(true);
             }
@@ -377,17 +379,30 @@ export default function Page({ banner }: Props) {
                     </Box>
 
                     <Flex {...styles} grow={1} p="4" my="4" rounded="md" w="full" direction="column">
+                        <Flex experimental_spaceX={2}>
+                            <Text>This banner type cannot be customized. To change your banner type click here 👉 </Text>
+                            <NextLink passHref href="/banner">
+                                <Button as="a" variant="link">
+                                    Custom Banner
+                                </Button>
+                            </NextLink>
+                        </Flex>
                         <FgForm props={fgProps} setProps={setFgProps} showPricing={showPricing} accountLevel={paymentPlan} />
                         <Flex justifyContent="space-between" direction={['column', 'row']}>
                             <Spacer />
                             <HStack>
+                                {banner.enabled && banner.foregroundId === 'Emgg' && (
+                                    <Text>
+                                        <CheckIcon color="green.300" /> You are currently using the EMGG banner.{' '}
+                                    </Text>
+                                )}
+                                {banner.enabled && banner.foregroundId !== 'Emgg' && <Text>Your banner is already enabled, click Save settings to use the EMGG banner. 👉</Text>}
                                 <Button my="2" onClick={saveEmggBanner} className={trackEvent('click', 'save-settings-button')}>
                                     Save settings
                                 </Button>
                             </HStack>
                         </Flex>
                     </Flex>
-                    <Text>This banner that cannot be customized. Create your own custom banner</Text>
 
                     <Flex w="full" flexDirection={['column-reverse', 'row']} justifyContent="space-between">
                         <HStack pt={['2', '2']} pb={['2', '0']} h="full">

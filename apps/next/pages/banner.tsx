@@ -32,6 +32,7 @@ import {
     ModalFooter,
     ModalHeader,
     ModalOverlay,
+    Tag,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
@@ -78,6 +79,26 @@ export const defaultBannerSettings: BannerSettings = {
     backgroundId: defaultBackground,
     foregroundProps: ForegroundTemplates[defaultForeground].defaultProps,
     backgroundProps: BackgroundTemplates[defaultBackground].defaultProps,
+};
+
+export const emggBannerSettings: BannerSettings = {
+    foregroundId: 'Emgg',
+    backgroundId: 'ImageBackground',
+    foregroundProps: ForegroundTemplates['Emgg'].defaultProps,
+    backgroundProps: {
+        src: 'https://cdn.discordapp.com/attachments/922692527625220126/932410278132477972/emgg.png',
+    },
+};
+
+const bannerTypes = {
+    ImLive: {
+        displayName: 'Custom',
+        settings: defaultBannerSettings,
+    },
+    Emgg: {
+        displayName: 'EMGG',
+        settings: emggBannerSettings,
+    },
 };
 
 interface Props {
@@ -180,6 +201,7 @@ export default function Page({ banner }: Props) {
     const [reAuth, setReAuth] = useState(false);
 
     const BackgroundTemplate = BackgroundTemplates[bgId];
+    console.log(ForegroundTemplates);
     const ForegroundTemplate = ForegroundTemplates[fgId];
     const Form = BackgroundTemplate.form;
     const FgForm = ForegroundTemplate.form;
@@ -396,29 +418,43 @@ export default function Page({ banner }: Props) {
                     </Center>
 
                     <Flex {...styles} grow={1} p="4" my="4" rounded="md" w="full" direction="column" minH="lg">
-                        {fgId === 'Emgg' && (
-                            <Box>
-                                <Text>You are currently using the EMGG Live Banner. Click Use Custom Banner to customize your own banner.</Text>
-                                <Button
-                                    onClick={() => {
-                                        setBgId('GradientBackground');
-                                        setFgId('ImLive');
-                                    }}
-                                >
-                                    Use Custom Banner
-                                </Button>
-                            </Box>
-                        )}
+                        <Tabs colorScheme="purple" flexGrow={1}>
+                            <TabList>
+                                <Tab className={trackEvent('click', 'banner-tab')}>Banner</Tab>
+                                <Tab className={trackEvent('click', 'background-tab')}>Background</Tab>
+                            </TabList>
 
-                        {fgId !== 'Emgg' && (
-                            <Tabs colorScheme="purple" flexGrow={1}>
-                                <TabList>
-                                    <Tab className={trackEvent('click', 'banner-tab')}>Banner</Tab>
-                                    <Tab className={trackEvent('click', 'background-tab')}>Background</Tab>
-                                </TabList>
+                            <TabPanels flexGrow={1}>
+                                <TabPanel>
+                                    <VStack>
+                                        <FormControl id="country">
+                                            <FormLabel>
+                                                Banner type{' '}
+                                                <Tag size="md" colorScheme="green">
+                                                    New!
+                                                </Tag>
+                                            </FormLabel>
 
-                                <TabPanels flexGrow={1}>
-                                    <TabPanel>
+                                            <Select
+                                                value={fgId}
+                                                w="fit-content"
+                                                onChange={(e) => {
+                                                    const bannerType: 'ImLive' | 'Emgg' = e.target.value as any;
+                                                    const banner = bannerTypes[bannerType];
+                                                    setBgId(banner.settings.backgroundId);
+                                                    setBgProps(banner.settings.backgroundProps);
+                                                    setFgId(banner.settings.foregroundId);
+                                                    setFgProps({ ...banner.settings.foregroundProps, ...fgProps });
+                                                }}
+                                            >
+                                                {['Emgg', 'ImLive'].map((key) => (
+                                                    <option key={key} value={key}>
+                                                        {bannerTypes[key].displayName}
+                                                    </option>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+
                                         <FgForm
                                             setProps={(s) => {
                                                 console.log('set props', s);
@@ -428,24 +464,27 @@ export default function Page({ banner }: Props) {
                                             showPricing={showPricing}
                                             accountLevel={paymentPlan}
                                         />
-                                    </TabPanel>
-                                    <TabPanel>
-                                        <FormControl id="country">
-                                            <FormLabel>Background type</FormLabel>
-                                            <Select
-                                                value={bgId}
-                                                w="fit-content"
-                                                onChange={(e) => {
-                                                    setBgId(e.target.value as keyof typeof BackgroundTemplates);
-                                                }}
-                                            >
-                                                {Object.entries(BackgroundTemplates).map(([key, value]) => (
-                                                    <option key={key} value={key}>
-                                                        {value.name}
-                                                    </option>
-                                                ))}
-                                            </Select>
-                                        </FormControl>
+                                    </VStack>
+                                </TabPanel>
+                                <TabPanel>
+                                    <FormControl id="country">
+                                        <FormLabel>Background type</FormLabel>
+                                        <Select
+                                            disabled={fgId === 'Emgg'}
+                                            value={bgId}
+                                            w="fit-content"
+                                            onChange={(e) => {
+                                                setBgId(e.target.value as keyof typeof BackgroundTemplates);
+                                            }}
+                                        >
+                                            {Object.entries(BackgroundTemplates).map(([key, value]) => (
+                                                <option key={key} value={key}>
+                                                    {value.name}
+                                                </option>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                    {fgId !== 'Emgg' && (
                                         <Box py="4">
                                             <Form
                                                 setProps={(p) => {
@@ -456,10 +495,10 @@ export default function Page({ banner }: Props) {
                                                 accountLevel={paymentPlan}
                                             />
                                         </Box>
-                                    </TabPanel>
-                                </TabPanels>
-                            </Tabs>
-                        )}
+                                    )}
+                                </TabPanel>
+                            </TabPanels>
+                        </Tabs>
 
                         <Flex justifyContent="space-between" direction={['column', 'row']}>
                             <Spacer />
