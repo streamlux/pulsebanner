@@ -44,7 +44,7 @@ import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 import { PaymentModal } from '@app/components/pricing/PaymentModal';
 import { trackEvent } from '@app/util/umami/trackEvent';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
-import { discordLink } from '@app/util/constants';
+import { discordLink, emggBannerBackground } from '@app/util/constants';
 import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
 import { DisableBannerModal } from '@app/components/banner/DisableBannerModal';
 import { getSession, useSession } from 'next-auth/react';
@@ -86,7 +86,7 @@ export const emggBannerSettings: BannerSettings = {
     backgroundId: 'ImageBackground',
     foregroundProps: ForegroundTemplates['Emgg'].defaultProps,
     backgroundProps: {
-        src: 'https://cdn.discordapp.com/attachments/922692527625220126/932410278132477972/emgg.png',
+        src: emggBannerBackground,
     },
 };
 
@@ -506,9 +506,9 @@ export default function Page({ banner }: Props) {
                 <Center>
                     <Stack direction={['column', 'row']}>
                         <Text textAlign="center">Like Live Banner? Check out {breakpoint === 'base' ? '👇' : '👉'} </Text>
-                        <NextLink passHref href="/name">
+                        <NextLink passHref href="/profile">
                             <Link color="blue.300" fontWeight="bold" fontSize={['md', 'lg']}>
-                                PulseBanner Twitter Name Changer ✨
+                                Twitter Live Profile Picture ✨
                             </Link>
                         </NextLink>
                     </Stack>

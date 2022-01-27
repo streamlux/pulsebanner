@@ -8,3 +8,5 @@ export const shareOnTwitterLink =
 export const holidayDecor = false;
 export const promo = false;
 export const promoCode = 'PULSE20';
+
+export const emggBannerBackground = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/banner-backgrounds/emgg.png';

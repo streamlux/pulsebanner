@@ -45,6 +45,7 @@ import NextLink from 'next/link';
 import { ReconnectTwitterModal } from '@app/modules/onboard/ReconnectTwitterModal';
 import { CheckIcon } from '@chakra-ui/icons';
 import emggLogo from '@app/public/emgg/logo.png';
+import { emggBannerSettings } from './banner';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'Emgg';
@@ -168,9 +169,7 @@ export default function Page({ banner }: Props) {
 
     const bgId = 'ImageBackground';
     const fgId = 'Emgg';
-    const bgProps = {
-        src: 'https://cdn.discordapp.com/attachments/922692527625220126/932410278132477972/emgg.png',
-    };
+    const bgProps = emggBannerSettings.backgroundProps;
     const [fgProps, setFgProps] = useState(banner.foregroundProps ?? (ForegroundTemplates[defaultForeground].defaultProps as any));
     const [reAuth, setReAuth] = useState(false);
 
@@ -205,13 +204,9 @@ export default function Page({ banner }: Props) {
         // ensure user is signed up before saving settings
         if (ensureSignUp()) {
             const bannerSettings: BannerSettings = {
+                ...emggBannerSettings,
                 foregroundProps: {
                     ...(banner.foregroundProps as any),
-                },
-                foregroundId: 'Emgg',
-                backgroundId: 'ImageBackground',
-                backgroundProps: {
-                    src: 'https://cdn.discordapp.com/attachments/922692527625220126/932410278132477972/emgg.png',
                 },
             };
 
@@ -425,10 +420,10 @@ export default function Page({ banner }: Props) {
                     <Center>
                         <Stack direction={['column', 'row']}>
                             <Text textAlign="center">Like Live Banner? Check out {breakpoint === 'base' ? '👇' : '👉'} </Text>
-                            <NextLink passHref href="/name">
-                                <Link color="blue.300" fontWeight="bold" fontSize={['md', 'lg']}>
+                            <NextLink passHref href="/profile">
+                                <Button as="a" variant="link" color="blue.300" fontWeight="bold" fontSize={['md', 'lg']}>
                                     Twitter Live Profile Picture ✨
-                                </Link>
+                                </Button>
                             </NextLink>
                         </Stack>
                     </Center>
