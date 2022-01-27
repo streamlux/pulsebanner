@@ -15,6 +15,7 @@ import {
     Link,
     useToast,
     Stack,
+    Image,
     BoxProps,
     useColorMode,
 } from '@chakra-ui/react';
@@ -43,6 +44,7 @@ import { NextSeo } from 'next-seo';
 import NextLink from 'next/link';
 import { ReconnectTwitterModal } from '@app/modules/onboard/ReconnectTwitterModal';
 import { CheckIcon } from '@chakra-ui/icons';
+import emggLogo from '@app/public/emgg/logo.png';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'Emgg';
@@ -300,12 +302,12 @@ export default function Page({ banner }: Props) {
         </VStack>
     );
 
-    const tweetText = 'I just setup my auto updating Twitter banner for #Twitch using @PulseBanner. Get it for free at pulsebanner.com!\n\n#PulseBanner';
+    const tweetText = 'I just setup my auto updating @PulseBanner x @EasternMediaGG Twitter banner for #Twitch. Get it for free at pulsebanner.com/emgg!\n\n#PulseBanner';
 
     const TweetPreview = (
         <Text fontSize="lg" as="i">
-            I just setup my auto updating Twitter banner for <Link color="twitter.500">#Twitch</Link> using <Link color="twitter.500">@PulseBanner</Link>. Get it for free at{' '}
-            <Link color="twitter.500">pulsebanner.com</Link>!
+            I just setup my auto updating <Link color="twitter.500">@PulseBanner</Link> x <Link color="twitter.500">@EasternMediaGG</Link> Twitter banner for{' '}
+            <Link color="twitter.500">#Twitch</Link>. Get it for free at <Link color="twitter.500">pulsebanner.com/emgg</Link>!
             <br />
             <Link color="twitter.500">#PulseBanner</Link>
         </Text>
@@ -318,7 +320,7 @@ export default function Page({ banner }: Props) {
                 openGraph={{
                     site_name: 'PulseBanner',
                     type: 'website',
-                    url: 'https://pulsebanner.com/banner',
+                    url: 'https://pulsebanner.com/emgg',
                     title: 'PulseBanner - Twitter Live Banner for Twitch',
                     description: 'Easily attract more viewers to your stream from Twitter',
                     images: [
@@ -341,10 +343,13 @@ export default function Page({ banner }: Props) {
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
                 <Flex w="full" rounded="md" direction="column" bg="gray.800" p="4">
                     <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
-                        <Box maxW="xl">
-                            <Heading as="h1" fontSize={['2xl', '3xl']} alignSelf={['center', 'end']} pb={[0, 2]}>
-                                EMGG Twitch Live Banner
-                            </Heading>
+                        <Box maxW="xl" experimental_spaceY={2}>
+                            <HStack>
+                                <Image height="12" src={typeof emggLogo === 'string' ? emggLogo : emggLogo.src} alt="EMGG logo" />
+                                <Heading as="h1" fontSize={['2xl', '3xl']} alignSelf={['center', 'end']} pb={[0, 2]}>
+                                    EMGG Live Banner
+                                </Heading>
+                            </HStack>
                             <Heading fontSize="md" fontWeight="normal" as="h2">
                                 Your Twitter banner will update when you start broadcasting on Twitch. Your banner will revert back to your current banner image when your stream
                                 ends.
@@ -379,11 +384,11 @@ export default function Page({ banner }: Props) {
                     </Box>
 
                     <Flex {...styles} grow={1} p="4" my="4" rounded="md" w="full" direction="column">
-                        <Flex experimental_spaceX={2}>
-                            <Text>This banner type cannot be customized. To change your banner type click here 👉 </Text>
+                        <Flex experimental_spaceX={2} direction={['column', 'row']}>
+                            <Text fontSize={['sm', 'md']}>This banner type cannot be customized.</Text>
                             <NextLink passHref href="/banner">
                                 <Button as="a" variant="link">
-                                    Custom Banner
+                                    Create Custom Banner
                                 </Button>
                             </NextLink>
                         </Flex>
@@ -417,17 +422,18 @@ export default function Page({ banner }: Props) {
                         </HStack>
                         {EnableButton}
                     </Flex>
+                    <Center>
+                        <Stack direction={['column', 'row']}>
+                            <Text textAlign="center">Like Live Banner? Check out {breakpoint === 'base' ? '👇' : '👉'} </Text>
+                            <NextLink passHref href="/name">
+                                <Link color="blue.300" fontWeight="bold" fontSize={['md', 'lg']}>
+                                    Twitter Live Profile Picture ✨
+                                </Link>
+                            </NextLink>
+                        </Stack>
+                    </Center>
                 </Flex>
-                <Center>
-                    <Stack direction={['column', 'row']}>
-                        <Text textAlign="center">Like Live Banner? Check out {breakpoint === 'base' ? '👇' : '👉'} </Text>
-                        <NextLink passHref href="/name">
-                            <Link color="blue.300" fontWeight="bold" fontSize={['md', 'lg']}>
-                                PulseBanner Twitter Name Changer ✨
-                            </Link>
-                        </NextLink>
-                    </Stack>
-                </Center>
+
                 <Box pt="8">
                     <ShareToTwitter tweetText={tweetText} tweetPreview={TweetPreview} />
                 </Box>

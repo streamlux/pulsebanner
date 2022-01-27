@@ -41,15 +41,25 @@ export default function Layout({ children }) {
 
     return (
         <>
-            <Flex direction="column" as={chakra.div} minH="100vh" bg={emgg ? 'black' : undefined}>
-                {emgg && (
-                    <Box pos="absolute" zIndex={0} overflow="hidden" maxW="100vw" maxH="100%" top="7%">
-                        <Image alt="EMGG logo" src={typeof emggLogo === 'string' ? emggLogo : emggLogo.src} minWidth="100vw" opacity={0.5} />
-                    </Box>
-                )}
+            <Flex direction="column" as={chakra.div} maxH="100%" overflow="hidden" minH="100vh" bg={emgg ? 'black' : 'transparent'}>
                 <Box as={chakra.header} zIndex={1}>
                     <Header />
                 </Box>
+                {emgg && (
+                    <Box
+                        pos="absolute"
+                        zIndex={1}
+                        top="7%"
+                        h="93%"
+                        opacity={0.5}
+                        backgroundBlendMode="darken"
+                        w="full"
+                        bgPosition="center"
+                        bgRepeat="no-repeat"
+                        bgSize="contain"
+                        bgImg={typeof emggLogo === 'string' ? emggLogo : emggLogo.src}
+                    />
+                )}
                 <Flex zIndex={1} as={chakra.main} flex="1" px={['2', '8', '16', '36']} flexDirection="column">
                     <Box w="full" pt={['10', '20']}>
                         {children}

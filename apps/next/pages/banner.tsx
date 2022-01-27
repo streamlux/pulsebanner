@@ -347,36 +347,6 @@ export default function Page({ banner }: Props) {
                     cardType: 'summary_large_image',
                 }}
             />
-            {/* <Modal isOpen={fgId === 'Emgg'} onClose={onClose}>
-                <ModalOverlay />
-                <ModalContent>
-                    <ModalHeader>Custom Banner</ModalHeader>
-                    <ModalCloseButton />
-                    <ModalBody>
-                        <Text>You are currently using the EMGG Live Banner. To use a custom banner. Click Use Custom Banner to customize your own banner.</Text>
-                        <Button>Use Custom Banner</Button>
-                    </ModalBody>
-
-                    <ModalFooter>
-                        <Button
-                            colorScheme="blue"
-                            mr={3}
-                            onClick={() => {
-                                onClose();
-                                setBgId('GradientBackground');
-                                setFgId('ImLive');
-                            }}
-                        >
-                            Use Custom Banner
-                        </Button>
-                        <NextLink passHref href="/emgg">
-                            <Button as="a" variant="ghost">
-                                Keep using EMGG Banner
-                            </Button>
-                        </NextLink>
-                    </ModalFooter>
-                </ModalContent>
-            </Modal> */}
             <DisableBannerModal isOpen={disableBannerIsOpen} onClose={disableBannerOnClose} />
             <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} />
             {reAuth ? <ReconnectTwitterModal session={session} isOpen={isOpen} onClose={onClose} /> : <></>}
@@ -447,7 +417,7 @@ export default function Page({ banner }: Props) {
                                                     setFgProps({ ...banner.settings.foregroundProps, ...fgProps });
                                                 }}
                                             >
-                                                {['Emgg', 'ImLive'].map((key) => (
+                                                {['ImLive', 'Emgg'].map((key) => (
                                                     <option key={key} value={key}>
                                                         {bannerTypes[key].displayName}
                                                     </option>

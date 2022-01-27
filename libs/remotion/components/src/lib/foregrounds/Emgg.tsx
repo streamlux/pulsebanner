@@ -14,7 +14,7 @@ type ImLiveProps = {
 };
 
 export const Emgg: React.FC<ImLiveProps> = ({
-    thumbnailUrl = 'https://static-cdn.jtvnw.net/previews-ttv/live_user_sgt_jackson12-440x248.jpg',
+    thumbnailUrl = 'https://static-cdn.jtvnw.net/previews-ttv/live_user_moistcr1tikal-440x248.jpg',
     text,
     showUsername = true,
     username,
