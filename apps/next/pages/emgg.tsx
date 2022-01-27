@@ -256,8 +256,8 @@ export default function Page({ banner }: Props) {
                 bannerDisabledToggle();
             } else {
                 toast({
-                    title: 'Banner Activated',
-                    description: 'Your banner will be updated automatically next time you stream!',
+                    title: 'Live Banner Enabled',
+                    description: 'Your banner will update automatically next time you stream!',
                     status: 'success',
                     duration: 7000,
                     isClosable: true,
@@ -284,8 +284,8 @@ export default function Page({ banner }: Props) {
     const EnableButton = (
         <VStack>
             <Button
-                colorScheme={banner && banner.enabled ? 'red' : 'pink'}
-                bg={banner && banner.enabled ? 'red' : '#DC0963'}
+                colorScheme={banner && banner.enabled ? 'pink' : 'green'}
+                bg={banner && banner.enabled ? '#DC0963' : 'green.200'}
                 justifySelf="flex-end"
                 isLoading={isToggling}
                 leftIcon={banner && banner.enabled ? <FaStop /> : <FaPlay />}

@@ -201,7 +201,6 @@ export default function Page({ banner }: Props) {
     const [reAuth, setReAuth] = useState(false);
 
     const BackgroundTemplate = BackgroundTemplates[bgId];
-    console.log(ForegroundTemplates);
     const ForegroundTemplate = ForegroundTemplates[fgId];
     const Form = BackgroundTemplate.form;
     const FgForm = ForegroundTemplate.form;
@@ -269,8 +268,8 @@ export default function Page({ banner }: Props) {
                 bannerDisabledToggle();
             } else {
                 toast({
-                    title: 'Banner Activated',
-                    description: 'Your banner will be updated automatically next time you stream!',
+                    title: 'Live Banner Enabled',
+                    description: 'Your banner will update automatically next time you stream!',
                     status: 'success',
                     duration: 7000,
                     isClosable: true,
