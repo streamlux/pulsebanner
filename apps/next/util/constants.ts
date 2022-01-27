@@ -10,3 +10,5 @@ export const promo = false;
 export const promoCode = 'PULSE20';
 
 export const emggBannerBackground = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/banner-backgrounds/emgg.png';
+
+export const emggLogoSrc = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/assets/emgg.webp';

@@ -29,7 +29,7 @@ import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 import { PaymentModal } from '@app/components/pricing/PaymentModal';
 import { trackEvent } from '@app/util/umami/trackEvent';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
-import { discordLink } from '@app/util/constants';
+import { discordLink, emggLogoSrc } from '@app/util/constants';
 import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
 import { DisableBannerModal } from '@app/components/banner/DisableBannerModal';
 import { getSession, useSession } from 'next-auth/react';
@@ -44,7 +44,6 @@ import { NextSeo } from 'next-seo';
 import NextLink from 'next/link';
 import { ReconnectTwitterModal } from '@app/modules/onboard/ReconnectTwitterModal';
 import { CheckIcon } from '@chakra-ui/icons';
-import emggLogo from '@app/public/emgg/logo.png';
 import { emggBannerSettings } from './banner';
 
 const bannerEndpoint = '/api/features/banner';
@@ -186,12 +185,6 @@ export default function Page({ banner }: Props) {
     };
 
     const [isToggling, { on, off }] = useBoolean(false);
-
-    useEffect(() => {
-        axios.post('/').then(() => {
-            console.log('attempt to clear 301 redirect from cache');
-        });
-    }, []);
 
     const getUnsavedBanner: () => BannerSettings = () => ({
         foregroundId: fgId,
@@ -340,7 +333,7 @@ export default function Page({ banner }: Props) {
                     <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
                         <Box maxW="xl" experimental_spaceY={2}>
                             <HStack>
-                                <Image height="12" src={typeof emggLogo === 'string' ? emggLogo : emggLogo.src} alt="EMGG logo" />
+                                <Image height="12" src={emggLogoSrc} alt="EMGG logo" />
                                 <Heading as="h1" fontSize={['2xl', '3xl']} alignSelf={['center', 'end']} pb={[0, 2]}>
                                     EMGG Live Banner
                                 </Heading>

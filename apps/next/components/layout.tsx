@@ -1,31 +1,11 @@
-import React, { useEffect } from 'react';
-import {
-    Box,
-    Button,
-    chakra,
-    Flex,
-    Stack,
-    Tag,
-    useToast,
-    Text,
-    useColorMode,
-    Link,
-    Portal,
-    useDisclosure,
-    CloseButton,
-    Spacer,
-    Image,
-    Center,
-    useBreakpoint,
-    HStack,
-} from '@chakra-ui/react';
+import React from 'react';
+import { Box, Button, chakra, Flex, Stack, Tag, Text, useColorMode, Portal, useDisclosure, CloseButton, Center, useBreakpoint, HStack } from '@chakra-ui/react';
 import Header from './header';
 import Footer from './footer';
 import { FaArrowRight } from 'react-icons/fa';
 import NextLink from 'next/link';
-import { holidayDecor, promo, promoCode } from '@app/util/constants';
+import { emggLogoSrc, promo, promoCode } from '@app/util/constants';
 import { useRouter } from 'next/router';
-import emggLogo from '@app/public/emgg/logo.png';
 
 export default function Layout({ children }) {
     const { colorMode } = useColorMode();
@@ -57,7 +37,7 @@ export default function Layout({ children }) {
                         bgPosition="center"
                         bgRepeat="no-repeat"
                         bgSize="contain"
-                        bgImg={typeof emggLogo === 'string' ? emggLogo : emggLogo.src}
+                        bgImg={emggLogoSrc}
                     />
                 )}
                 <Flex zIndex={1} as={chakra.main} flex="1" px={['2', '8', '16', '36']} flexDirection="column">

@@ -42,7 +42,6 @@ import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/
 import { useState } from 'react';
 import { getTwitterInfo, PostgresTwitterInfo } from '@app/util/database/postgresHelpers';
 import { getTwitterProfilePic, validateTwitterAuthentication } from '@app/util/twitter/twitterHelpers';
-import { download } from '@app/util/s3/download';
 
 interface Props {
     profilePic: ProfileImage;
