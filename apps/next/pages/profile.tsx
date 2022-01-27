@@ -42,6 +42,7 @@ import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/
 import { useState } from 'react';
 import { getTwitterInfo, PostgresTwitterInfo } from '@app/util/database/postgresHelpers';
 import { getTwitterProfilePic, validateTwitterAuthentication } from '@app/util/twitter/twitterHelpers';
+import { download } from '@app/util/s3/download';
 
 interface Props {
     profilePic: ProfileImage;
@@ -97,14 +98,25 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
         // https url of twitter profile picture
         const twitterProfilePic: string = await getTwitterProfilePic(session.userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
-
         if (profilePic) {
+            try {
+                const response = await axios.get((profilePic.foregroundProps as any).imageUrl);
+            } catch (e) {
+                return {
+                    props: {
+                        profilePic,
+                        twitterPic: twitterProfilePic,
+                    },
+                };
+            }
+            console.log('here 1');
             return {
                 props: {
                     profilePic,
                 },
             };
         } else {
+            console.log('here 2');
             return {
                 props: {
                     profilePic: {},
@@ -134,6 +146,8 @@ export default function Page({ profilePic, twitterPic }: Props) {
         ...(profilePic?.foregroundProps ?? (ForegroundTemplates[defaultForeground].defaultProps as any)),
         ...(twitterPic ? { imageUrl: twitterPic } : {}),
     });
+
+    console.log('twitterPic', twitterPic);
 
     const styles: BoxProps = useColorModeValue<BoxProps>(
         {
@@ -247,6 +261,8 @@ export default function Page({ profilePic, twitterPic }: Props) {
             <Link color="twitter.500">#PulseBanner</Link>
         </Text>
     );
+
+    console.log(fgProps);
 
     return (
         <>
