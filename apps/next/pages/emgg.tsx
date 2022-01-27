@@ -305,15 +305,16 @@ export default function Page({ banner }: Props) {
         <>
             <NextSeo
                 title="Twitter Live Banner for Twitch"
+                noindex
                 openGraph={{
                     site_name: 'PulseBanner',
                     type: 'website',
                     url: 'https://pulsebanner.com/emgg',
-                    title: 'PulseBanner - Twitter Live Banner for Twitch',
-                    description: 'Easily attract more viewers to your stream from Twitter',
+                    title: 'PulseBanner - EMGG Special Edition Live Banner',
+                    description: 'Rep your favorite org with this special edition Live Banner',
                     images: [
                         {
-                            url: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/seo/pulsebanner_og.webp',
+                            url: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/seo/emgg_og.webp',
                             width: 1200,
                             height: 627,
                             alt: 'PulseBanner automates your Twitter banner for free.',

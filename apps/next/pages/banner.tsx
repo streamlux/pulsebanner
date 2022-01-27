@@ -25,13 +25,6 @@ import {
     Stack,
     BoxProps,
     useColorModeValue,
-    Modal,
-    ModalBody,
-    ModalCloseButton,
-    ModalContent,
-    ModalFooter,
-    ModalHeader,
-    ModalOverlay,
     Tag,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
