@@ -209,7 +209,7 @@ export default function Page({ banner }: Props) {
     const toast = useToast();
     const breakpoint = useBreakpoint();
 
-    const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch();
+    const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('/emgg');
 
     const styles: BoxProps = useColorModeValue<BoxProps>(
         {
@@ -352,7 +352,7 @@ export default function Page({ banner }: Props) {
             {reAuth ? <ReconnectTwitterModal session={session} isOpen={isOpen} onClose={onClose} /> : <></>}
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
                 <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
-                    <Box maxW="xl">
+                    <Box maxW="xl" experimental_spaceY={2}>
                         <Heading as="h1" fontSize={['2xl', '3xl']} alignSelf={['center', 'end']} pb={[0, 2]}>
                             Twitch Live Banner
                         </Heading>
@@ -360,19 +360,30 @@ export default function Page({ banner }: Props) {
                             Your Twitter banner will update when you start broadcasting on Twitch. Your banner will revert back to your current banner image when your stream ends.
                         </Heading>
 
-                        <HStack pt={['2', '2']} pb={['2', '0']}>
-                            <Text textAlign={['center', 'left']} h="full">
-                                Need help? 👉{' '}
-                            </Text>
-                            <Link isExternal href={discordLink}>
-                                <Button as="a" size="sm" colorScheme="gray" rightIcon={<FaDiscord />}>
-                                    Join our Discord
-                                </Button>
-                            </Link>
-                        </HStack>
+                        <Flex direction="row" w="full">
+                            <HStack pt={['2', '2']} pb={['2', '0']}>
+                                <Text textAlign={['center', 'left']} h="full">
+                                    Need help? 👉{' '}
+                                </Text>
+                                <Link isExternal href={discordLink}>
+                                    <Button as="a" size="sm" colorScheme="gray" rightIcon={<FaDiscord />}>
+                                        Join our Discord
+                                    </Button>
+                                </Link>
+                            </HStack>
+                        </Flex>
                     </Box>
                     {EnableButton}
                 </Flex>
+                <Center w="full">
+                    <Box>
+                        <NextLink href="/emgg" passHref>
+                            <Button as="a" variant="link">
+                                Checkout the Special Edition PulseBanner x EMGG Live Banner
+                            </Button>
+                        </NextLink>
+                    </Box>
+                </Center>
                 <Flex w="full" rounded="md" direction="column">
                     <Center w="full" maxH="320px">
                         <RemotionPreview compositionHeight={500} compositionWidth={1500}>
