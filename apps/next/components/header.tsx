@@ -124,7 +124,6 @@ export default function Header() {
                                             <NextLink href="/profile" passHref>
                                                 <HStack>
                                                     <Link>Profile Picture</Link>
-                                                    <Tag colorScheme="green">NEW</Tag>
                                                 </HStack>
                                             </NextLink>
                                         </WrapItem>
