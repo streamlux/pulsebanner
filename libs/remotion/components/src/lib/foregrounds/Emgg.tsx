@@ -87,26 +87,24 @@ export const Emgg: React.FC<ImLiveProps> = ({
                             alignContent: 'center',
                         }}
                     >
-                        {showUsername && (
-                            <h1
-                                style={{
-                                    color: 'white',
-                                    fontSize: `${54 - (username?.length ?? 0)}px`,
-                                    width: '100%',
-                                    textAlign: 'center',
-                                    fontWeight: 'bold',
-                                    alignItems: 'flex-end',
-                                    fontFamily: 'Inter',
-                                    margin: 0,
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'none',
-                                    textOverflow: 'unset',
-                                    textTransform: 'uppercase',
-                                }}
-                            >
-                                {username}
-                            </h1>
-                        )}
+                        <h1
+                            style={{
+                                color: 'white',
+                                fontSize: `${54 - (username?.length ?? 0)}px`,
+                                width: '100%',
+                                textAlign: 'center',
+                                fontWeight: 'bold',
+                                alignItems: 'flex-end',
+                                fontFamily: 'Inter',
+                                margin: 0,
+                                whiteSpace: 'nowrap',
+                                overflow: 'none',
+                                textOverflow: 'unset',
+                                textTransform: 'uppercase',
+                            }}
+                        >
+                            {username}
+                        </h1>
                     </div>
                 </div>
             </AbsoluteFill>
