@@ -178,7 +178,7 @@ export default function Page({ banner }: Props) {
     const toast = useToast();
     const breakpoint = useBreakpoint();
 
-    const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch();
+    const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('/emgg');
 
     const styles: BoxProps = {
         background: 'whiteAlpha.100',
