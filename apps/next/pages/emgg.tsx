@@ -327,7 +327,7 @@ export default function Page({ banner }: Props) {
                 }}
             />
             <DisableBannerModal isOpen={disableBannerIsOpen} onClose={disableBannerOnClose} />
-            <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} />
+            <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} callbackUrl="/emgg" />
             {reAuth ? <ReconnectTwitterModal session={session} isOpen={isOpen} onClose={onClose} /> : <></>}
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
                 <Flex w="full" rounded="md" direction="column" bg="gray.800" p="4">

@@ -201,7 +201,7 @@ export default function Page({ banner }: Props) {
     const toast = useToast();
     const breakpoint = useBreakpoint();
 
-    const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('/emgg');
+    const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('/banner');
 
     const styles: BoxProps = useColorModeValue<BoxProps>(
         {
@@ -340,7 +340,7 @@ export default function Page({ banner }: Props) {
                 }}
             />
             <DisableBannerModal isOpen={disableBannerIsOpen} onClose={disableBannerOnClose} />
-            <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} />
+            <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} callbackUrl="/banner" />
             {reAuth ? <ReconnectTwitterModal session={session} isOpen={isOpen} onClose={onClose} /> : <></>}
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
                 <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
