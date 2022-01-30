@@ -2,7 +2,14 @@
 
 ## Getting started
 
-1. Install Docker engine https://www.docker.com/get-started
+### Prerequisites
+
+* git
+* Node.JS and npm
+* Docker engine https://www.docker.com/get-started
+
+### Setup
+
 1. Clone repo
 2. Create .env file in project root and copy paste the contents of `.env.template` in and fill in the values.
 3. Run `docker-compose up -d`
