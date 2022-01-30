@@ -16,20 +16,20 @@ https://docs.microsoft.com/en-us/windows/wsl/install
 
 1. Clone repo
 2. Create .env file in project root and copy paste the contents of `.env.template` in and fill in the values.
-3. Run `docker-compose up -d`
+3. Run `docker-compose up -d` to start the development PostgreSQL database + Adminer.
 4. Open adminer to verify the database and adminer started properly. Enter password from .env file. [Adminer link](http://localhost:8080/?pgsql=db&username=postgres&psql)
-5. Run `npm install`
-6. Run `prisma db push` *
+5. Run `npm install` to install dependencies.
+6. Run `npx prisma db push` to setup the database with our schema.
 7. Verify by viewing the newly created database 'mydb'. [Adminer link](http://localhost:8080/?pgsql=db&username=postgres&db=mydb&ns=public)
-8. Run `prisma db seed` *
+8. Run `npx prisma db seed` to insert data into the database that is needed to run the application. (things from Stripe like products/prices)
 9. If you have changes in your prisma design, be sure to run `prisma migrate dev --name <short descriptive name>` before merging *
 10. Verify by viewing the newly created rows in the products table. [Adminer link](http://localhost:8080/?pgsql=db&username=postgres&db=mydb&ns=public&select=products)
-11. Run `nx run next:serve` *
-12. Run `nx run remotion:serve` to start the remotion server *
+11. Run `npx nx run next:serve`
+12. Run `npx nx run remotion:serve` to start the remotion server
 
 Note: Running locally on windows inside of wsl may cause issues with spawning a local server. Running `Get-Service LxssManager | Restart-Service` 
 
-_* May need to prefix command with `npx`. You can remove the need for npx by properly setting up your path._
+_May need to prefix command with `npx`. You can remove the need for npx by properly setting up your path._
 
 
 ## Local testing with Twitch webhooks
