@@ -124,7 +124,6 @@ export default function Header() {
                                             <NextLink href="/profile" passHref>
                                                 <HStack>
                                                     <Link>Profile Picture</Link>
-                                                    <Tag colorScheme="green">NEW</Tag>
                                                 </HStack>
                                             </NextLink>
                                         </WrapItem>
@@ -275,7 +274,7 @@ export default function Header() {
                                     <Tag color="black" fontWeight="bold" colorScheme="green" bg={colorMode === 'dark' ? 'green.100' : undefined}>
                                         {promoCode}
                                     </Tag>{' '}
-                                    {'at checkout to save 20% on your first month!'}
+                                    {'at checkout to save 10% on your first month!'}
                                 </Text>
                                 <NextLink href="/pricing" passHref>
                                     <Button rightIcon={<FaArrowRight />} colorScheme="whiteAlpha" bg="green.100" size="sm" color="black">

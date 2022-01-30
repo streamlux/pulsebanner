@@ -123,12 +123,3 @@ export const ImLive: React.FC<ImLiveProps> = ({
         </>
     );
 };
-
-const sh = {
-    component: ImLive,
-    defaultProps: {
-        thumbnailUrl: 'https://static-cdn.jtvnw.net/previews-ttv/live_user_moistcr1tikal-440x248.jpg',
-    },
-    name: "I'm Live!",
-    description: "Let your audience know you're live with this awesome live-upating banner.",
-} as LayerComponent<typeof ImLive>;
