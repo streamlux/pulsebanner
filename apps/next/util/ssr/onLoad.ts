@@ -15,8 +15,8 @@ export function onLoad(): void {
         hasLoaded = true;
         const scheduler = new ToadScheduler();
 
-        const task = new AsyncTask(
-            'simple task',
+        const refreshProfessional = new AsyncTask(
+            'refresh professional',
             async () => {
                 const refreshService = new BannerRefreshService(prisma, logger);
                 await refreshService.refreshBanners('Professional');
@@ -27,9 +27,19 @@ export function onLoad(): void {
             }
         );
 
-        const job = new SimpleIntervalJob({ minutes: 1, }, task)
+        // const refreshPersonal = new AsyncTask('refresh personal',
+        //     async () => {
+        //         const refreshService = new BannerRefreshService(prisma, logger);
+        //         await refreshService.refreshBanners('Personal');
+        //     },
+        //     (err: Error) => {
+        //         /* handle error here */
+        //         logger.error('Error occured executing scheduled job.', { ...err });
+        //     }
+        // );
 
-        scheduler.addSimpleIntervalJob(job);
+        scheduler.addSimpleIntervalJob(new SimpleIntervalJob({ minutes: 10, }, refreshProfessional));
+        // scheduler.addSimpleIntervalJob(new SimpleIntervalJob({ hours: 1, }, refreshPersonal));
 
         logger.info('Loaded');
 
