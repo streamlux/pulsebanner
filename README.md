@@ -4,8 +4,11 @@
 
 ### Prerequisites
 
-* git
-* Node.JS and npm
+For Windows, install WSL and install these within WSL
+https://docs.microsoft.com/en-us/windows/wsl/install
+
+* git https://git-scm.com/downloads
+* Node.JS and npm https://nodejs.org/en/download/
 * Docker engine https://www.docker.com/get-started
 
 ### Setup
