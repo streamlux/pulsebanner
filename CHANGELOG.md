@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Cleaned up FAQ page code
+- Removed EMGG sale banners
 
 ## [0.7.4] - 2022-01-29
 
