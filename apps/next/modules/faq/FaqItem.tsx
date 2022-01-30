@@ -14,7 +14,7 @@ export const FaqItemC: FC<FaqItemCProps> = ({ item, colorMode }): ReactElement =
             <Heading w="full" textAlign="left" fontSize="lg">
                 {item.question}
             </Heading>
-            <Text color={colorMode === 'dark' ? 'gray.400' : 'gray.600'}>{item.answer}</Text>
+            <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{item.answer}</Text>
             {item.learnMoreLink && (
                 <Box w="full">
                     <NextLink href={item.learnMoreLink} passHref>
