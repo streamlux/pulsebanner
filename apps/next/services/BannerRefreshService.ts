@@ -53,16 +53,16 @@ export class BannerRefreshService {
         return await this.prisma.liveStreams.findMany({
             where: {
                 user: {
-                    // subscription: {
-                    //     status: 'active',
-                    //     price: {
-                    //         product: {
-                    //             name: {
-                    //                 equals: product
-                    //             }
-                    //         }
-                    //     }
-                    // },
+                    subscription: {
+                        status: 'active',
+                        price: {
+                            product: {
+                                name: {
+                                    equals: product
+                                }
+                            }
+                        }
+                    },
                     banner: {
                         enabled: true
                     }

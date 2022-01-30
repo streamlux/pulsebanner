@@ -1,6 +1,7 @@
 import { TwitchClientAuthService } from "@app/services/TwitchClientAuthService";
 import { remotionAxios, twitchAxios } from "@app/util/axios";
 import { getBannerEntry } from "@app/util/database/postgresHelpers";
+import { logger } from "@app/util/logger";
 import type { Prisma } from "@prisma/client";
 import type { AxiosResponse } from "axios";
 
@@ -28,6 +29,10 @@ export const renderBanner = async (userId: string, twitchUserId: string): Promis
     // get twitch stream info for user
     // https://dev.twitch.tv/docs/api/reference#get-streams
     const streamResponse = await authedTwitchAxios.get(`/helix/streams?user_id=${twitchUserId}`);
+    if (streamResponse.data?.data?.length ?? 0 === 0) {
+        logger.error('No stream found trying to render banner', { userId });
+        return 'No stream found';
+    }
 
     // get twitch user
     // https://dev.twitch.tv/docs/api/reference#get-users
