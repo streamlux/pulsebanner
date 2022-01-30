@@ -32,9 +32,14 @@ export const bannerRefresh: Feature<string> = async (userId: string): Promise<st
         return 'Unauthenticated Twitter. Disabling feature banner and requiring re-auth.';
     }
 
-    // render banner
-    const bannerBase64 = await renderBanner(userId, twitchUserId);
-
+    let bannerBase64: string;
+    try {
+        // render banner
+        bannerBase64 = await renderBanner(userId, twitchUserId);
+    } catch (e) {
+        logger.error('Error rendering banner for banner refresh', { error: e });
+        return 'Unable to refresh banner';
+    }
     // check if user is still live according to our database
     // since it's possible that while rendering the banner the stream ended
     const liveStream = await prisma.liveStreams.findUnique({
@@ -50,4 +55,5 @@ export const bannerRefresh: Feature<string> = async (userId: string): Promise<st
     } else {
         logger.warn('Stream ended while rendering banner for refresh.', { userId });
     }
+
 }

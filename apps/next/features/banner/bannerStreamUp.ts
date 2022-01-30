@@ -83,7 +83,13 @@ const bannerStreamUp: Feature<string> = async (userId: string): Promise<string> 
         return 'Error uploading original banner to S3.';
     }
 
-    const base64Image = await renderBanner(userId, twitchUserId);
+    let base64Image: string;
+    try {
+        base64Image = await renderBanner(userId, twitchUserId);
+    } catch (e) {
+        logger.error('Error rendering banner on streamup', { userId, error: e });
+        return 'Error rendiering banner on stream up.';
+    }
 
     // post this base64 image to twitter
     const bannerStatus: TwitterResponseCode = await updateBanner(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, base64Image);

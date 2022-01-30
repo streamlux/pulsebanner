@@ -31,7 +31,7 @@ export const renderBanner = async (userId: string, twitchUserId: string): Promis
     const streamResponse = await authedTwitchAxios.get(`/helix/streams?user_id=${twitchUserId}`);
     if (streamResponse.data?.data?.length ?? 0 === 0) {
         logger.error('No stream found trying to render banner', { userId });
-        return 'No stream found';
+        throw new Error('No stream found');
     }
 
     // get twitch user
