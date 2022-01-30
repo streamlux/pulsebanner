@@ -26,6 +26,9 @@ import {
     BoxProps,
     useColorModeValue,
     Tag,
+    SimpleGrid,
+    Divider,
+    useColorMode,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
@@ -51,6 +54,8 @@ import { Composer } from '@pulsebanner/remotion/components';
 import { NextSeo } from 'next-seo';
 import NextLink from 'next/link';
 import { ReconnectTwitterModal } from '@app/modules/onboard/ReconnectTwitterModal';
+import { bannerFaqItems, generalFaqItems } from '@app/modules/faq/data';
+import { FaqSection } from '@app/modules/faq/FaqSection';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
@@ -371,7 +376,7 @@ export default function Page({ banner }: Props) {
                     <Box>
                         <NextLink href="/emgg" passHref>
                             <Button as="a" variant="link">
-                                Checkout the Special Edition PulseBanner x EMGG Live Banner
+                                Checkout the PulseBanner x EMGG Banner
                             </Button>
                         </NextLink>
                     </Box>
@@ -508,6 +513,9 @@ export default function Page({ banner }: Props) {
                 </Center>
                 <Box pt="8">
                     <ShareToTwitter tweetText={tweetText} tweetPreview={TweetPreview} />
+                </Box>
+                <Box pt="8">
+                    <FaqSection items={bannerFaqItems.concat(generalFaqItems)} />
                 </Box>
             </Container>
             <PaymentModal isOpen={pricingIsOpen} onClose={pricingClose} />
