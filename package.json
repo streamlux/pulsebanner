@@ -81,6 +81,7 @@
         "stripe": "^8.183.0",
         "superjson": "^1.7.5",
         "swr": "^1.0.1",
+        "toad-scheduler": "^1.6.0",
         "tslib": "^2.0.0",
         "twitter": "^1.7.1",
         "twitter-api-client": "^1.4.0",
