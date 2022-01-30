@@ -47,6 +47,8 @@ import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers
 import { NextSeo } from 'next-seo';
 import { Card } from '@app/components/Card';
 import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
+import { profileImageFaqItems, generalFaqItems, pricingFaqItems } from '@app/modules/faq/data';
+import { FaqSection } from '@app/modules/faq/FaqSection';
 
 type Props = {
     products: (Product & { prices: Price[] })[];
@@ -300,11 +302,16 @@ const Page: NextPage<Props> = ({ products }) => {
                         ))}
                     </SimpleGrid>
                 </Center>
-                <Text fontSize="md">Prices in USD. VAT may apply. Membership is tied to one Twitter account.</Text>
-                <Text textAlign="center" maxW="2xl" px="4" fontSize="xl">
-                    Just like you, the people behind PulseBanner are creators. And like you, we rely on PulseBanner Memberships to keep improving and maintaining PulseBanner.
-                    Supporting PulseBanner enables us to do what we love and empower creators ❤️
-                </Text>
+                <Container centerContent maxW="container.lg" experimental_spaceY="4">
+                    <Text fontSize="md">Prices in USD. VAT may apply. Membership is tied to one Twitter account.</Text>
+                    <Text textAlign="center" maxW="2xl" px="4" fontSize="xl">
+                        Just like you, the people behind PulseBanner are creators. And like you, we rely on PulseBanner Memberships to keep improving and maintaining PulseBanner.
+                        Supporting PulseBanner enables us to do what we love and empower creators ❤️
+                    </Text>
+                    <Box pt="8">
+                        <FaqSection items={pricingFaqItems.concat(generalFaqItems)} />
+                    </Box>
+                </Container>
             </VStack>
         </>
     );

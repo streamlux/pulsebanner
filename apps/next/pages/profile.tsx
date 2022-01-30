@@ -42,6 +42,8 @@ import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/
 import { useState } from 'react';
 import { getTwitterInfo, PostgresTwitterInfo } from '@app/util/database/postgresHelpers';
 import { getTwitterProfilePic, validateTwitterAuthentication } from '@app/util/twitter/twitterHelpers';
+import { FaqSection } from '@app/modules/faq/FaqSection';
+import { generalFaqItems, profileImageFaqItems } from '@app/modules/faq/data';
 
 interface Props {
     profilePic: ProfileImage;
@@ -393,6 +395,9 @@ export default function Page({ profilePic, twitterPic }: Props) {
                 </Center>
                 <Box pt="8">
                     <ShareToTwitter tweetText={tweetText} tweetPreview={TweetPreview} />
+                </Box>
+                <Box pt="8">
+                    <FaqSection items={profileImageFaqItems.concat(generalFaqItems)} />
                 </Box>
             </Container>
             <PaymentModal isOpen={pricingIsOpen} onClose={pricingClose} />

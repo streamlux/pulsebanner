@@ -1,4 +1,4 @@
-import { Box, Center, HStack, Stack } from '@chakra-ui/layout';
+import { Box, Center, HStack, Link, Stack } from '@chakra-ui/layout';
 import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay } from '@chakra-ui/modal';
 import { Button, Checkbox, CheckboxGroup, ModalFooter, Textarea, useToast, Text } from '@chakra-ui/react';
 import axios from 'axios';
@@ -46,6 +46,19 @@ export const DisableBannerModal: React.FC<Props> = ({ isOpen, onClose }) => {
                         </Box>
 
                         <Textarea placeholder="Additional comments" onChange={(val) => setInputValue(val.target.value)} />
+                        <Center>
+                            <HStack>
+                                {feedbackItems.includes('Live Banner was not working.') && <Text>We can fix it! 👉</Text>}
+                                {!feedbackItems.includes('Live Banner was not working.') && feedbackItems.includes('PulseBanner is missing what I want') && (
+                                    <Text>We can add it! 👉</Text>
+                                )}
+                                <Link href="/" isExternal passHref>
+                                    <Button as="a" variant={'solid'} size="sm">
+                                        Join our Discord
+                                    </Button>
+                                </Link>
+                            </HStack>
+                        </Center>
                     </Box>
                 </ModalBody>
                 <ModalFooter>

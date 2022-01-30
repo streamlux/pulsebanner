@@ -55,6 +55,11 @@ export default function Footer() {
                             </Link>
                         </WrapItem>
                         <WrapItem className={styles.navItem}>
+                            <NextLink href="/faq" passHref>
+                                <Link>FAQ</Link>
+                            </NextLink>
+                        </WrapItem>
+                        <WrapItem className={styles.navItem}>
                             <NextLink href="/privacy" passHref>
                                 <Link>Privacy</Link>
                             </NextLink>

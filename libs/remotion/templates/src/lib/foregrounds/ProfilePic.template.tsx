@@ -12,7 +12,7 @@ export const ProfilePic: Layer<typeof ForegroundComponents.ProfilePic> = {
         fontStyle: '',
         color1: 'crimson',
         color2: '#f90',
-        imageUrl: 'https://pbs.twimg.com/profile_images/1477190865613250560/bP4B0ImS_400x400.jpg',
+        imageUrl: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/profile-image/default.jpeg',
         top: false,
         hideLive: false,
         liveBackgroundColor: 'red',
