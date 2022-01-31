@@ -39,7 +39,6 @@ import router from 'next/router';
 import React, { useState } from 'react';
 import useSWR from 'swr';
 import { discordLink } from '@app/util/constants';
-import { logger } from '@app/util/logger';
 
 interface Props {
     affiliateStatus: AffiliateStatus;
@@ -154,7 +153,6 @@ export default function Page({ affiliateStatus, affiliateDashboard, affiliateCod
 
     const submitAffiliateRequest = async () => {
         if (!ensureSignUp()) {
-            logger.error('Not signed up and attempting to submit affiliate request. Failing.');
             return;
         }
 

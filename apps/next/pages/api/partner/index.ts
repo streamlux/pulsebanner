@@ -80,7 +80,7 @@ handler.post(async (req, res) => {
             },
         });
     } catch (e) {
-        console.log('error: ', e);
+        logger.error(`Error processing request for partner program. `, { error: e, userId: userId });
         return res.status(400).send(`Error processing request for partner program: ${e}`);
     }
     return res.status(200).send('Successfully applied for partner program.');
