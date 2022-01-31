@@ -54,6 +54,7 @@ handler.post(async (req, res) => {
             paypal_email: req.body.paypalEmail,
         });
 
+        console.log('dynoResponse: ', dynoResponse.data);
         // update/add the user to the table
         const dynoId = dynoResponse.data.id;
 
