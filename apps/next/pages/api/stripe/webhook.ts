@@ -13,6 +13,7 @@ import { TwitterResponseCode, updateProfilePic } from '@app/util/twitter/twitter
 import { flipFeatureEnabled, getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { defaultBannerSettings } from '@app/pages/banner';
 import { logger } from '@app/util/logger';
+import axios from 'axios';
 
 // Stripe requires the raw body to construct the event.
 export const config = {
@@ -207,6 +208,26 @@ handler.post(async (req, res) => {
                                         streamName: newLiveName,
                                     },
                                 });
+                            }
+
+                            // we need to check if they are in the partner program. If they are, we need to archive the affiliate
+                            const affiliateId = await prisma.affiliateInformation.findUnique({
+                                where: {
+                                    userId: userId,
+                                },
+                            });
+
+                            // if they are an affiliate, archive their account
+                            if (affiliateId !== null) {
+                                const response = await axios.post(`https://api.leaddyno.com/v1/${affiliateId}/archive`, {
+                                    key: process.env.LEADDYNO_API_KEY,
+                                });
+
+                                if (response.data?.archived) {
+                                    logger.info('Successfully archived user from being an affiliate.', { userId });
+                                } else {
+                                    logger.error('Unsuccessful in archiving user that is no longer subscribed.', { userId });
+                                }
                             }
 
                             logger.info('Successfully reset name if needed. All features handled on subscription cancelled.', { userId: userId });

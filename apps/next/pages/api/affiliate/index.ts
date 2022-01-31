@@ -1,4 +1,5 @@
 import { sendErrorInternal } from '@app/util/discord/sendError';
+import { logger } from '@app/util/logger';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import prisma from '@app/util/ssr/prisma';
 import axios from 'axios';
@@ -10,12 +11,35 @@ const leadDynoEndpoint = 'https://api.leaddyno.com/v1/affiliates';
 handler.post(async (req, res) => {
     const userId = req.session?.userId;
     if (!userId) {
-        console.log('Affiliate post request. UserId not found');
+        logger.error('UserId not found to process affiliate request');
         sendErrorInternal('Affiliate post request. UserId not found');
         return res.send(404);
     }
 
     // we should disable the affiliate request button on the frontend but also double check their plan level on the backend
+    const subscriptionUser = await prisma.subscription.findUnique({
+        where: {
+            userId: userId,
+        },
+    });
+
+    const isPartner = await prisma.user.findUnique({
+        where: {
+            id: userId,
+        },
+        select: {
+            partner: true,
+        },
+    });
+
+    const validPartner = isPartner !== null && isPartner.partner;
+    const subscriber = subscriptionUser !== null;
+
+    // if they aren't a partner or subscriber, we should not have shown them the page and we should not apply
+    if (!validPartner && !subscriber) {
+        logger.error('User is not partner or subscriber. Not handling request. ', { userId });
+        return res.status(401).send('User is not partner or subscriber.');
+    }
 
     // verify the user email/code does not exist already in leaddyno
 
@@ -30,8 +54,6 @@ handler.post(async (req, res) => {
             paypal_email: req.body.paypalEmail,
         });
 
-        console.log('dynoResponse: ', dynoResponse);
-
         // update/add the user to the table
         const dynoId = dynoResponse.data.id;
 
@@ -42,7 +64,6 @@ handler.post(async (req, res) => {
             create: {
                 userId: userId,
                 affiliateId: dynoId,
-                activeAffiliate: false,
             },
             update: {
                 affiliateId: dynoId,
@@ -54,10 +75,5 @@ handler.post(async (req, res) => {
     }
     return res.status(200).send('Successfully applied for affiliate');
 });
-
-// used for when they de-activate or unsubscribe from a paid membership
-// handler.put(async (req, res) => {
-
-// });
 
 export default handler;

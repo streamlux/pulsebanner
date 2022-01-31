@@ -112,7 +112,7 @@ const Page: NextPage = () => {
                                         {({ isOpen, onClose }) => (
                                             <>
                                                 <PopoverTrigger>
-                                                    <Button colorScheme="red" disabled={paymentPlan !== 'Free'}>
+                                                    <Button colorScheme="red" disabled={paymentPlan !== 'Free' && paymentPlanResponse.partner !== true}>
                                                         Delete account and erase all data
                                                     </Button>
                                                 </PopoverTrigger>
