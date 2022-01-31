@@ -76,7 +76,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                         key: process.env.LEADDYNO_API_KEY,
                     },
                 });
-                console.log('affiliateInfo: ', affiliateInfo.data);
                 const status = affiliateInfo.data.status;
                 return {
                     props: {
