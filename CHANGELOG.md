@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+
+- Cleaned up FAQ page code
+
+## [0.7.4] - 2022-01-29
+
+### Added
+
+- FAQ sections and page
+
+## [0.7.3] - 2022-01-28
+
+### Added
+
+- EMGG sale
+
+## [0.7.2] - 2022-01-28
+
+### Fixed
+
+- Fix auth redirect from EMGG page
+
+## [0.7.1] - 2022-01-28
+
+### Fixed
+
+- Always show username on EMGG banner
+
+## [0.7.0] - 2022-01-28
+
+### Added
+
+- EMGG Special Edition Live Banner
+
 ## [0.6.2] - 2022-01-24
 
 ### Added

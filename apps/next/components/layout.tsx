@@ -1,28 +1,10 @@
-import React, { useEffect } from 'react';
-import {
-    Box,
-    Button,
-    chakra,
-    Flex,
-    Stack,
-    Tag,
-    useToast,
-    Text,
-    useColorMode,
-    Link,
-    Portal,
-    useDisclosure,
-    CloseButton,
-    Spacer,
-    Center,
-    useBreakpoint,
-    HStack,
-} from '@chakra-ui/react';
+import React from 'react';
+import { Box, Button, chakra, Flex, Stack, Tag, Text, useColorMode, Portal, useDisclosure, CloseButton, Center, useBreakpoint, HStack } from '@chakra-ui/react';
 import Header from './header';
 import Footer from './footer';
 import { FaArrowRight } from 'react-icons/fa';
 import NextLink from 'next/link';
-import { holidayDecor, promo, promoCode } from '@app/util/constants';
+import { emggLogoSrc, promo, promoCode } from '@app/util/constants';
 import { useRouter } from 'next/router';
 
 export default function Layout({ children }) {
@@ -32,17 +14,33 @@ export default function Layout({ children }) {
     });
     const breakpoint = useBreakpoint();
     const router = useRouter();
+    const emgg = router.asPath === '/emgg';
 
     const pagesWithoutPromo = ['/admin', '/admin/banner'];
     const showPromo = promo && isOpen && breakpoint !== 'base' && !pagesWithoutPromo.includes(router.asPath);
 
     return (
         <>
-            <Flex direction="column" as={chakra.div} minH="100vh">
-                <Box as={chakra.header}>
+            <Flex direction="column" as={chakra.div} maxH="100%" overflow="hidden" minH="100vh" bg={emgg ? 'black' : 'transparent'}>
+                <Box as={chakra.header} zIndex={1}>
                     <Header />
                 </Box>
-                <Flex as={chakra.main} flex="1" px={['2', '8', '16', '36']} flexDirection="column">
+                {emgg && (
+                    <Box
+                        pos="absolute"
+                        zIndex={1}
+                        top="7%"
+                        h="93%"
+                        opacity={0.5}
+                        backgroundBlendMode="darken"
+                        w="full"
+                        bgPosition="center"
+                        bgRepeat="no-repeat"
+                        bgSize="contain"
+                        bgImg={emggLogoSrc}
+                    />
+                )}
+                <Flex zIndex={1} as={chakra.main} flex="1" px={['2', '8', '16', '36']} flexDirection="column">
                     <Box w="full" pt={['10', '20']}>
                         {children}
                     </Box>
@@ -50,6 +48,7 @@ export default function Layout({ children }) {
                 {showPromo && (
                     <Portal>
                         <Box
+                            zIndex={1}
                             sx={{ position: 'fixed', bottom: '0', right: '0' }}
                             mb="4"
                             px="4"
@@ -66,7 +65,7 @@ export default function Layout({ children }) {
                                         <Tag color="black" fontWeight="bold" colorScheme="green" bg={colorMode === 'dark' ? 'green.100' : undefined}>
                                             {promoCode}
                                         </Tag>{' '}
-                                        {'at checkout to save 20% on your first month! Ends 11:59 PT Jan 16'}
+                                        {'at checkout to save 10% on your first month! Ends 11:59 PT Jan 30'}
                                     </Text>
                                     {breakpoint === 'base' && (
                                         <Center>
@@ -89,7 +88,7 @@ export default function Layout({ children }) {
                     </Portal>
                 )}
 
-                <Box as={chakra.footer}>
+                <Box zIndex={1} as={chakra.footer}>
                     <Footer />
                 </Box>
             </Flex>
