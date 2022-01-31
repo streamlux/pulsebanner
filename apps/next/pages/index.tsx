@@ -392,7 +392,7 @@ export default function Page() {
                                         <Box experimental_spaceY={4}>
                                             <HStack>
                                                 <Heading size="2xl" textAlign="left">
-                                                    Affiliate Program
+                                                    Partner Program
                                                 </Heading>
 
                                                 <Tag colorScheme="blue" size="lg">
@@ -400,13 +400,13 @@ export default function Page() {
                                                 </Tag>
                                             </HStack>
                                             <Text fontSize="lg">
-                                                All PulseBanner members are qualified to apply for our affiliate program. Earn money for every new PulseBanner member that uses your
+                                                All PulseBanner members are qualified to apply for our partner program. Earn money for every new PulseBanner member that uses your
                                                 discount code!
                                             </Text>
                                         </Box>
                                         <NextLink passHref href="/name">
-                                            <Button as="a" size="lg" rightIcon={<FaArrowRight />} colorScheme="green" className={trackEvent('click', 'setup-affiliate-program')}>
-                                                Setup Affiliate Account
+                                            <Button as="a" size="lg" rightIcon={<FaArrowRight />} colorScheme="green" className={trackEvent('click', 'setup-partner-program')}>
+                                                Setup Partner Program
                                             </Button>
                                         </NextLink>
                                     </Box>

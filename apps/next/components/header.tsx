@@ -144,8 +144,8 @@ export default function Header() {
                                             </NextLink>
                                         </WrapItem>
                                         <WrapItem>
-                                            <NextLink href="/affiliate" passHref>
-                                                <Link>Affiliate Program</Link>
+                                            <NextLink href="/partner" passHref>
+                                                <Link>Partner Program</Link>
                                             </NextLink>
                                         </WrapItem>
                                     </Wrap>
@@ -265,8 +265,8 @@ export default function Header() {
                                     </NextLink>
                                 </WrapItem>
                                 <WrapItem>
-                                    <NextLink href="/affiliate" passHref>
-                                        <Link>Affiliate Program</Link>
+                                    <NextLink href="/partner" passHref>
+                                        <Link>Partner Program</Link>
                                     </NextLink>
                                 </WrapItem>
                             </Wrap>

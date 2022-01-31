@@ -16,7 +16,6 @@ handler.post(async (req, res) => {
         return res.send(404);
     }
 
-    // we should disable the affiliate request button on the frontend but also double check their plan level on the backend
     const subscriptionUser = await prisma.subscription.findUnique({
         where: {
             userId: userId,
@@ -54,7 +53,17 @@ handler.post(async (req, res) => {
             paypal_email: req.body.paypalEmail,
         });
 
-        console.log('dynoResponse: ', dynoResponse.data);
+        // this will return null i.e. that code is already in use. If this is the case, we need to report back to the user.
+        // if the email already exists in leaddyno, it will not do anything. The affiliate code specified will NOT be in effect, it will be from the very first request
+        if (dynoResponse === null) {
+            logger.error(`The affiliate code ${req.body.discountCode} is already taken. Different discount code required.`, {
+                userId: userId,
+                discountCode: req.body.discountCode,
+            });
+            // process 409's by returning a toast message since the request failed
+            return res.status(409).send('The affiliate code ${req.body.discountCode} is already taken. Please choose a different code.');
+        }
+        console.log('dynoResponse: ', dynoResponse);
         // update/add the user to the table
         const dynoId = dynoResponse.data.id;
 
@@ -72,9 +81,9 @@ handler.post(async (req, res) => {
         });
     } catch (e) {
         console.log('error: ', e);
-        return res.status(400).send(`Error processing request for affiliate: ${e}`);
+        return res.status(400).send(`Error processing request for partner program: ${e}`);
     }
-    return res.status(200).send('Successfully applied for affiliate');
+    return res.status(200).send('Successfully applied for partner program.');
 });
 
 export default handler;

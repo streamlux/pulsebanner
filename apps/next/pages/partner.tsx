@@ -98,7 +98,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 };
 
 export default function Page({ affiliateStatus, affiliateDashboard, affiliateCode }: Props) {
-    const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('/affiliate');
+    const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('/partner');
     const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
     const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
 
@@ -154,8 +154,7 @@ export default function Page({ affiliateStatus, affiliateDashboard, affiliateCod
 
     const submitAffiliateRequest = async () => {
         if (!ensureSignUp()) {
-            console.log('not signed up!');
-            // logger.error('Not signed up and attempting to submit affiliate request. Failing.');
+            logger.error('Not signed up and attempting to submit affiliate request. Failing.');
             return;
         }
 
@@ -168,7 +167,18 @@ export default function Page({ affiliateStatus, affiliateDashboard, affiliateCod
                 paypalEmail: paypalEmailValue,
             };
 
-            const response = await axios.post('/api/affiliate', data);
+            const response = await axios.post('/api/partner', data);
+            // if we get 409, we just report back that the code has already been taken
+            if (response.status === 409) {
+                toast({
+                    title: 'Invalid coupon code',
+                    description: 'Looks like that coupon code is already taken! Please specify a different coupon code.',
+                    status: 'error',
+                    duration: 5000,
+                    isClosable: true,
+                    position: 'top',
+                });
+            }
             refreshData();
             console.log('response: ', response);
         } else {
@@ -320,8 +330,8 @@ export default function Page({ affiliateStatus, affiliateDashboard, affiliateCod
     );
 
     const activeText = affiliateCode
-        ? `I just joined the @PulseBanner Partner Program! Use my code ${affiliateCode} when buying a membership for 10% off!\nPulseBanner.com/pricing\n#PulseBanner`
-        : `I just joined the @PulseBanner Partner Program!\nPulseBanner.com/pricing\n#PulseBanner`;
+        ? `I just joined the @PulseBanner Partner Program! Use my code ${affiliateCode} when buying a membership for 10% off!\nPulseBanner.com/pricing\n#PulseBanner #TwitchStreamer`
+        : `I just joined the @PulseBanner Partner Program!\nPulseBanner.com/pricing\n#PulseBanner #TwitchStreamer`;
 
     const ActiveAffiliatePage = () => (
         <>
@@ -372,7 +382,8 @@ export default function Page({ affiliateStatus, affiliateDashboard, affiliateCod
         </>
     );
 
-    const pendingText = 'I just applied to the @PulseBanner Partner Program! Apply today to start earning with the each referral at pulsebanner.com/affiliate!\n\n#PulseBanner';
+    const pendingText =
+        'I just applied to the @PulseBanner Partner Program! Apply today to start earning with the each referral at pulsebanner.com/partner!\n\n#PulseBanner #TwitchStreamer';
 
     const PendingPage = () => (
         <>
@@ -385,7 +396,7 @@ export default function Page({ affiliateStatus, affiliateDashboard, affiliateCod
                         tweetPreview={
                             <Text>
                                 I just applied to the <Link color="twitter.400">@PulseBanner</Link> Partner Program! Apply today to start earning with each referral at{' '}
-                                <Link color="twitter.500">PulseBanner.com/affiliate</Link>!
+                                <Link color="twitter.500">PulseBanner.com/partner</Link>!
                                 <br />
                                 <Link color="twitter.500">#PulseBanner</Link>
                             </Text>
@@ -411,8 +422,8 @@ export default function Page({ affiliateStatus, affiliateDashboard, affiliateCod
                 openGraph={{
                     site_name: 'PulseBanner',
                     type: 'website',
-                    url: 'https://pulsebanner.com/affiliate',
-                    title: 'PulseBanner - Affiliate Program',
+                    url: 'https://pulsebanner.com/partner',
+                    title: 'PulseBanner Partner Program',
                     description: 'Easily earn money back the more users you refer to PulseBanner memberships',
                     images: [
                         {
@@ -429,7 +440,7 @@ export default function Page({ affiliateStatus, affiliateDashboard, affiliateCod
                 }}
             />
             <PaymentModal isOpen={pricingIsOpen} onClose={pricingClose} />
-            <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} callbackUrl="/affiliate" />
+            <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} callbackUrl="/partner" />
             <Container centerContent maxW="container.lg" experimental_spaceY="4">
                 <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']}>
                     <Box w="full" experimental_spaceY={4}>
