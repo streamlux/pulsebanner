@@ -235,11 +235,12 @@ export default function Page({ affiliateStatus, affiliateDashboard, affiliateCod
                     <AccordionPanel pb={4}>
                         When a new user signs up for a PulseBanner membership using your referral code, you earn some of that profit! Here&apos;s a breakdown of what you earn:
                         <ul>
-                            <li>Personal monthly plan: $2</li>
-                            <li>Personal yearly plan: $6</li>
-                            <li>Professional monthly plan: $6</li>
-                            <li>Professional yearly plan: $20</li>
+                            <li>Personal monthly plan: $2 - 30%</li>
+                            <li>Personal yearly plan: $6 - 10%</li>
+                            <li>Professional monthly plan: $6 - 29%</li>
+                            <li>Professional yearly plan: $20 - 10%</li>
                         </ul>
+                        * Note, all percentages take into account transactional fees on our end. There will be no fees on your end 🙂
                     </AccordionPanel>
                 </AccordionItem>
                 <AccordionItem>
