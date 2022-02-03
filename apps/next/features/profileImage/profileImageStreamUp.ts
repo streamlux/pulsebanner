@@ -50,13 +50,6 @@ const profileImageStreamUp: Feature<string> = async (userId: string): Promise<st
         return 'Error uploading original banner to S3.';
     }
 
-    const templateObj: TemplateRequestBody = {
-        backgroundId: profilePicEntry.backgroundId ?? 'CSSBackground',
-        foregroundId: profilePicEntry.foregroundId ?? 'ProfilePic',
-        foregroundProps: { ...(profilePicEntry.foregroundProps as Prisma.JsonObject) } ?? {},
-        backgroundProps: (profilePicEntry.backgroundProps as Prisma.JsonObject) ?? {},
-    };
-
     // check here if we have previously rendered the profile picture. Update if they have saved more recent than what we have saved in the render time
 
     // if we do not have the image in s3, we also need to remove it
@@ -69,6 +62,15 @@ const profileImageStreamUp: Feature<string> = async (userId: string): Promise<st
         } else {
             logger.info('Cache miss: Rendering profile picture cached image has been invalidated.', { userId });
         }
+
+        const profilePicUrl: string = await getTwitterProfilePic(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
+
+        const templateObj: TemplateRequestBody = {
+            backgroundId: profilePicEntry.backgroundId ?? 'CSSBackground',
+            foregroundId: profilePicEntry.foregroundId ?? 'ProfilePic',
+            foregroundProps: { ...(profilePicEntry.foregroundProps as Prisma.JsonObject), imageUrl: profilePicUrl } ?? {},
+            backgroundProps: (profilePicEntry.backgroundProps as Prisma.JsonObject) ?? {},
+        };
 
         const response: AxiosResponse<string> = await remotionAxios.post('/getProfilePic', templateObj);
         const base64Image: string = response.data;
