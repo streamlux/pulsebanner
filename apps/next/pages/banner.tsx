@@ -533,7 +533,12 @@ export default function Page({ banner, originalBanner }: Props) {
                                 <Button onClick={() => setFileModal(!fileModal)}>Change banner</Button>
                             </Box>
                         </HStack>
-                        <Image alt="Backup banner" src={`data:image/jpeg;base64,${originalBanner}`} maxW="container.sm" />
+                        <Image
+                            alt="Backup banner"
+                            src={`data:image/jpeg;base64,${originalBanner}`}
+                            maxW="container.sm"
+                            fallbackSrc="https://placehold.co/1500x500?text=Empty+banner"
+                        />
                     </Box>
                 )}
                 <FileUploadModal isOpen={fileModal} onClose={() => setFileModal(false)} title="Change offline banner" />
