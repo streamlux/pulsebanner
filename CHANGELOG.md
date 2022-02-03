@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+
+- Banner feature is now static and we don't update original banner on streamup
+
 ## [0.7.5] - 2022-01-30
 
 ### Changed
