@@ -22,13 +22,11 @@ import {
     VStack,
     Link,
     useToast,
+    Image,
     Stack,
     BoxProps,
     useColorModeValue,
     Tag,
-    SimpleGrid,
-    Divider,
-    useColorMode,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
@@ -56,6 +54,10 @@ import NextLink from 'next/link';
 import { ReconnectTwitterModal } from '@app/modules/onboard/ReconnectTwitterModal';
 import { bannerFaqItems, generalFaqItems } from '@app/modules/faq/data';
 import { FaqSection } from '@app/modules/faq/FaqSection';
+import { getAccountsById } from '@app/util/getAccountsById';
+import { env } from 'process';
+import { download } from '@app/util/s3/download';
+import { FileUploadModal } from '@app/modules/fileUpload/FileUploadModal';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
@@ -102,6 +104,7 @@ const bannerTypes = {
 interface Props {
     banner: Banner;
     reAuthRequired?: boolean;
+    originalBanner?: string;
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -115,6 +118,19 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 userId: session.userId,
             },
         });
+
+        let originalBanner: string;
+
+        try {
+            const userId = session.userId;
+            const accounts = await getAccountsById(userId);
+            const twitchUserId = accounts['twitch'].providerAccountId;
+            originalBanner = await download(env.IMAGE_BUCKET_NAME, userId);
+            console.log(originalBanner.substring(0, 22));
+        } catch (e) {
+            //
+            console.log(e);
+        }
 
         if (banner) {
             if ((banner.foregroundProps as any).username === 'Username Here!') {
@@ -133,6 +149,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 });
                 return {
                     props: {
+                        originalBanner,
                         banner: {
                             ...defaultBannerSettings,
                             foregroundProps: {
@@ -146,6 +163,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             return {
                 props: {
                     banner,
+                    originalBanner,
                 },
             };
         } else {
@@ -156,6 +174,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 const username = usernameInfo.data.displayName;
                 return {
                     props: {
+                        originalBanner,
                         banner: {
                             ...defaultBannerSettings,
                             foregroundProps: {
@@ -183,7 +202,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
 };
 
-export default function Page({ banner }: Props) {
+export default function Page({ banner, originalBanner }: Props) {
     const { data: sessionInfo } = useSession();
 
     const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
@@ -207,6 +226,8 @@ export default function Page({ banner }: Props) {
     const breakpoint = useBreakpoint();
 
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('/banner');
+
+    const [fileModal, setFileModal] = useState(false);
 
     const styles: BoxProps = useColorModeValue<BoxProps>(
         {
@@ -501,6 +522,21 @@ export default function Page({ banner }: Props) {
                         {EnableButton}
                     </Flex>
                 </Flex>
+                {originalBanner && (
+                    <Box>
+                        <HStack p="2" w="full">
+                            <Box w="full">
+                                <Heading fontSize="lg">Offline banner</Heading>
+                                <Text>When you are not streaming, this will be your Twitter banner.</Text>
+                            </Box>
+                            <Box>
+                                <Button onClick={() => setFileModal(!fileModal)}>Change banner</Button>
+                            </Box>
+                        </HStack>
+                        <Image alt="Backup banner" src={`data:image/jpeg;base64,${originalBanner}`} maxW="container.sm" />
+                    </Box>
+                )}
+                <FileUploadModal isOpen={fileModal} onClose={() => setFileModal(false)} title="Change offline banner" />
                 <Center>
                     <Stack direction={['column', 'row']}>
                         <Text textAlign="center">Like Live Banner? Check out {breakpoint === 'base' ? '👇' : '👉'} </Text>
