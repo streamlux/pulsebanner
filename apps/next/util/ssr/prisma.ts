@@ -9,7 +9,7 @@ declare global {
 let numClients = 0;
 
 const createPrismaClient = () => {
-    if (process.env.GITUB_ACTIONS) {
+    if (process.env.GITHUB_ACTIONS) {
         return;
     }
     console.log(process.env);
