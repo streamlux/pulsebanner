@@ -11,9 +11,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Banner refreshing
 
+## [0.7.6] - 2022-02-02
+
+### Changed
+
+- Banner feature is now static and we don't update original banner on streamup
+
+### Fixed
+
+- Empty profile picture bug
+
+## [0.7.5] - 2022-01-30
+
 ### Changed
 
 - Cleaned up FAQ page code
+- Removed EMGG sale banners
 
 ## [0.7.4] - 2022-01-29
 

@@ -41,43 +41,48 @@ const bannerStreamUp: Feature<string> = async (userId: string): Promise<string> 
         return 'Could not find banner entry or twitter info for user';
     }
 
-    // call twitter api to get imageUrl and convert to base64
-    const bannerUrl: string = await getBanner(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
-    const bucketName = env.IMAGE_BUCKET_NAME;
-
-    // https://stackoverflow.com/a/58158656/10237052
-
-    logger.info('bannerUrl', { bannerUrl });
-
-    // store the current banner in s3
-    let dataToUpload: string = bannerUrl === 'empty' ? 'empty' : await imageToBase64(bannerUrl);
-
-    const validDownload = checkValidDownload(dataToUpload);
-
-    logger.info('validation - dataToUpload correct on streamup: ', { valid: validDownload });
-    if (!validDownload) {
-        // just print first 10 chars of base64 to see what is invalid
-        logger.warn(`incorrect data. userid: ${userId}\tdataToUpload: ${dataToUpload.substring(0, 10)} `, { userId, string: dataToUpload.substring(0, 10) });
-        // attempt to re-fetch
-        const refetch = await imageToBase64(bannerUrl);
-        // check valid download once more
-        if (!checkValidDownload(refetch)) {
-            // if we are invalid again, fail the request
-            logger.error('Corrupt base64 image. Uploading signup image');
-            const original = await download(env.BANNER_BACKUP_BUCKET, userId);
-            if (!checkValidDownload(original)) {
-                logger.error('Corrupt signup image. Failing request');
-                return 'Corrupt signup image. Failing request';
-            } else {
-                dataToUpload = original;
-            }
-        } else {
-            dataToUpload = refetch;
-        }
-    }
-
+    // if they don't have an original banner, then upload their current twitter banner as the original banner
     try {
-        await uploadBase64(bucketName, userId, dataToUpload);
+        const bucketName = env.IMAGE_BUCKET_NAME;
+        const originalBanner: string | undefined = await download(bucketName, userId);
+        if (!originalBanner) {
+            logger.info('Fetching and uploading Twitter banner for user.', { userId });
+            // call twitter api to get imageUrl and convert to base64
+            const bannerUrl: string = await getBanner(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
+
+            // https://stackoverflow.com/a/58158656/10237052
+
+            logger.info('bannerUrl', { bannerUrl, userId });
+
+            // store the current banner in s3
+            let dataToUpload: string = bannerUrl === 'empty' ? 'empty' : await imageToBase64(bannerUrl);
+
+            const validDownload = checkValidDownload(dataToUpload);
+
+            logger.info('validation - dataToUpload correct on streamup: ', { valid: validDownload });
+            if (!validDownload) {
+                // just print first 10 chars of base64 to see what is invalid
+                logger.warn(`incorrect data. userid: ${userId}\tdataToUpload: ${dataToUpload.substring(0, 10)} `, { userId, string: dataToUpload.substring(0, 10) });
+                // attempt to re-fetch
+                const refetch = await imageToBase64(bannerUrl);
+                // check valid download once more
+                if (!checkValidDownload(refetch)) {
+                    // if we are invalid again, fail the request
+                    logger.error('Corrupt base64 image. Uploading signup image');
+                    const original = await download(env.BANNER_BACKUP_BUCKET, userId);
+                    if (!checkValidDownload(original)) {
+                        logger.error('Corrupt signup image. Failing request');
+                        return 'Corrupt signup image. Failing request';
+                    } else {
+                        dataToUpload = original;
+                    }
+                } else {
+                    dataToUpload = refetch;
+                }
+            }
+
+            await uploadBase64(bucketName, userId, dataToUpload);
+        }
     } catch (e) {
         logger.error('Error uploading original banner to S3', { userId });
         return 'Error uploading original banner to S3.';
