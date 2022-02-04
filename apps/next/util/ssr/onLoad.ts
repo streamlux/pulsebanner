@@ -27,19 +27,19 @@ export function onLoad(): void {
             }
         );
 
-        // const refreshPersonal = new AsyncTask('refresh personal',
-        //     async () => {
-        //         const refreshService = new BannerRefreshService(prisma, logger);
-        //         await refreshService.refreshBanners('Personal');
-        //     },
-        //     (err: Error) => {
-        //         /* handle error here */
-        //         logger.error('Error occured executing scheduled job.', { ...err });
-        //     }
-        // );
+        const refreshPersonal = new AsyncTask('refresh personal',
+            async () => {
+                const refreshService = new BannerRefreshService(prisma, logger);
+                await refreshService.refreshBanners('Personal');
+            },
+            (err: Error) => {
+                /* handle error here */
+                logger.error('Error occured executing scheduled job.', { ...err });
+            }
+        );
 
         scheduler.addSimpleIntervalJob(new SimpleIntervalJob({ minutes: 10, }, refreshProfessional));
-        // scheduler.addSimpleIntervalJob(new SimpleIntervalJob({ hours: 1, }, refreshPersonal));
+        scheduler.addSimpleIntervalJob(new SimpleIntervalJob({ hours: 30, }, refreshPersonal));
 
         logger.info('Loaded');
 
