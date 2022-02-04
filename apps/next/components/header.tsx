@@ -36,7 +36,6 @@ import { useAdmin } from '../util/hooks/useAdmin';
 import favicon from '@app/public/logo.webp';
 import { FaArrowRight, FaDiscord, FaTwitter } from 'react-icons/fa';
 import { MdEmail } from 'react-icons/md';
-import { NewsletterModal } from './newsletter/NewsletterModal';
 import { trackEvent } from '@app/util/umami/trackEvent';
 import { holidayDecor, promo, promoCode } from '@app/util/constants';
 
@@ -80,13 +79,8 @@ export default function Header() {
         },
         'base'
     );
-
-    // for newsletter modal
-    const { isOpen, onClose, onToggle } = useDisclosure();
-
-    return (
+return (
         <>
-            <NewsletterModal isOpen={isOpen} onClose={onClose} />
             <header>
                 <noscript>
                     <style>{`.nojs-show { opacity: 1; top: 0; }`}</style>
