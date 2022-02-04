@@ -1,17 +1,14 @@
-import { TwitchClientAuthService } from '@app/services/TwitchClientAuthService';
-import { twitchAxios, remotionAxios } from '@app/util/axios';
 import { getTwitterInfo, flipFeatureEnabled, getBannerEntry } from '@app/util/database/postgresHelpers';
 import { getAccountsById } from '@app/util/getAccountsById';
 import { uploadBase64 } from '@app/util/s3/upload';
 import { checkValidDownload } from '@app/util/s3/validateHelpers';
 import { validateTwitterAuthentication, getBanner, TwitterResponseCode, updateBanner } from '@app/util/twitter/twitterHelpers';
-import { Prisma } from '@prisma/client';
-import { AxiosResponse } from 'axios';
 import imageToBase64 from 'image-to-base64';
 import { env } from 'process';
 import { Feature } from '../Feature';
 import { logger } from '@app/util/logger';
 import { download } from '@app/util/s3/download';
+import { renderBanner } from './renderBanner';
 
 export type TemplateRequestBody = {
     foregroundId: string;
@@ -23,6 +20,10 @@ export type TemplateRequestBody = {
 const bannerStreamUp: Feature<string> = async (userId: string): Promise<string> => {
     const accounts = await getAccountsById(userId);
     const twitchUserId = accounts['twitch'].providerAccountId;
+
+    if (!twitchUserId) {
+        return 'Missing twitchUserId';
+    }
 
     const twitterInfo = await getTwitterInfo(userId, true);
 
@@ -39,23 +40,6 @@ const bannerStreamUp: Feature<string> = async (userId: string): Promise<string> 
     if (bannerEntry === null || twitterInfo === null) {
         return 'Could not find banner entry or twitter info for user';
     }
-
-    const authedTwitchAxios = await TwitchClientAuthService.authAxios(twitchAxios);
-
-    // get twitch stream info for user
-    // https://dev.twitch.tv/docs/api/reference#get-streams
-    const streamResponse = await authedTwitchAxios.get(`/helix/streams?user_id=${twitchUserId}`);
-
-    // get twitch user
-    // https://dev.twitch.tv/docs/api/reference#get-users
-    const userResponse = await authedTwitchAxios.get(`/helix/users?id=${twitchUserId}`);
-    const twitchUserInfo = userResponse.data.data[0];
-
-    // get twitch thumbnail, defaulting to the url given by the api, but falling back to a manually constructed one
-    const defaultStreamThumbnailUrl = `https://static-cdn.jtvnw.net/previews-ttv/live_user_${twitchUserInfo.login as string}-440x248.jpg`;
-    const streamThumbnailUrlTemplate: string = streamResponse.data?.data?.[0]?.thumbnail_url ?? defaultStreamThumbnailUrl;
-    const streamThumbnailUrl: string = streamThumbnailUrlTemplate.replace('{width}', '440').replace('{height}', '248');
-
 
     // if they don't have an original banner, then upload their current twitter banner as the original banner
     try {
@@ -104,18 +88,13 @@ const bannerStreamUp: Feature<string> = async (userId: string): Promise<string> 
         return 'Error uploading original banner to S3.';
     }
 
-    // construct template object
-    const templateObj: TemplateRequestBody = {
-        backgroundId: bannerEntry.backgroundId ?? 'CSSBackground',
-        foregroundId: bannerEntry.foregroundId ?? 'ImLive',
-        // pass in thumbnail url
-        foregroundProps: { ...(bannerEntry.foregroundProps as Prisma.JsonObject), thumbnailUrl: streamThumbnailUrl } ?? {},
-        backgroundProps: (bannerEntry.backgroundProps as Prisma.JsonObject) ?? {},
-    };
-
-    // pass in the bannerEntry info
-    const response: AxiosResponse<string> = await remotionAxios.post('/getTemplate', templateObj);
-    const base64Image: string = response.data;
+    let base64Image: string;
+    try {
+        base64Image = await renderBanner(userId, twitchUserId);
+    } catch (e) {
+        logger.error('Error rendering banner on streamup', { userId, error: e });
+        return 'Error rendiering banner on stream up.';
+    }
 
     // post this base64 image to twitter
     const bannerStatus: TwitterResponseCode = await updateBanner(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, base64Image);
