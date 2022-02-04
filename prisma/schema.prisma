@@ -40,27 +40,27 @@ model Session {
 }
 
 model User {
-    id                   String                @id @default(cuid())
-    name                 String?
-    email                String?               @unique
-    emailVerified        DateTime?
-    image                String?
-    createdAt            DateTime              @default(now()) @map("created_at")
-    role                 Role                  @default(user)
-    accounts             Account[]
-    sessions             Session[]
-    customer             Customer?
-    subscription         Subscription?
-    banner               Banner?
-    tweet                Tweet?
-    twitterName          TwitterName?
-    twitterOriginalName  TwitterOriginalName?
-    profileImage         ProfileImage?
-    renderedProfilePic   RenderedProfileImage?
-    liveStreams          LiveStreams?
-    pastStreams          PastStreams[]
-    affiliateInformation AffiliateInformation?
-    partner              Boolean               @default(false)
+    id                  String                @id @default(cuid())
+    name                String?
+    email               String?               @unique
+    emailVerified       DateTime?
+    image               String?
+    createdAt           DateTime              @default(now()) @map("created_at")
+    role                Role                  @default(user)
+    accounts            Account[]
+    sessions            Session[]
+    customer            Customer?
+    subscription        Subscription?
+    banner              Banner?
+    tweet               Tweet?
+    twitterName         TwitterName?
+    twitterOriginalName TwitterOriginalName?
+    profileImage        ProfileImage?
+    renderedProfilePic  RenderedProfileImage?
+    liveStreams         LiveStreams?
+    pastStreams         PastStreams[]
+    partnerInformation  PartnerInformation?
+    partner             Boolean               @default(false)
 
     @@map("users")
 }
@@ -161,13 +161,16 @@ model RenderedProfileImage {
     @@map("rendered_profile_img")
 }
 
-model AffiliateInformation {
-    id          String @id @default(cuid())
-    userId      String @unique @map("user_id")
-    user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-    affiliateId Int
+// This is the affiliate information stored on the nextjs server side. Separate from the other partner service
+// It's on the user/nextjs server side to delete the user when the partner is no longer in our partner server
+model PartnerInformation {
+    id        String  @id @default(cuid())
+    userId    String  @unique @map("user_id")
+    user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    partnerId String  @unique @map("partner_id")
+    partner   Partner @relation(fields: [partnerId], references: [id])
 
-    @@map("affiliate_information")
+    @@map("partner_information")
 }
 
 // track who is currently live streaming
@@ -282,4 +285,53 @@ enum PriceInterval {
     month
     week
     year
+}
+
+// all these tables are for the partner server. Makes it easier to split off in the future if needed.
+
+// enum for their acceptance status into the partner program
+enum AcceptanceStatus {
+    active
+    pending
+    suspended
+    rejected
+}
+
+// partner table stores all partners
+model Partner {
+    id               String           @id @default(cuid()) // This is the partnerId
+    email            String           @unique
+    firstName        String
+    lastName         String?
+    paypalEmail      String
+    partnerCode      String           @unique
+    acceptanceStatus AcceptanceStatus
+
+    PartnerInformation    PartnerInformation?
+    PartnerReferralTotals PartnerTotalReferrals?
+    PreviousReferrals     PreviousReferrals?
+
+    @@map("partner")
+}
+
+model PartnerTotalReferrals {
+    id              String  @id @default(cuid())
+    totalReferrals  Int
+    totalComissions Int // This will be the value in cents (what stripe api takes)
+    partnerId       String  @unique
+    partner         Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+    @@map("partner_total_referrals")
+}
+
+// this stores a list of all previous referrals
+model PreviousReferrals {
+    id              String   @id @default(cuid())
+    referralValue   Int
+    referredUser    String // this will be the subscriber id that was referred (from stripe)
+    transactionTime DateTime @default(now()) @map("transaction_time")
+    partnerId       String   @unique
+    partner         Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+    @@map("previous_referrals")
 }

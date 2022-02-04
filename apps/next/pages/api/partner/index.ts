@@ -1,14 +1,14 @@
 import { sendErrorInternal } from '@app/util/discord/sendError';
 import { logger } from '@app/util/logger';
+import { AcceptanceStatus, PartnerCreateType } from '@app/util/partner/types';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import prisma from '@app/util/ssr/prisma';
-import axios from 'axios';
 
 const handler = createAuthApiHandler();
 
-const leadDynoEndpoint = 'https://api.leaddyno.com/v1/affiliates';
-
+// create new affiliate (we create in both tables here)
 handler.post(async (req, res) => {
+    console.log('heeer');
     const userId = req.session?.userId;
     if (!userId) {
         logger.error('UserId not found to process affiliate request');
@@ -36,51 +36,80 @@ handler.post(async (req, res) => {
 
     // if they aren't a partner or subscriber, we should not have shown them the page and we should not apply
     if (!validPartner && !subscriber) {
-        logger.error('User is not partner or subscriber. Not handling request. ', { userId });
+        // logger.error('User is not partner or subscriber. Not handling request. ', { userId });
         return res.status(401).send('User is not partner or subscriber.');
     }
 
-    // verify the user email/code does not exist already in leaddyno
-
     try {
-        // make request to leaddyno to create the request
-        const dynoResponse = await axios.post(leadDynoEndpoint, {
-            key: process.env.LEADDYNO_API_KEY,
+        // create partner object
+        const partnerInfo: PartnerCreateType = {
             email: req.body.email,
-            first_name: req.body.firstName,
-            last_name: req.body.lastName,
-            affiliate_code: req.body.discountCode,
-            paypal_email: req.body.paypalEmail,
-        });
+            firstName: req.body.firstName,
+            lastName: req.body.lastName ?? null,
+            partnerCode: req.body.partnerCode,
+            paypalEmail: req.body.paypalEmail,
+        };
 
-        // this will return null i.e. that code is already in use. If this is the case, we need to report back to the user.
-        // if the email already exists in leaddyno, it will not do anything. The affiliate code specified will NOT be in effect, it will be from the very first request
-        if (dynoResponse === null) {
-            logger.error(`The affiliate code ${req.body.discountCode} is already taken. Different discount code required.`, {
-                userId: userId,
-                discountCode: req.body.discountCode,
-            });
-            // process 409's by returning a toast message since the request failed
-            return res.status(409).send('The affiliate code ${req.body.discountCode} is already taken. Please choose a different code.');
+        console.log('partnerinfo; ', partnerInfo);
+
+        if (!partnerInfo.email || !partnerInfo.firstName || !partnerInfo.partnerCode || !partnerInfo.paypalEmail) {
+            console.log('as rape');
+            return res.status(400).send('Invalid paramters passed back from client.');
         }
-        console.log('dynoResponse: ', dynoResponse);
-        // update/add the user to the table
-        const dynoId = dynoResponse.data.id;
 
-        await prisma.affiliateInformation.upsert({
+        // verify that the email and code does not already exist
+        const partnerEmailExists = await prisma.partner.findUnique({
             where: {
-                userId: userId,
-            },
-            create: {
-                userId: userId,
-                affiliateId: dynoId,
-            },
-            update: {
-                affiliateId: dynoId,
+                email: partnerInfo.email,
             },
         });
+
+        const partnerCodeExists = await prisma.partner.findUnique({
+            where: {
+                partnerCode: partnerInfo.partnerCode,
+            },
+        });
+
+        // Already exists, return 409
+        if (partnerEmailExists !== null) {
+            console.log('partner email already exists');
+            return res.status(409).send({ email: partnerInfo.email });
+        }
+
+        if (partnerCodeExists !== null) {
+            console.log('partner code already exists');
+            return res.status(409).send({ partnerCode: partnerInfo.partnerCode });
+        }
+
+        const partner = await prisma.partner.create({
+            data: {
+                email: partnerInfo.email,
+                firstName: partnerInfo.firstName,
+                lastName: partnerInfo.lastName,
+                partnerCode: partnerInfo.partnerCode,
+                paypalEmail: partnerInfo.paypalEmail,
+                acceptanceStatus: AcceptanceStatus.Pending,
+            },
+        });
+
+        if (partner !== null) {
+            const partnerId = partner.id;
+
+            await prisma.partnerInformation.upsert({
+                where: {
+                    userId: userId,
+                },
+                create: {
+                    userId: userId,
+                    partnerId: partnerId,
+                },
+                update: {
+                    partnerId: partnerId,
+                },
+            });
+        }
     } catch (e) {
-        logger.error(`Error processing request for partner program. `, { error: e, userId: userId });
+        logger.error(`Error processing request for internal partner program. `, { error: e, userId: userId });
         return res.status(400).send(`Error processing request for partner program: ${e}`);
     }
     return res.status(200).send('Successfully applied for partner program.');

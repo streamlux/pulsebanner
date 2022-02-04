@@ -39,19 +39,11 @@ import router from 'next/router';
 import React, { useState } from 'react';
 import useSWR from 'swr';
 import { discordLink } from '@app/util/constants';
+import { AcceptanceStatus, PartnerCreateType } from '@app/util/partner/types';
 
 interface Props {
-    affiliateStatus: AffiliateStatus;
-    affiliateDashboard?: string;
-    affiliateCode?: string;
-}
-
-// all possible responses from leaddyno. If they do not have anything, just return None option
-enum AffiliateStatus {
-    None = 'None',
-    Affiliate = 'Active',
-    Pending = 'Pending Approval',
-    Archived = 'Archived', // If they have been rejected
+    partnerStatus: AcceptanceStatus;
+    partnerCode?: string;
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -61,26 +53,27 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     })) as any;
 
     if (session) {
-        const affiliateStatus = await prisma.affiliateInformation.findUnique({
+        const partnerStatus = await prisma.partnerInformation.findUnique({
             where: {
                 userId: session.userId,
             },
         });
+        console.log('partnerStatus in SSR: ', partnerStatus);
 
-        if (affiliateStatus) {
-            const affiliateId = affiliateStatus.affiliateId;
+        if (partnerStatus) {
+            const partnerId = partnerStatus.partnerId;
             try {
-                const affiliateInfo = await axios.get(`https://api.leaddyno.com/v1/affiliates/${affiliateId}`, {
-                    params: {
-                        key: process.env.LEADDYNO_API_KEY,
+                // search for the partner
+                const partnerInfo = await prisma.partner.findUnique({
+                    where: {
+                        id: partnerId,
                     },
                 });
-                const status = affiliateInfo.data.status;
+
                 return {
                     props: {
-                        affiliateStatus: status as AffiliateStatus,
-                        affiliateDashboard: affiliateInfo.data.affiliate_dashboard_url,
-                        affiliateCode: affiliateInfo.data.affiliate_code,
+                        partnerStatus: partnerInfo.acceptanceStatus as AcceptanceStatus,
+                        partnerCode: partnerInfo.partnerCode,
                     },
                 };
             } catch (e) {
@@ -91,12 +84,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     return {
         props: {
-            affiliateStatus: AffiliateStatus.None,
+            partnerStatus: AcceptanceStatus.None,
         },
     };
 };
 
-export default function Page({ affiliateStatus, affiliateDashboard, affiliateCode }: Props) {
+export default function Page({ partnerStatus, partnerCode }: Props) {
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('/partner');
     const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
     const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
@@ -108,13 +101,13 @@ export default function Page({ affiliateStatus, affiliateDashboard, affiliateCod
     const [emailValue, setEmailValue] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
-    const [discountCode, setDiscountCode] = useState('');
+    const [partnerCodeInput, setPartnerCode] = useState('');
     const [paypalEmailValue, setPaypalEmailValue] = useState('');
 
     const handleEmailChange = (e) => setEmailValue(e.target.value);
     const handleFirstNameChange = (e) => setFirstName(e.target.value);
     const handleLastNameChange = (e) => setLastName(e.target.value);
-    const handleDiscountCodeChange = (e) => setDiscountCode(e.target.value);
+    const handlePartnerCodeChange = (e) => setPartnerCode(e.target.value);
     const handlePaypalEmailChange = (e) => setPaypalEmailValue(e.target.value);
 
     const styles: BoxProps = useColorModeValue<BoxProps>(
@@ -128,9 +121,10 @@ export default function Page({ affiliateStatus, affiliateDashboard, affiliateCod
     );
 
     const availableForAccount = (): boolean => {
-        if (paymentPlan === 'Free' && !paymentPlanResponse?.partner) {
-            return false;
-        }
+        // add this back
+        // if (paymentPlan === 'Free' && !paymentPlanResponse?.partner) {
+        //     return false;
+        // }
         return true;
     };
 
@@ -144,7 +138,7 @@ export default function Page({ affiliateStatus, affiliateDashboard, affiliateCod
     };
 
     const validateTextFields = (): boolean => {
-        return firstName.length > 0 && discountCode.length > 0;
+        return firstName.length > 0 && partnerCodeInput.length > 0;
     };
 
     const refreshData = () => {
@@ -157,15 +151,28 @@ export default function Page({ affiliateStatus, affiliateDashboard, affiliateCod
         }
 
         if (validateEmailFields(emailValue) && validateEmailFields(paypalEmailValue) && validateTextFields()) {
-            const data = {
+            const data: PartnerCreateType = {
                 email: emailValue,
                 firstName: firstName,
                 lastName: lastName,
-                discountCode: discountCode,
+                partnerCode: partnerCodeInput,
                 paypalEmail: paypalEmailValue,
             };
 
+            // we are talking to our own partner program here
+            // create in both tables here
             const response = await axios.post('/api/partner', data);
+            if (response.status === 400) {
+                toast({
+                    title: 'Error processing your request',
+                    description: 'We were unable to process your request. If this error persists, please reach out for technical support.',
+                    status: 'error',
+                    duration: 5000,
+                    isClosable: true,
+                    position: 'top',
+                });
+            }
+
             // if we get 409, we just report back that the code has already been taken
             if (response.status === 409) {
                 toast({
@@ -286,10 +293,10 @@ export default function Page({ affiliateStatus, affiliateDashboard, affiliateCod
                         <FormControl isRequired>
                             <FormLabel my="2">Discount Code</FormLabel>
                             <Input
-                                id="discountCode"
-                                placeholder="Desired discount code (subject to approval and change)"
-                                value={discountCode}
-                                onChange={handleDiscountCodeChange}
+                                id="partnerCodeInput"
+                                placeholder="Desired partner code (subject to approval and change)"
+                                value={partnerCodeInput}
+                                onChange={handlePartnerCodeChange}
                             />
                         </FormControl>
                         <FormControl isRequired>
@@ -328,8 +335,8 @@ export default function Page({ affiliateStatus, affiliateDashboard, affiliateCod
         </>
     );
 
-    const activeText = affiliateCode
-        ? `I just joined the @PulseBanner Partner Program! Use my code ${affiliateCode} when buying a membership for 10% off!\nPulseBanner.com/pricing\n#PulseBanner #TwitchStreamer`
+    const activeText = partnerCode
+        ? `I just joined the @PulseBanner Partner Program! Use my code ${partnerCode} when buying a membership for 10% off!\nPulseBanner.com/pricing\n#PulseBanner #TwitchStreamer`
         : `I just joined the @PulseBanner Partner Program!\nPulseBanner.com/pricing\n#PulseBanner #TwitchStreamer`;
 
     const ActiveAffiliatePage = () => (
@@ -340,16 +347,13 @@ export default function Page({ affiliateStatus, affiliateDashboard, affiliateCod
                         You are a PulseBanner Partner! Check out your very own dashboard, along with your affiliate code!
                     </Heading>
                     <Text textAlign={'center'} fontSize="lg" my="4">
-                        Personalized Code: <b>{`${affiliateCode}`}</b>
-                    </Text>
-                    <Text textAlign={'center'} fontSize="lg" pb={'10'}>
-                        Dashboard: <Link isExternal href={affiliateDashboard} color="blue.300" fontWeight="bold">{`${affiliateDashboard}`}</Link>
+                        Personalized Code: <b>{`${partnerCode}`}</b>
                     </Text>
                     <ShareToTwitter
                         tweetPreview={
                             <Text>
-                                I just joined the <Link color="twitter.400">@PulseBanner</Link> Partner Program! Use my code <b>{`${affiliateCode}`}</b> when buying a membership
-                                for 10% off! <Link color="twitter.500">PulseBanner.com/pricing</Link>!
+                                I just joined the <Link color="twitter.400">@PulseBanner</Link> Partner Program! Use my code <b>{`${partnerCode}`}</b> when buying a membership for
+                                10% off! <Link color="twitter.500">PulseBanner.com/pricing</Link>!
                                 <br />
                                 <Link color="twitter.500">#PulseBanner</Link> <Link color="twitter.500">#TwitchStreamer</Link>
                             </Text>
@@ -381,6 +385,8 @@ export default function Page({ affiliateStatus, affiliateDashboard, affiliateCod
         </>
     );
 
+    const SuspendedPage = () => <>Testing</>;
+
     const pendingText =
         'I just applied to the @PulseBanner Partner Program! Apply today to start earning with the each referral at pulsebanner.com/partner!\n\n#PulseBanner #TwitchStreamer';
 
@@ -407,11 +413,12 @@ export default function Page({ affiliateStatus, affiliateDashboard, affiliateCod
         </>
     );
 
-    const UIDisplayMapping: Record<AffiliateStatus, JSX.Element> = {
-        [AffiliateStatus.None]: SignUpPage(),
-        [AffiliateStatus.Affiliate]: ActiveAffiliatePage(),
-        [AffiliateStatus.Archived]: ArchivedPage(),
-        [AffiliateStatus.Pending]: PendingPage(),
+    const UIDisplayMapping: Record<AcceptanceStatus, JSX.Element> = {
+        [AcceptanceStatus.None]: SignUpPage(),
+        [AcceptanceStatus.Active]: ActiveAffiliatePage(),
+        [AcceptanceStatus.Rejected]: ArchivedPage(),
+        [AcceptanceStatus.Suspended]: SuspendedPage(),
+        [AcceptanceStatus.Pending]: PendingPage(),
     };
 
     return (
@@ -453,7 +460,7 @@ export default function Page({ affiliateStatus, affiliateDashboard, affiliateCod
                     </Box>
                 </Flex>
                 <Box w="full">{FAQSection()}</Box>
-                {availableForAccount() ? UIDisplayMapping[affiliateStatus] : FreeUserPage()}
+                {availableForAccount() ? UIDisplayMapping[partnerStatus] : FreeUserPage()}
             </Container>
         </>
     );

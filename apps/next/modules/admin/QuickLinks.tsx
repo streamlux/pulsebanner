@@ -18,6 +18,11 @@ export const QuickLinks: React.FC = () => (
                     </Link>
                 </ListItem>
                 <ListItem>
+                    <Link isExternal href="/admin/partner">
+                        Partner Dashboard
+                    </Link>
+                </ListItem>
+                <ListItem>
                     <Link isExternal href="/api/admin/adminer">
                         Adminer
                         <ExternalLinkIcon mx="2px" />
