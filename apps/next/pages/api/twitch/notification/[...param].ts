@@ -4,9 +4,13 @@ import crypto from 'crypto';
 import bodyParser from 'body-parser';
 import { FeaturesService } from '@app/services/FeaturesService';
 import prisma from '@app/util/ssr/prisma';
-import { getLiveUserInfo, liveUserOffline, liveUserOnline } from '@app/util/twitch/liveStreamHelpers';
+import { getLiveUserInfo, LiveUserInfo, liveUserOffline, liveUserOnline } from '@app/util/twitch/liveStreamHelpers';
 import { logger } from '@app/util/logger';
 import { executeStreamDown, executeStreamUp } from '@app/features/executeFeatures';
+import { TwitchClientAuthService } from '@app/services/TwitchClientAuthService';
+import { twitchAxios } from '@app/util/axios';
+import { AxiosResponse } from 'axios';
+import { GetStreamsData, TwitchGetResponse } from '@app/types/twitch';
 
 type VerificationBody = {
     challenge: string;
@@ -91,7 +95,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         logger.info(`Received ${streamStatus} notification for user ${userId}`, { status: streamStatus, userId, enabledFeatures: features });
 
         if (features.length !== 0) {
-            const userInfo = await getLiveUserInfo(userId);
+            const userInfo: LiveUserInfo = await getLiveUserInfo(userId);
 
             const liveUser = await prisma.liveStreams.findUnique({
                 where: {
@@ -147,22 +151,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (userInfo !== undefined) {
                 if (streamStatus === 'stream.online') {
                     await liveUserOnline(userId, userInfo);
+                    await executeStreamUp(userId);
                 }
                 if (streamStatus === 'stream.offline') {
+
+                    try {
+
+                        const authedTwitchAxios = await TwitchClientAuthService.authAxios(twitchAxios);
+                        // get twitch stream info for user
+                        // https://dev.twitch.tv/docs/api/reference#get-streams
+                        const streamResponse: AxiosResponse<TwitchGetResponse<GetStreamsData>> = await authedTwitchAxios.get(`/helix/streams?user_id=${userInfo.twitchUserId}`);
+
+                        const stream: GetStreamsData | undefined = streamResponse.data.data[0];
+                        if (stream) {
+                            logger.error('Twitch API does not stream.offline notification, live stream was found.', { userId });
+                        } else {
+                            logger.info('Twitch API matches stream.offline notification, no stream was found.', { userId });
+                        }
+                    } catch (e) {
+                        logger.error('Error getting Twitch stream from API on a stream.offline notification', { error: e, userId });
+                    }
+
                     await liveUserOffline(userId, userInfo);
+                    await executeStreamDown(userId);
                 }
             }
         }
 
-        if (streamStatus === 'stream.online') {
-            await executeStreamUp(userId);
-        } else if (streamStatus === 'stream.offline') {
-            await executeStreamDown(userId);
-        }
-
-        res.status(200);
-        res.end();
-        return;
+        return res.status(200).end();
     }
 }
 

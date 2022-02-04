@@ -108,3 +108,27 @@ export interface Condition {
     broadcaster_user_id?: string;
     user_id?: string;
 }
+
+export interface GetStreamsData {
+    id: string;
+    user_id: string;
+    user_login: string;
+    user_name: string;
+    game_id: string;
+    game_name: string;
+    type: string;
+    title: string;
+    viewer_count: number;
+    started_at: string;
+    language: string;
+    thumbnail_url: string;
+    tag_ids: string[];
+    is_mature: boolean;
+}
+
+export type TwitchGetResponse<T> = {
+    data: T[],
+    pagination: {
+        cursor: string;
+    }
+}
