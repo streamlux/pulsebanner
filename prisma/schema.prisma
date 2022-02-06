@@ -307,31 +307,41 @@ model Partner {
     partnerCode      String           @unique
     acceptanceStatus AcceptanceStatus
 
-    PartnerInformation    PartnerInformation?
-    PartnerReferralTotals PartnerTotalReferrals?
-    PreviousReferrals     PreviousReferrals?
+    partnerInformation PartnerInformation?
+    stripePartnerInfo  StripePartnerInfo?
+    PartnerInvoices    PartnerInvoices?
 
     @@map("partner")
 }
 
-model PartnerTotalReferrals {
+// we do not create this until they have been moved to the 'active' affiliate state
+model StripePartnerInfo {
     id              String  @id @default(cuid())
-    totalReferrals  Int
-    totalComissions Int // This will be the value in cents (what stripe api takes)
     partnerId       String  @unique
     partner         Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+    stripePromoCode String  @unique
 
-    @@map("partner_total_referrals")
+    @@map("stripe_partner_info")
 }
 
-// this stores a list of all previous referrals
-model PreviousReferrals {
-    id              String   @id @default(cuid())
-    referralValue   Int
-    referredUser    String // this will be the subscriber id that was referred (from stripe)
-    transactionTime DateTime @default(now()) @map("transaction_time")
-    partnerId       String   @unique
-    partner         Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
-
-    @@map("previous_referrals")
+enum ComissionStatus {
+    completed
+    pending
+    none // We specify none when there is no coupon associded with the request
 }
+
+// We will have a table for invoices that have a state they are in (pending, blocked, etc.) We will store all invoices
+model PartnerInvoices {
+    id               String          @id @default(cuid())
+    invoiceId        String          @unique
+    partnerId        String?         @unique // This is the partner that the new subscriber used for a code. It is optional as we will store all invoices.
+    partner          Partner?        @relation(fields: [partnerId], references: [id])
+    paidAt           DateTime
+    commissionAmount Int // We include this even if there will not be a commission payout (if it's not the first month invoice)
+    purchaseAmount   Int
+    commissionStatus ComissionStatus
+
+    @@map("partner_invoices")
+}
+
+// We will have a table for all past payouts for historical purposes mapping the referrer to the referee

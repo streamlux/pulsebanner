@@ -8,7 +8,6 @@ const handler = createAuthApiHandler();
 
 // create new affiliate (we create in both tables here)
 handler.post(async (req, res) => {
-    console.log('heeer');
     const userId = req.session?.userId;
     if (!userId) {
         logger.error('UserId not found to process affiliate request');

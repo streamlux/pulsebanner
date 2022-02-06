@@ -1,17 +1,26 @@
 import { useAdmin } from '@app/util/hooks/useAdmin';
+import { AcceptanceStatus } from '@app/util/partner/types';
 import prisma from '@app/util/ssr/prisma';
-import { Box, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Th, Thead, Tr, useToast, VStack } from '@chakra-ui/react';
+import { Box, Button, Select, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Th, Thead, Tr, useToast, VStack } from '@chakra-ui/react';
 import { Partner } from '@prisma/client';
+import axios from 'axios';
 import { GetServerSideProps } from 'next';
 import { getSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
+import { useState } from 'react';
 
 interface PartnerProps {
     activePartnerList: Partner[];
     pendingPartnerList: Partner[];
     rejectedPartnerList: Partner[];
     suspendedPartnerList: Partner[];
+    allPartnerList: Partner[];
 }
+
+type MapProps = {
+    partnerId: string;
+    partnerStatus: AcceptanceStatus;
+};
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
     const session = (await getSession({
@@ -62,23 +71,46 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 },
             });
 
+            const allPartners = await prisma.partner.findMany();
+
             return {
                 props: {
                     activePartnerList: activePartners,
                     pendingPartnerList: pendingPartners,
                     rejectedPartnerList: rejectedPartners,
                     suspendedPartnerList: suspendedPartners,
+                    allPartnerList: allPartners,
                 },
             };
         }
     }
 };
 
-export default function Page({ activePartnerList, pendingPartnerList, rejectedPartnerList, suspendedPartnerList }: PartnerProps) {
+export default function Page({ activePartnerList, pendingPartnerList, rejectedPartnerList, suspendedPartnerList, allPartnerList }: PartnerProps) {
     useAdmin({ required: true });
     const toast = useToast();
 
     const router = useRouter();
+
+    const [affiliateStatusMap, setAffiliateStatuMap] = useState<Record<string, AcceptanceStatus>>({});
+
+    const refreshData = () => {
+        router.replace(router.asPath);
+    };
+
+    const DropdownOption = (partner: Partner) => (
+        <Select
+            onChange={(val) => {
+                setAffiliateStatuMap({ ...affiliateStatusMap, [partner.id]: val.target.value as AcceptanceStatus });
+            }}
+            defaultValue={partner.acceptanceStatus}
+        >
+            <option value={AcceptanceStatus.Active}>{AcceptanceStatus.Active}</option>
+            <option value={AcceptanceStatus.Pending}>{AcceptanceStatus.Pending}</option>
+            <option value={AcceptanceStatus.Rejected}>{AcceptanceStatus.Rejected}</option>
+            <option value={AcceptanceStatus.Suspended}>{AcceptanceStatus.Suspended}</option>
+        </Select>
+    );
 
     const PanelLayoutHelper = (partnerList: Partner[]) => (
         <TabPanel>
@@ -93,6 +125,7 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
                                 <Th>First Name</Th>
                                 <Th>Last Name</Th>
                                 <Th>Paypal email</Th>
+                                <Th>Status</Th>
                             </Tr>
                         </Thead>
                         <Tbody>
@@ -104,11 +137,32 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
                                     <Td>{partner.firstName}</Td>
                                     <Td>{partner.lastName}</Td>
                                     <Td>{partner.paypalEmail}</Td>
+                                    <Td>{DropdownOption(partner)}</Td>
                                 </Tr>
                             ))}
                         </Tbody>
                     </Table>
                 </Box>
+                <Button
+                    onClick={async () => {
+                        const response = await axios.post('/api/admin/partner/update', { affiliateStatusMap });
+                        console.log('response: ', response);
+                        if (response.status === 200) {
+                            refreshData();
+                            toast({
+                                status: 'success',
+                                title: 'Updated selected affiliates status',
+                            });
+                        } else {
+                            toast({
+                                status: 'error',
+                                title: 'Unable to update selected affiliates status',
+                            });
+                        }
+                    }}
+                >
+                    Apply changes
+                </Button>
             </VStack>
         </TabPanel>
     );
@@ -121,6 +175,7 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
                     <Tab>Pending</Tab>
                     <Tab>Rejected</Tab>
                     <Tab>Suspended</Tab>
+                    <Tab>All</Tab>
                 </TabList>
 
                 <TabPanels flexGrow={1}>
@@ -128,6 +183,7 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
                     {PanelLayoutHelper(pendingPartnerList)}
                     {PanelLayoutHelper(rejectedPartnerList)}
                     {PanelLayoutHelper(suspendedPartnerList)}
+                    {PanelLayoutHelper(allPartnerList)}
                 </TabPanels>
             </Tabs>
         </>
