@@ -45,6 +45,7 @@ const bannerStreamUp: Feature<string> = async (userId: string): Promise<string> 
     // get twitch stream info for user
     // https://dev.twitch.tv/docs/api/reference#get-streams
     const streamResponse = await authedTwitchAxios.get(`/helix/streams?user_id=${twitchUserId}`);
+    logger.info('Get stream response', { userId, response: streamResponse.data });
 
     // get twitch user
     // https://dev.twitch.tv/docs/api/reference#get-users
