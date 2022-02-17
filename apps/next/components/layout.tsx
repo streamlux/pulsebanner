@@ -22,7 +22,7 @@ export default function Layout({ children }) {
     return (
         <>
             <Flex direction="column" as={chakra.div} maxH="100%" overflow="hidden" minH="100vh" bg={emgg ? 'black' : 'transparent'}>
-                <Box as={chakra.header} zIndex={1}>
+                <Box as={chakra.header} zIndex={10}>
                     <Header headerPortalRef={headerPortalRef} />
                     <Box ref={headerPortalRef} />
                 </Box>

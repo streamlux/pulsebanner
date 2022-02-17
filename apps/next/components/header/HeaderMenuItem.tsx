@@ -23,7 +23,7 @@ export const HeaderMenuItem: FC<HeaderMenuItemProps> = ({ imageSrc, title, descr
                             </Center>
                         </Box>
                         <Heading w="full" textAlign={'left'} fontSize="lg">
-                            Profile Picture
+                            {title}
                         </Heading>
                         <Text fontWeight={'normal'} fontSize="sm" textAlign={'left'} whiteSpace={'normal'}>
                             {description}

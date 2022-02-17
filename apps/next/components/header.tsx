@@ -50,7 +50,9 @@ import { trackEvent } from '@app/util/umami/trackEvent';
 import { holidayDecor, promo, promoCode } from '@app/util/constants';
 import { landingPageAsset } from '@app/pages';
 import { HeaderMenuItem } from './header/HeaderMenuItem';
-import nameChangerLogo from '@app/public/namechanger.png';
+import nameChangerLogo from '@app/public/header/namechanger.png';
+import headerBanner from '@app/public/header/header_banner.png';
+import headerProfile from '@app/public/header/header_profile.png';
 
 // The approach used in this component shows how to built a sign in and sign out
 // component that works on pages which support both client and server side
@@ -74,19 +76,15 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                 gridSpacing: 4,
             },
             md: {
-                mobile: true,
                 gridColumns: 2,
                 gridSpacing: 6,
             },
             lg: {
-                mobile: true,
                 gridColumns: 3,
-
                 gridSpacing: 6,
             },
             xl: {
                 gridColumns: 3,
-
                 gridSpacing: 10,
             },
         },
@@ -118,7 +116,7 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                             px={['2', '2', '4', '4']}
                             alignItems="center"
                             justify="space-evenly"
-                            w={['full', 'full', 'full', '70vw']}
+                            w={['full', 'full', 'full', 'full', '70vw']}
                         >
                             <Flex h="100%" maxH="100%" w="full">
                                 <HStack maxH="10" w="200px">
@@ -135,9 +133,9 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                         </HStack>
                                     </LinkBox>
                                 </HStack>
-                                {breakpoint !== 'base' && (
+                                {!breakpointValue.mobile && (
                                     <Center id="nav-links" fontSize="lg">
-                                        <Wrap spacing={['2', '4', '8', '10']}>
+                                        <Wrap spacing={['2', '4', '6', '6']}>
                                             <Menu>
                                                 <MenuButton size="md" as={Button} variant="ghost" rightIcon={<ChevronDownIcon />}>
                                                     Features
@@ -149,22 +147,22 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                                                 href="/profile"
                                                                 colorMode={colorMode}
                                                                 description="Update your Twitter profile picture when you go live."
-                                                                imageSrc={landingPageAsset('profileimage')}
+                                                                imageSrc={typeof headerProfile === 'string' ? headerProfile : headerProfile.src}
                                                                 title="Profile Picture"
                                                             />
                                                             <HeaderMenuItem
                                                                 href="/banner"
                                                                 colorMode={colorMode}
                                                                 description="Update your Twitter profile picture when you go live."
-                                                                imageSrc={colorMode === 'dark' ? landingPageAsset('banner') : landingPageAsset('banner_light')}
-                                                                title="Profile Picture"
+                                                                imageSrc={typeof headerBanner === 'string' ? headerBanner : headerBanner.src}
+                                                                title="Live Banner"
                                                             />
                                                             <HeaderMenuItem
                                                                 href="/name"
                                                                 colorMode={colorMode}
                                                                 description="Update your Twitter profile picture when you go live."
                                                                 imageSrc={typeof nameChangerLogo === 'string' ? nameChangerLogo : nameChangerLogo.src}
-                                                                title="Profile Picture"
+                                                                title="Name Changer"
                                                             />
                                                         </SimpleGrid>
                                                     </MenuList>
@@ -273,27 +271,27 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                             <Portal containerRef={headerPortalRef}>
                                 <MenuList flexDirection={'row'} h="auto" mx="8" maxW="90vw">
                                     <SimpleGrid columns={[1, 2, 3]} spacing={[0, 4]} p="4">
-                                        <HeaderMenuItem
-                                            href="/profile"
-                                            colorMode={colorMode}
-                                            description="Update your Twitter profile picture when you go live."
-                                            imageSrc={colorMode === 'dark' ? landingPageAsset('profileimage') : landingPageAsset('profileimage_light')}
-                                            title="Profile Picture"
-                                        />
-                                        <HeaderMenuItem
-                                            href="/banner"
-                                            colorMode={colorMode}
-                                            description="Update your Twitter profile picture when you go live."
-                                            imageSrc={colorMode === 'dark' ? landingPageAsset('banner') : landingPageAsset('banner_light')}
-                                            title="Profile Picture"
-                                        />
-                                        <HeaderMenuItem
-                                            href="/name"
-                                            colorMode={colorMode}
-                                            description="Update your Twitter profile picture when you go live."
-                                            imageSrc={colorMode === 'dark' ? landingPageAsset('namechanger') : landingPageAsset('namechanger_light')}
-                                            title="Profile Picture"
-                                        />
+                                    <HeaderMenuItem
+                                                                href="/profile"
+                                                                colorMode={colorMode}
+                                                                description="Update your Twitter profile picture when you go live."
+                                                                imageSrc={landingPageAsset('profileimage')}
+                                                                title="Profile Picture"
+                                                            />
+                                                            <HeaderMenuItem
+                                                                href="/banner"
+                                                                colorMode={colorMode}
+                                                                description="Update your Twitter profile picture when you go live."
+                                                                imageSrc={typeof headerBanner === 'string' ? headerBanner : headerBanner.src}
+                                                                title="Live Banner"
+                                                            />
+                                                            <HeaderMenuItem
+                                                                href="/name"
+                                                                colorMode={colorMode}
+                                                                description="Update your Twitter profile picture when you go live."
+                                                                imageSrc={typeof nameChangerLogo === 'string' ? nameChangerLogo : nameChangerLogo.src}
+                                                                title="Name Changer"
+                                                            />
                                     </SimpleGrid>
                                 </MenuList>
                             </Portal>
