@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.7.10] - 2022-02-16
+
+### Added
+
+- Banner refreshing for pro users
+
+## [0.7.9] - 2022-02-15
+
+Patch release
+
+## [0.7.8] - 2022-02-15
+
+Patch release
+
 ## [0.7.7] - 2022-02-04
 
 ### Added
