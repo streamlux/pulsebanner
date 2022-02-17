@@ -4,6 +4,7 @@ name: Build apps
 
 on:
     pull_request:
+    workflow_dispatch:
 
 jobs:
     build_next:
