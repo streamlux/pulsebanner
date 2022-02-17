@@ -1,4 +1,5 @@
 import { TwitchClientAuthService } from "@app/services/TwitchClientAuthService";
+import { GetStreamsResponse, Stream } from "@app/types/twitch";
 import { remotionAxios, twitchAxios } from "@app/util/axios";
 import { getBannerEntry } from "@app/util/database/postgresHelpers";
 import { logger } from "@app/util/logger";
@@ -26,22 +27,22 @@ export const renderBanner = async (userId: string, twitchUserId: string): Promis
 
     const authedTwitchAxios = await TwitchClientAuthService.authAxios(twitchAxios);
 
-    // get twitch stream info for user
-    // https://dev.twitch.tv/docs/api/reference#get-streams
-    const streamResponse = await authedTwitchAxios.get(`/helix/streams?user_id=${twitchUserId}`);
-    if (streamResponse.data?.data?.length ?? 0 === 0) {
-        logger.error('No stream found trying to render banner', { userId });
-        throw new Error('No stream found');
-    }
-
     // get twitch user
     // https://dev.twitch.tv/docs/api/reference#get-users
     const userResponse = await authedTwitchAxios.get(`/helix/users?id=${twitchUserId}`);
     const twitchUserInfo = userResponse.data.data[0];
 
+    // get twitch stream info for user
+    // https://dev.twitch.tv/docs/api/reference#get-streams
+    const streamResponse: AxiosResponse<GetStreamsResponse> = await authedTwitchAxios.get(`/helix/streams?user_id=${twitchUserId}`);
+    const stream: Stream | undefined = streamResponse.data?.data?.[0];
+    if (!stream) {
+        logger.warn('No stream found trying to render banner', { userId, data: streamResponse.data });
+    }
+
     // get twitch thumbnail, defaulting to the url given by the api, but falling back to a manually constructed one
     const defaultStreamThumbnailUrl = `https://static-cdn.jtvnw.net/previews-ttv/live_user_${twitchUserInfo.login as string}-440x248.jpg`;
-    const streamThumbnailUrlTemplate: string = streamResponse.data?.data?.[0]?.thumbnail_url ?? defaultStreamThumbnailUrl;
+    const streamThumbnailUrlTemplate: string = stream?.thumbnail_url ?? defaultStreamThumbnailUrl;
     const streamThumbnailUrl: string = streamThumbnailUrlTemplate.replace('{width}', '440').replace('{height}', '248');
 
     // construct template object
