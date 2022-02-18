@@ -1,5 +1,5 @@
-import { createAuthApiHandler } from "@app/util/ssr/createApiHandler";
-import { CommissionStatus } from "@prisma/client";
+import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
+import { CommissionStatus } from '@prisma/client';
 
 const handler = createAuthApiHandler();
 
@@ -14,6 +14,7 @@ handler.post(async (req, res) => {
     }
 
     // Only do operation with stripe when it goes to completed state
-    
+    return res.status(200);
+});
 
-}
+export default handler;
