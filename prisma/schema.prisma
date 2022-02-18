@@ -326,23 +326,22 @@ model StripePartnerInfo {
 
 enum CommissionStatus {
     complete
+    pendingCompletion // we move it to pending completion when we select it via the admin panel for a payout
     pending
     rejected
+    pendingRejection
     none // We specify none when there is no coupon associded with the request
 }
 
 // We will have a table for invoices that have a state they are in (pending, blocked, etc.) We will store all invoices
 model PartnerInvoice {
-    id               String          @id @default(cuid())
-    invoiceId        String          @unique // This is the invoice via stripe. Not our invoice
-    partnerId        String?         @unique // This is the partner that the new subscriber used for a code. It is optional as we will store all invoices.
-    partner          Partner?        @relation(fields: [partnerId], references: [id])
-    paidAt           DateTime
+    id               String           @id @unique // This is the invoice via stripe.
+    partnerId        String?          @unique // This is the partner that the new subscriber used for a code. It is optional as we will store all invoices.
+    partner          Partner?         @relation(fields: [partnerId], references: [id])
+    paidAt           DateTime // the time the actual invoice completed. Not the payout of the commission
     commissionAmount Int // We include this even if there will not be a commission payout (if it's not the first month invoice)
     purchaseAmount   Int
     commissionStatus CommissionStatus
 
     @@map("partner_invoices")
 }
-
-// We will have a table for all past payouts for historical purposes mapping the referrer to the referee

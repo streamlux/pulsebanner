@@ -1,6 +1,6 @@
 import { useAdmin } from '@app/util/hooks/useAdmin';
 import prisma from '@app/util/ssr/prisma';
-import { Box, Button, Select, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Th, Thead, toast, Tr, useToast, VStack } from '@chakra-ui/react';
+import { Box, Button, Select, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Th, Thead, Tr, useToast, VStack } from '@chakra-ui/react';
 import { CommissionStatus, PartnerInvoice } from '@prisma/client';
 import axios from 'axios';
 import { GetServerSideProps } from 'next';
@@ -42,7 +42,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             // completed invoices we can do nothing about. No-operation once they are here
             const completedPartnerInvoices = await prisma.partnerInvoice.findMany({
                 where: {
-                    commissionStatus: CommissionStatus.completed,
+                    commissionStatus: CommissionStatus.complete,
                 },
             });
 
@@ -86,6 +86,7 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, emptyIn
 
     const router = useRouter();
 
+    // map of internal invoice id's to commissi
     const [payoutStatusMap, setPayoutStatusMap] = useState<Record<string, CommissionStatus>>({});
 
     const refreshData = () => {
@@ -97,16 +98,16 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, emptyIn
     const DropdownPayoutOption = (invoice: PartnerInvoice) => (
         <Select
             onChange={(val) => {
-                if ((val.target.value as CommissionStatus) === 'complete' || val.targ) {
-                    setPayoutStatusMap({ ...payoutStatusMap, [invoice.partnerId]: val.target.value as CommissionStatus });
+                // this needs to change
+                if ((val.target.value as CommissionStatus) === 'pendingCompletion' || (val.target.value as CommissionStatus) === 'pendingRejection') {
+                    setPayoutStatusMap({ ...payoutStatusMap, [invoice.id]: val.target.value as CommissionStatus });
                 }
             }}
             defaultValue={invoice.commissionStatus}
         >
-            <option value={CommissionStatus.none}>{CommissionStatus.none}</option>
             <option value={CommissionStatus.pending}>{CommissionStatus.pending}</option>
-            <option value={CommissionStatus.rejected}>{CommissionStatus.rejected}</option>
-            <option value={CommissionStatus.complete}>{CommissionStatus.complete}</option>
+            <option value={CommissionStatus.pendingRejection}>{CommissionStatus.pendingRejection}</option>
+            <option value={CommissionStatus.pendingCompletion}>{CommissionStatus.pendingCompletion}</option>
         </Select>
     );
 
@@ -117,8 +118,7 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, emptyIn
                     <Table size="md">
                         <Thead>
                             <Tr>
-                                <Th>Invoice Id (Internal)</Th>
-                                <Th>Invoice Id (Stripe)</Th>
+                                <Th>Invoice Id</Th>
                                 <Th>Partner Id</Th>
                                 <Th>Commission Amount</Th>
                                 <Th>Purchase Amount</Th>
@@ -130,7 +130,6 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, emptyIn
                             {invoiceList.map((invoice) => (
                                 <Tr key={invoice.id}>
                                     <Td>{invoice.id}</Td>
-                                    <Td>{invoice.invoiceId}</Td>
                                     <Td>{invoice.partnerId}</Td>
                                     <Td>{invoice.commissionAmount}</Td>
                                     <Td>{invoice.purchaseAmount}</Td>
@@ -181,6 +180,7 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, emptyIn
                 </TabList>
 
                 <TabPanels flexGrow={1}>
+                    {/** Do not include the pending completion and rejection. They should never be in this state permanently **/}
                     {PanelLayoutHelper(completedInvoiceList, false)}
                     {PanelLayoutHelper(pendingInvoiceList, true)}
                     {PanelLayoutHelper(emptyInvoiceList, false)}

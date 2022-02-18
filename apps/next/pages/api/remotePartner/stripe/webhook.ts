@@ -81,7 +81,7 @@ handler.post(async (req, res) => {
                     // update the PartnerInvoices table
                     await prisma.partnerInvoice.create({
                         data: {
-                            invoiceId: invoiceId,
+                            id: invoiceId,
                             paidAt: paidAt,
                             partnerId: partnerId,
                             commissionAmount: commissionAmount,
@@ -92,7 +92,12 @@ handler.post(async (req, res) => {
                 }
             }
         } catch (e) {
-            console.log('eer: ', e);
+            console.log('err: ', e);
+            return res.status(400).send('Webhook error: "Webhook handler failed. View logs."');
         }
     }
+
+    res.json({ received: true });
 });
+
+export default handler;
