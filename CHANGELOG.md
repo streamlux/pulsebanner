@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.7.11] - 2022-02-16
+
+### Added
+
+- Banner refreshing for personal users
+
 ## [0.7.10] - 2022-02-16
 
 ### Added

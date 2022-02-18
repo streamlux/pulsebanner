@@ -66,20 +66,17 @@ export default function Header() {
                 gridSpacing: 6,
             },
             lg: {
-                mobile: true,
                 gridColumns: 3,
-
                 gridSpacing: 6,
             },
             xl: {
                 gridColumns: 3,
-
                 gridSpacing: 10,
             },
         },
         'base'
     );
-return (
+    return (
         <>
             <header>
                 <noscript>
@@ -94,7 +91,7 @@ return (
                         px={['2', '2', '4', '4']}
                         alignItems="center"
                         justify="space-evenly"
-                        w={['full', 'full', 'full', '70vw']}
+                        w={['full', 'full', 'full', 'full', '90vw', '70vw']}
                     >
                         <Flex h="100%" maxH="100%" w="full">
                             <HStack maxH="10" w="200px">
@@ -113,7 +110,7 @@ return (
                             </HStack>
                             {!breakpointValue.mobile && (
                                 <Center id="nav-links" fontSize="lg">
-                                    <Wrap spacing={['2', '4', '8', '10']}>
+                                    <Wrap spacing={['2', '4', '8', '8']}>
                                         <WrapItem>
                                             <NextLink href="/profile" passHref>
                                                 <HStack>
@@ -170,13 +167,13 @@ return (
                                     />
                                 )}
                                 {!breakpointValue.mobile && (
-                                    <Button onClick={() => window.open('/discord', '_blank')} leftIcon={<FaDiscord />} className={trackEvent('click', 'discord-button')}>
+                                    <Button size="sm" onClick={() => window.open('/discord', '_blank')} leftIcon={<FaDiscord />} className={trackEvent('click', 'discord-button')}>
                                         Join our Discord
                                     </Button>
                                 )}
 
                                 <IconButton
-                                    size={breakpoint === 'base' ? 'sm' : 'md'}
+                                    size="sm"
                                     aria-label="Toggle theme"
                                     icon={colorMode === 'dark' ? <SunIcon /> : <MoonIcon />}
                                     onClick={toggleColorMode}
@@ -203,7 +200,7 @@ return (
                                 )}
                                 {session && (
                                     <Menu>
-                                        <Avatar as={MenuButton} name={session.user.name} src={session.user.image} />
+                                        <Avatar size="sm" as={MenuButton} name={session.user.name} src={session.user.image} />
                                         <Portal>
                                             <MenuList>
                                                 <NextLink href="/account" passHref>
@@ -223,41 +220,48 @@ return (
                         </Flex>
                     </Flex>
                 </Center>
+                {breakpointValue.mobile && (
+                    <Center className={`nojs-show ${!session && loading ? styles.loading : styles.loaded}`}>
+                        <Box
+                            maxW={['95vw']}
+                            background={colorMode === 'dark' ? 'gray.700' : 'blackAlpha.200'}
+                            mx="2"
+                            py="2"
+                            rounded="md"
+                        >
+                            <Center id="nav-links" fontSize={['sm', 'md']} px="5vw">
+                                <Wrap spacing={['4', '8', '8', '8']}>
+                                    <WrapItem>
+                                        <NextLink href="/profile" passHref>
+                                            <HStack>
+                                                <Link>Profile Pic</Link>
+                                            </HStack>
+                                        </NextLink>
+                                    </WrapItem>
+                                    <WrapItem>
+                                        <NextLink href="/banner" passHref>
+                                            <Link>Banner</Link>
+                                        </NextLink>
+                                    </WrapItem>
+                                    <WrapItem>
+                                        <NextLink href="/name" passHref>
+                                            <HStack>
+                                                <Link>Name Changer</Link>
+                                            </HStack>
+                                        </NextLink>
+                                    </WrapItem>
+                                    <WrapItem>
+                                        <NextLink href="/pricing" passHref>
+                                            <Link>Pricing</Link>
+                                        </NextLink>
+                                    </WrapItem>
+                                </Wrap>
+                            </Center>
+                        </Box>
+                    </Center>
+                )}
             </header>
-            {breakpointValue.mobile && (
-                <Center>
-                    <Box background={colorMode === 'dark' ? 'gray.700' : 'blackAlpha.200'} w="full" mx="2" py="2" px={['2', '8']} rounded="md">
-                        <Center id="nav-links" fontSize={['sm', 'md']} className={`nojs-show ${!session && loading ? styles.loading : styles.loaded}`}>
-                            <Wrap spacing={['4', '16', '20', '24']}>
-                                <WrapItem>
-                                    <NextLink href="/profile" passHref>
-                                        <HStack>
-                                            <Link>Profile Pic</Link>
-                                        </HStack>
-                                    </NextLink>
-                                </WrapItem>
-                                <WrapItem>
-                                    <NextLink href="/banner" passHref>
-                                        <Link>Banner</Link>
-                                    </NextLink>
-                                </WrapItem>
-                                <WrapItem>
-                                    <NextLink href="/name" passHref>
-                                        <HStack>
-                                            <Link>Name Changer</Link>
-                                        </HStack>
-                                    </NextLink>
-                                </WrapItem>
-                                <WrapItem>
-                                    <NextLink href="/pricing" passHref>
-                                        <Link>Pricing</Link>
-                                    </NextLink>
-                                </WrapItem>
-                            </Wrap>
-                        </Center>
-                    </Box>
-                </Center>
-            )}
+
             {promo && (
                 <Center pt={['4', '2']}>
                     <Box px="4" py="2" mx="4" color={colorMode === 'dark' ? 'black' : 'black'} w={['fit-content']} bg="green.200" rounded="lg">
