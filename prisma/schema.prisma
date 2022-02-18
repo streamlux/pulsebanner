@@ -309,7 +309,7 @@ model Partner {
 
     partnerInformation PartnerInformation?
     stripePartnerInfo  StripePartnerInfo?
-    PartnerInvoices    PartnerInvoices?
+    PartnerInvoices    PartnerInvoice?
 
     @@map("partner")
 }
@@ -324,22 +324,23 @@ model StripePartnerInfo {
     @@map("stripe_partner_info")
 }
 
-enum ComissionStatus {
-    completed
+enum CommissionStatus {
+    complete
     pending
+    rejected
     none // We specify none when there is no coupon associded with the request
 }
 
 // We will have a table for invoices that have a state they are in (pending, blocked, etc.) We will store all invoices
-model PartnerInvoices {
+model PartnerInvoice {
     id               String          @id @default(cuid())
-    invoiceId        String          @unique
+    invoiceId        String          @unique // This is the invoice via stripe. Not our invoice
     partnerId        String?         @unique // This is the partner that the new subscriber used for a code. It is optional as we will store all invoices.
     partner          Partner?        @relation(fields: [partnerId], references: [id])
     paidAt           DateTime
     commissionAmount Int // We include this even if there will not be a commission payout (if it's not the first month invoice)
     purchaseAmount   Int
-    commissionStatus ComissionStatus
+    commissionStatus CommissionStatus
 
     @@map("partner_invoices")
 }

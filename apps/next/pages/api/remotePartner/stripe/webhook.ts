@@ -1,6 +1,7 @@
 // we will listen to all stripe webhooks for the partner program here
 
 import { logger } from '@app/util/logger';
+import { commissionLookupMap } from '@app/util/partner/constants';
 import { createApiHandler } from '@app/util/ssr/createApiHandler';
 import prisma from '@app/util/ssr/prisma';
 import stripe from '@app/util/ssr/stripe';
@@ -49,25 +50,43 @@ handler.post(async (req, res) => {
                     const data = event.data.object as Stripe.Invoice;
                     const invoiceId = data.id;
                     // const couponId = data.discount?.coupon?.id ?? undefined;
-                    const promoCode = data.discount?.promotion_code ?? undefined;
+                    const stripePromoCode = data.discount?.promotion_code?.toString() ?? undefined;
                     const paidAt = new Date(data.status_transitions.paid_at);
-                    // const priceId = data.lines.data[0]?.price.id ?? undefined;
+
+                    // we want the priceId so we can apply the correct discount
+                    const priceId = data.lines.data[0]?.price.id ?? undefined;
                     const purchaseAmount = data.subtotal;
 
+                    // we need a way to get the partner (if they exist)
+                    // lookup the couponId associated with the person
+                    let partnerId = undefined;
+                    if (stripePromoCode) {
+                        const partnerInfo = await prisma.stripePartnerInfo.findUnique({
+                            where: {
+                                stripePromoCode: stripePromoCode,
+                            },
+                        });
+
+                        if (partnerInfo !== null) {
+                            partnerId = partnerInfo.partnerId;
+                        }
+                    }
+
+                    // please note to be in accordance with stripe, commission is stored as cents (100 = $1)
+                    let commissionAmount = 0.00;
+                    if (priceId) {
+                        commissionAmount = commissionLookupMap[priceId] * 100 ?? 0.00;
+                    }
+
                     // update the PartnerInvoices table
-                    await prisma.partnerInvoices.upsert({
-                        where: {
+                    await prisma.partnerInvoice.create({
+                        data: {
                             invoiceId: invoiceId,
-                        },
-                        create: {
-                            invoiceId: invoiceId,
-                            paidAt: paidAt, // this should be converted to datetime object
-                            commissionAmount: 1.6, // Look this up in a table based on what purchaseId was made
-                            commissionStatus: promoCode === undefined ? 'none' : 'pending',
+                            paidAt: paidAt,
+                            partnerId: partnerId,
+                            commissionAmount: commissionAmount,
+                            commissionStatus: stripePromoCode === undefined ? 'none' : 'pending',
                             purchaseAmount: purchaseAmount,
-                        },
-                        update: {
-                            commissionAmount: 1.6,
                         },
                     });
                 }
