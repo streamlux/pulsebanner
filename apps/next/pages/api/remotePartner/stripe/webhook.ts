@@ -36,10 +36,11 @@ handler.post(async (req, res) => {
     let event;
 
     try {
-        event = stripe.webhooks.constructEvent(buf, sig, process.env.STRIPE_WEBHOOK_SECRET);
+        event = stripe.webhooks.constructEvent(buf, sig, process.env.STRIPE_AFFILIATE_WEBHOOK_SECRET);
     } catch (err) {
+        logger.error('We are in remote partner stripe webhooks');
         logger.error(`❌ Error verifying webhook. Message: ${err?.message}`);
-        logger.error('secret', process.env.STRIPE_WEBHOOK_SECRET);
+        logger.error('secret', process.env.STRIPE_AFFILIATE_WEBHOOK_SECRET);
         return res.status(400).send(`Webhook Error: ${err?.message}`);
     }
 
@@ -73,9 +74,9 @@ handler.post(async (req, res) => {
                     }
 
                     // please note to be in accordance with stripe, commission is stored as cents (100 = $1)
-                    let commissionAmount = 0.00;
+                    let commissionAmount = 0.0;
                     if (priceId) {
-                        commissionAmount = commissionLookupMap[priceId] * 100 ?? 0.00;
+                        commissionAmount = commissionLookupMap[priceId] * 100 ?? 0.0;
                     }
 
                     // update the PartnerInvoices table

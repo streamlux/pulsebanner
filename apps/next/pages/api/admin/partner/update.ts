@@ -5,6 +5,7 @@ import { AcceptanceStatus } from '@prisma/client';
 
 const handler = createAuthApiHandler();
 
+// throwing 400's somewhere here
 handler.post(async (req, res) => {
     if (req.session.role !== 'admin') {
         return res.status(401).send('Not admin user');

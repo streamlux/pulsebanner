@@ -94,6 +94,7 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
 
     const [affiliateStatusMap, setAffiliateStatuMap] = useState<Record<string, AcceptanceStatus>>({});
 
+    // need to force refresh after apply changes
     const refreshData = () => {
         router.replace(router.asPath);
     };
@@ -146,6 +147,7 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
                 <Button
                     onClick={async () => {
                         const response = await axios.post('/api/admin/partner/update', { affiliateStatusMap });
+                        // not getting past here it seems
                         console.log('response: ', response);
                         if (response.status === 200) {
                             refreshData();
