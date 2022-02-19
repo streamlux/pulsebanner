@@ -13,6 +13,7 @@ import { TwitterResponseCode, updateProfilePic } from '@app/util/twitter/twitter
 import { flipFeatureEnabled, getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { defaultBannerSettings } from '@app/pages/banner';
 import { logger } from '@app/util/logger';
+import { commissionLookupMap } from '@app/util/partner/constants';
 
 // Stripe requires the raw body to construct the event.
 export const config = {
@@ -38,6 +39,7 @@ const relevantEvents = new Set([
     'checkout.session.completed',
     'customer.subscription.updated',
     'customer.subscription.deleted',
+    'invoice.payment_succeeded',
 ]);
 
 const handler = createApiHandler();
@@ -329,6 +331,52 @@ handler.post(async (req, res) => {
                     }
 
                     break;
+                case 'invoice.payment_succeeded': {
+                    // for handling when a webhook
+                    const data = event.data.object as Stripe.Invoice;
+                    const invoiceId = data.id;
+                    // const couponId = data.discount?.coupon?.id ?? undefined;
+                    const stripePromoCode = data.discount?.promotion_code?.toString() ?? undefined;
+                    const paidAt = new Date(data.status_transitions.paid_at);
+
+                    // we want the priceId so we can apply the correct discount
+                    const priceId = data.lines.data[0]?.price.id ?? undefined;
+                    const purchaseAmount = data.subtotal;
+
+                    // we need a way to get the partner (if they exist)
+                    // lookup the couponId associated with the person
+                    let partnerId = undefined;
+                    if (stripePromoCode) {
+                        const partnerInfo = await prisma.stripePartnerInfo.findUnique({
+                            where: {
+                                stripePromoCode: stripePromoCode,
+                            },
+                        });
+
+                        if (partnerInfo !== null) {
+                            partnerId = partnerInfo.partnerId;
+                        }
+                    }
+
+                    // please note to be in accordance with stripe, commission is stored as cents (100 = $1)
+                    let commissionAmount = 0.0;
+                    if (priceId) {
+                        commissionAmount = commissionLookupMap[priceId] * 100 ?? 0.0;
+                    }
+
+                    // update the PartnerInvoices table
+                    await prisma.partnerInvoice.create({
+                        data: {
+                            id: invoiceId,
+                            paidAt: paidAt,
+                            partnerId: partnerId,
+                            commissionAmount: commissionAmount,
+                            commissionStatus: stripePromoCode === undefined ? 'none' : 'pending',
+                            purchaseAmount: purchaseAmount,
+                        },
+                    });
+                    break;
+                }
                 default:
                     throw new Error(`Unhandled relevant event! ${event.type}`);
             }
