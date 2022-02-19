@@ -32,6 +32,9 @@ import {
     SliderMark,
     SliderThumb,
     SliderTrack,
+    Tooltip,
+    Alert,
+    AlertIcon,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
@@ -63,6 +66,7 @@ import { getAccountsById } from '@app/util/getAccountsById';
 import { env } from 'process';
 import { download } from '@app/util/s3/download';
 import { FileUploadModal } from '@app/modules/fileUpload/FileUploadModal';
+import { InfoIcon } from '@chakra-ui/icons';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
@@ -509,17 +513,22 @@ export default function Page({ banner, originalBanner }: Props) {
                                         <FormControl>
                                             <FormLabel>
                                                 Refresh speed{' '}
+                                                <Tooltip label="Banner refresh speed is how often your banner is re-generated and updated on Twitter." fontSize="md">
+                                                    <InfoIcon />
+                                                </Tooltip>
+                                                {' '}
                                                 <Tag size="md" colorScheme="green">
                                                     New!
                                                 </Tag>
                                             </FormLabel>
+
                                             {sliderValue !== 0 ? (
                                                 <Text>Your banner will refresh every {refreshSpeeds[sliderValue]}.</Text>
                                             ) : (
                                                 <HStack>
                                                     <Text>Become PulseBanner Member to enable banner refreshing.</Text>
                                                     <NextLink passHref href="/pricing">
-                                                        <Link colorScheme={'teal'}  fontSize={['md']}>
+                                                        <Link colorScheme={'teal'} fontSize={['md']}>
                                                             View pricing
                                                         </Link>
                                                     </NextLink>
