@@ -77,7 +77,7 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     },
                     body: JSON.stringify({
                         price: priceId,
-                        cancel_path: router.asPath
+                        cancel_path: router.asPath,
                     }),
                 });
 
@@ -93,7 +93,6 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
     if (data === undefined) {
         return <></>;
     }
-
 
     const AnnualBillingControl = (
         <HStack display="flex" alignItems="center" spacing={4} fontSize="lg">
@@ -185,7 +184,7 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
                                             </VStack>
                                         </Flex>
 
-                                        <Box flexGrow={2}>
+                                        <Box flexGrow={2} experimental_spaceY={2}>
                                             <Heading size="md">{"What's included"}</Heading>
                                             <List>
                                                 {['Twitter Live Banner', 'Twitter Name Changer'].map((feature) => (
@@ -194,6 +193,9 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
                                                         {feature}
                                                     </ListItem>
                                                 ))}
+                                            </List>
+                                            <Heading size="md">{'What am I missing?'}</Heading>
+                                            <List>
                                                 <ListItem key="profile image">
                                                     <ListIcon color="red.400" as={CloseIcon} />
                                                     Live Twitter Profile Picture
@@ -201,6 +203,10 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
                                                 <ListItem key="profile image">
                                                     <ListIcon color="red.400" as={CloseIcon} />
                                                     Banner refreshing
+                                                </ListItem>
+                                                <ListItem key="profile image">
+                                                    <ListIcon color="red.400" as={CloseIcon} />
+                                                    Custom banner background image
                                                 </ListItem>
                                             </List>
                                         </Box>

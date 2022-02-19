@@ -262,7 +262,7 @@ const Page: NextPage<Props> = ({ products }) => {
                                             </ListItem>
                                         ))}
                                     </List>
-                                        <Heading size="md">{"What am I missing?"}</Heading>
+                                    <Heading size="md">{'What am I missing?'}</Heading>
                                     <List>
                                         <ListItem key="profile image">
                                             <ListIcon color="red.400" as={CloseIcon} />
@@ -271,6 +271,10 @@ const Page: NextPage<Props> = ({ products }) => {
                                         <ListItem key="profile image">
                                             <ListIcon color="red.400" as={CloseIcon} />
                                             Banner refreshing
+                                        </ListItem>
+                                        <ListItem key="profile image">
+                                            <ListIcon color="red.400" as={CloseIcon} />
+                                            Custom banner background image
                                         </ListItem>
                                     </List>
                                 </Box>
