@@ -66,10 +66,12 @@ export default function Header() {
                 gridSpacing: 6,
             },
             lg: {
+                mobile: false,
                 gridColumns: 3,
                 gridSpacing: 6,
             },
             xl: {
+                mobile: false,
                 gridColumns: 3,
                 gridSpacing: 10,
             },
