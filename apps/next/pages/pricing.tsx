@@ -26,13 +26,10 @@ import {
     Flex,
     Link,
     Box,
-    Img,
-    useToast,
     Stack,
     List,
     ListIcon,
     ListItem,
-    ScaleFade,
     Spacer,
     WrapItem,
 } from '@chakra-ui/react';
@@ -42,12 +39,11 @@ import prisma from '../util/ssr/prisma';
 import { FaTwitter, FaCheck, FaArrowRight } from 'react-icons/fa';
 import { ProductCard } from '@app/components/pricing/ProductCard';
 import { trackEvent } from '@app/util/umami/trackEvent';
-import favicon from '@app/public/logo.webp';
 import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
 import { NextSeo } from 'next-seo';
 import { Card } from '@app/components/Card';
 import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
-import { profileImageFaqItems, generalFaqItems, pricingFaqItems } from '@app/modules/faq/data';
+import { generalFaqItems, pricingFaqItems } from '@app/modules/faq/data';
 import { FaqSection } from '@app/modules/faq/FaqSection';
 
 type Props = {
@@ -256,7 +252,7 @@ const Page: NextPage<Props> = ({ products }) => {
                                     </VStack>
                                 </Flex>
 
-                                <Box flexGrow={2}>
+                                <Box flexGrow={2} experimental_spaceY={2}>
                                     <Heading size="md">{"What's included"}</Heading>
                                     <List>
                                         {['Twitter Live Banner', 'Twitter Name Changer'].map((feature) => (
@@ -265,9 +261,20 @@ const Page: NextPage<Props> = ({ products }) => {
                                                 {feature}
                                             </ListItem>
                                         ))}
+                                    </List>
+                                    <Heading size="md">{'What am I missing?'}</Heading>
+                                    <List>
                                         <ListItem key="profile image">
                                             <ListIcon color="red.400" as={CloseIcon} />
                                             Live Twitter Profile Picture
+                                        </ListItem>
+                                        <ListItem key="profile image">
+                                            <ListIcon color="red.400" as={CloseIcon} />
+                                            Banner refreshing
+                                        </ListItem>
+                                        <ListItem key="profile image">
+                                            <ListIcon color="red.400" as={CloseIcon} />
+                                            Custom banner background image
                                         </ListItem>
                                     </List>
                                 </Box>
