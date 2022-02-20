@@ -78,6 +78,8 @@ export default function Header() {
         },
         'base'
     );
+
+    console.log('breakpointValue: ', breakpointValue);
     return (
         <>
             <header>
@@ -110,7 +112,7 @@ export default function Header() {
                                     </HStack>
                                 </LinkBox>
                             </HStack>
-                            {!breakpointValue.mobile && (
+                            {!breakpointValue?.mobile && (
                                 <Center id="nav-links" fontSize="lg">
                                     <Wrap spacing={['2', '4', '8', '8']}>
                                         <WrapItem>
@@ -163,7 +165,7 @@ export default function Header() {
                                         Subscribe for updates
                                     </Button>
                                 )} */}
-                                {breakpointValue.mobile && (
+                                {breakpointValue?.mobile && (
                                     <IconButton
                                         size="sm"
                                         onClick={() => window.open('/discord', '_blank')}
@@ -173,7 +175,7 @@ export default function Header() {
                                         className={trackEvent('click', 'discord-button')}
                                     />
                                 )}
-                                {!breakpointValue.mobile && (
+                                {!breakpointValue?.mobile && (
                                     <Button size="sm" onClick={() => window.open('/discord', '_blank')} leftIcon={<FaDiscord />} className={trackEvent('click', 'discord-button')}>
                                         Join our Discord
                                     </Button>
@@ -227,15 +229,9 @@ export default function Header() {
                         </Flex>
                     </Flex>
                 </Center>
-                {breakpointValue.mobile && (
+                {breakpointValue?.mobile && (
                     <Center className={`nojs-show ${!session && loading ? styles.loading : styles.loaded}`}>
-                        <Box
-                            maxW={['95vw']}
-                            background={colorMode === 'dark' ? 'gray.700' : 'blackAlpha.200'}
-                            mx="2"
-                            py="2"
-                            rounded="md"
-                        >
+                        <Box maxW={['95vw']} background={colorMode === 'dark' ? 'gray.700' : 'blackAlpha.200'} mx="2" py="2" rounded="md">
                             <Center id="nav-links" fontSize={['sm', 'md']} px="5vw">
                                 <Wrap spacing={['4', '8', '8', '8']}>
                                     <WrapItem>
