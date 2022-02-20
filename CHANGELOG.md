@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.8.0] - 2022-02-19
+
+### Added
+
+- Banner refreshing UI and pricing
+
+### Changed
+
+- Name in package.json is now "pulsebanner" instead of "streamlux-saas"
+
+### Fixed
+
+- Locked remotion version to 2.6.6
+
 ## [0.7.11] - 2022-02-17
 
 ### Added
