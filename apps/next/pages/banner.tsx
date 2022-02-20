@@ -27,6 +27,14 @@ import {
     BoxProps,
     useColorModeValue,
     Tag,
+    Slider,
+    SliderFilledTrack,
+    SliderMark,
+    SliderThumb,
+    SliderTrack,
+    Tooltip,
+    Alert,
+    AlertIcon,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
@@ -58,6 +66,7 @@ import { getAccountsById } from '@app/util/getAccountsById';
 import { env } from 'process';
 import { download } from '@app/util/s3/download';
 import { FileUploadModal } from '@app/modules/fileUpload/FileUploadModal';
+import { InfoIcon } from '@chakra-ui/icons';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
@@ -300,6 +309,24 @@ export default function Page({ banner, originalBanner }: Props) {
 
     const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
     const { isOpen: disableBannerIsOpen, onClose: disableBannerOnClose, onToggle: bannerDisabledToggle } = useDisclosure();
+    const [sliderValue, setSliderValue] = useState(0);
+
+    useEffect(() => {
+        const getSliderValue = () => {
+            if (paymentPlan === 'Free' && !paymentPlanResponse?.partner) {
+                return 0;
+            }
+            if (paymentPlan === 'Personal') {
+                return 33;
+            }
+            if (paymentPlanResponse?.partner) {
+                return 66;
+            }
+            return 99;
+        };
+
+        setSliderValue(getSliderValue());
+    }, [paymentPlan, paymentPlanResponse]);
 
     const showPricing: (force?: boolean) => boolean = (force?: boolean) => {
         if (force) {
@@ -308,6 +335,24 @@ export default function Page({ banner, originalBanner }: Props) {
             return false;
         }
         return true;
+    };
+
+    const showPricingIfFree: (force?: boolean) => boolean = (force?: boolean) => {
+        if (force || paymentPlan === 'Free') {
+            umami('show-pricing-modal');
+            pricingToggle();
+            return false;
+        }
+        return true;
+    };
+
+    const setSliderValueCheck = (value: number) => {
+        if (paymentPlan === 'Free') {
+            showPricing(true);
+            setSliderValue(0);
+        } else {
+            setSliderValue(value);
+        }
     };
 
     const EnableButton = (
@@ -340,6 +385,13 @@ export default function Page({ banner, originalBanner }: Props) {
             <Link color="twitter.500">#PulseBanner</Link>
         </Text>
     );
+
+    const refreshSpeeds = {
+        0: 'never',
+        33: '60 minutes',
+        66: '30 minutes',
+        99: '10 minutes',
+    };
 
     return (
         <>
@@ -427,12 +479,7 @@ export default function Page({ banner, originalBanner }: Props) {
                                 <TabPanel>
                                     <VStack>
                                         <FormControl id="country">
-                                            <FormLabel>
-                                                Banner type{' '}
-                                                <Tag size="md" colorScheme="green">
-                                                    New!
-                                                </Tag>
-                                            </FormLabel>
+                                            <FormLabel>Banner type </FormLabel>
 
                                             <Select
                                                 value={fgId}
@@ -463,6 +510,69 @@ export default function Page({ banner, originalBanner }: Props) {
                                             showPricing={showPricing}
                                             accountLevel={paymentPlan}
                                         />
+                                        <FormControl>
+                                            <FormLabel>
+                                                Refresh speed{' '}
+                                                <Tooltip label="Banner refresh speed is how often your banner is re-generated and updated on Twitter." fontSize="md">
+                                                    <InfoIcon />
+                                                </Tooltip>{' '}
+                                                <Tag size="md" colorScheme="green">
+                                                    New!
+                                                </Tag>
+                                            </FormLabel>
+
+                                            {sliderValue !== 0 ? (
+                                                <Text>Your banner will refresh every {refreshSpeeds[sliderValue]}.</Text>
+                                            ) : (
+                                                <HStack>
+                                                    <Text>Become PulseBanner Member to enable banner refreshing.</Text>
+                                                    <NextLink passHref href="/pricing">
+                                                        <Link colorScheme={'teal'} fontSize={['md']}>
+                                                            View pricing
+                                                        </Link>
+                                                    </NextLink>
+                                                </HStack>
+                                            )}
+                                            <Slider
+                                                defaultValue={0}
+                                                max={99}
+                                                ml={[0, '2']}
+                                                step={33}
+                                                colorScheme={'purple'}
+                                                value={sliderValue}
+                                                onClick={() => showPricingIfFree()}
+                                                aria-label="slider-ex-6"
+                                                maxW="lg"
+                                                mb="8"
+                                            >
+                                                <SliderMark value={0} mt="2" fontSize={['xs', 'sm']}>
+                                                    Never
+                                                </SliderMark>
+                                                <SliderMark value={33} mt="2" ml="-4" fontSize={['xs', 'sm']}>
+                                                    Slow <br />
+                                                    (60 min)
+                                                    <br />
+                                                    <Tag onClick={() => showPricingIfFree()} size="sm" colorScheme="green">
+                                                        Personal
+                                                    </Tag>
+                                                </SliderMark>
+                                                <SliderMark value={66} mt="2" ml="-4" fontSize={['xs', 'sm']}>
+                                                    Fast <br />
+                                                    (30 min)
+                                                </SliderMark>
+                                                <SliderMark value={99} mt="2" ml="-6" fontSize={['xs', 'sm']} w="24">
+                                                    Insanity <br /> (10 min)
+                                                    <br />
+                                                    <Tag size="sm" colorScheme="green" onClick={() => showPricingIfFree()}>
+                                                        Pro
+                                                    </Tag>
+                                                </SliderMark>
+                                                <SliderTrack h="3" rounded="full">
+                                                    <SliderFilledTrack />
+                                                </SliderTrack>
+                                                {paymentPlan === 'Free' && <SliderThumb />}
+                                            </Slider>
+                                        </FormControl>
                                     </VStack>
                                 </TabPanel>
                                 <TabPanel>

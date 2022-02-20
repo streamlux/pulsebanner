@@ -7,7 +7,7 @@ let hasLoaded = false;
 
 // Function is called when prisma is loaded, which hopefully will be almost right at startup
 export function onLoad(): void {
-    if (hasLoaded === true) {
+    if (hasLoaded === true || process.env.NODE_ENV === 'development') {
         return;
     }
 
