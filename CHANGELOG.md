@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.8.1] - 2022-02-19
+
+### Fixed
+
+- Refresh slider visual bug on mobile 
+
 ## [0.8.0] - 2022-02-19
 
 ### Added
