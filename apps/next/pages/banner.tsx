@@ -536,13 +536,14 @@ export default function Page({ banner, originalBanner }: Props) {
                                             <Slider
                                                 defaultValue={0}
                                                 max={99}
-                                                ml="2"
+                                                ml={[0, '2']}
                                                 step={33}
                                                 colorScheme={'purple'}
                                                 value={sliderValue}
                                                 onClick={() => showPricingIfFree()}
                                                 aria-label="slider-ex-6"
                                                 maxW="lg"
+                                                mb="8"
                                             >
                                                 <SliderMark value={0} mt="2" fontSize={['xs', 'sm']}>
                                                     Never
