@@ -90,6 +90,13 @@ jobs:
                   tags: ${{ steps.next-meta.outputs.tags }}
                   labels: ${{ steps.next-meta.outputs.labels }}
 
+            - name: Setup DigitalOcean firewall
+              uses: earthpyy/setup-digitalocean-firewall@v1
+              with:
+                  access-token: ${{ secrets.DO_ACCESS_TOKEN }}
+                  firewall-id: ${{ secrets.DO_FIREWALL_ID }}
+                  ports: ${{ secrets.DATABASE_PORT }}
+
             - name: 'prisma migrate deploy'
               run: npx prisma migrate deploy
               env:
