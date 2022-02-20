@@ -515,8 +515,7 @@ export default function Page({ banner, originalBanner }: Props) {
                                                 Refresh speed{' '}
                                                 <Tooltip label="Banner refresh speed is how often your banner is re-generated and updated on Twitter." fontSize="md">
                                                     <InfoIcon />
-                                                </Tooltip>
-                                                {' '}
+                                                </Tooltip>{' '}
                                                 <Tag size="md" colorScheme="green">
                                                     New!
                                                 </Tag>
@@ -543,7 +542,6 @@ export default function Page({ banner, originalBanner }: Props) {
                                                 value={sliderValue}
                                                 onClick={() => showPricingIfFree()}
                                                 aria-label="slider-ex-6"
-                                                className="animated-gradient"
                                                 maxW="lg"
                                             >
                                                 <SliderMark value={0} mt="2" fontSize={['xs', 'sm']}>
@@ -568,7 +566,7 @@ export default function Page({ banner, originalBanner }: Props) {
                                                         Pro
                                                     </Tag>
                                                 </SliderMark>
-                                                <SliderTrack h="3" rounded="full" className="animated-gradient">
+                                                <SliderTrack h="3" rounded="full">
                                                     <SliderFilledTrack />
                                                 </SliderTrack>
                                                 {paymentPlan === 'Free' && <SliderThumb />}
