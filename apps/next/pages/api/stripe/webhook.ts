@@ -339,13 +339,15 @@ handler.post(async (req, res) => {
                     const stripePromoCode = data.discount?.promotion_code?.toString() ?? undefined;
                     const paidAt = new Date(data.status_transitions.paid_at);
 
+                    const customerId = data.customer.toString();
+
                     // we want the priceId so we can apply the correct discount
                     const priceId = data.lines.data[0]?.price.id ?? undefined;
                     const purchaseAmount = data.subtotal;
 
                     // we need a way to get the partner (if they exist)
                     // lookup the couponId associated with the person
-                    let partnerId = undefined;
+                    let partnerId = null;
                     if (stripePromoCode) {
                         const partnerInfo = await prisma.stripePartnerInfo.findUnique({
                             where: {
@@ -368,10 +370,11 @@ handler.post(async (req, res) => {
                     await prisma.partnerInvoice.create({
                         data: {
                             id: invoiceId,
+                            customerId: customerId,
                             paidAt: paidAt,
                             partnerId: partnerId,
                             commissionAmount: commissionAmount,
-                            commissionStatus: stripePromoCode === undefined ? 'none' : 'pending',
+                            commissionStatus: partnerId === null ? 'none' : 'waitPeriod',
                             purchaseAmount: purchaseAmount,
                         },
                     });

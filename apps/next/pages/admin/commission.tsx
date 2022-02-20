@@ -1,7 +1,7 @@
 import { useAdmin } from '@app/util/hooks/useAdmin';
 import prisma from '@app/util/ssr/prisma';
 import { Box, Button, Select, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Th, Thead, Tr, useToast, VStack } from '@chakra-ui/react';
-import { CommissionStatus, PartnerInvoice } from '@prisma/client';
+import { CommissionStatus, Partner, PartnerInvoice } from '@prisma/client';
 import axios from 'axios';
 import { GetServerSideProps } from 'next';
 import { getSession } from 'next-auth/react';
@@ -11,6 +11,7 @@ import { useState } from 'react';
 interface Props {
     completedInvoiceList: PartnerInvoice[];
     pendingInvoiceList: PartnerInvoice[];
+    waitPeriodPartnerInvoices: PartnerInvoice[];
     emptyInvoiceList: PartnerInvoice[];
     rejectedInvoiceList: PartnerInvoice[];
     allInvoiceList: PartnerInvoice[];
@@ -38,6 +39,34 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     props: {},
                 };
             }
+
+            // firstly, if there are any entries in waiting status that need to be in pending, we move
+            const moveWaitingPartners = await prisma.partnerInvoice.findMany({
+                where: {
+                    commissionStatus: CommissionStatus.waitPeriod,
+                },
+            });
+
+            moveWaitingPartners.forEach(async (invoice: PartnerInvoice) => {
+                // if they have been in the waiting period for longer than 7 days, we move them then to the pending status
+                if (Math.abs(invoice.paidAt.valueOf() - Date.now().valueOf()) / (1000 * 60 * 60 * 24) > 7) {
+                    await prisma.partnerInvoice.update({
+                        where: {
+                            id: invoice.id,
+                        },
+                        data: {
+                            commissionStatus: CommissionStatus.pending,
+                        },
+                    });
+                }
+            });
+
+            // requery the waiting list because it could have been adjusted
+            const waitPeriodPartnerInvoices = await prisma.partnerInvoice.findMany({
+                where: {
+                    commissionStatus: CommissionStatus.waitPeriod,
+                },
+            });
 
             // completed invoices we can do nothing about. No-operation once they are here
             const completedPartnerInvoices = await prisma.partnerInvoice.findMany({
@@ -71,6 +100,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 props: {
                     completedInvoiceList: completedPartnerInvoices,
                     pendingInvoiceList: pendingPartnerInvoices,
+                    waitPeriodPartnerInvoices: waitPeriodPartnerInvoices,
                     emptyInvoiceList: emptyPartnerInvoices,
                     rejectedInvoiceList: rejectedPartnerInvoices,
                     allInvoiceList: allPartnerInvoices,
@@ -80,7 +110,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
 };
 
-export default function Page({ completedInvoiceList, pendingInvoiceList, emptyInvoiceList, rejectedInvoiceList, allInvoiceList }: Props) {
+export default function Page({ completedInvoiceList, pendingInvoiceList, waitPeriodPartnerInvoices, emptyInvoiceList, rejectedInvoiceList, allInvoiceList }: Props) {
     useAdmin({ required: true });
     const toast = useToast();
 
@@ -88,17 +118,15 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, emptyIn
 
     // map of internal invoice id's to commissi
     const [payoutStatusMap, setPayoutStatusMap] = useState<Record<string, CommissionStatus>>({});
+    const [bulkPayoutMap, setBulkPayoutMap] = useState<Record<string, CommissionStatus>>({});
 
     const refreshData = () => {
         router.replace(router.asPath);
     };
 
-    // offer bulk payouts
-
     const DropdownPayoutOption = (invoice: PartnerInvoice) => (
         <Select
             onChange={(val) => {
-                // this needs to change
                 if ((val.target.value as CommissionStatus) === 'pendingCompletion' || (val.target.value as CommissionStatus) === 'pendingRejection') {
                     setPayoutStatusMap({ ...payoutStatusMap, [invoice.id]: val.target.value as CommissionStatus });
                 }
@@ -106,8 +134,8 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, emptyIn
             defaultValue={invoice.commissionStatus}
         >
             <option value={CommissionStatus.pending}>{CommissionStatus.pending}</option>
-            <option value={CommissionStatus.pendingRejection}>{CommissionStatus.pendingRejection}</option>
-            <option value={CommissionStatus.pendingCompletion}>{CommissionStatus.pendingCompletion}</option>
+            <option value={CommissionStatus.pendingRejection}>Reject Payout</option>
+            <option value={CommissionStatus.pendingCompletion}>Payout</option>
         </Select>
     );
 
@@ -119,10 +147,12 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, emptyIn
                         <Thead>
                             <Tr>
                                 <Th>Invoice Id</Th>
+                                <Th>Customer Id</Th>
                                 <Th>Partner Id</Th>
                                 <Th>Commission Amount</Th>
                                 <Th>Purchase Amount</Th>
-                                <Th>Paid At</Th>
+                                <Th>Invoice Paid Date</Th>
+                                <Th>Commission Paid Date</Th>
                                 <Th>Payout Status</Th>
                             </Tr>
                         </Thead>
@@ -130,39 +160,67 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, emptyIn
                             {invoiceList.map((invoice) => (
                                 <Tr key={invoice.id}>
                                     <Td>{invoice.id}</Td>
+                                    <Td>{invoice.customerId}</Td>
                                     <Td>{invoice.partnerId}</Td>
                                     <Td>{invoice.commissionAmount}</Td>
                                     <Td>{invoice.purchaseAmount}</Td>
-                                    <Td>{invoice.paidAt}</Td>
-                                    <Td>
-                                        pendingAction ? {DropdownPayoutOption(invoice)} : {invoice.commissionStatus}
-                                    </Td>
+                                    <Td>{invoice.paidAt.toDateString()}</Td>
+                                    <Td>{invoice.commissionPaidAt === null ? null : invoice.commissionPaidAt.toDateString()}</Td>
+                                    {pendingAction ? <Td>{DropdownPayoutOption(invoice)}</Td> : <Td>{invoice.commissionStatus}</Td>}
                                 </Tr>
                             ))}
                         </Tbody>
                     </Table>
                 </Box>
                 {pendingAction && (
-                    <Button
-                        onClick={async () => {
-                            const response = await axios.post('/api/admin/commission/payout', { payoutStatusMap });
-                            console.log('response: ', response);
-                            if (response.status === 200) {
-                                refreshData();
-                                toast({
-                                    status: 'success',
-                                    title: 'Updated selected affiliates status',
+                    <>
+                        <Button
+                            onClick={async () => {
+                                const response = await axios.post('/api/admin/commission/payout', { payoutStatusMap });
+                                console.log('response: ', response);
+                                if (response.status === 200) {
+                                    refreshData();
+                                    toast({
+                                        status: 'success',
+                                        title: 'Completed payouts',
+                                    });
+                                } else {
+                                    toast({
+                                        status: 'error',
+                                        title: 'Error doing payouts',
+                                    });
+                                }
+                            }}
+                        >
+                            Apply changes
+                        </Button>
+                        <Button
+                            onClick={async () => {
+                                pendingInvoiceList.forEach((invoice: PartnerInvoice) => {
+                                    if (invoice.commissionStatus === 'pending' || invoice.commissionStatus === 'pendingCompletion') {
+                                        setBulkPayoutMap({ ...bulkPayoutMap, [invoice.id]: invoice.commissionStatus });
+                                    }
                                 });
-                            } else {
-                                toast({
-                                    status: 'error',
-                                    title: 'Unable to update selected affiliates status',
-                                });
-                            }
-                        }}
-                    >
-                        Apply changes
-                    </Button>
+
+                                const response = await axios.post('/api/admin/commission/payout', { bulkPayoutMap });
+                                console.log('response from bulk payout: ', response);
+                                if (response.status === 200) {
+                                    refreshData();
+                                    toast({
+                                        status: 'success',
+                                        title: 'Completed bulk payouts',
+                                    });
+                                } else {
+                                    toast({
+                                        status: 'error',
+                                        title: 'Error doing bulk payouts',
+                                    });
+                                }
+                            }}
+                        >
+                            Bulk Apply
+                        </Button>
+                    </>
                 )}
             </VStack>
         </TabPanel>
@@ -174,6 +232,7 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, emptyIn
                 <TabList>
                     <Tab>Completed</Tab>
                     <Tab>Pending</Tab>
+                    <Tab>Wait Period</Tab>
                     <Tab>Empty</Tab>
                     <Tab>Rejected</Tab>
                     <Tab>All</Tab>
@@ -183,6 +242,7 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, emptyIn
                     {/** Do not include the pending completion and rejection. They should never be in this state permanently **/}
                     {PanelLayoutHelper(completedInvoiceList, false)}
                     {PanelLayoutHelper(pendingInvoiceList, true)}
+                    {PanelLayoutHelper(waitPeriodPartnerInvoices, false)}
                     {PanelLayoutHelper(emptyInvoiceList, false)}
                     {PanelLayoutHelper(rejectedInvoiceList, false)}
                     {PanelLayoutHelper(allInvoiceList, false)}

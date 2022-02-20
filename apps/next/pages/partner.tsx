@@ -22,9 +22,14 @@ import {
     HStack,
     Input,
     Link,
-    Spacer,
-    Tag,
+    Stack,
+    Table,
+    Tbody,
+    Td,
     Text,
+    Th,
+    Thead,
+    Tr,
     useColorModeValue,
     useDisclosure,
     useToast,
@@ -40,10 +45,16 @@ import React, { useState } from 'react';
 import useSWR from 'swr';
 import { discordLink } from '@app/util/constants';
 import { AcceptanceStatus, PartnerCreateType } from '@app/util/partner/types';
+import { PartnerInvoice } from '@prisma/client';
 
 interface Props {
     partnerStatus: AcceptanceStatus;
     partnerCode?: string;
+    completedPayouts: number;
+    completedPayoutAmount: number;
+    pendingPayouts: number;
+    pendingPayoutAmount: number;
+    pendingInvoices: PartnerInvoice[];
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -70,10 +81,39 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     },
                 });
 
+                // get the invoices associated with the partner (what has been completed)
+                const invoiceInfoPaid = await prisma.partnerInvoice.findMany({
+                    where: {
+                        partnerId: partnerId,
+                        commissionStatus: 'complete',
+                    },
+                });
+
+                const invoiceInfoPending = await prisma.partnerInvoice.findMany({
+                    where: {
+                        partnerId: partnerId,
+                        commissionStatus: 'pending' || 'waitPeriod',
+                    },
+                });
+
+                const completedPayoutAmount = invoiceInfoPaid
+                    .map((a) => a.commissionAmount)
+                    .reduce((a, b) => {
+                        return a + b;
+                    }, 0);
+                const pendingPayoutAmount = invoiceInfoPending
+                    .map((a) => a.commissionAmount)
+                    .reduce((a, b) => {
+                        return a + b;
+                    }, 0);
+
                 return {
                     props: {
                         partnerStatus: partnerInfo.acceptanceStatus as AcceptanceStatus,
                         partnerCode: partnerInfo.partnerCode,
+                        completedPayouts: invoiceInfoPaid.length ?? 0,
+                        completedPayoutAmount: completedPayoutAmount ?? 0,
+                        pendingInvoices: invoiceInfoPending ?? [],
                     },
                 };
             } catch (e) {
@@ -89,7 +129,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
 };
 
-export default function Page({ partnerStatus, partnerCode }: Props) {
+export default function Page({ partnerStatus, partnerCode, completedPayouts, completedPayoutAmount, pendingInvoices }: Props) {
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('/partner');
     const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
     const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
@@ -343,12 +383,62 @@ export default function Page({ partnerStatus, partnerCode }: Props) {
         <>
             <Center>
                 <VStack>
-                    <Heading size="md" my="4" pb="6" textAlign={'center'}>
-                        You are a PulseBanner Partner! Check out your very own dashboard, along with your affiliate code!
+                    <Heading size="md" my="4" textAlign={'center'}>
+                        You are a PulseBanner Partner! All your information, including applied and pending payouts, total referrals, and discount code can be found right here!
                     </Heading>
-                    <Text textAlign={'center'} fontSize="lg" my="4">
-                        Personalized Code: <b>{`${partnerCode}`}</b>
+                    <Text pb="2" textAlign={'center'} fontSize="xl">
+                        Partner Code: <b>{`${partnerCode}`}</b>
                     </Text>
+                    <Stack pt="8" direction={['column', 'row']}>
+                        <Text textAlign={'center'} fontSize="lg">
+                            Completed Referrals: <b>{`${completedPayouts}`}</b>
+                        </Text>
+                        <Text textAlign={'center'} fontSize="lg">
+                            Pending Referrals: <b>{`${pendingInvoices.length ?? 0}`}</b>
+                        </Text>
+                    </Stack>
+                    <Stack pb="8" direction={['column', 'row']}>
+                        <Text textAlign={'center'} fontSize="lg">
+                            Completed Payout Amount: <b>{`$${completedPayoutAmount * 0.01}`}</b>
+                        </Text>
+                        <Text textAlign={'center'} fontSize="lg">
+                            Pending Payout Amount:{' '}
+                            <b>{`$${
+                                pendingInvoices
+                                    .map((a) => a.commissionAmount)
+                                    .reduce((a, b) => {
+                                        return a + b;
+                                    }, 0) * 0.01 ?? 0
+                            }`}</b>
+                        </Text>
+                    </Stack>
+                    <Heading fontSize="lg" textAlign={'center'}>
+                        Pending Payouts
+                    </Heading>
+                    <VStack spacing={8} pb="8">
+                        <Box maxH="50vh" overflow={'scroll'}>
+                            <Table size="md">
+                                <Thead>
+                                    <Tr>
+                                        <Th>Submitted Date</Th>
+                                        <Th>Pending Commission Amount</Th>
+                                        <Th>Wait Period Date</Th>
+                                        <Th>Wait Period Completed</Th>
+                                    </Tr>
+                                </Thead>
+                                <Tbody>
+                                    {pendingInvoices.map((invoice) => (
+                                        <Tr key="key">
+                                            <Td textAlign={'center'}>{invoice.paidAt.toDateString()}</Td>
+                                            <Td textAlign={'center'}>${invoice.commissionAmount * 0.01}</Td>
+                                            <Td textAlign={'center'}>{new Date(invoice.paidAt.setDate(invoice.paidAt.getDate() + 7)).toDateString()}</Td>
+                                            <Td textAlign={'center'}>{invoice.commissionStatus === 'waitPeriod' ? 'yes' : 'no'}</Td>
+                                        </Tr>
+                                    ))}
+                                </Tbody>
+                            </Table>
+                        </Box>
+                    </VStack>
                     <ShareToTwitter
                         tweetPreview={
                             <Text>

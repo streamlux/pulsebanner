@@ -203,11 +203,12 @@ model PastStreams {
 // Below models taken from https://github.com/gmpetrov/ultimate-saas-ts/blob/master/prisma/schema.prisma
 
 model Customer {
-    id        String   @id @default(cuid())
-    userId    String   @unique(map: "customers_user_id_unique") @map("user_id")
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @default(now()) @map("updated_at")
-    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    id             String          @id @default(cuid())
+    userId         String          @unique(map: "customers_user_id_unique") @map("user_id")
+    createdAt      DateTime        @default(now()) @map("created_at")
+    updatedAt      DateTime        @default(now()) @map("updated_at")
+    user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+    PartnerInvoice PartnerInvoice?
 
     @@map("customers")
 }
@@ -309,7 +310,7 @@ model Partner {
 
     partnerInformation PartnerInformation?
     stripePartnerInfo  StripePartnerInfo?
-    PartnerInvoices    PartnerInvoice?
+    partnerInvoices    PartnerInvoice[] // list of all invoices associated withthe partner
 
     @@map("partner")
 }
@@ -326,6 +327,7 @@ model StripePartnerInfo {
 
 enum CommissionStatus {
     complete
+    waitPeriod // This is to wait out any refund that may be given
     pendingCompletion // we move it to pending completion when we select it via the admin panel for a payout
     pending
     rejected
@@ -333,12 +335,14 @@ enum CommissionStatus {
     none // We specify none when there is no coupon associded with the request
 }
 
-// We will have a table for invoices that have a state they are in (pending, blocked, etc.) We will store all invoices
 model PartnerInvoice {
     id               String           @id @unique // This is the invoice via stripe.
-    partnerId        String?          @unique // This is the partner that the new subscriber used for a code. It is optional as we will store all invoices.
+    customerId       String           @unique // this is the customer id on the invoice. We should link this to our customers table
+    customer         Customer?        @relation(fields: [customerId], references: [id])
+    partnerId        String? // this cannot be unique in this table
     partner          Partner?         @relation(fields: [partnerId], references: [id])
     paidAt           DateTime // the time the actual invoice completed. Not the payout of the commission
+    commissionPaidAt DateTime?
     commissionAmount Int // We include this even if there will not be a commission payout (if it's not the first month invoice)
     purchaseAmount   Int
     commissionStatus CommissionStatus

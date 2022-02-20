@@ -1,5 +1,5 @@
+import { getPartnerCustomerInfo, getPartnerInfo, getPartnerInvoice, updateRejectedPayoutStatus, updateSuccessfulPayoutStatus } from '@app/util/partner/payoutHelpers';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
-import prisma from '@app/util/ssr/prisma';
 import stripe from '@app/util/ssr/stripe';
 import { CommissionStatus } from '@prisma/client';
 
@@ -16,53 +16,32 @@ handler.post(async (req, res) => {
     }
 
     // Only do operation with stripe when it goes to completed state
-    try {
-        Object.keys(payoutStatusUpdate).forEach(async (invoiceId: string) => {
-            // if the status is in completed, add a discount to their account
-            if (payoutStatusUpdate[invoiceId] === 'pendingCompletion') {
+    Object.keys(payoutStatusUpdate).forEach(async (invoiceId: string) => {
+        try {
+            /**
+             * We handle pendingCompletion and pending in the same manner.
+             * If it is a bulk payout, we will have things in pendingCompletion and pending.
+             * We should not have anything in pending if we are doing individual payouts.
+             */
+            if (payoutStatusUpdate[invoiceId] === 'pendingCompletion' || payoutStatusUpdate[invoiceId] === 'pending') {
                 // get the invoiceId
-                const partnerInvoice = await prisma.partnerInvoice.findUnique({
-                    where: {
-                        id: invoiceId,
-                    },
-                    select: {
-                        partnerId: true,
-                        commissionAmount: true,
-                    },
-                });
+                const partnerInvoice = await getPartnerInvoice(invoiceId);
 
-                if (!partnerInvoice || !partnerInvoice.partnerId || !partnerInvoice.commissionAmount) {
-                    console.log('There is no partner associated with this invoice.');
-                    return res.status(400).send(`No partner associated with invoice: ${invoiceId}`);
+                if (partnerInvoice === undefined) {
+                    console.log('No partner or commission amount associated with invoice: ', invoiceId);
+                    return res.status(400).send(`No partner or commission amount associated with invoice: ${invoiceId}`);
                 }
-                // now we have the partner that was used for the discount, apply the credit note to their last invoice
 
-                // get their userId
-                const partnerInfo = await prisma.partnerInformation.findUnique({
-                    where: {
-                        partnerId: partnerInvoice.partnerId,
-                    },
-                    select: {
-                        userId: true,
-                    },
-                });
+                const partnerUserId = await getPartnerInfo(partnerInvoice.partnerId);
 
-                if (partnerInfo === null) {
+                if (partnerUserId === undefined) {
                     console.log('Could not find the partner info.');
-                    return res.status(400).send(`No partner info found for partnerId: ${partnerInvoice}`);
+                    return res.status(400).send(`No partner info found for partnerId: ${partnerInvoice.partnerId}`);
                 }
 
-                const userId = partnerInfo.userId;
+                const userId = partnerUserId;
 
-                // get the customerId
-                const customerId = await prisma.customer.findUnique({
-                    where: {
-                        userId: userId,
-                    },
-                    select: {
-                        id: true,
-                    },
-                });
+                const customerId = await getPartnerCustomerInfo(userId);
 
                 if (customerId === null) {
                     console.log('Could not find the partners stripe customer info.');
@@ -70,27 +49,21 @@ handler.post(async (req, res) => {
                 }
 
                 // call stripe api to get the list of invoices for the customer. Get the most recent one
-                const invoiceItem = await stripe.invoiceItems.list({ customer: customerId.id, limit: 1 });
+                const invoiceItem = await stripe.invoiceItems.list({ customer: customerId, limit: 1 });
                 const partnerInvoiceId = invoiceItem.data[0].id;
 
                 // This is the invoiceId that was the discount
                 await stripe.creditNotes.create({ invoice: partnerInvoiceId, credit_amount: partnerInvoice.commissionAmount });
 
-                // update the commission status
-                await prisma.partnerInvoice.update({
-                    where: {
-                        id: invoiceId,
-                    },
-                    data: {
-                        commissionStatus: 'complete',
-                    },
-                });
+                await updateSuccessfulPayoutStatus(invoiceId);
+            } else if (payoutStatusUpdate[invoiceId] === 'pendingRejection') {
+                await updateRejectedPayoutStatus(invoiceId);
             }
-        });
-    } catch (e) {
-        console.log('error updating payout status: ', e);
-        return res.status(400).send(`Error updating payout status: ${e}`);
-    }
+        } catch (e) {
+            console.log('error updating payout status: ', e);
+            return res.status(400).send(`Error updating payout status: ${e}`);
+        }
+    });
 
     return res.status(200);
 });
