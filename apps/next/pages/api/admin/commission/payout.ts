@@ -1,3 +1,4 @@
+import { logger } from '@app/util/logger';
 import { getPartnerCustomerInfo, getPartnerInfo, getPartnerInvoice, updateRejectedPayoutStatus, updateSuccessfulPayoutStatus } from '@app/util/partner/payoutHelpers';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import stripe from '@app/util/ssr/stripe';
@@ -24,7 +25,7 @@ handler.post(async (req, res) => {
              * We should not have anything in pending if we are doing individual payouts.
              */
             if (payoutStatusUpdate[invoiceId] === 'pendingCompletion' || payoutStatusUpdate[invoiceId] === 'pending') {
-                // get the invoiceId
+                // get the invoiceId associated with the partner
                 const partnerInvoice = await getPartnerInvoice(invoiceId);
 
                 if (partnerInvoice === undefined) {
@@ -48,11 +49,14 @@ handler.post(async (req, res) => {
                     return res.status(400).send(`Could not find the partners stripe customer info. UserId: ${userId}`);
                 }
 
+                logger.info('Customer id in the payout step.', {customerId});
                 // call stripe api to get the list of invoices for the customer. Get the most recent one
-                const invoiceItem = await stripe.invoiceItems.list({ customer: customerId, limit: 1 });
+                const invoiceItem = await stripe.invoiceItems.list({ customer: customerId, limit: 5 });
+                logger.info('Listed invoice items. ', { customerId, invoices: invoiceItem });
+                // think this is undefined. We should print the invoice items
                 const partnerInvoiceId = invoiceItem.data[0].id;
 
-                // This is the invoiceId that was the discount
+                // This is the invoiceId that we want to apply the discount to in the future
                 await stripe.creditNotes.create({ invoice: partnerInvoiceId, credit_amount: partnerInvoice.commissionAmount });
 
                 await updateSuccessfulPayoutStatus(invoiceId);

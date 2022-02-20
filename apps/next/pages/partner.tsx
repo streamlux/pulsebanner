@@ -432,7 +432,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                                             <Td textAlign={'center'}>{invoice.paidAt.toDateString()}</Td>
                                             <Td textAlign={'center'}>${invoice.commissionAmount * 0.01}</Td>
                                             <Td textAlign={'center'}>{new Date(invoice.paidAt.setDate(invoice.paidAt.getDate() + 7)).toDateString()}</Td>
-                                            <Td textAlign={'center'}>{invoice.commissionStatus === 'waitPeriod' ? 'yes' : 'no'}</Td>
+                                            <Td textAlign={'center'}>{invoice.commissionStatus === 'waitPeriod' ? 'no' : 'yes'}</Td>
                                         </Tr>
                                     ))}
                                 </Tbody>

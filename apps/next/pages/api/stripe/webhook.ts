@@ -337,7 +337,7 @@ handler.post(async (req, res) => {
                     const invoiceId = data.id;
                     // const couponId = data.discount?.coupon?.id ?? undefined;
                     const stripePromoCode = data.discount?.promotion_code?.toString() ?? undefined;
-                    const paidAt = new Date(data.status_transitions.paid_at);
+                    const paidAt = new Date(data.status_transitions.paid_at * 1000); // date object is in milliseconds and timestamp is in seconds
 
                     const customerId = data.customer.toString();
 
