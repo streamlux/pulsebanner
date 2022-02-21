@@ -49,15 +49,16 @@ handler.post(async (req, res) => {
                     return res.status(400).send(`Could not find the partners stripe customer info. UserId: ${userId}`);
                 }
 
-                logger.info('Customer id in the payout step.', {customerId});
+                logger.info('Customer id in the payout step.', { customerId });
                 // call stripe api to get the list of invoices for the customer. Get the most recent one
                 const invoiceItem = await stripe.invoices.list({ customer: customerId, limit: 3 });
                 logger.info('Listed invoice items. ', { customerId, invoices: invoiceItem });
                 // think this is undefined. We should print the invoice items
                 const partnerInvoiceId = invoiceItem.data[0].id;
 
+                logger.info('PartnerInvoiceId. ', { partnerInvoiceId });
                 // This is the invoiceId that we want to apply the discount to in the future
-                await stripe.creditNotes.create({ invoice: partnerInvoiceId, credit_amount: partnerInvoice.commissionAmount });
+                await stripe.creditNotes.create({ invoice: partnerInvoiceId, credit_amount: partnerInvoice.commissionAmount, lines: [] });
 
                 await updateSuccessfulPayoutStatus(invoiceId);
             } else if (payoutStatusUpdate[invoiceId] === 'pendingRejection') {

@@ -79,7 +79,6 @@ export default function Header() {
         'base'
     );
 
-    console.log('breakpointValue: ', breakpointValue);
     return (
         <>
             <header>
