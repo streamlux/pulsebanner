@@ -3,6 +3,7 @@ import { getPartnerCustomerInfo, getPartnerInfo, getPartnerInvoice, updateReject
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import stripe from '@app/util/ssr/stripe';
 import { CommissionStatus } from '@prisma/client';
+import { Stripe } from 'stripe';
 
 const handler = createAuthApiHandler();
 
@@ -61,11 +62,14 @@ handler.post(async (req, res) => {
                 // const lineInfoQuantity = invoiceItem.data[0].lines.data[0].quantity;
 
                 // This is the invoiceId that we want to apply the discount to in the future
-                await stripe.creditNotes.create({
-                    invoice: partnerInvoiceId,
-                    credit_amount: partnerInvoice.commissionAmount,
-                    lines: [{ type: 'invoice_line_item', invoice_line_item: lineInfoId, amount: partnerInvoice.commissionAmount }],
-                });
+                const customerInfo = await stripe.customers.retrieve(customerId) as Stripe.Response<Stripe.Customer>;
+                if (!customerInfo) {
+                    return res.status(400).send('Unable to get customer info.');
+                }
+
+                const newCustomerBalance = customerInfo.balance - partnerInvoice.commissionAmount;
+
+                await stripe.customers.update(customerId, { balance: newCustomerBalance });
 
                 await updateSuccessfulPayoutStatus(invoiceId);
             } else if (payoutStatusUpdate[invoiceId] === 'pendingRejection') {
