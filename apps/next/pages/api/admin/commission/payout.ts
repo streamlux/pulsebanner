@@ -64,7 +64,7 @@ handler.post(async (req, res) => {
                 await stripe.creditNotes.create({
                     invoice: partnerInvoiceId,
                     credit_amount: partnerInvoice.commissionAmount,
-                    lines: [{ type: 'invoice_line_item' }],
+                    lines: [{ type: 'invoice_line_item', invoice_line_item: lineInfoId }],
                 });
 
                 await updateSuccessfulPayoutStatus(invoiceId);
