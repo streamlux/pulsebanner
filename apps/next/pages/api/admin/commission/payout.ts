@@ -51,7 +51,7 @@ handler.post(async (req, res) => {
 
                 logger.info('Customer id in the payout step.', {customerId});
                 // call stripe api to get the list of invoices for the customer. Get the most recent one
-                const invoiceItem = await stripe.invoiceItems.list({ customer: customerId, limit: 5 });
+                const invoiceItem = await stripe.invoices.list({ customer: customerId, limit: 3 });
                 logger.info('Listed invoice items. ', { customerId, invoices: invoiceItem });
                 // think this is undefined. We should print the invoice items
                 const partnerInvoiceId = invoiceItem.data[0].id;
