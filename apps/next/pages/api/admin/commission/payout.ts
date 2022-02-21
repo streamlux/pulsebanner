@@ -56,9 +56,16 @@ handler.post(async (req, res) => {
                 // think this is undefined. We should print the invoice items
                 const partnerInvoiceId = invoiceItem.data[0].id;
 
-                logger.info('PartnerInvoiceId. ', { partnerInvoiceId });
+                const lineInfoId = invoiceItem.data[0].lines.data[0].id;
+                logger.info('Invoice info. ', { partnerInvoiceId: partnerInvoiceId, lineId: lineInfoId });
+                // const lineInfoQuantity = invoiceItem.data[0].lines.data[0].quantity;
+
                 // This is the invoiceId that we want to apply the discount to in the future
-                await stripe.creditNotes.create({ invoice: partnerInvoiceId, credit_amount: partnerInvoice.commissionAmount, lines: [] });
+                await stripe.creditNotes.create({
+                    invoice: partnerInvoiceId,
+                    credit_amount: partnerInvoice.commissionAmount,
+                    lines: [{ type: 'invoice_line_item' }],
+                });
 
                 await updateSuccessfulPayoutStatus(invoiceId);
             } else if (payoutStatusUpdate[invoiceId] === 'pendingRejection') {
