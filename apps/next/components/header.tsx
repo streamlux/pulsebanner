@@ -222,13 +222,7 @@ export default function Header() {
                 </Center>
                 {breakpointValue.mobile && (
                     <Center className={`nojs-show ${!session && loading ? styles.loading : styles.loaded}`}>
-                        <Box
-                            maxW={['95vw']}
-                            background={colorMode === 'dark' ? 'gray.700' : 'blackAlpha.200'}
-                            mx="2"
-                            py="2"
-                            rounded="md"
-                        >
+                        <Box maxW={['95vw']} background={colorMode === 'dark' ? 'gray.700' : 'blackAlpha.200'} mx="2" py="2" rounded="md">
                             <Center id="nav-links" fontSize={['sm', 'md']} px="5vw">
                                 <Wrap spacing={['4', '8', '8', '8']}>
                                     <WrapItem>
