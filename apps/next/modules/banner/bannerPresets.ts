@@ -1,7 +1,5 @@
-import { PageTheme } from "@app/components/layout";
 import { emggBannerBackground, emggLogoSrc } from "@app/util/constants";
 import { BackgroundTemplates, ForegroundTemplates } from "@pulsebanner/remotion/templates";
-import { m } from "framer-motion";
 
 const defaultForeground: keyof typeof BannerForegrounds = 'ImLive';
 const defaultBackground: keyof typeof BackgroundTemplates = 'GradientBackground';
@@ -33,7 +31,6 @@ interface BannerPresetMetadata {
     displayName: string;
     category: string;
     free: boolean;
-    pageTheme?: PageTheme;
 }
 
 interface BannerPresetProps {
@@ -212,12 +209,7 @@ export const bannerPresets: Record<string, BannerPreset> = {
         displayName: 'EMGG Special Edition',
         category: 'Special Edition',
         free: true,
-        ...emggBanner,
-        pageTheme: {
-            bg: 'black',
-            imageSrc: emggLogoSrc,
-            fg: 'gray.800'
-        }
+        ...emggBanner
     },
     noArrow: {
         name: 'customtext',

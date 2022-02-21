@@ -1,4 +1,4 @@
-import { Box, Button, Center, Flex, Heading, SimpleGrid, Tag, Text, VStack, Image, useColorMode } from '@chakra-ui/react';
+import { Box, Button, Center, Flex, Heading, SimpleGrid, Tag, Text, VStack, useColorMode } from '@chakra-ui/react';
 import router from 'next/dist/client/router';
 import React, { ReactElement, FC } from 'react';
 import { Composer } from '../../../../libs/remotion/components/src';
@@ -6,9 +6,7 @@ import { RemotionPreview } from '../../../../libs/remotion/preview/src';
 import { bannerPresets } from '@app/modules/banner/bannerPresets';
 import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
 import { PaymentPlan } from '@app/util/database/paymentHelpers';
-import { FaArrowRight } from 'react-icons/fa';
 import { MdLock } from 'react-icons/md';
-import { landingPageAsset } from '@app/pages';
 import { trackEvent } from '@app/util/umami/trackEvent';
 
 type BannerPresetListProps = {
