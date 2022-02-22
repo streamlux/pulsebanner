@@ -1,4 +1,5 @@
 import { useAdmin } from '@app/util/hooks/useAdmin';
+import { logger } from '@app/util/logger';
 import { AcceptanceStatus } from '@app/util/partner/types';
 import prisma from '@app/util/ssr/prisma';
 import { Box, Button, Select, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Th, Thead, Tr, useToast, VStack } from '@chakra-ui/react';
@@ -148,18 +149,19 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
                     onClick={async () => {
                         const response = await axios.post('/api/admin/partner/update', { affiliateStatusMap });
                         // not getting past here it seems
-                        console.log('response: ', response);
                         if (response.status === 200) {
                             refreshData();
                             toast({
                                 status: 'success',
-                                title: 'Updated selected affiliates status',
+                                title: 'Updated selected parnters statuses',
                             });
+                            logger.info('Successfully updated partners statuses.');
                         } else {
                             toast({
                                 status: 'error',
-                                title: 'Unable to update selected affiliates status',
+                                title: 'Unable to update selected partners status',
                             });
+                            logger.error('Error updating selected partners statuses. ', { error: response.statusText });
                         }
                     }}
                 >

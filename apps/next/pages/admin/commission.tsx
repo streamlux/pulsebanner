@@ -1,4 +1,5 @@
 import { useAdmin } from '@app/util/hooks/useAdmin';
+import { logger } from '@app/util/logger';
 import prisma from '@app/util/ssr/prisma';
 import { Box, Button, Select, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Th, Thead, Tr, useToast, VStack } from '@chakra-ui/react';
 import { CommissionStatus, Partner, PartnerInvoice } from '@prisma/client';
@@ -162,8 +163,8 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, waitPer
                                     <Td>{invoice.id}</Td>
                                     <Td>{invoice.customerId}</Td>
                                     <Td>{invoice.partnerId}</Td>
-                                    <Td>{invoice.commissionAmount}</Td>
-                                    <Td>{invoice.purchaseAmount}</Td>
+                                    <Td>${invoice.commissionAmount * 0.01}</Td>
+                                    <Td>${invoice.purchaseAmount * 0.01}</Td>
                                     <Td>{invoice.paidAt.toDateString()}</Td>
                                     <Td>{invoice.commissionPaidAt === null ? null : invoice.commissionPaidAt.toDateString()}</Td>
                                     {pendingAction ? <Td>{DropdownPayoutOption(invoice)}</Td> : <Td>{invoice.commissionStatus}</Td>}
@@ -177,18 +178,19 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, waitPer
                         <Button
                             onClick={async () => {
                                 const response = await axios.post('/api/admin/commission/payout', { payoutStatusMap });
-                                console.log('response: ', response);
                                 if (response.status === 200) {
                                     refreshData();
                                     toast({
                                         status: 'success',
                                         title: 'Completed payouts',
                                     });
+                                    logger.info('Individual payout completed successfully.');
                                 } else {
                                     toast({
                                         status: 'error',
                                         title: 'Error doing payouts',
                                     });
+                                    logger.error('Individual payout failed. ', { payoutResponse: response.statusText });
                                 }
                             }}
                         >
@@ -203,18 +205,19 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, waitPer
                                 });
 
                                 const response = await axios.post('/api/admin/commission/payout', { bulkPayoutMap });
-                                console.log('response from bulk payout: ', response);
                                 if (response.status === 200) {
                                     refreshData();
                                     toast({
                                         status: 'success',
                                         title: 'Completed bulk payouts',
                                     });
+                                    logger.info('Bulk payout completed successfully.');
                                 } else {
                                     toast({
                                         status: 'error',
                                         title: 'Error doing bulk payouts',
                                     });
+                                    logger.error('Bulk payout failed. ', { payoutResponse: response.statusText });
                                 }
                             }}
                         >

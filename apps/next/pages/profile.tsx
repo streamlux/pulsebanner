@@ -110,14 +110,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     },
                 };
             }
-            console.log('here 1');
             return {
                 props: {
                     profilePic,
                 },
             };
         } else {
-            console.log('here 2');
             return {
                 props: {
                     profilePic: {},
@@ -147,8 +145,6 @@ export default function Page({ profilePic, twitterPic }: Props) {
         ...(profilePic?.foregroundProps ?? (ForegroundTemplates[defaultForeground].defaultProps as any)),
         ...(twitterPic ? { imageUrl: twitterPic } : {}),
     });
-
-    console.log('twitterPic', twitterPic);
 
     const styles: BoxProps = useColorModeValue<BoxProps>(
         {

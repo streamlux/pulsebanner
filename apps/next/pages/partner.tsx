@@ -46,19 +46,19 @@ import useSWR from 'swr';
 import { discordLink } from '@app/util/constants';
 import { AcceptanceStatus, PartnerCreateType } from '@app/util/partner/types';
 import { PartnerInvoice } from '@prisma/client';
+import { logger } from '@app/util/logger';
 
 interface Props {
     partnerStatus: AcceptanceStatus;
     partnerCode?: string;
-    completedPayouts: number;
-    completedPayoutAmount: number;
-    pendingPayouts: number;
-    pendingPayoutAmount: number;
-    pendingInvoices: PartnerInvoice[];
+    completedPayouts?: number;
+    completedPayoutAmount?: number;
+    pendingPayouts?: number;
+    pendingPayoutAmount?: number;
+    pendingInvoices?: PartnerInvoice[];
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-    // we just want to check/get their affiliate status (active, deactivated, none, etc.)
     const session = (await getSession({
         ctx: context,
     })) as any;
@@ -69,7 +69,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 userId: session.userId,
             },
         });
-        console.log('partnerStatus in SSR: ', partnerStatus);
 
         if (partnerStatus) {
             const partnerId = partnerStatus.partnerId;
@@ -92,16 +91,22 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 const invoiceInfoPending = await prisma.partnerInvoice.findMany({
                     where: {
                         partnerId: partnerId,
-                        commissionStatus: 'pending' || 'waitPeriod',
+                        OR: [
+                            {
+                                commissionStatus: {
+                                    equals: 'waitPeriod',
+                                },
+                            },
+                            {
+                                commissionStatus: {
+                                    equals: 'pending',
+                                },
+                            },
+                        ],
                     },
                 });
 
                 const completedPayoutAmount = invoiceInfoPaid
-                    .map((a) => a.commissionAmount)
-                    .reduce((a, b) => {
-                        return a + b;
-                    }, 0);
-                const pendingPayoutAmount = invoiceInfoPending
                     .map((a) => a.commissionAmount)
                     .reduce((a, b) => {
                         return a + b;
@@ -117,7 +122,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     },
                 };
             } catch (e) {
-                console.log('error: ', e);
+                logger.error('Error in partner page for getServerSideProps. ', { error: e });
             }
         }
     }
@@ -161,10 +166,9 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
     );
 
     const availableForAccount = (): boolean => {
-        // add this back
-        // if (paymentPlan === 'Free' && !paymentPlanResponse?.partner) {
-        //     return false;
-        // }
+        if (paymentPlan === 'Free') {
+            return false;
+        }
         return true;
     };
 
@@ -195,7 +199,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                 email: emailValue,
                 firstName: firstName,
                 lastName: lastName,
-                partnerCode: partnerCodeInput,
+                partnerCode: partnerCodeInput.toUpperCase(),
                 paypalEmail: paypalEmailValue,
             };
 
@@ -225,9 +229,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                 });
             }
             refreshData();
-            console.log('response: ', response);
         } else {
-            console.log('invalid field');
             toast({
                 title: 'Partner application failed',
                 description: 'Please make sure all fields are filled in and are valid entries.',
@@ -334,7 +336,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                             <FormLabel my="2">Discount Code</FormLabel>
                             <Input
                                 id="partnerCodeInput"
-                                placeholder="Desired partner code (subject to approval and change)"
+                                placeholder="Desired partner code (subject to change and approval)"
                                 value={partnerCodeInput}
                                 onChange={handlePartnerCodeChange}
                             />
@@ -394,7 +396,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                             Completed Referrals: <b>{`${completedPayouts}`}</b>
                         </Text>
                         <Text textAlign={'center'} fontSize="lg">
-                            Pending Referrals: <b>{`${pendingInvoices.length ?? 0}`}</b>
+                            Pending Referrals: <b>{`${pendingInvoices?.length ?? 0}`}</b>
                         </Text>
                     </Stack>
                     <Stack pb="8" direction={['column', 'row']}>
@@ -405,7 +407,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                             Pending Payout Amount:{' '}
                             <b>{`$${
                                 pendingInvoices
-                                    .map((a) => a.commissionAmount)
+                                    ?.map((a) => a.commissionAmount)
                                     .reduce((a, b) => {
                                         return a + b;
                                     }, 0) * 0.01 ?? 0
@@ -427,7 +429,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                                     </Tr>
                                 </Thead>
                                 <Tbody>
-                                    {pendingInvoices.map((invoice) => (
+                                    {pendingInvoices?.map((invoice) => (
                                         <Tr key="key">
                                             <Td textAlign={'center'}>{invoice.paidAt.toDateString()}</Td>
                                             <Td textAlign={'center'}>${invoice.commissionAmount * 0.01}</Td>
@@ -523,7 +525,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                     description: 'Easily earn money back the more users you refer to PulseBanner memberships',
                     images: [
                         {
-                            url: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/pulsebanner_name_og.webp',
+                            url: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/pulsebanner_name_og.webp', // TODO - change image
                             width: 1200,
                             height: 627,
                             alt: 'PulseBanner offers our members the ability to earn money when they refer another user.',
