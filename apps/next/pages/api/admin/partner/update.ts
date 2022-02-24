@@ -39,7 +39,7 @@ handler.post(async (req, res) => {
                 // If the user is not in the table and the code doesn't exist, create a promo code and add them to the table
                 if (codeExists === null && partnerInfo && partnerInfo.partnerCode) {
                     const response = await createNewPromoCode(partnerId, partnerInfo.partnerCode);
-                    if (response != 200) {
+                    if (response !== 200) {
                         return res.status(400).send('Error creating a new promo code and updating our table.');
                     } else {
                         return res.status(200).send('Success creating new promo code');

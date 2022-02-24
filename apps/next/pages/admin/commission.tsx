@@ -1,7 +1,6 @@
 import { useAdmin } from '@app/util/hooks/useAdmin';
-import { logger } from '@app/util/logger';
 import prisma from '@app/util/ssr/prisma';
-import { Box, Button, Select, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Th, Thead, Tr, useToast, VStack } from '@chakra-ui/react';
+import { Box, Button, Container, Select, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Th, Thead, Tr, useToast, VStack } from '@chakra-ui/react';
 import { CommissionStatus, Partner, PartnerInvoice } from '@prisma/client';
 import axios from 'axios';
 import { GetServerSideProps } from 'next';
@@ -184,13 +183,13 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, waitPer
                                         status: 'success',
                                         title: 'Completed payouts',
                                     });
-                                    logger.info('Individual payout completed successfully.');
+                                    console.info('Individual payout completed successfully.');
                                 } else {
                                     toast({
                                         status: 'error',
                                         title: 'Error doing payouts',
                                     });
-                                    logger.error('Individual payout failed. ', { payoutResponse: response.statusText });
+                                    console.error('Individual payout failed. ', { payoutResponse: response.statusText });
                                 }
                             }}
                         >
@@ -211,13 +210,13 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, waitPer
                                         status: 'success',
                                         title: 'Completed bulk payouts',
                                     });
-                                    logger.info('Bulk payout completed successfully.');
+                                    console.info('Bulk payout completed successfully.');
                                 } else {
                                     toast({
                                         status: 'error',
                                         title: 'Error doing bulk payouts',
                                     });
-                                    logger.error('Bulk payout failed. ', { payoutResponse: response.statusText });
+                                    console.error('Bulk payout failed. ', { payoutResponse: response.statusText });
                                 }
                             }}
                         >
@@ -230,7 +229,7 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, waitPer
     );
 
     return (
-        <>
+        <Container maxW="container.xl">
             <Tabs colorScheme="purple" flexGrow={1}>
                 <TabList>
                     <Tab>Completed</Tab>
@@ -251,6 +250,6 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, waitPer
                     {PanelLayoutHelper(allInvoiceList, false)}
                 </TabPanels>
             </Tabs>
-        </>
+        </Container>
     );
 }

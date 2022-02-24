@@ -1,9 +1,8 @@
 import { useAdmin } from '@app/util/hooks/useAdmin';
-import { logger } from '@app/util/logger';
 import { AcceptanceStatus } from '@app/util/partner/types';
 import prisma from '@app/util/ssr/prisma';
-import { Box, Button, Select, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Th, Thead, Tr, useToast, VStack } from '@chakra-ui/react';
-import { Partner } from '@prisma/client';
+import { Box, Button, Container, Select, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Th, Thead, Tr, useToast, VStack } from '@chakra-ui/react';
+import { Partner, StripePartnerInfo } from '@prisma/client';
 import axios from 'axios';
 import { GetServerSideProps } from 'next';
 import { getSession } from 'next-auth/react';
@@ -11,7 +10,9 @@ import { useRouter } from 'next/router';
 import { useState } from 'react';
 
 interface PartnerProps {
-    activePartnerList: Partner[];
+    activePartnerList: (Partner & {
+        stripePartnerInfo: StripePartnerInfo;
+    })[];
     pendingPartnerList: Partner[];
     rejectedPartnerList: Partner[];
     suspendedPartnerList: Partner[];
@@ -51,6 +52,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             const activePartners = await prisma.partner.findMany({
                 where: {
                     acceptanceStatus: 'active',
+                },
+                include: {
+                    stripePartnerInfo: true,
                 },
             });
 
@@ -114,11 +118,17 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
         </Select>
     );
 
-    const PanelLayoutHelper = (partnerList: Partner[]) => (
+    const PanelLayoutHelper = (
+        partnerList:
+            | Partner[]
+            | (Partner & {
+                  stripePartnerInfo: StripePartnerInfo;
+              })[]
+    ) => (
         <TabPanel>
             <VStack spacing={8}>
-                <Box maxH="50vh" overflow={'scroll'}>
-                    <Table size="md">
+                <Box maxH="50vh" overflow={'scroll'} w="full">
+                    <Table size="sm">
                         <Thead>
                             <Tr>
                                 <Th>Partner ID</Th>
@@ -127,21 +137,28 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
                                 <Th>First Name</Th>
                                 <Th>Last Name</Th>
                                 <Th>Paypal email</Th>
+                                <Th>Info</Th>
                                 <Th>Status</Th>
                             </Tr>
                         </Thead>
                         <Tbody>
-                            {partnerList.map((partner) => (
-                                <Tr key={partner.id}>
-                                    <Td>{partner.id}</Td>
-                                    <Td>{partner.partnerCode}</Td>
-                                    <Td>{partner.email}</Td>
-                                    <Td>{partner.firstName}</Td>
-                                    <Td>{partner.lastName}</Td>
-                                    <Td>{partner.paypalEmail}</Td>
-                                    <Td>{DropdownOption(partner)}</Td>
-                                </Tr>
-                            ))}
+                            {partnerList.map(
+                                (
+                                    partner: Partner & {
+                                        stripePartnerInfo: StripePartnerInfo;
+                                    }
+                                ) => (
+                                    <Tr key={partner.id} fontSize="sm">
+                                        <Td>{partner.id}</Td>
+                                        <Td>{partner.partnerCode}</Td>
+                                        <Td>{partner.email}</Td>
+                                        <Td>{partner.firstName}</Td>
+                                        <Td>{partner.lastName}</Td>
+                                        <Td>{partner?.stripePartnerInfo?.stripePromoCode}</Td>
+                                        <Td>{DropdownOption(partner)}</Td>
+                                    </Tr>
+                                )
+                            )}
                         </Tbody>
                     </Table>
                 </Box>
@@ -155,13 +172,11 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
                                 status: 'success',
                                 title: 'Updated selected parnters statuses',
                             });
-                            logger.info('Successfully updated partners statuses.');
                         } else {
                             toast({
                                 status: 'error',
                                 title: 'Unable to update selected partners status',
                             });
-                            logger.error('Error updating selected partners statuses. ', { error: response.statusText });
                         }
                     }}
                 >
@@ -172,14 +187,14 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
     );
 
     return (
-        <>
+        <Container maxW="container.xl">
             <Tabs colorScheme="purple" flexGrow={1}>
                 <TabList>
-                    <Tab>Active</Tab>
-                    <Tab>Pending</Tab>
-                    <Tab>Rejected</Tab>
-                    <Tab>Suspended</Tab>
-                    <Tab>All</Tab>
+                    <Tab>Active ({activePartnerList.length})</Tab>
+                    <Tab>Pending ({pendingPartnerList.length})</Tab>
+                    <Tab>Rejected ({rejectedPartnerList.length})</Tab>
+                    <Tab>Suspended ({suspendedPartnerList.length})</Tab>
+                    <Tab>All ({allPartnerList.length})</Tab>
                 </TabList>
 
                 <TabPanels flexGrow={1}>
@@ -190,6 +205,6 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
                     {PanelLayoutHelper(allPartnerList)}
                 </TabPanels>
             </Tabs>
-        </>
+        </Container>
     );
 }
