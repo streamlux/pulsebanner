@@ -46,12 +46,11 @@ handler.post(async (req, res) => {
             firstName: req.body.firstName,
             lastName: req.body.lastName ?? null,
             partnerCode: req.body.partnerCode,
-            paypalEmail: req.body.paypalEmail,
         };
 
         console.log('partnerinfo; ', partnerInfo);
 
-        if (!partnerInfo.email || !partnerInfo.firstName || !partnerInfo.partnerCode || !partnerInfo.paypalEmail) {
+        if (!partnerInfo.email || !partnerInfo.firstName || !partnerInfo.partnerCode) {
             console.log('as rape');
             return res.status(400).send('Invalid paramters passed back from client.');
         }
@@ -86,7 +85,6 @@ handler.post(async (req, res) => {
                 firstName: partnerInfo.firstName,
                 lastName: partnerInfo.lastName,
                 partnerCode: partnerInfo.partnerCode,
-                paypalEmail: partnerInfo.paypalEmail,
                 acceptanceStatus: AcceptanceStatus.Pending,
             },
         });

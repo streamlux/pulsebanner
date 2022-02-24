@@ -147,13 +147,11 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [partnerCodeInput, setPartnerCode] = useState('');
-    const [paypalEmailValue, setPaypalEmailValue] = useState('');
 
     const handleEmailChange = (e) => setEmailValue(e.target.value);
     const handleFirstNameChange = (e) => setFirstName(e.target.value);
     const handleLastNameChange = (e) => setLastName(e.target.value);
     const handlePartnerCodeChange = (e) => setPartnerCode(e.target.value);
-    const handlePaypalEmailChange = (e) => setPaypalEmailValue(e.target.value);
 
     const styles: BoxProps = useColorModeValue<BoxProps>(
         {
@@ -194,13 +192,12 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
             return;
         }
 
-        if (validateEmailFields(emailValue) && validateEmailFields(paypalEmailValue) && validateTextFields()) {
+        if (validateEmailFields(emailValue) && validateTextFields()) {
             const data: PartnerCreateType = {
                 email: emailValue,
                 firstName: firstName,
                 lastName: lastName,
                 partnerCode: partnerCodeInput.toUpperCase(),
-                paypalEmail: paypalEmailValue,
             };
 
             // we are talking to our own partner program here
@@ -341,10 +338,6 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                                 onChange={handlePartnerCodeChange}
                             />
                         </FormControl>
-                        <FormControl isRequired>
-                            <FormLabel my="2">Paypal email</FormLabel>
-                            <Input id="paypalEmail" type="email" placeholder="Paypal email" value={paypalEmailValue} onChange={handlePaypalEmailChange} />
-                        </FormControl>
                         <Flex paddingTop={'4'} justifyContent={'center'} direction={['column', 'row']}>
                             <Button size="lg" onClick={submitAffiliateRequest}>
                                 Submit
@@ -378,8 +371,8 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
     );
 
     const activeText = partnerCode
-        ? `I just joined the @PulseBanner Partner Program! Use my code ${partnerCode} when buying a membership for 10% off!\nPulseBanner.com/pricing\n#PulseBanner #TwitchStreamer`
-        : `I just joined the @PulseBanner Partner Program!\nPulseBanner.com/pricing\n#PulseBanner #TwitchStreamer`;
+        ? `I just joined the @PulseBanner Partner Program! Use my code ${partnerCode} when buying a membership for 10% off!\nPulseBanner.com/pricing\n#PulseBanner`
+        : `I just joined the @PulseBanner Partner Program!\nPulseBanner.com/pricing\n#PulseBanner`;
 
     const ActiveAffiliatePage = () => (
         <>
@@ -447,7 +440,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                                 I just joined the <Link color="twitter.400">@PulseBanner</Link> Partner Program! Use my code <b>{`${partnerCode}`}</b> when buying a membership for
                                 10% off! <Link color="twitter.500">PulseBanner.com/pricing</Link>!
                                 <br />
-                                <Link color="twitter.500">#PulseBanner</Link> <Link color="twitter.500">#TwitchStreamer</Link>
+                                <Link color="twitter.500">#PulseBanner</Link>
                             </Text>
                         }
                         tweetText={activeText}
@@ -479,8 +472,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
 
     const SuspendedPage = () => <>Testing</>;
 
-    const pendingText =
-        'I just applied to the @PulseBanner Partner Program! Apply today to start earning with the each referral at pulsebanner.com/partner!\n\n#PulseBanner #TwitchStreamer';
+    const pendingText = 'I just applied to the @PulseBanner Partner Program! Apply today to start earning with the each referral at pulsebanner.com/partner!\n\n#PulseBanner';
 
     const PendingPage = () => (
         <>

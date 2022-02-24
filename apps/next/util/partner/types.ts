@@ -3,7 +3,6 @@ export type PartnerCreateType = {
     firstName: string;
     lastName?: string;
     partnerCode: string;
-    paypalEmail: string;
 };
 
 export enum AcceptanceStatus {

@@ -203,11 +203,11 @@ model PastStreams {
 // Below models taken from https://github.com/gmpetrov/ultimate-saas-ts/blob/master/prisma/schema.prisma
 
 model Customer {
-    id        String   @id @default(cuid())
-    userId    String   @unique(map: "customers_user_id_unique") @map("user_id")
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @default(now()) @map("updated_at")
-    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    id             String          @id @default(cuid())
+    userId         String          @unique(map: "customers_user_id_unique") @map("user_id")
+    createdAt      DateTime        @default(now()) @map("created_at")
+    updatedAt      DateTime        @default(now()) @map("updated_at")
+    user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
     PartnerInvoice PartnerInvoice?
 
     @@map("customers")
@@ -304,7 +304,6 @@ model Partner {
     email            String           @unique
     firstName        String
     lastName         String?
-    paypalEmail      String
     partnerCode      String           @unique
     acceptanceStatus AcceptanceStatus
 
@@ -337,7 +336,7 @@ enum CommissionStatus {
 
 model PartnerInvoice {
     id               String           @id @unique // This is the invoice via stripe.
-    customerId       String // this is the customer id on the invoice. We should link this to our customers table
+    customerId       String           @unique // this is the customer id on the invoice. We should link this to our customers table
     customer         Customer         @relation(fields: [customerId], references: [id])
     partnerId        String? // this cannot be unique in this table
     partner          Partner?         @relation(fields: [partnerId], references: [id])
