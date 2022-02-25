@@ -532,20 +532,7 @@ export default function Page({ banner, originalBanner }: Props) {
                 {preset && (
                     <>
                         <Flex w="full" rounded="md" direction="column">
-                            <Center w="full">
-                                <RemotionPreview compositionHeight={500} compositionWidth={1500}>
-                                    <Composer
-                                        {...{
-                                            backgroundId: bgId,
-                                            foregroundId: fgId,
-                                            backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
-                                            foregroundProps: { ...BannerForegrounds[fgId].defaultProps, ...fgProps },
-                                        }}
-                                    />
-                                </RemotionPreview>
-                            </Center>
-
-                            <Flex direction={['column-reverse', 'row']} w="full" justifyContent={'space-between'} px={['2', '8']} pt="2" mb="-1">
+                            <Flex direction={['column-reverse', 'row']} w="full" justifyContent={'space-between'} py="2">
                                 <HStack>
                                     <ButtonGroup size={breakpoint !== 'base' ? 'md' : 'sm'} w="full">
                                         <Button
@@ -571,6 +558,18 @@ export default function Page({ banner, originalBanner }: Props) {
                                     </ButtonGroup>
                                 </HStack>
                             </Flex>
+                            <Center w="full">
+                                <RemotionPreview compositionHeight={500} compositionWidth={1500}>
+                                    <Composer
+                                        {...{
+                                            backgroundId: bgId,
+                                            foregroundId: fgId,
+                                            backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
+                                            foregroundProps: { ...BannerForegrounds[fgId].defaultProps, ...fgProps },
+                                        }}
+                                    />
+                                </RemotionPreview>
+                            </Center>
 
                             <Flex {...styles} grow={1} p="4" my="4" rounded="md" w="full" direction="column" minH="lg">
                                 <Tabs colorScheme="purple" flexGrow={1} size={breakpoint !== 'base' ? 'md' : 'sm'}>
