@@ -15,7 +15,6 @@ import { getAccountInfo } from '@app/util/database/postgresHelpers';
 import { localAxios } from '@app/util/axios';
 import { logger } from '@app/util/logger';
 import axios from 'axios';
-import { TwitterClient } from 'twitter-api-client';
 
 // File contains options and hooks for next-auth, the authentication package
 // we are using to handle signup, signin, etc.
