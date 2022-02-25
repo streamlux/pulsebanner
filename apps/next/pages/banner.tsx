@@ -33,16 +33,13 @@ import {
     SliderThumb,
     SliderTrack,
     Tooltip,
-    Alert,
-    AlertIcon,
-    SimpleGrid,
     ButtonGroup,
 } from '@chakra-ui/react';
 import React, { ReactElement, useEffect, useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
 import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
-import { FaArrowLeft, FaArrowRight, FaDiscord, FaLock, FaPlay, FaStop, FaUndo } from 'react-icons/fa';
+import { FaArrowLeft, FaDiscord, FaLock, FaPlay, FaStop, FaUndo } from 'react-icons/fa';
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 import { PaymentModal } from '@app/components/pricing/PaymentModal';
@@ -56,7 +53,7 @@ import { GetServerSideProps } from 'next';
 import { Banner } from '@prisma/client';
 import prisma from '@app/util/ssr/prisma';
 import { localAxios } from '@app/util/axios';
-import router, { useRouter } from 'next/router';
+import { useRouter } from 'next/router';
 import { RemotionPreview } from '@pulsebanner/remotion/preview';
 import { Composer } from '@pulsebanner/remotion/components';
 import { NextSeo } from 'next-seo';
@@ -68,11 +65,11 @@ import { getAccountsById } from '@app/util/getAccountsById';
 import { env } from 'process';
 import { download } from '@app/util/s3/download';
 import { FileUploadModal } from '@app/modules/fileUpload/FileUploadModal';
-import { ArrowRightIcon, InfoIcon } from '@chakra-ui/icons';
+import { InfoIcon } from '@chakra-ui/icons';
 import { bannerPresets } from '@app/modules/banner/bannerPresets';
-import { MdLock } from 'react-icons/md';
-import { BannerPresetListProps } from '@app/modules/banner/BannerPresetList';
+import { BannerPresetList } from '@app/modules/banner/BannerPresetList';
 import Layout from '@app/components/layout';
+import { ChangePresetModal } from '@app/modules/banner/ChangePresetModal';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof BannerForegrounds = 'ImLive';
@@ -395,6 +392,7 @@ export default function Page({ banner, originalBanner }: Props) {
         }
     };
 
+    const { isOpen: presetModalIsOpen, onOpen: onOpenPresetModal, onClose: onClosePresetModal, onToggle } = useDisclosure();
     const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
     const { isOpen: disableBannerIsOpen, onClose: disableBannerOnClose, onToggle: bannerDisabledToggle } = useDisclosure();
     const [sliderValue, setSliderValue] = useState(0);
@@ -507,6 +505,9 @@ export default function Page({ banner, originalBanner }: Props) {
                     cardType: 'summary_large_image',
                 }}
             />
+            <ChangePresetModal isOpen={presetModalIsOpen} onClose={onClosePresetModal}>
+                <BannerPresetList modal paymentPlan={paymentPlan} showPricingIfFree={showPricingIfFree} onSelect={onClosePresetModal} />
+            </ChangePresetModal>
             <DisableBannerModal isOpen={disableBannerIsOpen} onClose={disableBannerOnClose} />
             <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} callbackUrl="/banner" />
             {reAuth ? <ReconnectTwitterModal session={session} isOpen={isOpen} onClose={onClose} /> : <></>}
@@ -526,12 +527,12 @@ export default function Page({ banner, originalBanner }: Props) {
                     </Flex>
                 )}
 
-                {!preset && <BannerPresetListProps paymentPlan={paymentPlan} showPricingIfFree={showPricingIfFree} />}
+                {!preset && <BannerPresetList paymentPlan={paymentPlan} showPricingIfFree={showPricingIfFree} />}
 
                 {preset && (
                     <>
                         <Flex w="full" rounded="md" direction="column">
-                            <Center w="full" maxH="320px">
+                            <Center w="full">
                                 <RemotionPreview compositionHeight={500} compositionWidth={1500}>
                                     <Composer
                                         {...{
@@ -546,36 +547,36 @@ export default function Page({ banner, originalBanner }: Props) {
 
                             <Flex direction={['column-reverse', 'row']} w="full" justifyContent={'space-between'} px={['2', '8']} pt="2" mb="-1">
                                 <HStack>
-                                    <ButtonGroup size={breakpoint !== 'base' ? 'md' : 'xs'} w="full">
+                                    <ButtonGroup size={breakpoint !== 'base' ? 'md' : 'sm'} w="full">
                                         <Button
                                             className={trackEvent('click', 'change-preset-button')}
-                                            w={['40%', 'fit-content']}
-                                            leftIcon={<FaArrowLeft />}
+                                            w={['50%', 'fit-content']}
+                                            // leftIcon={<FaArrowLeft />}
                                             onClick={() => {
-                                                router.replace('/banner?preset=select', '/banner');
+                                                onOpenPresetModal();
+                                                // router.replace('/banner?preset=select', '/banner');
                                             }}
                                         >
-                                            Change preset
+                                            Change Template
                                         </Button>
                                         <Button
-                                            w={['60%', 'fit-content']}
-                                            leftIcon={<FaUndo />}
+                                            w={['50%', 'fit-content']}
                                             onClick={async () => {
                                                 await router.push('/banner', '/banner');
                                                 router.reload();
                                             }}
                                         >
-                                            Undo unsaved changes
+                                            Undo Changes
                                         </Button>
                                     </ButtonGroup>
                                 </HStack>
                             </Flex>
 
                             <Flex {...styles} grow={1} p="4" my="4" rounded="md" w="full" direction="column" minH="lg">
-                                <Tabs colorScheme="purple" flexGrow={1}>
+                                <Tabs colorScheme="purple" flexGrow={1} size={breakpoint !== 'base' ? 'md' : 'sm'}>
                                     <TabList>
                                         <Tab className={trackEvent('click', 'banner-tab')}>Banner</Tab>
-                                        <Tab className={trackEvent('click', 'background-tab')}>Background</Tab>
+                                        {preset !== 'emgg' && <Tab className={trackEvent('click', 'background-tab')}>Background</Tab>}
                                     </TabList>
 
                                     <TabPanels flexGrow={1}>
@@ -605,12 +606,14 @@ export default function Page({ banner, originalBanner }: Props) {
                                                         <Text>Your banner will refresh every {refreshSpeeds[sliderValue]}.</Text>
                                                     ) : (
                                                         <HStack>
-                                                            <Text>Become PulseBanner Member to enable banner refreshing.</Text>
-                                                            <NextLink passHref href="/pricing">
-                                                                <Link colorScheme={'teal'} fontSize={['md']}>
-                                                                    View pricing
-                                                                </Link>
-                                                            </NextLink>
+                                                            <Text>
+                                                                Become a PulseBanner Member to enable banner refreshing.{' '}
+                                                                <NextLink as="span" passHref href="/pricing">
+                                                                    <Link colorScheme={'teal'} fontSize={['md']} textDecor="underline">
+                                                                        View pricing
+                                                                    </Link>
+                                                                </NextLink>
+                                                            </Text>
                                                         </HStack>
                                                     )}
                                                     <Slider

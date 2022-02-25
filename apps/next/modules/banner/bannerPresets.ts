@@ -1,4 +1,4 @@
-import { emggBannerBackground, emggLogoSrc } from "@app/util/constants";
+import { emggBannerBackground } from "@app/util/constants";
 import { BackgroundTemplates, ForegroundTemplates } from "@pulsebanner/remotion/templates";
 
 const defaultForeground: keyof typeof BannerForegrounds = 'ImLive';
@@ -31,6 +31,7 @@ interface BannerPresetMetadata {
     displayName: string;
     category: string;
     free: boolean;
+    locked?: boolean;
 }
 
 interface BannerPresetProps {
@@ -85,7 +86,9 @@ const defaultBanner3: BannerPresetProps = {
         id: defaultForeground,
         props: {
             ...ForegroundTemplates[defaultForeground].defaultProps,
-            arrow: false
+            arrow: false,
+            showText: false,
+            showUsername: false,
         },
     },
     background: {
@@ -99,45 +102,6 @@ const defaultBanner3: BannerPresetProps = {
     },
 };
 
-const image1: BannerPresetProps = {
-    foreground: {
-        id: 'ImLive',
-        props: ForegroundTemplates['ImLive'].defaultProps,
-    },
-    background: {
-        id: 'ImageBackground',
-        props: {
-            src: 'https://64.media.tumblr.com/bd4b20d179a99faa0d1432c90d59a6fe/b883350067f1853e-75/s1280x1920/da72631c44e5f30b7ccf2f4313d7f885b1f12843.jpg'
-        },
-    },
-};
-const imageWithFont: BannerPresetProps = {
-    foreground: {
-        id: 'ImLive',
-        props: {
-            ...ForegroundTemplates['ImLive'].defaultProps,
-            fontStyle: 'Bangers'
-        },
-    },
-    background: {
-        id: 'ImageBackground',
-        props: {
-            src: 'https://64.media.tumblr.com/bd4b20d179a99faa0d1432c90d59a6fe/b883350067f1853e-75/s1280x1920/da72631c44e5f30b7ccf2f4313d7f885b1f12843.jpg'
-        },
-    },
-};
-const image2: BannerPresetProps = {
-    foreground: {
-        id: 'ImLive',
-        props: ForegroundTemplates['ImLive'].defaultProps,
-    },
-    background: {
-        id: 'ImageBackground',
-        props: {
-            src: 'https://cutewallpaper.org/23/all-anime-wallpaper-twitter-header/16027386.jpg'
-        },
-    },
-};
 
 const camo: BannerPresetProps = {
     foreground: {
@@ -209,6 +173,7 @@ export const bannerPresets: Record<string, BannerPreset> = {
         displayName: 'EMGG Special Edition',
         category: 'Special Edition',
         free: true,
+        locked: true,
         ...emggBanner
     },
     noArrow: {
@@ -220,17 +185,17 @@ export const bannerPresets: Record<string, BannerPreset> = {
     },
     customGradient: {
         name: 'noarrow',
-        displayName: 'No arrow',
+        displayName: 'Minimal',
         category: 'Default',
         free: true,
         ...defaultBanner3
     },
     image2: {
         name: 'image2',
-        displayName: 'Image Background 2',
+        displayName: 'Space',
         category: 'Default',
         free: false,
-        ...imgPreset('https://cutewallpaper.org/23/all-anime-wallpaper-twitter-header/16027386.jpg', 'Lacquer')
+        ...imgPreset('https://pb-static.sfo3.cdn.digitaloceanspaces.com/banner-backgrounds/space.jpeg', 'Lacquer')
     },
     camo: {
         name: 'camo',
@@ -244,13 +209,13 @@ export const bannerPresets: Record<string, BannerPreset> = {
         displayName: 'Vaporwave',
         category: 'Default',
         free: false,
-        ...imgPreset('https://f8n-production.s3.amazonaws.com/creators/profile/hv54p9fys-1500x500-jpeg-o80i8o.jpeg', 'Iceland')
+        ...imgPreset('https://pb-static.sfo3.cdn.digitaloceanspaces.com/banner-backgrounds/vaporwave.jpeg', 'Iceland')
     },
     cool: {
         name: 'setup',
         displayName: 'Abstract',
         category: 'Default',
         free: false,
-        ...imgPreset('https://cdn.hashnode.com/res/hashnode/image/upload/v1641819327229/QyiRUMMwX.jpeg')
+        ...imgPreset('https://pb-static.sfo3.cdn.digitaloceanspaces.com/banner-backgrounds/purple.jpeg')
     }
 }
