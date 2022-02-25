@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Banner templates
 
+### Fixed
+
+- Missing avatars
+
 ## [0.8.1] - 2022-02-19
 
 ### Fixed
