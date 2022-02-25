@@ -118,7 +118,6 @@ export const ImLive: LayerForm<typeof ForegroundComponents.ImLive> = ({ props, s
                 >
                     Display username
                 </Checkbox>
-                <Tag colorScheme="green">New!</Tag>
             </HStack>
 
             <FormControl>

@@ -22,13 +22,19 @@ import {
     VStack,
     Link,
     useToast,
+    Image,
     Stack,
     BoxProps,
     useColorModeValue,
     Tag,
-    SimpleGrid,
-    Divider,
-    useColorMode,
+    Slider,
+    SliderFilledTrack,
+    SliderMark,
+    SliderThumb,
+    SliderTrack,
+    Tooltip,
+    Alert,
+    AlertIcon,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
@@ -56,6 +62,11 @@ import NextLink from 'next/link';
 import { ReconnectTwitterModal } from '@app/modules/onboard/ReconnectTwitterModal';
 import { bannerFaqItems, generalFaqItems } from '@app/modules/faq/data';
 import { FaqSection } from '@app/modules/faq/FaqSection';
+import { getAccountsById } from '@app/util/getAccountsById';
+import { env } from 'process';
+import { download } from '@app/util/s3/download';
+import { FileUploadModal } from '@app/modules/fileUpload/FileUploadModal';
+import { InfoIcon } from '@chakra-ui/icons';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof ForegroundTemplates = 'ImLive';
@@ -102,6 +113,7 @@ const bannerTypes = {
 interface Props {
     banner: Banner;
     reAuthRequired?: boolean;
+    originalBanner?: string;
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -115,6 +127,19 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 userId: session.userId,
             },
         });
+
+        let originalBanner: string;
+
+        try {
+            const userId = session.userId;
+            const accounts = await getAccountsById(userId);
+            const twitchUserId = accounts['twitch'].providerAccountId;
+            originalBanner = await download(env.IMAGE_BUCKET_NAME, userId);
+            console.log(originalBanner.substring(0, 22));
+        } catch (e) {
+            //
+            console.log(e);
+        }
 
         if (banner) {
             if ((banner.foregroundProps as any).username === 'Username Here!') {
@@ -133,6 +158,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 });
                 return {
                     props: {
+                        originalBanner,
                         banner: {
                             ...defaultBannerSettings,
                             foregroundProps: {
@@ -146,6 +172,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             return {
                 props: {
                     banner,
+                    originalBanner,
                 },
             };
         } else {
@@ -156,6 +183,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 const username = usernameInfo.data.displayName;
                 return {
                     props: {
+                        originalBanner,
                         banner: {
                             ...defaultBannerSettings,
                             foregroundProps: {
@@ -183,7 +211,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
 };
 
-export default function Page({ banner }: Props) {
+export default function Page({ banner, originalBanner }: Props) {
     const { data: sessionInfo } = useSession();
 
     const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
@@ -207,6 +235,8 @@ export default function Page({ banner }: Props) {
     const breakpoint = useBreakpoint();
 
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('/banner');
+
+    const [fileModal, setFileModal] = useState(false);
 
     const styles: BoxProps = useColorModeValue<BoxProps>(
         {
@@ -279,6 +309,24 @@ export default function Page({ banner }: Props) {
 
     const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
     const { isOpen: disableBannerIsOpen, onClose: disableBannerOnClose, onToggle: bannerDisabledToggle } = useDisclosure();
+    const [sliderValue, setSliderValue] = useState(0);
+
+    useEffect(() => {
+        const getSliderValue = () => {
+            if (paymentPlan === 'Free' && !paymentPlanResponse?.partner) {
+                return 0;
+            }
+            if (paymentPlan === 'Personal') {
+                return 33;
+            }
+            if (paymentPlanResponse?.partner) {
+                return 66;
+            }
+            return 99;
+        };
+
+        setSliderValue(getSliderValue());
+    }, [paymentPlan, paymentPlanResponse]);
 
     const showPricing: (force?: boolean) => boolean = (force?: boolean) => {
         if (force) {
@@ -287,6 +335,24 @@ export default function Page({ banner }: Props) {
             return false;
         }
         return true;
+    };
+
+    const showPricingIfFree: (force?: boolean) => boolean = (force?: boolean) => {
+        if (force || paymentPlan === 'Free') {
+            umami('show-pricing-modal');
+            pricingToggle();
+            return false;
+        }
+        return true;
+    };
+
+    const setSliderValueCheck = (value: number) => {
+        if (paymentPlan === 'Free') {
+            showPricing(true);
+            setSliderValue(0);
+        } else {
+            setSliderValue(value);
+        }
     };
 
     const EnableButton = (
@@ -319,6 +385,13 @@ export default function Page({ banner }: Props) {
             <Link color="twitter.500">#PulseBanner</Link>
         </Text>
     );
+
+    const refreshSpeeds = {
+        0: 'never',
+        33: '60 minutes',
+        66: '30 minutes',
+        99: '10 minutes',
+    };
 
     return (
         <>
@@ -406,12 +479,7 @@ export default function Page({ banner }: Props) {
                                 <TabPanel>
                                     <VStack>
                                         <FormControl id="country">
-                                            <FormLabel>
-                                                Banner type{' '}
-                                                <Tag size="md" colorScheme="green">
-                                                    New!
-                                                </Tag>
-                                            </FormLabel>
+                                            <FormLabel>Banner type </FormLabel>
 
                                             <Select
                                                 value={fgId}
@@ -442,6 +510,69 @@ export default function Page({ banner }: Props) {
                                             showPricing={showPricing}
                                             accountLevel={paymentPlan}
                                         />
+                                        <FormControl>
+                                            <FormLabel>
+                                                Refresh speed{' '}
+                                                <Tooltip label="Banner refresh speed is how often your banner is re-generated and updated on Twitter." fontSize="md">
+                                                    <InfoIcon />
+                                                </Tooltip>{' '}
+                                                <Tag size="md" colorScheme="green">
+                                                    New!
+                                                </Tag>
+                                            </FormLabel>
+
+                                            {sliderValue !== 0 ? (
+                                                <Text>Your banner will refresh every {refreshSpeeds[sliderValue]}.</Text>
+                                            ) : (
+                                                <HStack>
+                                                    <Text>Become PulseBanner Member to enable banner refreshing.</Text>
+                                                    <NextLink passHref href="/pricing">
+                                                        <Link colorScheme={'teal'} fontSize={['md']}>
+                                                            View pricing
+                                                        </Link>
+                                                    </NextLink>
+                                                </HStack>
+                                            )}
+                                            <Slider
+                                                defaultValue={0}
+                                                max={99}
+                                                ml={[0, '2']}
+                                                step={33}
+                                                colorScheme={'purple'}
+                                                value={sliderValue}
+                                                onClick={() => showPricingIfFree()}
+                                                aria-label="slider-ex-6"
+                                                maxW="lg"
+                                                mb="8"
+                                            >
+                                                <SliderMark value={0} mt="2" fontSize={['xs', 'sm']}>
+                                                    Never
+                                                </SliderMark>
+                                                <SliderMark value={33} mt="2" ml="-4" fontSize={['xs', 'sm']}>
+                                                    Slow <br />
+                                                    (60 min)
+                                                    <br />
+                                                    <Tag onClick={() => showPricingIfFree()} size="sm" colorScheme="green">
+                                                        Personal
+                                                    </Tag>
+                                                </SliderMark>
+                                                <SliderMark value={66} mt="2" ml="-4" fontSize={['xs', 'sm']}>
+                                                    Fast <br />
+                                                    (30 min)
+                                                </SliderMark>
+                                                <SliderMark value={99} mt="2" ml="-6" fontSize={['xs', 'sm']} w="24">
+                                                    Insanity <br /> (10 min)
+                                                    <br />
+                                                    <Tag size="sm" colorScheme="green" onClick={() => showPricingIfFree()}>
+                                                        Pro
+                                                    </Tag>
+                                                </SliderMark>
+                                                <SliderTrack h="3" rounded="full">
+                                                    <SliderFilledTrack />
+                                                </SliderTrack>
+                                                {paymentPlan === 'Free' && <SliderThumb />}
+                                            </Slider>
+                                        </FormControl>
                                     </VStack>
                                 </TabPanel>
                                 <TabPanel>
@@ -501,6 +632,26 @@ export default function Page({ banner }: Props) {
                         {EnableButton}
                     </Flex>
                 </Flex>
+                {originalBanner && (
+                    <Box>
+                        <HStack p="2" w="full">
+                            <Box w="full">
+                                <Heading fontSize="lg">Offline banner</Heading>
+                                <Text>When you are not streaming, this will be your Twitter banner.</Text>
+                            </Box>
+                            <Box>
+                                <Button onClick={() => setFileModal(!fileModal)}>Change banner</Button>
+                            </Box>
+                        </HStack>
+                        <Image
+                            alt="Backup banner"
+                            src={`data:image/jpeg;base64,${originalBanner}`}
+                            maxW="container.sm"
+                            fallbackSrc="https://placehold.co/1500x500?text=Empty+banner"
+                        />
+                    </Box>
+                )}
+                <FileUploadModal isOpen={fileModal} onClose={() => setFileModal(false)} title="Change offline banner" />
                 <Center>
                     <Stack direction={['column', 'row']}>
                         <Text textAlign="center">Like Live Banner? Check out {breakpoint === 'base' ? '👇' : '👉'} </Text>

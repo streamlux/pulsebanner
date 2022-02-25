@@ -1,12 +1,15 @@
 import { Price, PriceInterval, Product } from '.prisma/client';
 import { holidayDecor, promoCode } from '@app/util/constants';
+import { PaymentPlan, APIPaymentObject } from '@app/util/database/paymentHelpers';
+import getStripe from '@app/util/getStripe';
 import { trackEvent } from '@app/util/umami/trackEvent';
 import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
 import { HStack, SimpleGrid, Stack, VStack } from '@chakra-ui/layout';
 import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay } from '@chakra-ui/modal';
-import { Box, Center, chakra, Flex, Heading, List, ListIcon, ListItem, Switch, Tag, Text, useColorMode, WrapItem } from '@chakra-ui/react';
-import router from 'next/router';
-import React, { useState } from 'react';
+import { Box, Center, chakra, Flex, Heading, List, ListIcon, ListItem, Switch, Tag, Text, useColorMode, useDisclosure, WrapItem } from '@chakra-ui/react';
+import { useSession } from 'next-auth/react';
+import router, { useRouter } from 'next/router';
+import React, { useCallback, useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { Card } from '../Card';
 import { ProductCard } from './ProductCard';
@@ -21,15 +24,75 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
     const [billingInterval, setBillingInterval] = useState<PriceInterval>('year');
     const { colorMode } = useColorMode();
 
-    if (data === undefined) {
-        return <></>;
-    }
-
     const sortProductsByPrice = (
         products: (Product & {
             prices: Price[];
         })[]
     ) => products.sort((a, b) => a?.prices?.find((one) => one.interval === billingInterval)?.unitAmount - b?.prices?.find((one) => one.interval === billingInterval)?.unitAmount);
+
+    const [paymentPlan, setPaymentPlan] = useState<PaymentPlan>();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { status, data: session } = useSession({ required: false }) as any;
+
+    const router = useRouter();
+
+    const ensureSignUp = useCallback(() => {
+        if (session?.accounts?.twitter) {
+            return true;
+        }
+        open();
+        return false;
+    }, [session]);
+
+    useEffect(() => {
+        (async () => {
+            if (status === 'authenticated') {
+                const res = await fetch('/api/user/subscription');
+
+                const data: APIPaymentObject = await res.json();
+
+                if (data) {
+                    setPaymentPlan(data.plan);
+                }
+            }
+        })();
+    }, [status]);
+
+    const handlePricingClick = useCallback(
+        async (priceId: string) => {
+            router.push({
+                query: {
+                    priceId,
+                },
+            });
+            if (ensureSignUp()) {
+                if (paymentPlan === 'Professional') {
+                    return router.push('/account');
+                }
+
+                const res = await fetch('/api/stripe/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'content-type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        price: priceId,
+                        cancel_path: router.asPath,
+                    }),
+                });
+
+                const data = await res.json();
+
+                const stripe = await getStripe();
+                stripe?.redirectToCheckout({ sessionId: data.sessionId });
+            }
+        },
+        [router, paymentPlan, ensureSignUp]
+    );
+
+    if (data === undefined) {
+        return <></>;
+    }
 
     const AnnualBillingControl = (
         <HStack display="flex" alignItems="center" spacing={4} fontSize="lg">
@@ -121,7 +184,7 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
                                             </VStack>
                                         </Flex>
 
-                                        <Box flexGrow={2}>
+                                        <Box flexGrow={2} experimental_spaceY={2}>
                                             <Heading size="md">{"What's included"}</Heading>
                                             <List>
                                                 {['Twitter Live Banner', 'Twitter Name Changer'].map((feature) => (
@@ -130,9 +193,20 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
                                                         {feature}
                                                     </ListItem>
                                                 ))}
+                                            </List>
+                                            <Heading size="md">{'What am I missing?'}</Heading>
+                                            <List>
                                                 <ListItem key="profile image">
                                                     <ListIcon color="red.400" as={CloseIcon} />
                                                     Live Twitter Profile Picture
+                                                </ListItem>
+                                                <ListItem key="profile image">
+                                                    <ListIcon color="red.400" as={CloseIcon} />
+                                                    Banner refreshing
+                                                </ListItem>
+                                                <ListItem key="profile image">
+                                                    <ListIcon color="red.400" as={CloseIcon} />
+                                                    Custom banner background image
                                                 </ListItem>
                                             </List>
                                         </Box>
@@ -150,7 +224,7 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
                                 {sortProductsByPrice(data).map((product) => (
                                     <Box key={product.id} w="full">
                                         {/* eslint-disable-next-line @typescript-eslint/no-empty-function */}
-                                        <ProductCard key={product.id} product={product} billingInterval={billingInterval} handlePricingClick={() => router.push('/pricing')} />
+                                        <ProductCard key={product.id} product={product} billingInterval={billingInterval} handlePricingClick={handlePricingClick} />
                                     </Box>
                                 ))}
                             </SimpleGrid>

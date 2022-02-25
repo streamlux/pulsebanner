@@ -7,7 +7,7 @@ const handler = createAuthApiHandler();
 
 handler.post(async (req, res) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { price, quantity = 1, metadata = {} } = req.body;
+    const { price, quantity = 1, metadata = {}, cancel_path = '/' } = req.body;
 
     if (!price) {
         throw new Error('Missing parameter price');
@@ -35,7 +35,7 @@ handler.post(async (req, res) => {
             metadata: {},
         },
         success_url: `${process.env.NEXTAUTH_URL}/account`,
-        cancel_url: `${process.env.NEXTAUTH_URL}/`,
+        cancel_url: `${process.env.NEXTAUTH_URL}${cancel_path}`,
     });
 
     return res.status(200).json({ sessionId: checkoutSession.id });

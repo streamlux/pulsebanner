@@ -1,5 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import { logger } from '../logger';
+import { onLoad } from './onLoad';
+
+onLoad();
 
 declare global {
     // eslint-disable-next-line no-var
@@ -9,8 +12,12 @@ declare global {
 let numClients = 0;
 
 const createPrismaClient = () => {
+    if (process.env.GITHUB_ACTIONS) {
+        return;
+    }
+    console.log(process.env);
     logger.info('Creating new Prisma client...');
-    logger.info('Total clients: ', numClients);
+    logger.info('Total clients: ' + numClients);
     numClients++;
     return new PrismaClient();
 };

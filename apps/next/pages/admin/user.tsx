@@ -145,6 +145,17 @@ export default function Page({ user, userId, banner, stream, twitchUserInfo, twi
         }
     };
 
+    const test = async () => {
+        if (userIdInput) {
+            await axios.post(`/api/features/banner/update-original?userId=${userIdInput}`);
+        } else {
+            toast({
+                status: 'error',
+                title: 'Must have userId',
+            });
+        }
+    };
+
     const updateBackup = async () => {
         if (userIdInput) {
             await axios.post(`/api/admin/banner/update-backup?userId=${userIdInput}`);
@@ -281,6 +292,7 @@ export default function Page({ user, userId, banner, stream, twitchUserInfo, twi
                                             <Button disabled={locked} onClick={() => testStreamDown(['banner'])}>
                                                 Trigger banner streamdown
                                             </Button>
+                                            <Button onClick={() => test()}>Test</Button>
                                         </Stack>
                                         <SimpleGrid columns={[1, 1, 1, 2]} spacing={2} p={[2, 4]}>
                                             <Box>
