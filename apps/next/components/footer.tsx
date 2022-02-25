@@ -74,6 +74,11 @@ export default function Footer() {
                                 <Link>Code of Conduct</Link>
                             </NextLink>
                         </WrapItem>
+                        <WrapItem className={styles.navItem}>
+                            <NextLink href="/contact" passHref>
+                                <Link>Contact Us</Link>
+                            </NextLink>
+                        </WrapItem>
                     </Wrap>
                 </Center>
                 <Center>
