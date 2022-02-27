@@ -496,7 +496,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
         : `I just joined the @PulseBanner Partner Program!\n#PulseBanner\nPulseBanner.com/pricing`;
 
     const ActiveAffiliatePage = () => (
-        <>
+        <Container maxW="100vw">
             <Center>
                 <VStack>
                     <Heading size="md" my="4" textAlign={'center'}>
@@ -532,7 +532,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                         Pending Payouts
                     </Heading>
                     <VStack spacing={8} pb="8">
-                        <Box maxH="50vh" overflow={'scroll'}>
+                        <Box maxH="50vh" maxW='100vw' overflow={'scroll'}>
                             <Table size="md">
                                 <Thead>
                                     <Tr>
@@ -570,7 +570,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                     />
                 </VStack>
             </Center>
-        </>
+        </Container>
     );
 
     const FreeUserPage = () => (

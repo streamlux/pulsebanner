@@ -137,11 +137,6 @@ export default function Header() {
                                                 <Link>Pricing</Link>
                                             </NextLink>
                                         </WrapItem>
-                                        <WrapItem>
-                                            <NextLink href="/partner" passHref>
-                                                <Link>Partner Program</Link>
-                                            </NextLink>
-                                        </WrapItem>
                                     </Wrap>
                                 </Center>
                             )}
