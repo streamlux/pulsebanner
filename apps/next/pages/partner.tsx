@@ -50,7 +50,7 @@ import { GetServerSideProps } from 'next';
 import NextLink from 'next/link';
 import { getSession } from 'next-auth/react';
 import { NextSeo } from 'next-seo';
-import router from 'next/router';
+import router, { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import useSWR from 'swr';
 import { discordLink } from '@app/util/constants';
@@ -152,6 +152,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
     const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
 
     const toast = useToast();
+    const router = useRouter();
     const {colorMode} = useColorMode();
     const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
 
@@ -685,7 +686,9 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                     </Box>
                 </Flex>
                 <Box w="full">{FAQSection()}</Box>
-                {availableForAccount() ? UIDisplayMapping[partnerStatus] : FreeUserPage()}
+                {router.query.beta === 'true' && (
+                    availableForAccount() ? UIDisplayMapping[partnerStatus] : FreeUserPage()
+                )}
             </Container>
         </>
     );
