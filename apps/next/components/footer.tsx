@@ -60,7 +60,7 @@ export default function Footer() {
                             </NextLink>
                         </WrapItem>
                         <WrapItem className={styles.navItem}>
-                            <NextLink href="/faq" passHref>
+                            <NextLink href="/partner" passHref>
                                 <Link>Partner</Link>
                             </NextLink>
                         </WrapItem>
