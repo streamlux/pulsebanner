@@ -208,7 +208,7 @@ export default function Header() {
                                 )}
                                 {session && (
                                     <Menu>
-                                        <Avatar size="sm" as={MenuButton} name={session.user.name} src={session.user.image} />
+                                        <Avatar size="sm" as={MenuButton} src={session.user.image as string} />
                                         <Portal>
                                             <MenuList>
                                                 <NextLink href="/account" passHref>

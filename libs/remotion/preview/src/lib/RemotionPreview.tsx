@@ -21,7 +21,6 @@ if (typeof window === 'undefined') {
 }
 
 export const RemotionPreview: React.FC<RemotionPreviewProps> = ({ children, compositionHeight, compositionWidth }) => {
-
     const container = useRef(null);
     const canvasSize = useElementSize(container, { triggerOnWindowResize: false });
 
@@ -93,7 +92,7 @@ export const RemotionPreview: React.FC<RemotionPreviewProps> = ({ children, comp
         };
     }, [canvasSize, compositionHeight, compositionWidth]);
     return (
-        <div ref={container} style={{ ...outerStyle, ...{ width: '100%', maxWidth: '100%', maxHeight: '100%', margin: '0 1vw 0 1vw' } }}>
+        <div ref={container} style={{ ...outerStyle, ...{ width: '100%', maxWidth: '100%', maxHeight: '100%', margin: '0 0 0 0' } }}>
             <div style={outer}>
                 <div style={containerStyle} className="__remotion-player">
                     {children}

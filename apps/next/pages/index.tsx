@@ -66,7 +66,7 @@ const staticAssets: Record<string, StaticAsset> = {
     },
 };
 
-const landingPageAsset = (name: string) => `https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/${name}.webp`;
+export const landingPageAsset = (name: string) => `https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/${name}.webp`;
 
 import Head from 'next/head';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';

@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
  - Partner Program
 
+## [0.8.2] - 2022-02-24
+
+### Added
+
+- Banner templates
+
+### Fixed
+
+- Missing avatars
+
 ## [0.8.1] - 2022-02-19
 
 ### Fixed

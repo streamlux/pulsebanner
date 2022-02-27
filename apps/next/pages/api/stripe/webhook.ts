@@ -181,8 +181,8 @@ handler.post(async (req, res) => {
                                     userId: userId,
                                     backgroundId: defaultBannerSettings.backgroundId,
                                     foregroundId: defaultBannerSettings.foregroundId,
-                                    foregroundProps: defaultBannerSettings.foregroundProps,
-                                    backgroundProps: defaultBannerSettings.backgroundProps,
+                                    foregroundProps: defaultBannerSettings.foregroundProps as any,
+                                    backgroundProps: defaultBannerSettings.backgroundProps as any,
                                 },
                             });
 
