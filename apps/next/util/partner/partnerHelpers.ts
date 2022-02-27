@@ -1,7 +1,10 @@
+import { Stripe } from 'stripe';
+import { logger } from '../logger';
+import { SimpleResponse } from '../simpleResponse';
 import prisma from '../ssr/prisma';
 import stripe from '../ssr/stripe';
 
-export const createNewPromoCode = async (partnerId: string, partnerCode: string): Promise<number> => {
+export const createNewPromoCode = async (partnerId: string, partnerCode: string): Promise<SimpleResponse> => {
     try {
         const promotionCodeResponse = await stripe.promotionCodes.create({ coupon: process.env.STRIPE_AFFILIATE_COUPON, code: partnerCode });
         const promoId = promotionCodeResponse.id;
@@ -18,11 +21,19 @@ export const createNewPromoCode = async (partnerId: string, partnerCode: string)
                 stripePromoCode: promoId,
             },
         });
-    } catch (e) {
-        console.log('error creating new promo code: ', e);
-        return 400;
+    } catch (error) {
+        const e = error as Stripe.StripeError;
+        if ((e as Stripe.StripeError).type === 'StripeInvalidRequestError') {
+            logger.error(`Error creating new promo code for partner ${partnerId}`, { error: { message: e.message, status: e.statusCode } });
+            return {
+                status: 400,
+                message: (e as Stripe.StripeInvalidRequestError).message
+            };
+        }
     }
-    return 200;
+    return {
+        status: 200
+    };
 };
 
 // status is just the boolean of whether to create. Has to be in active state for our partner program for it to be enabled

@@ -46,12 +46,10 @@ handler.post(async (req, res) => {
             firstName: req.body.firstName,
             lastName: req.body.lastName ?? null,
             partnerCode: req.body.partnerCode,
+            notes: req.body.notes ?? null,
         };
 
-        console.log('partnerinfo; ', partnerInfo);
-
         if (!partnerInfo.email || !partnerInfo.firstName || !partnerInfo.partnerCode) {
-            console.log('as rape');
             return res.status(400).send('Invalid paramters passed back from client.');
         }
 
@@ -86,6 +84,7 @@ handler.post(async (req, res) => {
                 lastName: partnerInfo.lastName,
                 partnerCode: partnerInfo.partnerCode,
                 acceptanceStatus: AcceptanceStatus.Pending,
+                notes: partnerInfo.notes
             },
         });
 

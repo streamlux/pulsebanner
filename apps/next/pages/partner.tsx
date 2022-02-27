@@ -14,6 +14,7 @@ import {
     BoxProps,
     Button,
     Center,
+    Checkbox,
     Container,
     Flex,
     FormControl,
@@ -22,14 +23,23 @@ import {
     HStack,
     Input,
     Link,
+    List,
+    ListItem,
+    Spacer,
     Stack,
     Table,
+    TableCaption,
     Tbody,
     Td,
     Text,
+    Textarea,
+    Tfoot,
     Th,
     Thead,
+    Tooltip,
     Tr,
+    UnorderedList,
+    useColorMode,
     useColorModeValue,
     useDisclosure,
     useToast,
@@ -45,8 +55,10 @@ import React, { useState } from 'react';
 import useSWR from 'swr';
 import { discordLink } from '@app/util/constants';
 import { AcceptanceStatus, PartnerCreateType } from '@app/util/partner/types';
-import { PartnerInvoice } from '@prisma/client';
+import { PartnerInvoice, Prisma } from '@prisma/client';
 import { logger } from '@app/util/logger';
+import { useForm } from 'react-hook-form';
+import { InfoIcon } from '@chakra-ui/icons';
 
 interface Props {
     partnerStatus: AcceptanceStatus;
@@ -140,18 +152,14 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
     const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
 
     const toast = useToast();
-
+    const {colorMode} = useColorMode();
     const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
 
-    const [emailValue, setEmailValue] = useState('');
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [partnerCodeInput, setPartnerCode] = useState('');
-
-    const handleEmailChange = (e) => setEmailValue(e.target.value);
-    const handleFirstNameChange = (e) => setFirstName(e.target.value);
-    const handleLastNameChange = (e) => setLastName(e.target.value);
-    const handlePartnerCodeChange = (e) => setPartnerCode(e.target.value);
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm();
 
     const styles: BoxProps = useColorModeValue<BoxProps>(
         {
@@ -170,136 +178,219 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
         return true;
     };
 
-    const validateEmailFields = (email: string): any => {
-        return (
-            null !==
-            String(email)
-                .toLowerCase()
-                .match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)
-        );
-    };
-
-    const validateTextFields = (): boolean => {
-        return firstName.length > 0 && partnerCodeInput.length > 0;
-    };
-
     const refreshData = () => {
         router.replace(router.asPath);
     };
 
-    const submitAffiliateRequest = async () => {
+    type FormData = {
+        email: string;
+        firstName: string;
+        lastName: string;
+        partnerCodeInput: string;
+        notes: string;
+    };
+
+    const onSubmit = async (formData: FormData) => {
         if (!ensureSignUp()) {
             return;
         }
+        const data: PartnerCreateType = {
+            ...formData,
+            partnerCode: formData.partnerCodeInput.toUpperCase(),
+        };
 
-        if (validateEmailFields(emailValue) && validateTextFields()) {
-            const data: PartnerCreateType = {
-                email: emailValue,
-                firstName: firstName,
-                lastName: lastName,
-                partnerCode: partnerCodeInput.toUpperCase(),
-            };
-
-            // we are talking to our own partner program here
-            // create in both tables here
-            const response = await axios.post('/api/partner', data);
-            if (response.status === 400) {
-                toast({
-                    title: 'Error processing your request',
-                    description: 'We were unable to process your request. If this error persists, please reach out for technical support.',
-                    status: 'error',
-                    duration: 5000,
-                    isClosable: true,
-                    position: 'top',
-                });
-            }
-
-            // if we get 409, we just report back that the code has already been taken
-            if (response.status === 409) {
-                toast({
-                    title: 'Invalid coupon code',
-                    description: 'Looks like that coupon code is already taken! Please specify a different coupon code.',
-                    status: 'error',
-                    duration: 5000,
-                    isClosable: true,
-                    position: 'top',
-                });
-            }
-            refreshData();
-        } else {
+        // we are talking to our own partner program here
+        // create in both tables here
+        const response = await axios.post('/api/partner', data);
+        if (response.status === 400) {
             toast({
-                title: 'Partner application failed',
-                description: 'Please make sure all fields are filled in and are valid entries.',
+                title: 'Error processing your request',
+                description: 'We were unable to process your request. If this error persists, please reach out for technical support.',
                 status: 'error',
                 duration: 5000,
                 isClosable: true,
                 position: 'top',
             });
         }
+
+        // if we get 409, we just report back that the code has already been taken
+        if (response.status === 409) {
+            toast({
+                title: 'Invalid coupon code',
+                description: 'Looks like that coupon code is already taken! Please specify a different coupon code.',
+                status: 'error',
+                duration: 5000,
+                isClosable: true,
+                position: 'top',
+            });
+        }
+        refreshData();
     };
 
     const FAQSection = () => (
         <>
             <Accordion allowToggle>
                 <AccordionItem>
-                    <h2>
-                        <AccordionButton>
-                            <Box flex="1" textAlign="left">
-                                What is PulseBanner&apos;s Partner Program?
-                            </Box>
-                            <AccordionIcon />
-                        </AccordionButton>
-                    </h2>
-                    <AccordionPanel pb={4}>
-                        PulseBanner Partner Program is our way of saying thank you for being a PulseBanner member. We aim to give back to our loyal PulseBanner members and those
-                        that help promote our brand. For every subscription that we get referred from you, we want to give back!
+                    <AccordionButton>
+                        <Text fontWeight={'semibold'} flex="1" textAlign="left">
+                            What is the PulseBanner Partner Program?
+                        </Text>
+                        <AccordionIcon />
+                    </AccordionButton>
+                    <AccordionPanel pb={4} experimental_spaceY={4} px="4">
+                        <Text>
+                            The PulseBanner Partner Program is for PulseBanner Members who want to go the extra mile because they love PulseBanner and share our mission: to empower
+                            creators.
+                        </Text>
+                        <Text>
+                            We created the Partner Program as a way to give back to the many PulseBanner Members who have already been spreading the word about PulseBanner. Our
+                            passionate and supportive Members have been instrumental in creating this community, and we want to show our appreciation.
+                        </Text>
                     </AccordionPanel>
                 </AccordionItem>
                 <AccordionItem>
-                    <h2>
-                        <AccordionButton>
-                            <Box flex="1" textAlign="left">
-                                Who qualifies to be an Partner?
-                            </Box>
-                            <AccordionIcon />
-                        </AccordionButton>
-                    </h2>
-                    <AccordionPanel pb={4}>
-                        All PulseBanner members, or those that are subscribed to our personal or professional plan, qualify for the progam. PulseBanner members that are also EMGG
-                        members receive automatic acceptance as part of our partnership! Fill out your application and send it in!
+                    <AccordionButton>
+                        <Text fontWeight={'semibold'} flex="1" textAlign="left">
+                            Who qualifies to be a Partner?
+                        </Text>
+                        <AccordionIcon />
+                    </AccordionButton>
+                    <AccordionPanel pb={4} experimental_spaceY={4}>
+                        <Text>In order to apply to the PulseBanner Partner Program, you must be a PulseBanner Member by subscribing to one of the paid PulseBanner plans.</Text>
+                        <NextLink href={'/pricing'} passHref>
+                            <Button as="a" variant="link" colorScheme="twitter">
+                                <Text>View PulseBanner Membership plans</Text>
+                            </Button>
+                        </NextLink>
                     </AccordionPanel>
                 </AccordionItem>
                 <AccordionItem>
-                    <h2>
-                        <AccordionButton>
-                            <Box flex="1" textAlign="left">
-                                What benefits do affiliates receive?
-                            </Box>
-                            <AccordionIcon />
-                        </AccordionButton>
-                    </h2>
-                    <AccordionPanel pb={4}>
-                        When a new user signs up for a PulseBanner membership using your referral code, you earn some of that profit! Here&apos;s a breakdown of what you earn:
-                        <ul>
-                            <li>Personal monthly plan: $2 - 30%</li>
-                            <li>Personal yearly plan: $6 - 10%</li>
-                            <li>Professional monthly plan: $6 - 29%</li>
-                            <li>Professional yearly plan: $20 - 10%</li>
-                        </ul>
-                        * Note, all percentages take into account transactional fees on our end. There will be no fees on your end 🙂
+                    <AccordionButton>
+                        <Text fontWeight={'semibold'} flex="1" textAlign="left">
+                            Are there any requirements to get accepted?
+                        </Text>
+                        <AccordionIcon />
+                    </AccordionButton>
+                    <AccordionPanel pb={4} experimental_spaceY={4}>
+                        <Text>
+                            Since the Program is designed to give back to Members who support PulseBanner and our community, applications will be reviewed based on your previous
+                            support and engagement within the PulseBanner community. We love meeting creators who share our passion for empowering creators. We also prefer
+                            streamers who have been streaming for at least 3 months, and have developed a pattern of consistent content creation.
+                        </Text>
+                        <Text>
+                            Simply upgrading to a PulseBanner Membership does not make you a PulseBanner Partner. We want to make it clear that you should not upgrade to a
+                            PulseBanner Membership for the sole purpose of applying to become a Partner, because that is against the spirit and intentions of the PulseBanner
+                            Partner Program.
+                        </Text>
                     </AccordionPanel>
                 </AccordionItem>
                 <AccordionItem>
-                    <h2>
-                        <AccordionButton>
-                            <Box flex="1" textAlign="left">
-                                How long does it take for applications to be reviewed?
-                            </Box>
-                            <AccordionIcon />
-                        </AccordionButton>
-                    </h2>
+                    <AccordionButton>
+                        <Text fontWeight={'semibold'} flex="1" textAlign="left">
+                            I&#39;m an EMGG member, how do I apply?
+                        </Text>
+                        <AccordionIcon />
+                    </AccordionButton>
+                    <AccordionPanel pb={4} experimental_spaceY={4}>
+                        <Text>
+                            PulseBanner Members that are also EMGG members receive automatic acceptance as part of our partnership!{' '}
+                            <strong>Make sure to write that you are an EMGG member in the Notes section of the application form.</strong>
+                        </Text>
+                        <Text>Note: EMGG members still need to be PulseBanner Members to become PulseBanner Partners.</Text>
+                    </AccordionPanel>
+                </AccordionItem>
+                <AccordionItem>
+                    <AccordionButton>
+                        <Text fontWeight={'semibold'} flex="1" textAlign="left">
+                            What benefits do Partners receive?
+                        </Text>
+                        <AccordionIcon />
+                    </AccordionButton>
+
+                    <AccordionPanel pb={4} experimental_spaceY={2}>
+                        <Box>
+                            <Text>The perks of becoming a PulseBanner Partner include:</Text>
+                            <UnorderedList>
+                                <ListItem>Discount code to share with your community</ListItem>
+                                <ListItem>Earn credit for every new Member who uses your code</ListItem>
+                                <ListItem>Exclusive access to our partner-only content</ListItem>
+                                <ListItem>More to come!</ListItem>
+                            </UnorderedList>
+                        </Box>
+                    </AccordionPanel>
+                </AccordionItem>
+                <AccordionItem>
+                    <AccordionButton>
+                        <Text fontWeight={'semibold'} flex="1" textAlign="left">
+                            How do earned credits work?
+                        </Text>
+                        <AccordionIcon />
+                    </AccordionButton>
+
+                    <AccordionPanel pb={4} experimental_spaceY={2}>
+                        <Text textAlign={'left'}>
+                            When a user upgrades to a PulseBanner Membership using your discount code, a credit will be applied to your account. Here&apos;s a breakdown of what you
+                            earn:
+                        </Text>
+
+                        <Center>
+                            <Table variant="simple" w="fit-content">
+                                <Thead>
+                                    <Tr>
+                                        <Th>Membership</Th>
+                                        <Th>Credit (USD)</Th>
+                                        <Th isNumeric>Percent</Th>
+                                    </Tr>
+                                </Thead>
+                                <Tbody>
+                                    <Tr>
+                                        <Td>Personal monthly</Td>
+                                        <Td>$2</Td>
+                                        <Td isNumeric>30%</Td>
+                                    </Tr>
+                                    <Tr>
+                                        <Td>Personal yearly</Td>
+                                        <Td>$6</Td>
+                                        <Td isNumeric>10%</Td>
+                                    </Tr>
+                                    <Tr>
+                                        <Td>Professional monthly</Td>
+                                        <Td>$6</Td>
+                                        <Td isNumeric>29%</Td>
+                                    </Tr>
+                                    <Tr>
+                                        <Td>Professional yearly</Td>
+                                        <Td>$20</Td>
+                                        <Td isNumeric>10%</Td>
+                                    </Tr>
+                                </Tbody>
+                                <TableCaption>Credit amounts for each plan. Note: percentages calculated using the cost including transaction fees.</TableCaption>
+                            </Table>
+                        </Center>
+                        <Text textAlign={'left'}>
+                            Credit will be added to your account as a gift card, and be used to pay your recurring subscription payments. For example, if you earn $4 in a month, and you have the Personal
+                            monthly Membership ($7.99/mo), you will only be charged $2.99 for that month ($7.99 - $4.00 = $2.99). Extra credits roll over to the next payment period.
+                        </Text>
+                        <Text>
+                            Earned credit cannot be withdrawn. We hope you understand that this decision was made for a few reasons. We wanted the Partner Program to be available
+                            to anyone regardless of where they live. This is a way for us to credit PulseBanner Members for work that you were already doing!
+                        </Text>
+                        <Text>
+                            In the future, the Partner Program may evolve to support withdralws or payouts.
+                        </Text>
+                    </AccordionPanel>
+                </AccordionItem>
+                <AccordionItem>
+                    <AccordionButton>
+                        <Text fontWeight={'semibold'} flex="1" textAlign="left">
+                            How long does it take for applications to be reviewed?
+                        </Text>
+                        <AccordionIcon />
+                    </AccordionButton>
+
                     <AccordionPanel pb={4}>
-                        We try to review applications as fast as possible. It truly depends on how many applications we have at one time, but we aim for 5-7 business days.
+                        We try to review applications as fast as possible. It truly depends on how many applications we have at one time, but our goal is to respond within 5-7
+                        business days.
                     </AccordionPanel>
                 </AccordionItem>
             </Accordion>
@@ -308,58 +399,88 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
 
     // this is the page if they are looking to sign up. We should disable to submit button or show them a different page if they are not pulsebanner member
     const SignUpPage = () => (
-        <>
-            <Box maxW="xl" w="full">
-                <Center>
+        <Container w="full" maxW="lg">
+            <form onSubmit={handleSubmit(onSubmit)}>
+                <Center w="full">
                     <Flex {...styles} grow={1} p="4" my="4" rounded="md" w="fit-content" direction="column">
-                        <Center w="full">
-                            <Heading size="lg" textAlign={'center'}>
+                        <Box w="full">
+                            <Text fontWeight={'bold'} fontSize="lg" textAlign={'center'}>
                                 Apply Now!
-                            </Heading>
-                        </Center>
+                            </Text>
+                            <Text fontSize="md" textAlign={'center'}>
+                                Please read the information above before applying.
+                            </Text>
+                        </Box>
                         <FormControl isRequired>
                             <FormLabel my="2">Email</FormLabel>
-                            <Input id="email" type="email" placeholder="Email" value={emailValue} onChange={handleEmailChange} />
+                            <Input {...register('email', { required: true })} placeholder="Email" type="email" />
                         </FormControl>
                         <FormControl isRequired>
                             <FormLabel my="2">First name</FormLabel>
-                            <Input id="firstName" placeholder="First name" value={firstName} onChange={handleFirstNameChange} />
+                            <Input
+                                {...register('firstName', {
+                                    required: true,
+                                    minLength: {
+                                        value: 2,
+                                        message: 'First name must be longer than 1 character',
+                                    },
+                                })}
+                                placeholder="First name"
+                                type="text"
+                            />
+                            <Text color="red.400">{errors.firstName && errors.firstName.message}</Text>
                         </FormControl>
                         <FormControl>
                             <FormLabel my="2">Last name</FormLabel>
-                            <Input id="lastName" placeholder="Last name" value={lastName} onChange={handleLastNameChange} />
+                            <Input {...register('lastName')} placeholder="Last name" type="text" />
                         </FormControl>
                         <FormControl isRequired>
                             <FormLabel my="2">Discount Code</FormLabel>
                             <Input
-                                id="partnerCodeInput"
-                                placeholder="Desired partner code (subject to change and approval)"
-                                value={partnerCodeInput}
-                                onChange={handlePartnerCodeChange}
+                                {...register('partnerCodeInput', {
+                                    required: true,
+                                    minLength: {
+                                        value: 4,
+                                        message: 'Code must be at least 4 characters',
+                                    },
+                                })}
+                                placeholder="Desired discount code (subject to change and approval)"
                             />
+                            <Text color="red.400">{errors.partnerCodeInput && errors.partnerCodeInput.message}</Text>
                         </FormControl>
+                        <FormControl>
+                            <FormLabel my="2">Notes</FormLabel>
+                            <Textarea {...register('notes')} placeholder="Additional information" />
+                        </FormControl>
+                        <Text pt='2' fontSize="sm" color={colorMode === 'dark' ? 'gray.400' : 'gray.600'}>
+                            {'By applying, you agree to the'}{' '}
+                            <Box as={NextLink} href="/partner-terms" passHref>
+                                <Link textDecoration="underline">Partner Program Terms</Link>
+                            </Box>
+                            .
+                        </Text>
                         <Flex paddingTop={'4'} justifyContent={'center'} direction={['column', 'row']}>
-                            <Button size="lg" onClick={submitAffiliateRequest}>
+                            <Button size="md" type="submit">
                                 Submit
                             </Button>
                         </Flex>
                     </Flex>
                 </Center>
-            </Box>
-        </>
+            </form>
+        </Container>
     );
 
     // this is the page if they either have been rejected from joining the program or have de-activated a premium plan.
-    const ArchivedPage = () => (
+    const RejectedPage = () => (
         <>
             <Center w="full">
                 <VStack>
                     <Heading size="md" textAlign={'center'}>
-                        Sorry, your account has either been rejected for the partnership program or suspended due to no longer being a PulseBanner member.{' '}
+                        Sorry, we did not accept your application to the PulseBanner Partner Program.
                     </Heading>
 
                     <Text textAlign={'center'}>
-                        Please join our discord{' '}
+                        Please join our Discord{' '}
                         <NextLink passHref href={discordLink}>
                             <Link color="twitter.400">here</Link>
                         </NextLink>{' '}
@@ -371,8 +492,8 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
     );
 
     const activeText = partnerCode
-        ? `I just joined the @PulseBanner Partner Program! Use my code ${partnerCode} when buying a membership for 10% off!\nPulseBanner.com/pricing\n#PulseBanner`
-        : `I just joined the @PulseBanner Partner Program!\nPulseBanner.com/pricing\n#PulseBanner`;
+        ? `I just joined the @PulseBanner Partner Program! Use my code ${partnerCode} at checkout for 10% off!\n#PulseBanner\nPulseBanner.com/pricing`
+        : `I just joined the @PulseBanner Partner Program!\n#PulseBanner\nPulseBanner.com/pricing`;
 
     const ActiveAffiliatePage = () => (
         <>
@@ -437,10 +558,12 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                     <ShareToTwitter
                         tweetPreview={
                             <Text>
-                                I just joined the <Link color="twitter.400">@PulseBanner</Link> Partner Program! Use my code <b>{`${partnerCode}`}</b> when buying a membership for
-                                10% off! <Link color="twitter.500">PulseBanner.com/pricing</Link>!
+                                I just joined the <Link color="twitter.400">@PulseBanner</Link> Partner Program! Use my code <b>{`${partnerCode}`}</b> at checkout for
+                                10% off!
                                 <br />
                                 <Link color="twitter.500">#PulseBanner</Link>
+                                <br />
+                                <Link color="twitter.500">PulseBanner.com/pricing</Link>
                             </Text>
                         }
                         tweetText={activeText}
@@ -470,7 +593,25 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
         </>
     );
 
-    const SuspendedPage = () => <>Testing</>;
+    const SuspendedPage = () => (
+        <>
+            <Center w="full">
+                <VStack>
+                    <Heading size="md" textAlign={'center'}>
+                        You are no longer a PulseBanner Partner. This is a result of you no longer being a PulseBanner Member.
+                    </Heading>
+
+                    <Text textAlign={'center'}>
+                        Please join our Discord{' '}
+                        <NextLink passHref href={discordLink}>
+                            <Link color="twitter.400">here</Link>
+                        </NextLink>{' '}
+                        if you have any questions or want more details on why your account has been suspended.
+                    </Text>
+                </VStack>
+            </Center>
+        </>
+    );
 
     const pendingText = 'I just applied to the @PulseBanner Partner Program! Apply today to start earning with the each referral at pulsebanner.com/partner!\n\n#PulseBanner';
 
@@ -498,11 +639,11 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
     );
 
     const UIDisplayMapping: Record<AcceptanceStatus, JSX.Element> = {
-        [AcceptanceStatus.None]: SignUpPage(),
-        [AcceptanceStatus.Active]: ActiveAffiliatePage(),
-        [AcceptanceStatus.Rejected]: ArchivedPage(),
-        [AcceptanceStatus.Suspended]: SuspendedPage(),
-        [AcceptanceStatus.Pending]: PendingPage(),
+        none: SignUpPage(),
+        active: ActiveAffiliatePage(),
+        rejected: RejectedPage(),
+        suspended: SuspendedPage(),
+        pending: PendingPage(),
     };
 
     return (
@@ -531,7 +672,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
             />
             <PaymentModal isOpen={pricingIsOpen} onClose={pricingClose} />
             <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} callbackUrl="/partner" />
-            <Container centerContent maxW="container.lg" experimental_spaceY="4">
+            <Container centerContent maxW="container.md" experimental_spaceY="4">
                 <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']}>
                     <Box w="full" experimental_spaceY={4}>
                         <Center w="full">

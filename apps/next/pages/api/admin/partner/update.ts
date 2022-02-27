@@ -18,14 +18,22 @@ handler.post(async (req, res) => {
 
     try {
         Object.keys(affiliateStatusUpdate).forEach(async (partnerId: string) => {
-            const partnerInfo = await prisma.partner.update({
+            const partnerInfo = await prisma.partner.findUnique({
                 where: {
                     id: partnerId,
-                },
-                data: {
-                    acceptanceStatus: affiliateStatusUpdate[partnerId],
-                },
+                }
             });
+
+            const updatePartner = async () => {
+                await prisma.partner.update({
+                    where: {
+                        id: partnerId,
+                    },
+                    data: {
+                        acceptanceStatus: affiliateStatusUpdate[partnerId],
+                    },
+                });
+            }
 
             // check if the user already has a promotion code.
             const codeExists = await prisma.stripePartnerInfo.findUnique({
@@ -39,9 +47,10 @@ handler.post(async (req, res) => {
                 // If the user is not in the table and the code doesn't exist, create a promo code and add them to the table
                 if (codeExists === null && partnerInfo && partnerInfo.partnerCode) {
                     const response = await createNewPromoCode(partnerId, partnerInfo.partnerCode);
-                    if (response !== 200) {
-                        return res.status(400).send('Error creating a new promo code and updating our table.');
+                    if (response.status !== 200) {
+                        return res.status(400).send(response.message);
                     } else {
+                        await updatePartner();
                         return res.status(200).send('Success creating new promo code');
                     }
                 }
@@ -49,6 +58,7 @@ handler.post(async (req, res) => {
                 // If the user does exist in the table, we need to just update the status of the promotion code, not the code itself
                 const response = await updatePromoCodeStatus(partnerId, true);
                 if (response === 200) {
+                    await updatePartner();
                     return res.status(200).send('Success updating promo code');
                 } else {
                     return res.status(400).send('Error updating promo code');
@@ -58,6 +68,7 @@ handler.post(async (req, res) => {
                 if (codeExists !== null) {
                     const response = await updatePromoCodeStatus(partnerId, false);
                     if (response === 200) {
+                        await updatePartner();
                         return res.status(200).send('Success updating promo code');
                     } else {
                         return res.status(400).send('Error updating promo code');

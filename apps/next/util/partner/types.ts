@@ -3,6 +3,7 @@ export type PartnerCreateType = {
     firstName: string;
     lastName?: string;
     partnerCode: string;
+    notes?: string;
 };
 
 export enum AcceptanceStatus {

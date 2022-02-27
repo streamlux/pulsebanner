@@ -305,6 +305,7 @@ model Partner {
     firstName        String
     lastName         String?
     partnerCode      String           @unique
+    notes            String?
     acceptanceStatus AcceptanceStatus
 
     partnerInformation PartnerInformation?

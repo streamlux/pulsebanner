@@ -136,7 +136,6 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
                                 <Th>Email</Th>
                                 <Th>First Name</Th>
                                 <Th>Last Name</Th>
-                                <Th>Paypal email</Th>
                                 <Th>Info</Th>
                                 <Th>Status</Th>
                             </Tr>
@@ -163,21 +162,27 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
                     </Table>
                 </Box>
                 <Button
-                    onClick={async () => {
-                        const response = await axios.post('/api/admin/partner/update', { affiliateStatusMap });
-                        // not getting past here it seems
-                        if (response.status === 200) {
-                            refreshData();
-                            toast({
-                                status: 'success',
-                                title: 'Updated selected parnters statuses',
-                            });
-                        } else {
-                            toast({
-                                status: 'error',
-                                title: 'Unable to update selected partners status',
-                            });
-                        }
+                    onClick={() => {
+                        axios.post('/api/admin/partner/update', { affiliateStatusMap }).then(
+                            (response) => {
+                                // not getting past here it seems
+                                if (response.status === 200) {
+                                    refreshData();
+                                    toast({
+                                        status: 'success',
+                                        title: 'Updated selected partner status',
+                                    });
+                                }
+                            },
+                            (error) => {
+                                console.log(error);
+                                toast({
+                                    status: 'error',
+                                    title: 'Unable to update selected partners status',
+                                    description: error.response.data,
+                                });
+                            }
+                        );
                     }}
                 >
                     Apply changes
