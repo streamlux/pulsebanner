@@ -458,7 +458,9 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                         <Text pt="2" fontSize="sm" color={colorMode === 'dark' ? 'gray.400' : 'gray.600'}>
                             {'By applying, you agree to the'}{' '}
                             <Box as={NextLink} href="/partner-terms" passHref>
-                                <Link textDecoration="underline">Partner Program Terms</Link>
+                                <Link textDecoration="underline" isExternal>
+                                    Partner Program Terms
+                                </Link>
                             </Box>
                             .
                         </Text>
@@ -687,7 +689,8 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                     </Box>
                 </Flex>
                 <Box w="full">{FAQSection()}</Box>
-                {router.query.beta === 'yes' && (availableForAccount() ? UIDisplayMapping[partnerStatus] : FreeUserPage())}
+                {/* ( logged in AND have the beta link     OR   be a partner (or have applied) )      AND    they need to be a paid user */}
+                {((session && router.query.beta === 'yes') || partnerStatus !== AcceptanceStatus.None) && availableForAccount() && UIDisplayMapping[partnerStatus]}
             </Container>
         </>
     );
