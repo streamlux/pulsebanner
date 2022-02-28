@@ -167,9 +167,9 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
     );
 
     const availableForAccount = (): boolean => {
-        // if (paymentPlan === 'Free') {
-        //     return false;
-        // }
+        if (paymentPlan === 'Free' || paymentPlanResponse.partner) {
+            return false;
+        }
         return true;
     };
 
