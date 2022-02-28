@@ -6,7 +6,7 @@ import NextCors from 'nextjs-cors';
 import { logger } from '../logger';
 
 export const onError: ErrorHandler<NextApiRequest, NextApiResponse> = (err, req, res, next) => {
-    logger.error('Error handling API requet', err);
+    logger.error('Error handling API request', { error: err, method: req.method, url: req.url, query: req.query, body: req.body });
     res.status(500).end(err.toString());
 };
 

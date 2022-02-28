@@ -7,9 +7,78 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.8.2] - 2022-02-24
+
+### Added
+
+- Banner templates
+
+### Fixed
+
+- Missing avatars
+
+## [0.8.1] - 2022-02-19
+
+### Fixed
+
+- Refresh slider visual bug on mobile 
+
+## [0.8.0] - 2022-02-19
+
+### Added
+
+- Banner refreshing UI and pricing
+
+### Changed
+
+- Name in package.json is now "pulsebanner" instead of "streamlux-saas"
+
+### Fixed
+
+- Locked remotion version to 2.6.6
+
+## [0.7.11] - 2022-02-17
+
+### Added
+
+- Banner refreshing for personal users
+
+## [0.7.10] - 2022-02-16
+
+### Added
+
+- Banner refreshing for pro users
+
+## [0.7.9] - 2022-02-15
+
+Patch release
+
+## [0.7.8] - 2022-02-15
+
+Patch release
+
+## [0.7.7] - 2022-02-04
+
+### Added
+
+- Banner refreshing
+
+## [0.7.6] - 2022-02-02
+
+### Changed
+
+- Banner feature is now static and we don't update original banner on streamup
+
+### Fixed
+
+- Empty profile picture bug
+
+## [0.7.5] - 2022-01-30
+
 ### Changed
 
 - Cleaned up FAQ page code
+- Removed EMGG sale banners
 
 ## [0.7.4] - 2022-01-29
 

@@ -1,0 +1,95 @@
+name: Build apps
+# This workflow builds Docker images for each app, then pushes the images to GitHub Container Registry
+# After all images are built and pushed successfully, it deploys each image to Caprover (staging)
+
+on:
+    pull_request:
+    workflow_dispatch:
+
+jobs:
+    build_next:
+        name: Build next
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            packages: write
+        steps:
+
+            - name: Public IP
+              id: ip
+              uses: haythem/public-ip@v1.2
+
+            - name: Print Public IP
+              run: |
+                  echo ${{ steps.ip.outputs.ipv4 }}
+                  echo ${{ steps.ip.outputs.ipv6 }}
+
+            #
+            # ------------------ Setup -----------------------
+            #
+
+            # checkout GitHub repository
+            - name: Checkout
+              uses: actions/checkout@v2
+
+            # Install and setup Node.JS
+            - name: Setup node
+              uses: actions/setup-node@v2
+              with:
+                  node-version: '16'
+
+            # Install npm dependencies
+            - name: Install and cache dependencies
+              uses: bahmutov/npm-install@v1
+
+            #
+            #
+            # ------------------  Build NextJS (frontend + API) -----------------------
+            #
+            #
+
+            - name: Lint Next.js app
+              run: npx nx run next:lint
+
+            - name: Build Next.js app
+              run: npx nx run next:build:production
+
+    build_remotion:
+        name: Build remotion
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            packages: write
+        steps:
+            #
+            # ------------------ Setup -----------------------
+            #
+
+            # checkout GitHub repository
+            - name: Checkout
+              uses: actions/checkout@v2
+
+            # Install and setup Node.JS
+            - name: Setup node
+              uses: actions/setup-node@v2
+              with:
+                  node-version: '16'
+
+            # Install npm dependencies
+            - name: Install and cache dependencies
+              uses: bahmutov/npm-install@v1
+
+            #
+            #
+            # ------------------ Build Remotion (API) -----------------------
+            #
+            #
+
+            - name: Lint Remotion server
+              run: npx nx run remotion:lint
+
+            - name: 'Install ts-node'
+              run: npm i -g ts-node
+
+            - name: 'Build remotion app'
+              run: npx ts-node apps/remotion/scripts/build.ts

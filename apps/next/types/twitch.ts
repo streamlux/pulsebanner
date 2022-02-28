@@ -108,3 +108,45 @@ export interface Condition {
     broadcaster_user_id?: string;
     user_id?: string;
 }
+
+export interface TwitchGetResponse<T> {
+    data: T[];
+
+}
+
+export interface Stream {
+  id: string;
+  user_id: string;
+  user_login: string;
+  user_name: string;
+  game_id: string;
+  game_name: string;
+  type: string;
+  title: string;
+  viewer_count: number;
+  started_at: string;
+  language: string;
+  thumbnail_url: string;
+  tag_ids: string[];
+  is_mature: boolean;
+}
+
+export interface PaginatedTwitchResponse<T> {
+    data: T[];
+
+   /**
+     * An object that contains the cursor used to get the next page of subscriptions.
+     * The object is empty if the list of subscriptions fits on one page or there are no more pages to get.
+     * The number of subscriptions returned per page is undertermined.
+     */
+    pagination: {
+        /**
+         * 	The cursor value that you set the after query parameter to.
+         */
+        cursor?: string;
+    };
+}
+
+// GET https://api.twitch.tv/helix/streams
+// https://dev.twitch.tv/docs/api/reference#get-streams
+export type GetStreamsResponse = PaginatedTwitchResponse<Stream>;
