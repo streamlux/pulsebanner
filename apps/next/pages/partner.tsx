@@ -46,7 +46,7 @@ import NextLink from 'next/link';
 import { getSession } from 'next-auth/react';
 import { NextSeo } from 'next-seo';
 import router, { useRouter } from 'next/router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { discordLink } from '@app/util/constants';
 import { AcceptanceStatus, PartnerCreateType } from '@app/util/partner/types';
@@ -147,6 +147,15 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
 
     const toast = useToast();
     const router = useRouter();
+
+    useEffect(() => {
+        if (router.query.beta === 'true') {
+            router.replace('/partner?beta=yes', '/partner', {
+                shallow: true,
+            });
+        }
+    }, [router.query.beta, router]);
+
     const { colorMode } = useColorMode();
     const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
 
@@ -670,7 +679,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                     </Box>
                 </Flex>
                 <Box w="full">{FAQSection()}</Box>
-                {router.query.beta === 'true' && (availableForAccount() ? UIDisplayMapping[partnerStatus] : FreeUserPage())}
+                {router.query.beta === 'yes' && (availableForAccount() ? UIDisplayMapping[partnerStatus] : FreeUserPage())}
             </Container>
         </>
     );
