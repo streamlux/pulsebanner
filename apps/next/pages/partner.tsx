@@ -14,7 +14,6 @@ import {
     BoxProps,
     Button,
     Center,
-    Checkbox,
     Container,
     Flex,
     FormControl,
@@ -23,9 +22,7 @@ import {
     HStack,
     Input,
     Link,
-    List,
     ListItem,
-    Spacer,
     Stack,
     Table,
     TableCaption,
@@ -33,10 +30,8 @@ import {
     Td,
     Text,
     Textarea,
-    Tfoot,
     Th,
     Thead,
-    Tooltip,
     Tr,
     UnorderedList,
     useColorMode,
@@ -58,7 +53,6 @@ import { AcceptanceStatus, PartnerCreateType } from '@app/util/partner/types';
 import { PartnerInvoice, Prisma } from '@prisma/client';
 import { logger } from '@app/util/logger';
 import { useForm } from 'react-hook-form';
-import { InfoIcon } from '@chakra-ui/icons';
 
 interface Props {
     partnerStatus: AcceptanceStatus;
@@ -153,7 +147,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
 
     const toast = useToast();
     const router = useRouter();
-    const {colorMode} = useColorMode();
+    const { colorMode } = useColorMode();
     const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
 
     const {
@@ -173,9 +167,9 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
     );
 
     const availableForAccount = (): boolean => {
-        if (paymentPlan === 'Free') {
-            return false;
-        }
+        // if (paymentPlan === 'Free') {
+        //     return false;
+        // }
         return true;
     };
 
@@ -369,16 +363,15 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                             </Table>
                         </Center>
                         <Text textAlign={'left'}>
-                            Credit will be added to your account as a gift card, and be used to pay your recurring subscription payments. For example, if you earn $4 in a month, and you have the Personal
-                            monthly Membership ($7.99/mo), you will only be charged $2.99 for that month ($7.99 - $4.00 = $2.99). Extra credits roll over to the next payment period.
+                            Credit will be added to your account as a gift card, and be used to pay your recurring subscription payments. For example, if you earn $4 in a month,
+                            and you have the Personal monthly Membership ($7.99/mo), you will only be charged $2.99 for that month ($7.99 - $4.00 = $2.99). Extra credits roll over
+                            to the next payment period.
                         </Text>
                         <Text>
                             Earned credit cannot be withdrawn. We hope you understand that this decision was made for a few reasons. We wanted the Partner Program to be available
                             to anyone regardless of where they live. This is a way for us to credit PulseBanner Members for work that you were already doing!
                         </Text>
-                        <Text>
-                            In the future, the Partner Program may evolve to support withdralws or payouts.
-                        </Text>
+                        <Text>In the future, the Partner Program may evolve to support withdralws or payouts.</Text>
                     </AccordionPanel>
                 </AccordionItem>
                 <AccordionItem>
@@ -453,7 +446,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                             <FormLabel my="2">Notes</FormLabel>
                             <Textarea {...register('notes')} placeholder="Additional information" />
                         </FormControl>
-                        <Text pt='2' fontSize="sm" color={colorMode === 'dark' ? 'gray.400' : 'gray.600'}>
+                        <Text pt="2" fontSize="sm" color={colorMode === 'dark' ? 'gray.400' : 'gray.600'}>
                             {'By applying, you agree to the'}{' '}
                             <Box as={NextLink} href="/partner-terms" passHref>
                                 <Link textDecoration="underline">Partner Program Terms</Link>
@@ -493,8 +486,8 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
     );
 
     const activeText = partnerCode
-        ? `I just joined the @PulseBanner Partner Program! Use my code ${partnerCode} at checkout for 10% off!\n#PulseBanner\nPulseBanner.com/pricing`
-        : `I just joined the @PulseBanner Partner Program!\n#PulseBanner\nPulseBanner.com/pricing`;
+        ? `I just joined the @PulseBanner Partner Program BETA! Use my code ${partnerCode} at checkout for 10% off!\n#PulseBanner\nPulseBanner.com/pricing`
+        : `I just joined the @PulseBanner Partner Program BETA!\n#PulseBanner\nPulseBanner.com/pricing`;
 
     const ActiveAffiliatePage = () => (
         <Container maxW="100vw">
@@ -533,7 +526,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                         Pending Payouts
                     </Heading>
                     <VStack spacing={8} pb="8">
-                        <Box maxH="50vh" maxW='100vw' overflow={'scroll'}>
+                        <Box maxH="50vh" maxW="100vw" overflow={'scroll'}>
                             <Table size="md">
                                 <Thead>
                                     <Tr>
@@ -559,8 +552,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                     <ShareToTwitter
                         tweetPreview={
                             <Text>
-                                I just joined the <Link color="twitter.400">@PulseBanner</Link> Partner Program! Use my code <b>{`${partnerCode}`}</b> at checkout for
-                                10% off!
+                                I just joined the <Link color="twitter.400">@PulseBanner</Link> Partner Program BETA! Use my code <b>{`${partnerCode}`}</b> at checkout for 10% off!
                                 <br />
                                 <Link color="twitter.500">#PulseBanner</Link>
                                 <br />
@@ -623,7 +615,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                     <Heading size="md" my="4" textAlign={'center'}>
                         Thank you for applying to the Partner Program. We will process your application within 5-7 business days.
                     </Heading>
-                    <ShareToTwitter
+                    {/* <ShareToTwitter
                         tweetPreview={
                             <Text>
                                 I just applied to the <Link color="twitter.400">@PulseBanner</Link> Partner Program! Apply today to start earning with each referral at{' '}
@@ -633,7 +625,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                             </Text>
                         }
                         tweetText={pendingText}
-                    />
+                    /> */}
                 </VStack>
             </Center>
         </>
@@ -677,7 +669,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                 <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']}>
                     <Box w="full" experimental_spaceY={4}>
                         <Center w="full">
-                            <Heading textAlign={'center'}>PulseBanner Partner Program</Heading>
+                            <Heading textAlign={'center'}>PulseBanner Partner Program BETA</Heading>
                         </Center>
                         <Center w="full" textAlign={'center'}>
                             PulseBanner partner program is our way to give back to our users. With every new customer that uses your affiliate code at checkout, you automatically
@@ -686,9 +678,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                     </Box>
                 </Flex>
                 <Box w="full">{FAQSection()}</Box>
-                {router.query.beta === 'true' && (
-                    availableForAccount() ? UIDisplayMapping[partnerStatus] : FreeUserPage()
-                )}
+                {router.query.beta === 'true' && (availableForAccount() ? UIDisplayMapping[partnerStatus] : FreeUserPage())}
             </Container>
         </>
     );
