@@ -660,14 +660,6 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                     url: 'https://pulsebanner.com/partner',
                     title: 'PulseBanner Partner Program',
                     description: 'Easily earn money back the more users you refer to PulseBanner memberships',
-                    images: [
-                        {
-                            url: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/pulsebanner_name_og.webp', // TODO - change image
-                            width: 1200,
-                            height: 627,
-                            alt: 'PulseBanner offers our members the ability to earn money when they refer another user.',
-                        },
-                    ],
                 }}
                 twitter={{
                     site: '@PulseBanner',
