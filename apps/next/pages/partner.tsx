@@ -51,7 +51,7 @@ import NextLink from 'next/link';
 import { getSession } from 'next-auth/react';
 import { NextSeo } from 'next-seo';
 import router, { useRouter } from 'next/router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { discordLink } from '@app/util/constants';
 import { AcceptanceStatus, PartnerCreateType } from '@app/util/partner/types';
@@ -153,7 +153,16 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
 
     const toast = useToast();
     const router = useRouter();
-    const {colorMode} = useColorMode();
+
+    useEffect(() => {
+        if (router.query.beta === 'true') {
+            router.replace('/partner?beta=yes', '/partner', {
+                shallow: true,
+            });
+        }
+    }, [router.query.beta, router]);
+
+    const { colorMode } = useColorMode();
     const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
 
     const {
@@ -369,16 +378,15 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                             </Table>
                         </Center>
                         <Text textAlign={'left'}>
-                            Credit will be added to your account as a gift card, and be used to pay your recurring subscription payments. For example, if you earn $4 in a month, and you have the Personal
-                            monthly Membership ($7.99/mo), you will only be charged $2.99 for that month ($7.99 - $4.00 = $2.99). Extra credits roll over to the next payment period.
+                            Credit will be added to your account as a gift card, and be used to pay your recurring subscription payments. For example, if you earn $4 in a month,
+                            and you have the Personal monthly Membership ($7.99/mo), you will only be charged $2.99 for that month ($7.99 - $4.00 = $2.99). Extra credits roll over
+                            to the next payment period.
                         </Text>
                         <Text>
                             Earned credit cannot be withdrawn. We hope you understand that this decision was made for a few reasons. We wanted the Partner Program to be available
                             to anyone regardless of where they live. This is a way for us to credit PulseBanner Members for work that you were already doing!
                         </Text>
-                        <Text>
-                            In the future, the Partner Program may evolve to support withdralws or payouts.
-                        </Text>
+                        <Text>In the future, the Partner Program may evolve to support withdralws or payouts.</Text>
                     </AccordionPanel>
                 </AccordionItem>
                 <AccordionItem>
@@ -453,7 +461,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                             <FormLabel my="2">Notes</FormLabel>
                             <Textarea {...register('notes')} placeholder="Additional information" />
                         </FormControl>
-                        <Text pt='2' fontSize="sm" color={colorMode === 'dark' ? 'gray.400' : 'gray.600'}>
+                        <Text pt="2" fontSize="sm" color={colorMode === 'dark' ? 'gray.400' : 'gray.600'}>
                             {'By applying, you agree to the'}{' '}
                             <Box as={NextLink} href="/partner-terms" passHref>
                                 <Link textDecoration="underline">Partner Program Terms</Link>
@@ -533,7 +541,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                         Pending Payouts
                     </Heading>
                     <VStack spacing={8} pb="8">
-                        <Box maxH="50vh" maxW='100vw' overflow={'scroll'}>
+                        <Box maxH="50vh" maxW="100vw" overflow={'scroll'}>
                             <Table size="md">
                                 <Thead>
                                     <Tr>
@@ -559,8 +567,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                     <ShareToTwitter
                         tweetPreview={
                             <Text>
-                                I just joined the <Link color="twitter.400">@PulseBanner</Link> Partner Program! Use my code <b>{`${partnerCode}`}</b> at checkout for
-                                10% off!
+                                I just joined the <Link color="twitter.400">@PulseBanner</Link> Partner Program! Use my code <b>{`${partnerCode}`}</b> at checkout for 10% off!
                                 <br />
                                 <Link color="twitter.500">#PulseBanner</Link>
                                 <br />
@@ -686,9 +693,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                     </Box>
                 </Flex>
                 <Box w="full">{FAQSection()}</Box>
-                {router.query.beta === 'true' && (
-                    availableForAccount() ? UIDisplayMapping[partnerStatus] : FreeUserPage()
-                )}
+                {router.query.beta === 'yes' && (availableForAccount() ? UIDisplayMapping[partnerStatus] : FreeUserPage())}
             </Container>
         </>
     );
