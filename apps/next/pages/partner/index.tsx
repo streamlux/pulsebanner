@@ -26,6 +26,7 @@ import {
     Stack,
     Table,
     TableCaption,
+    Tag,
     Tbody,
     Td,
     Text,
@@ -176,7 +177,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
     );
 
     const availableForAccount = (): boolean => {
-        if (paymentPlan === 'Free' || paymentPlanResponse.partner) {
+        if (paymentPlan === 'Free' || (paymentPlanResponse.partner && !(session.role === 'admin'))) {
             return false;
         }
         return true;
@@ -668,19 +669,23 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
             />
             <PaymentModal isOpen={pricingIsOpen} onClose={pricingClose} />
             <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} callbackUrl="/partner" />
-            <Container centerContent maxW="container.md" experimental_spaceY="4">
+            <Container centerContent maxW="container.md" experimental_spaceY="4" minH="100vh">
                 <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']}>
                     <Box w="full" experimental_spaceY={4}>
                         <Center w="full">
-                            <Heading textAlign={'center'}>PulseBanner Partner Program BETA</Heading>
+                            <HStack>
+                                <Heading textAlign={'center'}>PulseBanner Partner Program</Heading>
+                                <Tag colorScheme={'blue'}>Beta</Tag>
+                            </HStack>
                         </Center>
                         <Center w="full" textAlign={'center'}>
-                            PulseBanner partner program is our way to give back to our users. With every new customer that uses your affiliate code at checkout, you automatically
+                            The PulseBanner Partner Program is our way to give back to our users. With every new customer that uses your affiliate code at checkout, you automatically
                             receive some of the proceeds from the purchase.
                         </Center>
                     </Box>
                 </Flex>
                 <Box w="full">{FAQSection()}</Box>
+                {partnerStatus}
                 {/* ( logged in AND have the beta link     OR   be a partner (or have applied) )      AND    they need to be a paid user */}
                 {((session && router.query.beta === 'yes') || partnerStatus !== AcceptanceStatus.None) && availableForAccount() && UIDisplayMapping[partnerStatus]}
             </Container>

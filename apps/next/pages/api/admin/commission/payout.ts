@@ -69,7 +69,16 @@ handler.post(async (req, res) => {
 
                 const newCustomerBalance = customerInfo.balance - partnerInvoice.commissionAmount;
 
-                await stripe.customers.update(customerId, { balance: newCustomerBalance });
+                await stripe.customers.createBalanceTransaction(customerId, {
+                    amount: -1 * partnerInvoice.commissionAmount, // multiply by -1 to make it a credit
+                    description: `Credit for ${partnerInvoice.id}`,
+                    metadata: {
+                        invoiceId: partnerInvoiceId
+                    },
+                    currency: 'usd',
+                });
+
+                await stripe.customers.update(customerId, { balance: newCustomerBalance,  });
 
                 await updateSuccessfulPayoutStatus(invoiceId);
             } else if (payoutStatusUpdate[invoiceId] === 'pendingRejection') {
