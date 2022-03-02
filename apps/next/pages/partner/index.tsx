@@ -177,7 +177,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
     );
 
     const availableForAccount = (): boolean => {
-        if (paymentPlan === 'Free' || (paymentPlanResponse.partner && !(session.role === 'admin'))) {
+        if (paymentPlan === 'Free' || (paymentPlanResponse.partner && !(session?.role === 'admin'))) {
             return false;
         }
         return true;
@@ -283,9 +283,9 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                             streamers who have been streaming for at least 3 months, and have developed a pattern of consistent content creation.
                         </Text>
                         <Text>
-                            Simply upgrading to a PulseBanner Membership does not make you a PulseBanner Partner. We want to make it clear that you should not upgrade to a
-                            PulseBanner Membership for the sole purpose of applying to become a Partner, because that is against the spirit and intentions of the PulseBanner
-                            Partner Program.
+                            <strong>Simply upgrading to a PulseBanner Membership does not make you a PulseBanner Partner.</strong>{' '}
+                            We want to make it clear that you should not upgrade to a PulseBanner Membership for the sole purpose of applying to become a Partner, because that is
+                            against the spirit and intentions of the PulseBanner Partner Program.
                         </Text>
                     </AccordionPanel>
                 </AccordionItem>
@@ -501,83 +501,6 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
         ? `I just joined the @PulseBanner Partner Program BETA! Use my code ${partnerCode} at checkout for 10% off!\n#PulseBanner\nPulseBanner.com/pricing`
         : `I just joined the @PulseBanner Partner Program BETA!\n#PulseBanner\nPulseBanner.com/pricing`;
 
-    const ActiveAffiliatePage = () => (
-        <Container maxW="100vw">
-            <Center>
-                <VStack>
-                    <Heading size="md" my="4" textAlign={'center'}>
-                        You are a PulseBanner Partner! All your information, including applied and pending payouts, total referrals, and discount code can be found right here!
-                    </Heading>
-                    <Text pb="2" textAlign={'center'} fontSize="xl">
-                        Partner Code: <b>{`${partnerCode}`}</b>
-                    </Text>
-                    <Stack pt="8" direction={['column', 'row']}>
-                        <Text textAlign={'center'} fontSize="lg">
-                            Completed Referrals: <b>{`${completedPayouts}`}</b>
-                        </Text>
-                        <Text textAlign={'center'} fontSize="lg">
-                            Pending Referrals: <b>{`${pendingInvoices?.length ?? 0}`}</b>
-                        </Text>
-                    </Stack>
-                    <Stack pb="8" direction={['column', 'row']}>
-                        <Text textAlign={'center'} fontSize="lg">
-                            Completed Payout Amount: <b>{`$${completedPayoutAmount * 0.01}`}</b>
-                        </Text>
-                        <Text textAlign={'center'} fontSize="lg">
-                            Pending Payout Amount:{' '}
-                            <b>{`$${
-                                pendingInvoices
-                                    ?.map((a) => a.commissionAmount)
-                                    .reduce((a, b) => {
-                                        return a + b;
-                                    }, 0) * 0.01 ?? 0
-                            }`}</b>
-                        </Text>
-                    </Stack>
-                    <Heading fontSize="lg" textAlign={'center'}>
-                        Pending Payouts
-                    </Heading>
-                    <VStack spacing={8} pb="8">
-                        <Box maxH="50vh" maxW="100vw" overflow={'scroll'}>
-                            <Table size="md">
-                                <Thead>
-                                    <Tr>
-                                        <Th>Submitted Date</Th>
-                                        <Th>Pending Commission Amount</Th>
-                                        <Th>Wait Period Date</Th>
-                                        <Th>Wait Period Completed</Th>
-                                    </Tr>
-                                </Thead>
-                                <Tbody>
-                                    {pendingInvoices?.map((invoice) => (
-                                        <Tr key="key">
-                                            <Td textAlign={'center'}>{invoice.paidAt.toDateString()}</Td>
-                                            <Td textAlign={'center'}>${invoice.commissionAmount * 0.01}</Td>
-                                            <Td textAlign={'center'}>{new Date(invoice.paidAt.setDate(invoice.paidAt.getDate() + 7)).toDateString()}</Td>
-                                            <Td textAlign={'center'}>{invoice.commissionStatus === 'waitPeriod' ? 'no' : 'yes'}</Td>
-                                        </Tr>
-                                    ))}
-                                </Tbody>
-                            </Table>
-                        </Box>
-                    </VStack>
-                    <ShareToTwitter
-                        tweetPreview={
-                            <Text>
-                                I just joined the <Link color="twitter.400">@PulseBanner</Link> Partner Program BETA! Use my code <b>{`${partnerCode}`}</b> at checkout for 10% off!
-                                <br />
-                                <Link color="twitter.500">#PulseBanner</Link>
-                                <br />
-                                <Link color="twitter.500">PulseBanner.com/pricing</Link>
-                            </Text>
-                        }
-                        tweetText={activeText}
-                    />
-                </VStack>
-            </Center>
-        </Container>
-    );
-
     const FreeUserPage = () => (
         <>
             <Center w="full">
@@ -645,7 +568,13 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
 
     const UIDisplayMapping: Record<AcceptanceStatus, JSX.Element> = {
         none: SignUpPage(),
-        active: ActiveAffiliatePage(),
+        active: (
+            <>
+                <NextLink href="/partner/dashboard" passHref>
+                    <Button as="a">Go to Partner Dashboard</Button>
+                </NextLink>
+            </>
+        ),
         rejected: RejectedPage(),
         suspended: SuspendedPage(),
         pending: PendingPage(),
@@ -679,15 +608,14 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                             </HStack>
                         </Center>
                         <Center w="full" textAlign={'center'}>
-                            The PulseBanner Partner Program is our way to give back to our users. With every new customer that uses your affiliate code at checkout, you automatically
-                            receive some of the proceeds from the purchase.
+                            The PulseBanner Partner Program is our way to give back to our users. With every new customer that uses your affiliate code at checkout, you
+                            automatically receive some of the proceeds from the purchase.
                         </Center>
                     </Box>
                 </Flex>
-                <Box w="full">{FAQSection()}</Box>
-                {partnerStatus}
-                {/* ( logged in AND have the beta link     OR   be a partner (or have applied) )      AND    they need to be a paid user */}
                 {((session && router.query.beta === 'yes') || partnerStatus !== AcceptanceStatus.None) && availableForAccount() && UIDisplayMapping[partnerStatus]}
+                <Box w="full">{FAQSection()}</Box>
+                {/* ( logged in AND have the beta link     OR   be a partner (or have applied) )      AND    they need to be a paid user */}
             </Container>
         </>
     );

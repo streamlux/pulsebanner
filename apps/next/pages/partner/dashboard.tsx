@@ -5,63 +5,44 @@ import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import prisma from '@app/util/ssr/prisma';
 import {
-    Accordion,
-    AccordionButton,
-    AccordionIcon,
-    AccordionItem,
-    AccordionPanel,
     Box,
     BoxProps,
     Button,
     Center,
     Container,
     Flex,
-    FormControl,
-    FormLabel,
     Heading,
     HStack,
-    Input,
     Link,
-    ListItem,
-    Stack,
     Stat,
-    StatHelpText,
     StatLabel,
     StatNumber,
-    Tab,
     Table,
-    TableCaption,
-    TabList,
-    TabPanel,
-    TabPanels,
-    Tabs,
-    Tag,
     Tbody,
     Td,
     Text,
-    Textarea,
     Th,
     Thead,
     Tooltip,
     Tr,
-    UnorderedList,
     useColorMode,
     useColorModeValue,
     useDisclosure,
     useToast,
     VStack,
+    Wrap,
+    WrapItem,
 } from '@chakra-ui/react';
-import axios from 'axios';
 import { GetServerSideProps } from 'next';
 import NextLink from 'next/link';
 import { getSession } from 'next-auth/react';
 import { NextSeo } from 'next-seo';
-import router, { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import React, { useEffect } from 'react';
 import useSWR from 'swr';
 import { discordLink } from '@app/util/constants';
-import { AcceptanceStatus, PartnerCreateType } from '@app/util/partner/types';
-import { PartnerInvoice, Prisma } from '@prisma/client';
+import { AcceptanceStatus } from '@app/util/partner/types';
+import { PartnerInvoice } from '@prisma/client';
 import { logger } from '@app/util/logger';
 import { useForm } from 'react-hook-form';
 import { InfoIcon } from '@chakra-ui/icons';
@@ -127,11 +108,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
                 console.log(customerInfo);
                 const customer = (await stripe.customers.retrieve(customerInfo)) as Stripe.Customer;
-                const unix30DaysAgo = Math.floor(Date.now() / 1000) - 60 * 24 * 30 * 60;
+                const unix60DaysAgo = Math.floor(Date.now() / 1000) - 60 * 24 * 60;
                 const invoices = await stripe.invoices.list({
                     customer: customerInfo,
                     created: {
-                        gt: unix30DaysAgo,
+                        gt: unix60DaysAgo,
                     }, // current time in seconds - 30 days
                 });
 
@@ -142,7 +123,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 });
                 console.log(balanceTransactions);
 
-                const nets = [...balanceTransactions.data.filter((bt) => bt.created > unix30DaysAgo), ...invoices.data];
+                const nets = [...balanceTransactions.data.filter((bt) => bt.created > unix60DaysAgo), ...invoices.data];
 
                 const invoiceInfoPending = await prisma.partnerInvoice.findMany({
                     where: {
@@ -245,12 +226,33 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
 
     const ActiveAffiliatePage = () => (
         <Container maxW="container.lg">
-            <VStack spacing={4}>
-                <Heading size="lg">Welcome to your Partner Dashboard 😎</Heading>
-                <Text fontSize="lg" maxW="container.md" my="4" textAlign={'center'}>
-                    Here you will find information including total referrals and credit, pending and completed referrals, and discount code can be found right here!
+            <Center mb="8">
+                <Box maxW={['95vw']} background={colorMode === 'dark' ? 'gray.700' : 'blackAlpha.200'} mx="2" py="2" rounded="md">
+                    <Center id="nav-links" fontSize={['sm', 'md']} px="5vw">
+                        <Wrap spacing={['4', '8', '8', '8']}>
+                            <WrapItem>
+                                <NextLink href="/partner/welcome" passHref>
+                                    <Link>Welcome</Link>
+                                </NextLink>
+                            </WrapItem>
+                            <WrapItem>
+                                <NextLink href="/partner/dashboard" passHref>
+                                    <Link fontWeight={'bold'} textDecoration="underline">
+                                        Dashboard
+                                    </Link>
+                                </NextLink>
+                            </WrapItem>
+                        </Wrap>
+                    </Center>
+                </Box>
+            </Center>
+            <VStack spacing={8}>
+                {/* <Heading size="xl">Partner Dashboard</Heading> */}
+                <Text fontSize="xl" maxW="container.md" my="4" textAlign={'center'}>
+                    Welcome to your Partner Dashboard. Your Dashboard has information including your discount code, total credits and referrals, and pending and completed
+                    referrals.
                 </Text>
-                <Center minW={['80vw', 'container.md']}>
+                <Center minW={['80vw', 'container.md']} mt="8">
                     <Box minW={['100%', '50%']}>
                         <Box experimental_spaceY={8}>
                             <Box experimental_spaceY={2}>
@@ -304,6 +306,10 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                 <Box py="12" experimental_spaceY={4} w="full">
                     <Box overflow={'scroll'} w="full" minH="48" experimental_spaceY={4}>
                         <Heading size="md">Pending Referrals</Heading>
+                        <Text maxW={[undefined, '66%']}>
+                            Referrals are pending until they pass our refund period (7 days). Once 7 days pass, the wait period is over and we will apply the credit to your
+                            account.
+                        </Text>
                         <Table>
                             <Thead>
                                 <Tr>
@@ -380,6 +386,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                     </Box>
                     <Box maxH="50vh" maxW="100vw" overflow={'scroll'} w="full" minH="48" experimental_spaceY={4}>
                         <Heading size="md">Completed Referrals</Heading>
+                        <Text>Referral credits that have been applied to your account balance.</Text>
                         <Table size="md">
                             <Thead>
                                 <Tr>
@@ -429,9 +436,15 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                                     ))}
                             </Tbody>
                         </Table>
+                        {nets.filter((net) => net.object === 'customer_balance_transaction').length === 0 && (
+                            <Center w="full" my="4">
+                                <Text>Your completed referrals will show up here!</Text>
+                            </Center>
+                        )}
                     </Box>
                     <Box overflow={'scroll'} w="full" experimental_spaceY={4}>
                         <Heading size="md">Account Balance History</Heading>
+                        <Text>Shows the last 60 days of account balance history.</Text>
                         <Table variant="simple" w="full">
                             <Thead>
                                 <Tr>
