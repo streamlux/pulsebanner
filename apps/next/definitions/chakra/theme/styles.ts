@@ -1,4 +1,4 @@
-import { ThemeOverride } from '@chakra-ui/react';
+import { ComponentSingleStyleConfig, ThemeOverride } from '@chakra-ui/react';
 
 // Do not remove below imports, it's needed to make sure @emotion/react is included in the generated package.json file when we build our app for production.
 

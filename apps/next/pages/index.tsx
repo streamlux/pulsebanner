@@ -388,6 +388,28 @@ export default function Page() {
                                             </Button>
                                         </NextLink>
                                     </Box>
+                                    <Box>
+                                        <Box experimental_spaceY={4}>
+                                            <HStack>
+                                                <Heading size="2xl" textAlign="left">
+                                                    Partner Program
+                                                </Heading>
+
+                                                <Tag colorScheme="blue" size="lg">
+                                                    Premium
+                                                </Tag>
+                                            </HStack>
+                                            <Text fontSize="lg">
+                                                All PulseBanner members are qualified to apply for our partner program. Earn money for every new PulseBanner member that uses your
+                                                discount code!
+                                            </Text>
+                                        </Box>
+                                        <NextLink passHref href="/name">
+                                            <Button as="a" size="lg" rightIcon={<FaArrowRight />} colorScheme="green" className={trackEvent('click', 'setup-partner-program')}>
+                                                Setup Partner Program
+                                            </Button>
+                                        </NextLink>
+                                    </Box>
                                 </Container>
                             </Center>
 
