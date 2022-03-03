@@ -72,12 +72,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         // allow admins to view any users partner dashboard
         const userId = session.user.role !== 'admin' ? session.user.id : context.query.userId ?? session.user.id;
 
-        const { partnerId } = await prisma.partnerInformation.findUnique({
+        const partner = await prisma.partnerInformation.findUnique({
             where: {
                 userId,
             },
         });
-
+        const partnerId = partner?.id;
         if (partnerId) {
             try {
                 // search for the partner
@@ -163,6 +163,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             } catch (e) {
                 logger.error('Error in partner/dashboard getServerSideProps. ', { error: e });
             }
+        } else {
+            return {
+                redirect: {
+                    destination: '/partner',
+                    permanent: false,
+                },
+            };
         }
     }
 
