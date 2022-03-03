@@ -1,13 +1,36 @@
 import { useAdmin } from '@app/util/hooks/useAdmin';
 import { AcceptanceStatus } from '@app/util/partner/types';
 import prisma from '@app/util/ssr/prisma';
-import { Box, Button, Container, Select, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Th, Thead, Tr, useToast, VStack } from '@chakra-ui/react';
+import {
+    Box,
+    Button,
+    ButtonGroup,
+    Container,
+    Link,
+    Select,
+    Tab,
+    Table,
+    TabList,
+    TabPanel,
+    TabPanels,
+    Tabs,
+    Tbody,
+    Td,
+    Th,
+    Thead,
+    Tr,
+    useColorMode,
+    useToast,
+    VStack,
+} from '@chakra-ui/react';
 import { Partner, StripePartnerInfo } from '@prisma/client';
 import axios from 'axios';
 import { GetServerSideProps } from 'next';
 import { getSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
+import NextLink from 'next/link';
+import { ExternalLinkIcon } from '@chakra-ui/icons';
 
 interface PartnerProps {
     activePartnerList: (Partner & {
@@ -17,6 +40,7 @@ interface PartnerProps {
     rejectedPartnerList: Partner[];
     suspendedPartnerList: Partner[];
     allPartnerList: Partner[];
+    stripeBaseUrl: string;
 }
 
 type MapProps = {
@@ -78,6 +102,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
             const allPartners = await prisma.partner.findMany();
 
+            const stripeBaseUrl = process.env.NODE_ENV === 'development' ? 'https://dashboard.stripe.com/test/' : 'https://dashboard.stripe.com/';
+
             return {
                 props: {
                     activePartnerList: activePartners,
@@ -85,17 +111,19 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     rejectedPartnerList: rejectedPartners,
                     suspendedPartnerList: suspendedPartners,
                     allPartnerList: allPartners,
+                    stripeBaseUrl,
                 },
             };
         }
     }
 };
 
-export default function Page({ activePartnerList, pendingPartnerList, rejectedPartnerList, suspendedPartnerList, allPartnerList }: PartnerProps) {
+export default function Page({ activePartnerList, pendingPartnerList, rejectedPartnerList, suspendedPartnerList, allPartnerList, stripeBaseUrl }: PartnerProps) {
     useAdmin({ required: true });
     const toast = useToast();
 
     const router = useRouter();
+    const { colorMode } = useColorMode();
 
     const [affiliateStatusMap, setAffiliateStatuMap] = useState<Record<string, AcceptanceStatus>>({});
 
@@ -109,7 +137,7 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
             onChange={(val) => {
                 setAffiliateStatuMap({ ...affiliateStatusMap, [partner.id]: val.target.value as AcceptanceStatus });
             }}
-            defaultValue={partner.acceptanceStatus}
+            value={affiliateStatusMap[partner.id] ?? partner.acceptanceStatus}
         >
             <option value={AcceptanceStatus.Active}>{AcceptanceStatus.Active}</option>
             <option value={AcceptanceStatus.Pending}>{AcceptanceStatus.Pending}</option>
@@ -117,6 +145,9 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
             <option value={AcceptanceStatus.Suspended}>{AcceptanceStatus.Suspended}</option>
         </Select>
     );
+
+
+    const numChanges = allPartnerList.filter((partner) => affiliateStatusMap[partner.id] && (partner.acceptanceStatus !== affiliateStatusMap[partner.id])).length;
 
     const PanelLayoutHelper = (
         partnerList:
@@ -147,13 +178,29 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
                                         stripePartnerInfo: StripePartnerInfo;
                                     }
                                 ) => (
-                                    <Tr key={partner.id} fontSize="sm">
+                                    <Tr
+                                        key={partner.id}
+                                        fontSize="sm"
+                                        bg={
+                                            affiliateStatusMap[partner.id] && affiliateStatusMap[partner.id] !== partner.acceptanceStatus
+                                                ? colorMode === 'dark'
+                                                    ? 'cyan.800'
+                                                    : 'yellow.100'
+                                                : undefined
+                                        }
+                                    >
                                         <Td>{partner.id}</Td>
                                         <Td>{partner.partnerCode}</Td>
                                         <Td>{partner.email}</Td>
                                         <Td>{partner.firstName}</Td>
                                         <Td>{partner.lastName}</Td>
-                                        <Td>{partner?.stripePartnerInfo?.stripePromoCode}</Td>
+                                        <Td>
+                                            <NextLink passHref href={`${stripeBaseUrl}promotion_codes/${partner?.stripePartnerInfo?.stripePromoCode}`}>
+                                                <Button size="sm" variant={'link'} as="a" target={'_blank'} rightIcon={<ExternalLinkIcon />}>
+                                                    Promo code
+                                                </Button>
+                                            </NextLink>
+                                        </Td>
                                         <Td>{DropdownOption(partner)}</Td>
                                     </Tr>
                                 )
@@ -161,32 +208,43 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
                         </Tbody>
                     </Table>
                 </Box>
-                <Button
-                    onClick={() => {
-                        axios.post('/api/admin/partner/update', { affiliateStatusMap }).then(
-                            (response) => {
-                                // not getting past here it seems
-                                if (response.status === 200) {
-                                    refreshData();
+                <ButtonGroup>
+                    <Button
+                        disabled={numChanges === 0}
+                        onClick={() => {
+                            axios.post('/api/admin/partner/update', { affiliateStatusMap }).then(
+                                (response) => {
+                                    // not getting past here it seems
+                                    if (response.status === 200) {
+                                        refreshData();
+                                        toast({
+                                            status: 'success',
+                                            title: 'Updated selected partner status',
+                                        });
+                                    }
+                                },
+                                (error) => {
+                                    console.log(error);
                                     toast({
-                                        status: 'success',
-                                        title: 'Updated selected partner status',
+                                        status: 'error',
+                                        title: 'Unable to update selected partners status',
+                                        description: error.response.data,
                                     });
                                 }
-                            },
-                            (error) => {
-                                console.log(error);
-                                toast({
-                                    status: 'error',
-                                    title: 'Unable to update selected partners status',
-                                    description: error.response.data,
-                                });
-                            }
-                        );
-                    }}
-                >
-                    Apply changes
-                </Button>
+                            );
+                        }}
+                    >
+                        Apply {numChanges} changes
+                    </Button>
+                    <Button
+                        disabled={numChanges === 0}
+                        onClick={() => {
+                            setAffiliateStatuMap({});
+                        }}
+                    >
+                        Reset {numChanges} changes
+                    </Button>
+                </ButtonGroup>
             </VStack>
         </TabPanel>
     );

@@ -69,14 +69,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     })) as any;
 
     if (session) {
-        const partnerStatus = await prisma.partnerInformation.findUnique({
+        // allow admins to view any users partner dashboard
+        const userId = session.user.role !== 'admin' ? session.user.id : context.query.userId ?? session.user.id;
+
+        const { partnerId } = await prisma.partnerInformation.findUnique({
             where: {
-                userId: session.userId,
+                userId,
             },
         });
 
-        if (partnerStatus) {
-            const partnerId = partnerStatus.partnerId;
+        if (partnerId) {
             try {
                 // search for the partner
                 const partnerInfo = await prisma.partner.findUnique({
@@ -104,24 +106,21 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     },
                 });
 
-                const customerInfo = await getPartnerCustomerInfo(session.userId);
+                const customerId = await getPartnerCustomerInfo(userId);
+                const customer = (await stripe.customers.retrieve(customerId)) as Stripe.Customer;
 
-                console.log(customerInfo);
-                const customer = (await stripe.customers.retrieve(customerInfo)) as Stripe.Customer;
                 const unix60DaysAgo = Math.floor(Date.now() / 1000) - 60 * 24 * 60;
+
                 const invoices = await stripe.invoices.list({
-                    customer: customerInfo,
+                    customer: customerId,
                     created: {
                         gt: unix60DaysAgo,
                     }, // current time in seconds - 30 days
                 });
 
-                console.log(customer);
-                console.log('invoices', invoices);
-                const balanceTransactions = await stripe.customers.listBalanceTransactions(customerInfo, {
+                const balanceTransactions = await stripe.customers.listBalanceTransactions(customerId, {
                     limit: 100,
                 });
-                console.log(balanceTransactions);
 
                 const nets = [...balanceTransactions.data.filter((bt) => bt.created > unix60DaysAgo), ...invoices.data];
 
@@ -162,7 +161,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     },
                 };
             } catch (e) {
-                logger.error('Error in partner page for getServerSideProps. ', { error: e });
+                logger.error('Error in partner/dashboard getServerSideProps. ', { error: e });
             }
         }
     }
@@ -179,7 +178,6 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
     const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
     const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
 
-    const toast = useToast();
     const router = useRouter();
 
     useEffect(() => {
@@ -214,7 +212,10 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
     };
 
     const availableForAccount = (): boolean => {
-        if (paymentPlan === 'Free' || (paymentPlanResponse.partner && !(session?.role === 'admin'))) {
+        if (session?.role === 'admin') {
+            return true;
+        }
+        if (paymentPlan === 'Free' || paymentPlanResponse.partner) {
             return false;
         }
         return true;

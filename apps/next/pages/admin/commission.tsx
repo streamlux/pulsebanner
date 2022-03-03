@@ -1,7 +1,7 @@
 import { useAdmin } from '@app/util/hooks/useAdmin';
 import prisma from '@app/util/ssr/prisma';
 import { Box, Button, Container, Select, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Th, Thead, Tr, useToast, VStack } from '@chakra-ui/react';
-import { CommissionStatus, Partner, PartnerInvoice } from '@prisma/client';
+import { CommissionStatus, PartnerInvoice } from '@prisma/client';
 import axios from 'axios';
 import { GetServerSideProps } from 'next';
 import { getSession } from 'next-auth/react';
