@@ -150,7 +150,7 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, waitPer
         <TabPanel>
             <VStack spacing={8}>
                 <Box maxH="50vh" overflow={'scroll'}>
-                    <Table size="md">
+                    <Table size="sm">
                         <Thead>
                             <Tr>
                                 <Th>Invoice Id</Th>
