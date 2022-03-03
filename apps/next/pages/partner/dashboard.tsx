@@ -7,7 +7,6 @@ import prisma from '@app/util/ssr/prisma';
 import {
     Box,
     BoxProps,
-    Button,
     Center,
     Container,
     Flex,
@@ -28,7 +27,6 @@ import {
     useColorMode,
     useColorModeValue,
     useDisclosure,
-    useToast,
     VStack,
     Wrap,
     WrapItem,
@@ -42,7 +40,7 @@ import React, { useEffect } from 'react';
 import useSWR from 'swr';
 import { discordLink } from '@app/util/constants';
 import { AcceptanceStatus } from '@app/util/partner/types';
-import { PartnerInvoice } from '@prisma/client';
+import { CommissionStatus, PartnerInvoice } from '@prisma/client';
 import { logger } from '@app/util/logger';
 import { useForm } from 'react-hook-form';
 import { InfoIcon } from '@chakra-ui/icons';
@@ -229,6 +227,16 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
         return true;
     };
 
+    const referralStatus: Record<CommissionStatus, string> = {
+        complete: 'Completed',
+        none: 'None',
+        pending: 'Pending',
+        pendingCompletion: 'Pending completion',
+        waitPeriod: 'Refund period',
+        pendingRejection: 'Pending Rejection',
+        rejected: 'Rejected',
+    };
+
     const activeText = partnerCode
         ? `I just joined the @PulseBanner Partner Program BETA! Use my code ${partnerCode} at checkout for 10% off!\n#PulseBanner\nPulseBanner.com/pricing`
         : `I just joined the @PulseBanner Partner Program BETA!\n#PulseBanner\nPulseBanner.com/pricing`;
@@ -319,12 +327,12 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                             Referrals are pending until they pass our refund period (7 days). Once 7 days pass, the wait period is over and we will apply the credit to your
                             account.
                         </Text>
-                        <Table>
+                        <Table size="sm" w="full">
                             <Thead>
                                 <Tr>
                                     <Th>
                                         <HStack>
-                                            <Text>ID</Text>
+                                            <Text>Referral ID</Text>
                                             <Center as="span">
                                                 <Tooltip w="min" label="Unique ID of the transaction">
                                                     <InfoIcon />
@@ -334,7 +342,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                                     </Th>
                                     <Th>
                                         <HStack w="min">
-                                            <Text>Transaction Date</Text>
+                                            <Text>Date</Text>
                                             <Center as="span">
                                                 <Tooltip label="Date the transaction was made">
                                                     <InfoIcon />
@@ -342,11 +350,11 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                                             </Center>
                                         </HStack>
                                     </Th>
-                                    <Th>
+                                    <Th isNumeric>
                                         <HStack w="min">
-                                            <Text>Pending Commission Amount</Text>
+                                            <Text>Credit</Text>
                                             <Center as="span">
-                                                <Tooltip label="The amount you will earn (USD)">
+                                                <Tooltip label="The amount of credits you will earn (USD)">
                                                     <InfoIcon />
                                                 </Tooltip>
                                             </Center>
@@ -354,7 +362,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                                     </Th>
                                     <Th>
                                         <HStack>
-                                            <Text>Wait Period End</Text>
+                                            <Text>Refund Period End</Text>
                                             <Center as="span">
                                                 <Tooltip label="Date the wait period ends">
                                                     <InfoIcon />
@@ -364,7 +372,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                                     </Th>
                                     <Th>
                                         <HStack>
-                                            <Text>Wait Period Complete?</Text>
+                                            <Text>Status</Text>
 
                                             <Center as="span">
                                                 <Tooltip label="Has the wait period ended">
@@ -378,11 +386,11 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                             <Tbody>
                                 {pendingInvoices?.map((invoice) => (
                                     <Tr key="key">
-                                        <Td textAlign={'center'}>{invoice.id}</Td>
-                                        <Td textAlign={'center'}>{invoice.paidAt.toDateString()}</Td>
-                                        <Td textAlign={'center'}>${invoice.commissionAmount * 0.01}</Td>
-                                        <Td textAlign={'center'}>{new Date(invoice.paidAt.setDate(invoice.paidAt.getDate() + 7)).toDateString()}</Td>
-                                        <Td textAlign={'center'}>{invoice.commissionStatus === 'waitPeriod' ? 'no' : 'yes'}</Td>
+                                        <Td>{invoice.id}</Td>
+                                        <Td>{invoice.paidAt.toDateString()}</Td>
+                                        <Td isNumeric>${invoice.commissionAmount * 0.01}</Td>
+                                        <Td>{new Date(new Date(invoice.paidAt).setDate(invoice.paidAt.getDate() + 7)).toDateString()}</Td>
+                                        <Td>{referralStatus[invoice.commissionStatus]}</Td>
                                     </Tr>
                                 ))}
                             </Tbody>
@@ -396,7 +404,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                     <Box maxH="50vh" maxW="100vw" overflow={'scroll'} w="full" minH="48" experimental_spaceY={4}>
                         <Heading size="md">Completed Referrals</Heading>
                         <Text>Referral credits that have been applied to your account balance.</Text>
-                        <Table size="md">
+                        <Table size="sm">
                             <Thead>
                                 <Tr>
                                     <Th>
@@ -425,7 +433,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                                                 Amount
                                             </Text>
                                             <Center as="span">
-                                                <Tooltip label="The amount you will earn (USD)">
+                                                <Tooltip label="Credits earned for referral (USD)">
                                                     <InfoIcon />
                                                 </Tooltip>
                                             </Center>
@@ -454,7 +462,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                     <Box overflow={'scroll'} w="full" experimental_spaceY={4}>
                         <Heading size="md">Account Balance History</Heading>
                         <Text>Shows the last 60 days of account balance history.</Text>
-                        <Table variant="simple" w="full">
+                        <Table variant="simple" w="full" size="sm">
                             <Thead>
                                 <Tr>
                                     <Th>Date</Th>
@@ -574,20 +582,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
 
     return (
         <>
-            <NextSeo
-                title="Twitter "
-                openGraph={{
-                    site_name: 'PulseBanner',
-                    type: 'website',
-                    url: 'https://pulsebanner.com/partner',
-                    title: 'PulseBanner Partner Program',
-                    description: 'Easily earn money back the more users you refer to PulseBanner memberships',
-                }}
-                twitter={{
-                    site: '@PulseBanner',
-                    cardType: 'summary_large_image',
-                }}
-            />
+            <NextSeo title="Partner Dashboard" nofollow noindex />
             <PaymentModal isOpen={pricingIsOpen} onClose={pricingClose} />
             <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} callbackUrl="/partner" />
             <Container centerContent maxW="container.xl" experimental_spaceY="4" minH="100vh">
