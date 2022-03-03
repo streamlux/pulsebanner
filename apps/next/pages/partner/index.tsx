@@ -1,6 +1,5 @@
 import { PaymentModal } from '@app/components/pricing/PaymentModal';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
-import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
 import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import prisma from '@app/util/ssr/prisma';
@@ -23,7 +22,6 @@ import {
     Input,
     Link,
     ListItem,
-    Stack,
     Table,
     TableCaption,
     Tag,
@@ -46,23 +44,17 @@ import { GetServerSideProps } from 'next';
 import NextLink from 'next/link';
 import { getSession } from 'next-auth/react';
 import { NextSeo } from 'next-seo';
-import router, { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import React, { useEffect } from 'react';
 import useSWR from 'swr';
 import { discordLink } from '@app/util/constants';
 import { AcceptanceStatus, PartnerCreateType } from '@app/util/partner/types';
-import { PartnerInvoice, Prisma } from '@prisma/client';
 import { logger } from '@app/util/logger';
 import { useForm } from 'react-hook-form';
 
 interface Props {
     partnerStatus: AcceptanceStatus;
     partnerCode?: string;
-    completedPayouts?: number;
-    completedPayoutAmount?: number;
-    pendingPayouts?: number;
-    pendingPayoutAmount?: number;
-    pendingInvoices?: PartnerInvoice[];
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -87,45 +79,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     },
                 });
 
-                // get the invoices associated with the partner (what has been completed)
-                const invoiceInfoPaid = await prisma.partnerInvoice.findMany({
-                    where: {
-                        partnerId: partnerId,
-                        commissionStatus: 'complete',
-                    },
-                });
-
-                const invoiceInfoPending = await prisma.partnerInvoice.findMany({
-                    where: {
-                        partnerId: partnerId,
-                        OR: [
-                            {
-                                commissionStatus: {
-                                    equals: 'waitPeriod',
-                                },
-                            },
-                            {
-                                commissionStatus: {
-                                    equals: 'pending',
-                                },
-                            },
-                        ],
-                    },
-                });
-
-                const completedPayoutAmount = invoiceInfoPaid
-                    .map((a) => a.commissionAmount)
-                    .reduce((a, b) => {
-                        return a + b;
-                    }, 0);
-
                 return {
                     props: {
                         partnerStatus: partnerInfo.acceptanceStatus as AcceptanceStatus,
                         partnerCode: partnerInfo.partnerCode,
-                        completedPayouts: invoiceInfoPaid.length ?? 0,
-                        completedPayoutAmount: completedPayoutAmount ?? 0,
-                        pendingInvoices: invoiceInfoPending ?? [],
                     },
                 };
             } catch (e) {
@@ -141,7 +98,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
 };
 
-export default function Page({ partnerStatus, partnerCode, completedPayouts, completedPayoutAmount, pendingInvoices }: Props) {
+export default function Page({ partnerStatus, partnerCode }: Props) {
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('/partner');
     const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
     const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
@@ -381,7 +338,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                             Earned credit cannot be withdrawn. We hope you understand that this decision was made for a few reasons. We wanted the Partner Program to be available
                             to anyone regardless of where they live. This is a way for us to credit PulseBanner Members for work that you were already doing!
                         </Text>
-                        <Text>In the future, the Partner Program may evolve to support withdralws or payouts.</Text>
+                        <Text>In the future, the Partner Program may evolve to support withdraws or payouts.</Text>
                     </AccordionPanel>
                 </AccordionItem>
                 <AccordionItem>
@@ -583,7 +540,7 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
     return (
         <>
             <NextSeo
-                title="Twitter "
+                title="Partner Program"
                 openGraph={{
                     site_name: 'PulseBanner',
                     type: 'website',
