@@ -72,16 +72,17 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         // allow admins to view any users partner dashboard
         const userId = session.user.role !== 'admin' ? session.user.id : context.query.userId ?? session.user.id;
 
-        const partner = await prisma.partnerInformation.findUnique({
+        const partnerInfo = await prisma.partnerInformation.findUnique({
             where: {
                 userId,
             },
         });
-        const partnerId = partner?.id;
+        const partnerId = partnerInfo?.partnerId;
+
         if (partnerId) {
             try {
                 // search for the partner
-                const partnerInfo = await prisma.partner.findUnique({
+                const partner = await prisma.partner.findUnique({
                     where: {
                         id: partnerId,
                     },
@@ -152,8 +153,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     props: {
                         nets,
                         balance: customer.balance,
-                        partnerStatus: partnerInfo.acceptanceStatus as AcceptanceStatus,
-                        partnerCode: partnerInfo.partnerCode,
+                        partnerStatus: partner.acceptanceStatus as AcceptanceStatus,
+                        partnerCode: partner.partnerCode,
                         completedPayouts: invoiceInfoPaid.length ?? 0,
                         completedPayoutAmount: completedPayoutAmount ?? 0,
                         pendingInvoices: invoiceInfoPending ?? [],
@@ -161,7 +162,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     },
                 };
             } catch (e) {
-                logger.error('Error in partner/dashboard getServerSideProps. ', { error: e });
+                logger.error('Error in partner/dashboard getServerSideProps. ', { error: e.toString() });
             }
         } else {
             return {
