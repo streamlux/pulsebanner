@@ -1,5 +1,5 @@
 import { logger } from '@app/util/logger';
-import { getPartnerCustomerInfo, getPartnerInfo, getPartnerInvoice, updateRejectedPayoutStatus, updateSuccessfulPayoutStatus } from '@app/util/partner/payoutHelpers';
+import { getPartnerCustomerInfo, getPartnerInfo, getPartnerInvoice, updateRejectedPayoutStatus, setBalanceTransactionId } from '@app/util/partner/payoutHelpers';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import stripe from '@app/util/ssr/stripe';
 import { CommissionStatus } from '@prisma/client';
@@ -69,7 +69,7 @@ handler.post(async (req, res) => {
 
                 const newCustomerBalance = customerInfo.balance - partnerInvoice.commissionAmount;
 
-                await stripe.customers.createBalanceTransaction(customerId, {
+                const balanceTransaction = await stripe.customers.createBalanceTransaction(customerId, {
                     amount: -1 * partnerInvoice.commissionAmount, // multiply by -1 to make it a credit
                     description: `Credit for ${partnerInvoice.id}`,
                     metadata: {
@@ -80,7 +80,7 @@ handler.post(async (req, res) => {
 
                 await stripe.customers.update(customerId, { balance: newCustomerBalance,  });
 
-                await updateSuccessfulPayoutStatus(invoiceId);
+                await setBalanceTransactionId(invoiceId, balanceTransaction.id);
             } else if (payoutStatusUpdate[invoiceId] === 'pendingRejection') {
                 await updateRejectedPayoutStatus(invoiceId);
             }

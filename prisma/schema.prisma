@@ -336,16 +336,16 @@ enum CommissionStatus {
 }
 
 model PartnerInvoice {
-    id               String           @id @unique // This is the invoice via stripe.
-    customerId       String           @unique // this is the customer id on the invoice. We should link this to our customers table
-    customer         Customer         @relation(fields: [customerId], references: [id])
-    partnerId        String? // this cannot be unique in this table
-    partner          Partner?         @relation(fields: [partnerId], references: [id])
-    paidAt           DateTime // the time the actual invoice completed. Not the payout of the commission
-    commissionPaidAt DateTime?
-    commissionAmount Int // We include this even if there will not be a commission payout (if it's not the first month invoice)
-    purchaseAmount   Int
-    commissionStatus CommissionStatus
+    id                   String           @id @unique // This is the invoice via stripe.
+    customerId           String           @unique // this is the customer id on the invoice. We should link this to our customers table
+    customer             Customer         @relation(fields: [customerId], references: [id])
+    partnerId            String? // this cannot be unique in this table
+    partner              Partner?         @relation(fields: [partnerId], references: [id])
+    balanceTransactionId String? // stripe balance transaction id, if defined it means we've paid out this referral
+    paidAt               DateTime // the time the actual invoice completed. Not the payout of the commission
+    commissionAmount     Int // We include this even if there will not be a commission payout (if it's not the first month invoice)
+    purchaseAmount       Int
+    commissionStatus     CommissionStatus
 
     @@map("partner_invoice")
 }

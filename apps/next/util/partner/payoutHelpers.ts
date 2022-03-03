@@ -58,15 +58,15 @@ export const getPartnerCustomerInfo = async (userId: string): Promise<string | u
     return customerId.id;
 };
 
-export const updateSuccessfulPayoutStatus = async (invoiceId: string) => {
+export const setBalanceTransactionId = async (invoiceId: string, balanceTransactionId: string) => {
     // update the commission status
     await prisma.partnerInvoice.update({
         where: {
             id: invoiceId,
         },
         data: {
-            commissionPaidAt: new Date(),
             commissionStatus: 'complete',
+            balanceTransactionId,
         },
     });
 };

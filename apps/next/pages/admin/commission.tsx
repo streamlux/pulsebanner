@@ -1,5 +1,6 @@
 import { useAdmin } from '@app/util/hooks/useAdmin';
 import prisma from '@app/util/ssr/prisma';
+import stripe from '@app/util/ssr/stripe';
 import { Box, Button, Container, Select, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Th, Thead, Tr, useToast, VStack } from '@chakra-ui/react';
 import { CommissionStatus, PartnerInvoice } from '@prisma/client';
 import axios from 'axios';
@@ -7,6 +8,7 @@ import { GetServerSideProps } from 'next';
 import { getSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
+import Stripe from 'stripe';
 
 interface Props {
     completedInvoiceList: PartnerInvoice[];
@@ -15,6 +17,7 @@ interface Props {
     emptyInvoiceList: PartnerInvoice[];
     rejectedInvoiceList: PartnerInvoice[];
     allInvoiceList: PartnerInvoice[];
+    balanceTransactions: Stripe.Response<Stripe.ApiList<Stripe.CustomerBalanceTransaction>>;
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -31,6 +34,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 },
                 select: {
                     role: true,
+                    customer: true
                 },
             });
 
@@ -75,6 +79,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 },
             });
 
+            const balanceTransactions = await stripe.customers.listBalanceTransactions(userInfo.customer.id);
+
             const pendingPartnerInvoices = await prisma.partnerInvoice.findMany({
                 where: {
                     commissionStatus: CommissionStatus.pending,
@@ -104,13 +110,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     emptyInvoiceList: emptyPartnerInvoices,
                     rejectedInvoiceList: rejectedPartnerInvoices,
                     allInvoiceList: allPartnerInvoices,
+                    balanceTransactions,
                 },
             };
         }
     }
 };
 
-export default function Page({ completedInvoiceList, pendingInvoiceList, waitPeriodPartnerInvoices, emptyInvoiceList, rejectedInvoiceList, allInvoiceList }: Props) {
+export default function Page({ completedInvoiceList, pendingInvoiceList, waitPeriodPartnerInvoices, emptyInvoiceList, rejectedInvoiceList, allInvoiceList, balanceTransactions }: Props) {
     useAdmin({ required: true });
     const toast = useToast();
 
@@ -165,7 +172,7 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, waitPer
                                     <Td>${invoice.commissionAmount * 0.01}</Td>
                                     <Td>${invoice.purchaseAmount * 0.01}</Td>
                                     <Td>{invoice.paidAt.toDateString()}</Td>
-                                    <Td>{invoice.commissionPaidAt === null ? null : invoice.commissionPaidAt.toDateString()}</Td>
+                                    <Td>{balanceTransactions.data.find((bt) => bt.id === invoice.balanceTransactionId)?.created ?? ''}</Td>
                                     {pendingAction ? <Td>{DropdownPayoutOption(invoice)}</Td> : <Td>{invoice.commissionStatus}</Td>}
                                 </Tr>
                             ))}
