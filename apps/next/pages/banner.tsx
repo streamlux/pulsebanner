@@ -716,7 +716,11 @@ export default function Page({ banner, originalBanner }: Props) {
                         </Flex>
                     </>
                 )}
-                {!preset && originalBanner && (
+                {/*
+                    only show this when after they have gone live once (and the originalBanner has been populated)
+                    and when they are not selecting a preset
+                */}
+                {preset && originalBanner && (
                     <>
                         <Box>
                             <HStack p="2" w="full">
