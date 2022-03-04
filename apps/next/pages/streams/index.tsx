@@ -1,6 +1,6 @@
 import { Card } from '@app/components/Card';
 import prisma from '@app/util/ssr/prisma';
-import { Box, Button, ButtonGroup, Center, Container, DarkMode, Heading, HStack, IconButton, Image, Link, SimpleGrid, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, Center, Container, DarkMode, Flex, Heading, HStack, IconButton, Image, Link, SimpleGrid, Text, VStack } from '@chakra-ui/react';
 import { LiveStreams, Price, Subscription, User } from '@prisma/client';
 import { GetServerSideProps, GetStaticPaths, GetStaticPathsContext, GetStaticProps, GetStaticPropsContext, PreviewData } from 'next';
 import { NextSeo } from 'next-seo';
@@ -80,6 +80,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 // NOTE: We should potentially allow them to change what it is reverted back to. Would make it easier to handle in the UI and passing it around
 
 export default function Page({ streams, page, numPages }: Props) {
+    // update this to display similar to how twitch does
     return (
         <>
             <NextSeo
@@ -112,15 +113,29 @@ export default function Page({ streams, page, numPages }: Props) {
                         .filter((stream) => stream.streamLink)
                         ?.sort((a, b) => (a.user.subscription === b.user.subscription ? 0 : a.user.subscription ? -1 : 1))
                         .map((stream) => (
-                            <Box key={stream.userId}>
-                                <VStack>
+                            <Box w="full" key={stream.userId}>
+                                <Flex w="full" flexDirection="column" justifyContent="space-between" alignItems="center">
                                     <Image
                                         alt="Stream thumbnail"
                                         src={`https://static-cdn.jtvnw.net/previews-ttv/live_user_${stream.streamLink.substring(8).split('/')[1]}-440x248.jpg`}
                                     />
-                                    {/* <Text as="pre">{JSON.stringify(stream, null, 2)}</Text> */}
+                                    <Flex w="full" pt='1' flexDirection="row">
+                                        <Image borderRadius="full" boxSize="50px" src="https://bit.ly/dan-abramov" alt="Dan Abramov" />
+                                    </Flex>
+                                </Flex>
 
-                                    <HStack w="full" px="2">
+                                {/* <VStack>
+                                    <Image
+                                        alt="Stream thumbnail"
+                                        src={`https://static-cdn.jtvnw.net/previews-ttv/live_user_${stream.streamLink.substring(8).split('/')[1]}-440x248.jpg`}
+                                    />
+
+                                    <HStack w="full">
+                                        <Image borderRadius="full" boxSize="50px" src="https://bit.ly/dan-abramov" alt="Dan Abramov" />
+                                        <Image borderRadius="full" boxSize="50px" src="https://bit.ly/dan-abramov" alt="Dan Abramov" />
+                                    </HStack> */}
+
+                                {/* <HStack align="start" px="2">
                                         <Heading w="full" fontSize="md">
                                             {stream.streamLink.substring(8).split('/')[1]}
                                         </Heading>
@@ -136,8 +151,8 @@ export default function Page({ streams, page, numPages }: Props) {
                                                 </Button>
                                             </NextLink>
                                         </ButtonGroup>
-                                    </HStack>
-                                </VStack>
+                                    </HStack> */}
+                                {/* </VStack> */}
                             </Box>
                         ))}
                 </SimpleGrid>
