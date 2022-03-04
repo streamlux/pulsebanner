@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Remove partner block from landing page
 
+### Changed
+
+- Handle suspended Twitter account errors
+- Better Discord webhooks for new subscriptions
+
 ## [0.9.2] - 2022-03-03
 
 ### Fixed
