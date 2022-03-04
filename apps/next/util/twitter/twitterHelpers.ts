@@ -232,6 +232,11 @@ async function handleTwitterApiError(userId: string, e: { data?: { errors?: { me
             } else if (e.data.errors[0].code === 120) {
                 logger.error('Twitter name is too long or has invalid characters. Not able to update', { userId, e, context });
                 sendError({...e.data.errors[0], name: 'TwitterNameInvalidOrTooLong'}, `Twitter name is too long or has invalid characters and unable to update. userId: ${userId}\t Context: ${context}`);
+            } else if (e.data.errors[0].code === 326) {
+                logger.error('Twitter account is temporarily locked. Disabling features for user', { userId, e, context });
+                await flipFeatureEnabled(userId, 'banner', true);
+                await flipFeatureEnabled(userId, 'name', true);
+                sendError({...e.data.errors[0], name: 'TwitterAccountLocked'}, `Account is locked. Disabled features successfully. userId: ${userId}\t Context: ${context}`);
             }
             // some other kind of error, e.g. read-only API trying to POST
             else {
