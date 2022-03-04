@@ -700,6 +700,10 @@ export default function Page({ banner, originalBanner }: Props) {
                         </Flex>
                     </Flex>
                 )}
+                {/*
+                    only show this when after they have gone live once (and the originalBanner has been populated)
+                    and when they are not selecting a preset
+                */}
                 {preset && originalBanner && (
                     <>
                         <Box>

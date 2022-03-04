@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.9.3] - 2022-03-04
+
+### Fixed
+
+- Remove partner block from landing page
+
+### Changed
+
+- Handle suspended Twitter account errors
+- Better Discord webhooks for new subscriptions
+
+## [0.9.2] - 2022-03-03
+
+### Fixed
+
+- Add production price IDs to commission map
+
+## [0.9.1] - 2022-03-03
+
+### Fixed
+
+- Offline banner change option not showing up
+
+## [0.9.0] - 2022-03-03
+
+### Added
+
+ - Partner Program 🎉
+
 ## [0.8.2] - 2022-02-24
 
 ### Added
