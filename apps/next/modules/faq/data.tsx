@@ -53,7 +53,7 @@ export const bannerFaqItems: FaqItem[] = [
         ),
     },
     {
-        question: <>{"Why didn't my banner change even though I am live?"}</>,
+        question: "Why didn't my banner change even though I am live?",
         answer: <>If you enabled your banner during a stream, your banner will automatically change the next time you stream.</>,
     },
     {

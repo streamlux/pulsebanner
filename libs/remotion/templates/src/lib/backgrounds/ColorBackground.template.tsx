@@ -3,7 +3,7 @@ import { BackgroundForms } from '@pulsebanner/remotion/forms';
 import { Layer } from '../Layer';
 
 export const ColorBackground: Layer<typeof BackgroundComponents.ColorBackground> = {
-    name: 'Color',
+    name: 'Solid color',
     description: 'Make your background a solid color',
     component: BackgroundComponents.ColorBackground,
     form: BackgroundForms.ColorBackground,

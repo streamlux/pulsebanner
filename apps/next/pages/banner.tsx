@@ -8,7 +8,6 @@ import {
     FormLabel,
     Heading,
     HStack,
-    Select,
     Spacer,
     Tab,
     TabList,
@@ -34,12 +33,14 @@ import {
     SliderTrack,
     Tooltip,
     ButtonGroup,
+    Radio,
+    RadioGroup,
 } from '@chakra-ui/react';
 import React, { ReactElement, useEffect, useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
 import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
-import { FaArrowLeft, FaDiscord, FaLock, FaPlay, FaStop, FaUndo } from 'react-icons/fa';
+import { FaDiscord, FaPlay, FaStop } from 'react-icons/fa';
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 import { PaymentModal } from '@app/components/pricing/PaymentModal';
@@ -64,7 +65,7 @@ import { FaqSection } from '@app/modules/faq/FaqSection';
 import { getAccountsById } from '@app/util/getAccountsById';
 import { env } from 'process';
 import { download } from '@app/util/s3/download';
-import { FileUploadModal } from '@app/modules/fileUpload/FileUploadModal';
+import { FileUploadModal } from '@pulsebanner/react-image-upload';
 import { InfoIcon } from '@chakra-ui/icons';
 import { bannerPresets } from '@app/modules/banner/bannerPresets';
 import { BannerPresetList } from '@app/modules/banner/BannerPresetList';
@@ -80,22 +81,6 @@ const BannerForegrounds = ForegroundTemplates;
 // these types are ids of foregrounds or backgrounds
 type Foreground = keyof typeof BannerForegrounds;
 type Background = keyof typeof BackgroundTemplates;
-
-function createBannerProps<F extends Foreground, B extends Background>(
-    foregroundId: F,
-    foregroundProps: typeof ForegroundTemplates[F]['defaultProps'],
-    backgroundId: B,
-    backgroundProps: typeof BackgroundTemplates[B]['defaultProps']
-): BannerProps {
-    return {
-        foregroundId,
-        foregroundProps,
-        backgroundId,
-        backgroundProps,
-    };
-}
-
-type BannerPreset = BannerPresetMetadata & BannerPresetProps;
 
 interface BannerPresetMetadata {
     name?: string;
@@ -205,7 +190,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             originalBanner = await download(env.IMAGE_BUCKET_NAME, userId);
         } catch (e) {
             //
-            console.log(e);
         }
 
         if (banner) {
@@ -294,7 +278,6 @@ export default function Page({ banner, originalBanner }: Props) {
     const [reAuth, setReAuth] = useState(false);
 
     const router = useRouter();
-    console.log(router.query);
 
     const applyPreset = (preset: BannerPresetProps) => {
         setFgId(preset.foreground.id);
@@ -441,9 +424,7 @@ export default function Page({ banner, originalBanner }: Props) {
         }
     };
 
-    const EnableButton = !preset ? (
-        <></>
-    ) : (
+    const EnableButton = !preset ? undefined : (
         <VStack>
             <Button
                 colorScheme={banner && banner.enabled ? 'red' : 'green'}
@@ -510,7 +491,7 @@ export default function Page({ banner, originalBanner }: Props) {
             </ChangePresetModal>
             <DisableBannerModal isOpen={disableBannerIsOpen} onClose={disableBannerOnClose} />
             <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} callbackUrl="/banner" />
-            {reAuth ? <ReconnectTwitterModal session={session} isOpen={isOpen} onClose={onClose} /> : <></>}
+            {reAuth ? <ReconnectTwitterModal session={session} isOpen={isOpen} onClose={onClose} /> : null}
             <Container centerContent maxW="container.lg" experimental_spaceY="4" rounded="md" p="4">
                 {preset && (
                     <Flex w="full" flexDirection={['column', 'row']} experimental_spaceY={['2', '0']} justifyContent="space-between" alignItems="center">
@@ -530,191 +511,191 @@ export default function Page({ banner, originalBanner }: Props) {
                 {!preset && <BannerPresetList paymentPlan={paymentPlan} showPricingIfFree={showPricingIfFree} />}
 
                 {preset && (
-                    <>
-                        <Flex w="full" rounded="md" direction="column">
-                            <Flex direction={['column-reverse', 'row']} w="full" justifyContent={'space-between'} py="2">
-                                <HStack>
-                                    <ButtonGroup size={breakpoint !== 'base' ? 'md' : 'sm'} w="full">
-                                        <Button
-                                            className={trackEvent('click', 'change-preset-button')}
-                                            w={['50%', 'fit-content']}
-                                            // leftIcon={<FaArrowLeft />}
-                                            onClick={() => {
-                                                onOpenPresetModal();
-                                                // router.replace('/banner?preset=select', '/banner');
-                                            }}
-                                        >
-                                            Change Template
-                                        </Button>
-                                        <Button
-                                            w={['50%', 'fit-content']}
-                                            onClick={async () => {
-                                                await router.push('/banner', '/banner');
-                                                router.reload();
-                                            }}
-                                        >
-                                            Undo Changes
-                                        </Button>
-                                    </ButtonGroup>
-                                </HStack>
-                            </Flex>
-                            <Center w="full">
-                                <RemotionPreview compositionHeight={500} compositionWidth={1500}>
-                                    <Composer
-                                        {...{
-                                            backgroundId: bgId,
-                                            foregroundId: fgId,
-                                            backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
-                                            foregroundProps: { ...BannerForegrounds[fgId].defaultProps, ...fgProps },
+                    <Flex w="full" rounded="md" direction="column">
+                        <Flex direction={['column-reverse', 'row']} w="full" justifyContent={'space-between'} py="2">
+                            <HStack>
+                                <ButtonGroup size={breakpoint !== 'base' ? 'md' : 'sm'} w="full">
+                                    <Button
+                                        className={trackEvent('click', 'change-preset-button')}
+                                        w={['50%', 'fit-content']}
+                                        // leftIcon={<FaArrowLeft />}
+                                        onClick={() => {
+                                            onOpenPresetModal();
+                                            // router.replace('/banner?preset=select', '/banner');
                                         }}
-                                    />
-                                </RemotionPreview>
-                            </Center>
+                                    >
+                                        Change Template
+                                    </Button>
+                                    <Button
+                                        w={['50%', 'fit-content']}
+                                        onClick={async () => {
+                                            await router.push('/banner', '/banner');
+                                            router.reload();
+                                        }}
+                                    >
+                                        Undo Changes
+                                    </Button>
+                                </ButtonGroup>
+                            </HStack>
+                        </Flex>
+                        <Center w="full">
+                            <RemotionPreview compositionHeight={500} compositionWidth={1500}>
+                                <Composer
+                                    {...{
+                                        backgroundId: bgId,
+                                        foregroundId: fgId,
+                                        backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
+                                        foregroundProps: { ...BannerForegrounds[fgId].defaultProps, ...fgProps },
+                                    }}
+                                />
+                            </RemotionPreview>
+                        </Center>
 
-                            <Flex {...styles} grow={1} p="4" my="4" rounded="md" w="full" direction="column" minH="lg">
-                                <Tabs colorScheme="purple" flexGrow={1} size={breakpoint !== 'base' ? 'md' : 'sm'}>
-                                    <TabList>
-                                        <Tab className={trackEvent('click', 'banner-tab')}>Banner</Tab>
-                                        {preset !== 'emgg' && <Tab className={trackEvent('click', 'background-tab')}>Background</Tab>}
-                                    </TabList>
+                        <Flex {...styles} grow={1} p="4" my="4" rounded="md" w="full" direction="column" minH="lg">
+                            <Tabs colorScheme="purple" flexGrow={1} size={breakpoint !== 'base' ? 'md' : 'sm'}>
+                                <TabList>
+                                    <Tab className={trackEvent('click', 'banner-tab')}>Banner</Tab>
+                                    {preset !== 'emgg' && <Tab className={trackEvent('click', 'background-tab')}>Background</Tab>}
+                                </TabList>
 
-                                    <TabPanels flexGrow={1}>
-                                        <TabPanel>
-                                            <VStack>
-                                                <FgForm
-                                                    setProps={(s) => {
-                                                        console.log('set props', s);
-                                                        setFgProps(s);
+                                <TabPanels flexGrow={1}>
+                                    <TabPanel>
+                                        <VStack>
+                                            <FgForm
+                                                setProps={(s) => {
+                                                    setFgProps(s);
+                                                }}
+                                                props={{ ...BannerForegrounds[fgId].defaultProps, ...fgProps }}
+                                                showPricing={showPricing}
+                                                accountLevel={paymentPlan}
+                                            />
+                                            <FormControl>
+                                                <FormLabel>
+                                                    Refresh speed{' '}
+                                                    <Tooltip label="Banner refresh speed is how often your banner is re-generated and updated on Twitter." fontSize="md">
+                                                        <InfoIcon />
+                                                    </Tooltip>{' '}
+                                                    <Tag size="md" colorScheme="green">
+                                                        New!
+                                                    </Tag>
+                                                </FormLabel>
+
+                                                {sliderValue !== 0 ? (
+                                                    <Text>Your banner will refresh every {refreshSpeeds[sliderValue]}.</Text>
+                                                ) : (
+                                                    <HStack>
+                                                        <Text>
+                                                            Become a PulseBanner Member to enable banner refreshing.{' '}
+                                                            <NextLink as="span" passHref href="/pricing">
+                                                                <Link colorScheme={'teal'} fontSize={['md']} textDecor="underline">
+                                                                    View pricing
+                                                                </Link>
+                                                            </NextLink>
+                                                        </Text>
+                                                    </HStack>
+                                                )}
+                                                <Slider
+                                                    defaultValue={0}
+                                                    max={99}
+                                                    ml={[0, '2']}
+                                                    step={33}
+                                                    colorScheme={'purple'}
+                                                    value={sliderValue}
+                                                    onClick={() => showPricingIfFree()}
+                                                    aria-label="slider-ex-6"
+                                                    maxW="lg"
+                                                    mb="8"
+                                                >
+                                                    <SliderMark value={0} mt="2" fontSize={['xs', 'sm']}>
+                                                        Never
+                                                    </SliderMark>
+                                                    <SliderMark value={33} mt="2" ml="-4" fontSize={['xs', 'sm']}>
+                                                        Slow <br />
+                                                        (60 min)
+                                                        <br />
+                                                        <Tag onClick={() => showPricingIfFree()} size="sm" colorScheme="green">
+                                                            Personal
+                                                        </Tag>
+                                                    </SliderMark>
+                                                    <SliderMark value={66} mt="2" ml="-4" fontSize={['xs', 'sm']}>
+                                                        Fast <br />
+                                                        (30 min)
+                                                    </SliderMark>
+                                                    <SliderMark value={99} mt="2" ml="-6" fontSize={['xs', 'sm']} w="24">
+                                                        Insanity <br /> (10 min)
+                                                        <br />
+                                                        <Tag size="sm" colorScheme="green" onClick={() => showPricingIfFree()}>
+                                                            Pro
+                                                        </Tag>
+                                                    </SliderMark>
+                                                    <SliderTrack h="3" rounded="full">
+                                                        <SliderFilledTrack />
+                                                    </SliderTrack>
+                                                    {paymentPlan === 'Free' && <SliderThumb />}
+                                                </Slider>
+                                            </FormControl>
+                                        </VStack>
+                                    </TabPanel>
+                                    <TabPanel>
+                                        <FormControl id="country">
+                                            <FormLabel>Background type</FormLabel>
+                                            <RadioGroup
+                                                onChange={(e) => {
+                                                    setBgId(e as keyof typeof BackgroundTemplates);
+                                                }}
+                                                value={bgId}
+                                            >
+                                                <Stack direction="column">
+                                                    {Object.entries(BackgroundTemplates).map(([key, value]) => (
+                                                        <Radio key={key} value={key} colorScheme="purple">
+                                                            <Text fontSize="md">{value.name}</Text>
+                                                            <Text fontSize="sm" textColor={'gray.600'}>
+                                                                {value.description}
+                                                            </Text>
+                                                        </Radio>
+                                                    ))}
+                                                </Stack>
+                                            </RadioGroup>
+                                        </FormControl>
+                                        {fgId !== 'Emgg' && (
+                                            <Box py="4">
+                                                <Form
+                                                    setProps={(p) => {
+                                                        setBgProps({ ...BackgroundTemplates[bgId].defaultProps, ...p });
                                                     }}
-                                                    props={{ ...BannerForegrounds[fgId].defaultProps, ...fgProps }}
+                                                    props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }}
                                                     showPricing={showPricing}
                                                     accountLevel={paymentPlan}
                                                 />
-                                                <FormControl>
-                                                    <FormLabel>
-                                                        Refresh speed{' '}
-                                                        <Tooltip label="Banner refresh speed is how often your banner is re-generated and updated on Twitter." fontSize="md">
-                                                            <InfoIcon />
-                                                        </Tooltip>{' '}
-                                                        <Tag size="md" colorScheme="green">
-                                                            New!
-                                                        </Tag>
-                                                    </FormLabel>
+                                            </Box>
+                                        )}
+                                    </TabPanel>
+                                </TabPanels>
+                            </Tabs>
 
-                                                    {sliderValue !== 0 ? (
-                                                        <Text>Your banner will refresh every {refreshSpeeds[sliderValue]}.</Text>
-                                                    ) : (
-                                                        <HStack>
-                                                            <Text>
-                                                                Become a PulseBanner Member to enable banner refreshing.{' '}
-                                                                <NextLink as="span" passHref href="/pricing">
-                                                                    <Link colorScheme={'teal'} fontSize={['md']} textDecor="underline">
-                                                                        View pricing
-                                                                    </Link>
-                                                                </NextLink>
-                                                            </Text>
-                                                        </HStack>
-                                                    )}
-                                                    <Slider
-                                                        defaultValue={0}
-                                                        max={99}
-                                                        ml={[0, '2']}
-                                                        step={33}
-                                                        colorScheme={'purple'}
-                                                        value={sliderValue}
-                                                        onClick={() => showPricingIfFree()}
-                                                        aria-label="slider-ex-6"
-                                                        maxW="lg"
-                                                        mb="8"
-                                                    >
-                                                        <SliderMark value={0} mt="2" fontSize={['xs', 'sm']}>
-                                                            Never
-                                                        </SliderMark>
-                                                        <SliderMark value={33} mt="2" ml="-4" fontSize={['xs', 'sm']}>
-                                                            Slow <br />
-                                                            (60 min)
-                                                            <br />
-                                                            <Tag onClick={() => showPricingIfFree()} size="sm" colorScheme="green">
-                                                                Personal
-                                                            </Tag>
-                                                        </SliderMark>
-                                                        <SliderMark value={66} mt="2" ml="-4" fontSize={['xs', 'sm']}>
-                                                            Fast <br />
-                                                            (30 min)
-                                                        </SliderMark>
-                                                        <SliderMark value={99} mt="2" ml="-6" fontSize={['xs', 'sm']} w="24">
-                                                            Insanity <br /> (10 min)
-                                                            <br />
-                                                            <Tag size="sm" colorScheme="green" onClick={() => showPricingIfFree()}>
-                                                                Pro
-                                                            </Tag>
-                                                        </SliderMark>
-                                                        <SliderTrack h="3" rounded="full">
-                                                            <SliderFilledTrack />
-                                                        </SliderTrack>
-                                                        {paymentPlan === 'Free' && <SliderThumb />}
-                                                    </Slider>
-                                                </FormControl>
-                                            </VStack>
-                                        </TabPanel>
-                                        <TabPanel>
-                                            <FormControl id="country">
-                                                <FormLabel>Background type</FormLabel>
-                                                <Select
-                                                    // disabled={fgId === 'Emgg'}
-                                                    value={bgId}
-                                                    w="fit-content"
-                                                    onChange={(e) => {
-                                                        setBgId(e.target.value as keyof typeof BackgroundTemplates);
-                                                    }}
-                                                >
-                                                    {Object.entries(BackgroundTemplates).map(([key, value]) => (
-                                                        <option key={key} value={key}>
-                                                            {value.name}
-                                                        </option>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
-                                            {fgId !== 'Emgg' && (
-                                                <Box py="4">
-                                                    <Form
-                                                        setProps={(p) => {
-                                                            setBgProps({ ...BackgroundTemplates[bgId].defaultProps, ...p });
-                                                        }}
-                                                        props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }}
-                                                        showPricing={showPricing}
-                                                        accountLevel={paymentPlan}
-                                                    />
-                                                </Box>
-                                            )}
-                                        </TabPanel>
-                                    </TabPanels>
-                                </Tabs>
-
-                                <Flex justifyContent="space-between" direction={['column', 'row']}>
-                                    <Spacer />
-                                    <HStack>
-                                        <Button my="2" onClick={saveSettings} className={trackEvent('click', 'save-settings-button')}>
-                                            Save settings
-                                        </Button>
-                                    </HStack>
-                                </Flex>
-                            </Flex>
-                            <Flex w="full" flexDirection={['column-reverse', 'row']} justifyContent="space-between">
-                                <HStack pt={['2', '2']} pb={['2', '0']} h="full">
-                                    <Text textAlign={['center', 'left']} h="full">
-                                        Have feedback? 👉{' '}
-                                    </Text>
-                                    <Link isExternal href={discordLink}>
-                                        <Button as="a" size="sm" colorScheme="gray" rightIcon={<FaDiscord />}>
-                                            Join our Discord
-                                        </Button>
-                                    </Link>
+                            <Flex justifyContent="space-between" direction={['column', 'row']}>
+                                <Spacer />
+                                <HStack>
+                                    <Button my="2" onClick={saveSettings} className={trackEvent('click', 'save-settings-button')}>
+                                        Save settings
+                                    </Button>
                                 </HStack>
-                                {EnableButton}
                             </Flex>
                         </Flex>
-                    </>
+                        <Flex w="full" flexDirection={['column-reverse', 'row']} justifyContent="space-between">
+                            <HStack pt={['2', '2']} pb={['2', '0']} h="full">
+                                <Text textAlign={['center', 'left']} h="full">
+                                    Have feedback? 👉{' '}
+                                </Text>
+                                <Link isExternal href={discordLink}>
+                                    <Button as="a" size="sm" colorScheme="gray" rightIcon={<FaDiscord />}>
+                                        Join our Discord
+                                    </Button>
+                                </Link>
+                            </HStack>
+                            {EnableButton}
+                        </Flex>
+                    </Flex>
                 )}
                 {/*
                     only show this when after they have gone live once (and the originalBanner has been populated)
@@ -739,7 +720,20 @@ export default function Page({ banner, originalBanner }: Props) {
                                 fallbackSrc="https://placehold.co/1500x500?text=Empty+banner"
                             />
                         </Box>
-                        <FileUploadModal isOpen={fileModal} onClose={() => setFileModal(false)} title="Change offline banner" />
+                        <FileUploadModal
+                            url="/api/features/banner/offline"
+                            onUpload={() => {
+                                toast({
+                                    status: 'success',
+                                    title: 'Offline banner saved',
+                                    position: 'top',
+                                });
+                                router.reload();
+                            }}
+                            isOpen={fileModal}
+                            onClose={() => setFileModal(false)}
+                            title="Change offline banner"
+                        />
                     </>
                 )}
 

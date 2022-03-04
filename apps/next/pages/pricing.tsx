@@ -1,4 +1,4 @@
-import { Price, PriceInterval, Product, Subscription } from '@prisma/client';
+import { Price, PriceInterval, Product } from '@prisma/client';
 import type { GetServerSideProps, NextPage } from 'next';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
@@ -282,9 +282,7 @@ const Page: NextPage<Props> = ({ products }) => {
                                 <Box justifySelf="flex-end">
                                     <Flex w="full" justifyContent="space-between">
                                         <Spacer />
-                                        {session ? (
-                                            <></>
-                                        ) : (
+                                        {session && (
                                             <Button
                                                 fontWeight="bold"
                                                 colorScheme="green"

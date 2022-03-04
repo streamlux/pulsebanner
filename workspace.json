@@ -4,6 +4,7 @@
         "next": "apps/next",
         "next-e2e": "apps/next-e2e",
         "react-color": "libs/react/color",
+        "react-image-upload": "libs/react/image-upload",
         "remotion": "apps/remotion",
         "remotion-components": "libs/remotion/components",
         "remotion-forms": "libs/remotion/forms",
