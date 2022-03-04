@@ -263,74 +263,99 @@ handler.post(async (req, res) => {
                     });
                     break;
                 }
-                case 'checkout.session.completed':
-                    {
-                        const data = event.data.object as Stripe.Checkout.Session;
+                case 'checkout.session.completed': {
+                    const data = event.data.object as Stripe.Checkout.Session;
 
-                        const subscription = await stripe.subscriptions.retrieve(data.subscription as string, {
-                            expand: ['default_payment_method'],
-                        });
+                    const subscription = await stripe.subscriptions.retrieve(data.subscription as string, {
+                        expand: ['default_payment_method'],
+                    });
 
-                        await prisma.subscription.upsert({
+                    await prisma.subscription.upsert({
+                        where: {
+                            id: subscription.id,
+                        },
+                        create: {
+                            id: subscription.id,
+                            user: {
+                                connect: {
+                                    id: data.client_reference_id,
+                                },
+                            },
+                            price: {
+                                connect: {
+                                    id: subscription.items.data[0].price.id,
+                                },
+                            },
+                            status: subscription.status as SubscriptionStatus,
+                            metadata: subscription.metadata,
+                            cancel_at_period_end: subscription.cancel_at_period_end,
+                            canceled_at: timestampToDate(subscription.canceled_at),
+                            cancel_at: timestampToDate(subscription.cancel_at),
+                            start_date: timestampToDate(subscription.start_date),
+                            ended_at: timestampToDate(subscription.ended_at),
+                            trial_start: timestampToDate(subscription.trial_start),
+                            trial_end: timestampToDate(subscription.trial_end),
+                        },
+                        update: {
+                            status: subscription.status as SubscriptionStatus,
+                            metadata: subscription.metadata,
+                            price: {
+                                connect: {
+                                    id: subscription.items.data[0].price.id,
+                                },
+                            },
+                            cancel_at_period_end: subscription.cancel_at_period_end,
+                            canceled_at: timestampToDate(subscription.canceled_at),
+                            cancel_at: timestampToDate(subscription.cancel_at),
+                            start_date: timestampToDate(subscription.start_date),
+                            ended_at: timestampToDate(subscription.ended_at),
+                            trial_start: timestampToDate(subscription.trial_start),
+                            trial_end: timestampToDate(subscription.trial_end),
+                        },
+                    });
+
+                    const subscriptionInfo = await prisma.subscription.findUnique({
+                        where: {
+                            id: subscription.id,
+                        },
+                    });
+                    const userId = subscriptionInfo === null ? null : subscriptionInfo.userId;
+                    // send webhook to discord saying someone subscribed
+                    if (userId) {
+                        const priceId = subscriptionInfo.priceId;
+                        const priceInfo = await prisma.price.findUnique({
                             where: {
-                                id: subscription.id,
-                            },
-                            create: {
-                                id: subscription.id,
-                                user: {
-                                    connect: {
-                                        id: data.client_reference_id,
-                                    },
-                                },
-                                price: {
-                                    connect: {
-                                        id: subscription.items.data[0].price.id,
-                                    },
-                                },
-                                status: subscription.status as SubscriptionStatus,
-                                metadata: subscription.metadata,
-                                cancel_at_period_end: subscription.cancel_at_period_end,
-                                canceled_at: timestampToDate(subscription.canceled_at),
-                                cancel_at: timestampToDate(subscription.cancel_at),
-                                start_date: timestampToDate(subscription.start_date),
-                                ended_at: timestampToDate(subscription.ended_at),
-                                trial_start: timestampToDate(subscription.trial_start),
-                                trial_end: timestampToDate(subscription.trial_end),
-                            },
-                            update: {
-                                status: subscription.status as SubscriptionStatus,
-                                metadata: subscription.metadata,
-                                price: {
-                                    connect: {
-                                        id: subscription.items.data[0].price.id,
-                                    },
-                                },
-                                cancel_at_period_end: subscription.cancel_at_period_end,
-                                canceled_at: timestampToDate(subscription.canceled_at),
-                                cancel_at: timestampToDate(subscription.cancel_at),
-                                start_date: timestampToDate(subscription.start_date),
-                                ended_at: timestampToDate(subscription.ended_at),
-                                trial_start: timestampToDate(subscription.trial_start),
-                                trial_end: timestampToDate(subscription.trial_end),
+                                id: priceId,
                             },
                         });
+                        if (priceInfo !== null) {
+                            const intervalId = priceInfo.interval;
+                            const productId = priceInfo.productId;
 
-                        const subscriptionInfo = await prisma.subscription.findUnique({
-                            where: {
-                                id: subscription.id,
-                            },
-                        });
-                        const userId = subscriptionInfo === null ? null : subscriptionInfo.userId;
-                        // send webhook to discord saying someone subscribed
-                        if (userId) {
+                            const productInfo = await prisma.product.findUnique({
+                                where: {
+                                    id: productId,
+                                },
+                                select: {
+                                    name: true,
+                                },
+                            });
+
+                            if (productInfo !== null) {
+                                logger.info(`User successfully signed up for a membership: ${productInfo.name} - ${intervalId}. User: ${userId}`, { userId: userId });
+                                prisma.subscription.count().then((value) => {
+                                    sendMessage(`"${userId}" signed up for a premium plan! Total premium users: ${value}`, process.env.DISCORD_NEW_SUBSCRIBER_URL);
+                                });
+                            }
+                        } else {
                             logger.info(`User successfully signed up for a membership. User: ${userId}`, { userId: userId });
                             prisma.subscription.count().then((value) => {
                                 sendMessage(`"${userId}" signed up for a premium plan! Total premium users: ${value}`, process.env.DISCORD_NEW_SUBSCRIBER_URL);
                             });
                         }
                     }
-
                     break;
+                }
                 case 'invoice.payment_succeeded': {
                     // for handling when a webhook
                     const data = event.data.object as Stripe.Invoice;

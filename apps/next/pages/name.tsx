@@ -7,6 +7,8 @@ import prisma from '@app/util/ssr/prisma';
 import { trackEvent } from '@app/util/umami/trackEvent';
 import { EditIcon, StarIcon } from '@chakra-ui/icons';
 import {
+    Alert,
+    AlertIcon,
     Box,
     BoxProps,
     Button,
@@ -45,7 +47,7 @@ import 'fake-tweet/build/index.css';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
 import { createTwitterClient, validateTwitterAuthentication } from '@app/util/twitter/twitterHelpers';
 import { getTwitterInfo } from '@app/util/database/postgresHelpers';
-import { format } from 'date-fns';
+import { format, max } from 'date-fns';
 import { NextSeo } from 'next-seo';
 const nameEndpoint = '/api/features/twitterName';
 const maxNameLength = 50;
@@ -147,6 +149,8 @@ export default function Page({ twitterName, twitterProfile }: Props) {
     const [streamName, setStreamName] = useState(twitterName.streamName ?? defaultMessage);
     const [reAuth, setReAuth] = useState(false);
 
+    const nameIsValid = streamName.length < maxNameLength;
+
     const toast = useToast();
 
     const [isToggling, { on, off }] = useBoolean(false);
@@ -222,7 +226,7 @@ export default function Page({ twitterName, twitterProfile }: Props) {
     const config = {
         user: {
             nickname: twitterProfile?.screen_name ?? 'PulseBanner',
-            name: streamName,
+            name: streamName.substring(0, 50),
             avatar: twitterProfile?.profile_image_url_https ?? 'https://pulsebanner.com/favicon.png',
             verified: false,
             locked: false,
@@ -344,7 +348,7 @@ export default function Page({ twitterName, twitterProfile }: Props) {
                                             _disabled={{}}
                                             maxLength={maxNameLength}
                                             placeholder="Live name"
-                                            defaultValue={streamName}
+                                            defaultValue={streamName.substring(0, 50)}
                                             onChange={(val) => {
                                                 const text = val.target.value;
                                                 if (text.length >= maxNameLength) {
@@ -380,6 +384,12 @@ export default function Page({ twitterName, twitterProfile }: Props) {
                                         {!availableForAccount() && ' Become a PulseBanner Member to customize your Twitter Live Name.'} Please note that a name greater than 50
                                         characters will be shortened. This is Twitter&apos;s name length limit.
                                     </FormHelperText>
+                                    {!nameIsValid && (
+                                        <Alert my="2" status="warning" size="sm">
+                                            <AlertIcon />
+                                            Your live name is over the Twitter length limit, it will be automatically shortened to fit.
+                                        </Alert>
+                                    )}
                                 </FormControl>
                             </HStack>
                             <Flex justifyContent="space-between" direction="row">

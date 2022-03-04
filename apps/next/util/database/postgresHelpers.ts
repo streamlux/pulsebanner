@@ -131,7 +131,7 @@ export const getAccountInfo = async (userId: string): Promise<Partial<Account>> 
     return response;
 };
 
-export const flipFeatureEnabled = async (userId: string, feature: string): Promise<void> => {
+export const flipFeatureEnabled = async (userId: string, feature: string, forceDisable?: boolean): Promise<void> => {
     if (feature === 'banner') {
         const banner = await prisma.banner.findFirst({
             where: {
@@ -145,7 +145,7 @@ export const flipFeatureEnabled = async (userId: string, feature: string): Promi
                     userId,
                 },
                 data: {
-                    enabled: !banner.enabled,
+                    enabled: forceDisable ? false : !banner.enabled,
                 },
             });
 
@@ -167,7 +167,7 @@ export const flipFeatureEnabled = async (userId: string, feature: string): Promi
                     userId,
                 },
                 data: {
-                    enabled: !twitterName.enabled,
+                    enabled: forceDisable ? false : !twitterName.enabled,
                 },
             });
 
@@ -189,7 +189,7 @@ export const flipFeatureEnabled = async (userId: string, feature: string): Promi
                     userId,
                 },
                 data: {
-                    enabled: !profileImage.enabled,
+                    enabled: forceDisable ? false : !profileImage.enabled,
                 },
             });
         }
