@@ -1,4 +1,5 @@
 import { TwitterClient, UsersLookup } from 'twitter-api-client';
+import { flipFeatureEnabled } from '../database/postgresHelpers';
 import { sendError } from '../discord/sendError';
 import { logger } from '../logger';
 
@@ -212,21 +213,36 @@ export async function getTwitterUserLink(oauth_token: string, oauth_token_secret
 }
 
 // would need to pass in the userId here
-async function handleTwitterApiError(userId: string, e: { errors?: { message: string; code: number }[]; _headers?: any }, context?: string) {
-    if ('errors' in e) {
-        // Twitter API error
-        if (e.errors[0].code === 88) {
-            // rate limit exceeded
-            logger.error(`Rate limit error, code 88. Rate limit will reset on ${new Date(e._headers.get('x-rate-limit-reset') * 1000)}`, e);
-            sendError({ ...e.errors[0], name: 'TwitterRateLimitError' }, context);
-        } else if (e.errors[0].code === 89) {
-            logger.error('TwitterAPIInvalidTokenError: invalid or expired token error', { userId, e, context });
-            sendError({ ...e.errors[0], name: 'TwitterAPIInvalidTokenError' }, `Invalid or expired token error. userId: ${userId}\t Context: ${context}`);
-        }
-        // some other kind of error, e.g. read-only API trying to POST
-        else {
-            logger.error('Other Twitter API error occurred', { userId, e, context });
-            sendError(e as any, `Other Twitter API error occured. userId: ${userId}\t Context: ${context}`);
+async function handleTwitterApiError(userId: string, e: { data?: { errors?: { message: string; code: number }[]; _headers?: any } }, context?: string) {
+    if ('data' in e) {
+        if ('errors' in e) {
+            // Twitter API error
+            if (e.data.errors[0].code === 88) {
+                // rate limit exceeded
+                logger.error(`Rate limit error, code 88. Rate limit will reset on ${new Date(e.data._headers.get('x-rate-limit-reset') * 1000)}`, e);
+                sendError({ ...e.data.errors[0], name: 'TwitterRateLimitError' }, context);
+            } else if (e.data.errors[0].code === 89) {
+                logger.error('TwitterAPIInvalidTokenError: invalid or expired token error', { userId, e, context });
+                sendError({ ...e.data.errors[0], name: 'TwitterAPIInvalidTokenError' }, `Invalid or expired token error. userId: ${userId}\t Context: ${context}`);
+            } else if (e.data.errors[0].code === 64) {
+                logger.error('Account is suspended and is not permitted to interact with API. Disabling features of user', { userId, e, context });
+                await flipFeatureEnabled(userId, 'banner', true);
+                await flipFeatureEnabled(userId, 'name', true);
+                sendError({...e.data.errors[0], name: 'TwitterAccountSuspended'}, `Account is suspended. Disabled features successfully. userId: ${userId}\t Context: ${context}`);
+            } else if (e.data.errors[0].code === 120) {
+                logger.error('Twitter name is too long or has invalid characters. Not able to update', { userId, e, context });
+                sendError({...e.data.errors[0], name: 'TwitterNameInvalidOrTooLong'}, `Twitter name is too long or has invalid characters and unable to update. userId: ${userId}\t Context: ${context}`);
+            } else if (e.data.errors[0].code === 326) {
+                logger.error('Twitter account is temporarily locked. Disabling features for user', { userId, e, context });
+                await flipFeatureEnabled(userId, 'banner', true);
+                await flipFeatureEnabled(userId, 'name', true);
+                sendError({...e.data.errors[0], name: 'TwitterAccountLocked'}, `Account is locked. Disabled features successfully. userId: ${userId}\t Context: ${context}`);
+            }
+            // some other kind of error, e.g. read-only API trying to POST
+            else {
+                logger.error('Other Twitter API error occurred', { userId, e, context });
+                sendError(e as any, `Other Twitter API error occured. userId: ${userId}\t Context: ${context}`);
+            }
         }
     } else {
         // non-API error, e.g. network problem or invalid JSON in response
