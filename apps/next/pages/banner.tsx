@@ -190,7 +190,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             originalBanner = await download(env.IMAGE_BUCKET_NAME, userId);
         } catch (e) {
             //
-            console.log(e);
         }
 
         if (banner) {
@@ -279,7 +278,6 @@ export default function Page({ banner, originalBanner }: Props) {
     const [reAuth, setReAuth] = useState(false);
 
     const router = useRouter();
-    console.log(router.query);
 
     const applyPreset = (preset: BannerPresetProps) => {
         setFgId(preset.foreground.id);
@@ -565,7 +563,6 @@ export default function Page({ banner, originalBanner }: Props) {
                                         <VStack>
                                             <FgForm
                                                 setProps={(s) => {
-                                                    console.log('set props', s);
                                                     setFgProps(s);
                                                 }}
                                                 props={{ ...BannerForegrounds[fgId].defaultProps, ...fgProps }}
