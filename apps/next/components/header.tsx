@@ -45,7 +45,6 @@ import { useAdmin } from '../util/hooks/useAdmin';
 import favicon from '@app/public/logo.webp';
 import { FaArrowRight, FaDiscord, FaPersonBooth, FaRegImage, FaTwitter, FaUserCircle, FaUserTag } from 'react-icons/fa';
 import { MdEmail } from 'react-icons/md';
-import { NewsletterModal } from './newsletter/NewsletterModal';
 import { trackEvent } from '@app/util/umami/trackEvent';
 import { holidayDecor, promo, promoCode } from '@app/util/constants';
 import { landingPageAsset } from '@app/pages';
@@ -84,6 +83,7 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                 gridSpacing: 6,
             },
             xl: {
+                mobile: false,
                 gridColumns: 3,
                 gridSpacing: 10,
             },
@@ -100,7 +100,6 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
 
     return (
         <>
-            <NewsletterModal isOpen={isOpen} onClose={onClose} />
             <header>
                 <noscript>
                     <style>{`.nojs-show { opacity: 1; top: 0; }`}</style>

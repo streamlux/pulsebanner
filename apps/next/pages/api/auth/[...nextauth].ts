@@ -4,7 +4,7 @@ import TwitterProvider from 'next-auth/providers/twitter';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import prisma from '@app/util/ssr/prisma';
 import { nanoid } from 'nanoid';
-import { getBanner } from '@app/util/twitter/twitterHelpers';
+import { createTwitterClient, getBanner } from '@app/util/twitter/twitterHelpers';
 import { AccessToken, accessTokenIsExpired, refreshUserToken, StaticAuthProvider } from '@twurple/auth';
 import { sendMessage } from '@app/util/discord/sendMessage';
 import { sendError } from '@app/util/discord/sendError';
@@ -14,6 +14,7 @@ import imageToBase64 from 'image-to-base64';
 import { getAccountInfo } from '@app/util/database/postgresHelpers';
 import { localAxios } from '@app/util/axios';
 import { logger } from '@app/util/logger';
+import axios from 'axios';
 
 // File contains options and hooks for next-auth, the authentication package
 // we are using to handle signup, signin, etc.
@@ -102,7 +103,7 @@ export default NextAuth({
     // pages is not specified for that route.
     // https://next-auth.js.org/configuration/pages
     pages: {
-        signIn: '/auth/signin', // Displays signin buttons
+        signIn: '/', // Displays signin buttons
         // signOut: '/auth/signout', // Displays form with sign out button
         // error: '/auth/error', // Error code passed in query string as ?error=
         // verifyRequest: '/auth/verify-request', // Used for check email page
@@ -169,6 +170,25 @@ export default NextAuth({
                             logger.error(msg, e, { userId: user.id });
                             sendError(e, msg);
                         }
+                    }
+                } else if (account.provider === 'twitter') {
+                    // update the profile picture url we have stored for them if it has baen changed (aka 404)
+                    try {
+                        await axios.get(user.image);
+                    } catch (e) {
+                        const client = createTwitterClient(account.oauth_token, account.oauth_token_secret);
+                        const twitterUser = await client.accountsAndUsers.usersShow({
+                            user_id: account.providerAccountId
+                        });
+                        const avatar_url = twitterUser.profile_image_url_https;
+                        await prisma.user.update({
+                            where: {
+                                id: user.id
+                            },
+                            data: {
+                                image: avatar_url
+                            }
+                        });
                     }
                 }
             });

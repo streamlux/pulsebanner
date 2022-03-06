@@ -25,8 +25,8 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
     }
 
     const sharedFeatureList = ['Live Twitter profile picture', 'Custom banner colors', 'Custom banner background image', 'Custom fonts!', 'Fully customize Name Changer'];
-    const personalFeatureList = sharedFeatureList.concat(['High quality image rendering', 'Thumbnail refreshing (coming soon)']);
-    const professionalFeatureList = sharedFeatureList.concat(['Remove watermark', 'Ultra high image quality', 'Unlock all features', 'Fast thumbnail refresh (coming soon)']);
+    const personalFeatureList = sharedFeatureList.concat(['High quality image rendering', 'Banner refreshing (60 min)']);
+    const professionalFeatureList = sharedFeatureList.concat(['Remove watermark', 'Ultra high image quality', 'Fastest banner refreshing (10 min)', 'Unlock all features',]);
 
     const featureDescriptionMapping: Record<string, string[]> = {
         Personal: personalFeatureList,

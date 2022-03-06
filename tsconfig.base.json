@@ -17,6 +17,7 @@
         "baseUrl": ".",
         "paths": {
             "@app/*": ["apps/next/*"],
+            "@pulsebanner/react-image-upload": ["libs/react/image-upload/src/index.ts"],
             "@pulsebanner/react/color": ["libs/react/color/src/index.ts"],
             "@pulsebanner/remotion/components": ["libs/remotion/components/src/index.ts"],
             "@pulsebanner/remotion/forms": ["libs/remotion/forms/src/index.ts"],

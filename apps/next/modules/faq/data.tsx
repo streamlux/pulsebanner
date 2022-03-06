@@ -53,12 +53,23 @@ export const bannerFaqItems: FaqItem[] = [
         ),
     },
     {
-        question: <>{"Why didn't my banner change even though I am live?"}</>,
+        question: "Why didn't my banner change even though I am live?",
         answer: <>If you enabled your banner during a stream, your banner will automatically change the next time you stream.</>,
     },
     {
+        question: <>What is banner refreshing?</>,
+        answer: (
+            <>
+                Refresh speed means how often PulseBanner will re-render your Live Banner and update it on Twitter. This way, the stream preview on your banner will update as you
+                stream.
+            </>
+        ),
+        learnMoreLink: '/pricing',
+    },
+    {
         question: <>Why is the thumbnail on my banner not updating?</>,
-        answer: <>Thumbnail refreshing is coming very soon for PulseBanner Members! Currently thumbnails are set when you go live and not updated.</>,
+        answer: <>Since rendering banners is expensive, banner refreshing is only available for PulseBanner Members.</>,
+        learnMoreLink: '/pricing',
     },
 ];
 

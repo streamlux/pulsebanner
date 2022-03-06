@@ -32,6 +32,10 @@ import { signIn } from 'next-auth/react';
 import { FaTwitter, FaCheck, FaArrowRight } from 'react-icons/fa';
 import NextLink from 'next/link';
 import { Testimonial } from '@app/components/landing/Testimonial';
+import Head from 'next/head';
+import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
+import { NextSeo } from 'next-seo';
+import { trackEvent } from '@app/util/umami/trackEvent';
 
 interface StaticAsset {
     src: string;
@@ -68,10 +72,6 @@ const staticAssets: Record<string, StaticAsset> = {
 
 export const landingPageAsset = (name: string) => `https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/${name}.webp`;
 
-import Head from 'next/head';
-import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
-import { NextSeo } from 'next-seo';
-import { trackEvent } from '@app/util/umami/trackEvent';
 
 export default function Page() {
     const { colorMode } = useColorMode();

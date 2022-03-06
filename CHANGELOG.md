@@ -7,9 +7,123 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- Dedicated admin page for partner applications
+
+### Changed
+
+- Removed sign in page
+- Made account page nofollow and noindex
+- Revamp partner dashboard
+
+## [0.9.4] - 2022-03-05
+
+### Added
+
+- Upload a banner image directly to the website
+
+## [0.9.3] - 2022-03-04
+
+### Fixed
+
+- Remove partner block from landing page
+
+### Changed
+
+- Handle suspended Twitter account errors
+- Better Discord webhooks for new subscriptions
+
+## [0.9.2] - 2022-03-03
+
+### Fixed
+
+- Add production price IDs to commission map
+
+## [0.9.1] - 2022-03-03
+
+### Fixed
+
+- Offline banner change option not showing up
+
+## [0.9.0] - 2022-03-03
+
+### Added
+
+ - Partner Program 🎉
+
+## [0.8.2] - 2022-02-24
+
+### Added
+
+- Banner templates
+
+### Fixed
+
+- Missing avatars
+
+## [0.8.1] - 2022-02-19
+
+### Fixed
+
+- Refresh slider visual bug on mobile 
+
+## [0.8.0] - 2022-02-19
+
+### Added
+
+- Banner refreshing UI and pricing
+
+### Changed
+
+- Name in package.json is now "pulsebanner" instead of "streamlux-saas"
+
+### Fixed
+
+- Locked remotion version to 2.6.6
+
+## [0.7.11] - 2022-02-17
+
+### Added
+
+- Banner refreshing for personal users
+
+## [0.7.10] - 2022-02-16
+
+### Added
+
+- Banner refreshing for pro users
+
+## [0.7.9] - 2022-02-15
+
+Patch release
+
+## [0.7.8] - 2022-02-15
+
+Patch release
+
+## [0.7.7] - 2022-02-04
+
+### Added
+
+- Banner refreshing
+
+## [0.7.6] - 2022-02-02
+
+### Changed
+
+- Banner feature is now static and we don't update original banner on streamup
+
+### Fixed
+
+- Empty profile picture bug
+
+## [0.7.5] - 2022-01-30
+
 ### Changed
 
 - Cleaned up FAQ page code
+- Removed EMGG sale banners
 
 ## [0.7.4] - 2022-01-29
 

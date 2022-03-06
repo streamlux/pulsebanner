@@ -1,5 +1,5 @@
 {
-    "npmScope": "streamlux-saas",
+    "npmScope": "pulsebanner",
     "affected": {
         "defaultBase": "master"
     },
