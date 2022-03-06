@@ -7,10 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- Dedicated admin page for partner applications
+
 ### Changed
 
 - Removed sign in page
 - Made account page nofollow and noindex
+- Revamp partner dashboard
 
 ## [0.9.4] - 2022-03-05
 

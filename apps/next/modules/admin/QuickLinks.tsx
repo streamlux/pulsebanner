@@ -18,12 +18,12 @@ export const QuickLinks: React.FC = () => (
                     </Link>
                 </ListItem>
                 <ListItem>
-                    <Link isExternal href="/admin/partner">
+                    <Link isExternal href="/admin/partner/partner">
                         Partner Dashboard
                     </Link>
                 </ListItem>
                 <ListItem>
-                    <Link isExternal href="/admin/commission">
+                    <Link isExternal href="/admin/partner/commission">
                         Commission Dashboard
                     </Link>
                 </ListItem>

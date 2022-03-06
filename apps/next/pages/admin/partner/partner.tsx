@@ -6,7 +6,6 @@ import {
     Button,
     ButtonGroup,
     Container,
-    Link,
     Select,
     Tab,
     Table,
@@ -23,23 +22,33 @@ import {
     useToast,
     VStack,
 } from '@chakra-ui/react';
-import { Partner, StripePartnerInfo } from '@prisma/client';
+import { Partner, PartnerInformation, StripePartnerInfo, User } from '@prisma/client';
 import axios from 'axios';
 import { GetServerSideProps } from 'next';
 import { getSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
-import NextLink from 'next/link';
-import { ExternalLinkIcon } from '@chakra-ui/icons';
+import { IdTag } from '@app/components/table/IdTag';
+import { AdminPartnerNav } from '@app/modules/admin/partner/AdminPartnerNav';
+
+type PartnerList = (Partner & {
+    partnerInformation: PartnerInformation & {
+        user: User;
+    };
+    stripePartnerInfo: StripePartnerInfo;
+})[];
 
 interface PartnerProps {
     activePartnerList: (Partner & {
         stripePartnerInfo: StripePartnerInfo;
+        partnerInformation: PartnerInformation & {
+            user: User;
+        };
     })[];
-    pendingPartnerList: Partner[];
-    rejectedPartnerList: Partner[];
-    suspendedPartnerList: Partner[];
-    allPartnerList: Partner[];
+    pendingPartnerList: PartnerList;
+    rejectedPartnerList: PartnerList;
+    suspendedPartnerList: PartnerList;
+    allPartnerList: PartnerList;
     stripeBaseUrl: string;
 }
 
@@ -72,38 +81,23 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 };
             }
 
-            // get the partners
-            const activePartners = await prisma.partner.findMany({
-                where: {
-                    acceptanceStatus: 'active',
-                },
+            const allPartners = await prisma.partner.findMany({
                 include: {
+                    partnerInformation: {
+                        include: {
+                            user: true,
+                        },
+                    },
                     stripePartnerInfo: true,
                 },
             });
 
-            const pendingPartners = await prisma.partner.findMany({
-                where: {
-                    acceptanceStatus: 'pending',
-                },
-            });
+            const activePartners = allPartners.filter((partner) => partner.acceptanceStatus === 'active');
+            const pendingPartners = allPartners.filter((partner) => partner.acceptanceStatus === 'pending');
+            const rejectedPartners = allPartners.filter((partner) => partner.acceptanceStatus === 'rejected');
+            const suspendedPartners = allPartners.filter((partner) => partner.acceptanceStatus === 'suspended');
 
-            const rejectedPartners = await prisma.partner.findMany({
-                where: {
-                    acceptanceStatus: 'rejected',
-                },
-            });
-
-            const suspendedPartners = await prisma.partner.findMany({
-                where: {
-                    acceptanceStatus: 'suspended',
-                },
-            });
-
-            const allPartners = await prisma.partner.findMany();
-
-            const stripeBaseUrl = process.env.NODE_ENV === 'development' ? 'https://dashboard.stripe.com/test/' : 'https://dashboard.stripe.com/';
-
+            const stripeBaseUrl = process.env.STRIPE_DASHBOARD_BASEURL;
             return {
                 props: {
                     activePartnerList: activePartners,
@@ -134,6 +128,8 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
 
     const DropdownOption = (partner: Partner) => (
         <Select
+            size="sm"
+            w='fit-content'
             onChange={(val) => {
                 setAffiliateStatuMap({ ...affiliateStatusMap, [partner.id]: val.target.value as AcceptanceStatus });
             }}
@@ -146,65 +142,56 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
         </Select>
     );
 
+    const numChanges = allPartnerList.filter((partner) => affiliateStatusMap[partner.id] && partner.acceptanceStatus !== affiliateStatusMap[partner.id]).length;
 
-    const numChanges = allPartnerList.filter((partner) => affiliateStatusMap[partner.id] && (partner.acceptanceStatus !== affiliateStatusMap[partner.id])).length;
-
-    const PanelLayoutHelper = (
-        partnerList:
-            | Partner[]
-            | (Partner & {
-                  stripePartnerInfo: StripePartnerInfo;
-              })[]
-    ) => (
-        <TabPanel>
+    const PanelLayoutHelper = (partnerList: PartnerList) => (
+        <TabPanel px="0">
             <VStack spacing={8}>
                 <Box maxH="50vh" overflow={'scroll'} w="full">
                     <Table size="sm">
                         <Thead>
                             <Tr>
-                                <Th>Partner ID</Th>
-                                <Th>Partner Code</Th>
+                                <Th>Partner</Th>
+                                <Th>Promo Code</Th>
                                 <Th>Email</Th>
-                                <Th>First Name</Th>
-                                <Th>Last Name</Th>
-                                <Th>Info</Th>
                                 <Th>Status</Th>
                             </Tr>
                         </Thead>
                         <Tbody>
-                            {partnerList.map(
-                                (
-                                    partner: Partner & {
-                                        stripePartnerInfo: StripePartnerInfo;
+                            {partnerList.map((partner) => (
+                                <Tr
+                                    key={partner.id}
+                                    fontSize="sm"
+                                    bg={
+                                        affiliateStatusMap[partner.id] && affiliateStatusMap[partner.id] !== partner.acceptanceStatus
+                                            ? colorMode === 'dark'
+                                                ? 'cyan.800'
+                                                : 'yellow.100'
+                                            : undefined
                                     }
-                                ) => (
-                                    <Tr
-                                        key={partner.id}
-                                        fontSize="sm"
-                                        bg={
-                                            affiliateStatusMap[partner.id] && affiliateStatusMap[partner.id] !== partner.acceptanceStatus
-                                                ? colorMode === 'dark'
-                                                    ? 'cyan.800'
-                                                    : 'yellow.100'
-                                                : undefined
-                                        }
-                                    >
-                                        <Td>{partner.id}</Td>
-                                        <Td>{partner.partnerCode}</Td>
-                                        <Td>{partner.email}</Td>
-                                        <Td>{partner.firstName}</Td>
-                                        <Td>{partner.lastName}</Td>
-                                        <Td>
-                                            <NextLink passHref href={`${stripeBaseUrl}promotion_codes/${partner?.stripePartnerInfo?.stripePromoCode}`}>
-                                                <Button size="sm" variant={'link'} as="a" target={'_blank'} rightIcon={<ExternalLinkIcon />}>
-                                                    Promo code
-                                                </Button>
-                                            </NextLink>
-                                        </Td>
-                                        <Td>{DropdownOption(partner)}</Td>
-                                    </Tr>
-                                )
-                            )}
+                                >
+                                    <Td>
+                                        <IdTag
+                                            id={partner.partnerInformation.user.name}
+                                            url={`/partner/dashboard?userId=${partner?.partnerInformation?.userId}`}
+                                            copyValue={partner.id}
+                                        />
+                                    </Td>
+                                    <Td>
+                                        {partner.stripePartnerInfo?.stripePromoCode ? (
+                                            <IdTag
+                                                id={partner.partnerCode}
+                                                copyValue={partner?.stripePartnerInfo?.stripePromoCode}
+                                                url={`${stripeBaseUrl}promotion_codes/${partner?.stripePartnerInfo?.stripePromoCode}`}
+                                            />
+                                        ) : (
+                                            partner.partnerCode
+                                        )}
+                                    </Td>
+                                    <Td>{partner.email}</Td>
+                                    <Td>{DropdownOption(partner)}</Td>
+                                </Tr>
+                            ))}
                         </Tbody>
                     </Table>
                 </Box>
@@ -251,10 +238,11 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
 
     return (
         <Container maxW="container.xl">
+            <AdminPartnerNav />
+
             <Tabs colorScheme="purple" flexGrow={1}>
                 <TabList>
                     <Tab>Active ({activePartnerList.length})</Tab>
-                    <Tab>Pending ({pendingPartnerList.length})</Tab>
                     <Tab>Rejected ({rejectedPartnerList.length})</Tab>
                     <Tab>Suspended ({suspendedPartnerList.length})</Tab>
                     <Tab>All ({allPartnerList.length})</Tab>
@@ -262,7 +250,6 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
 
                 <TabPanels flexGrow={1}>
                     {PanelLayoutHelper(activePartnerList)}
-                    {PanelLayoutHelper(pendingPartnerList)}
                     {PanelLayoutHelper(rejectedPartnerList)}
                     {PanelLayoutHelper(suspendedPartnerList)}
                     {PanelLayoutHelper(allPartnerList)}

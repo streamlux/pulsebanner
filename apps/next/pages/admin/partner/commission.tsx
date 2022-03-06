@@ -1,8 +1,11 @@
+import { IdTag } from '@app/components/table/IdTag';
+import { AdminPartnerNav } from '@app/modules/admin/partner/AdminPartnerNav';
 import { useAdmin } from '@app/util/hooks/useAdmin';
 import prisma from '@app/util/ssr/prisma';
 import stripe from '@app/util/ssr/stripe';
+import { formatUsd } from '@app/util/stringUtils';
 import { Box, Button, Container, Select, Tab, Table, TabList, TabPanel, TabPanels, Tabs, Tbody, Td, Th, Thead, Tr, useToast, VStack } from '@chakra-ui/react';
-import { CommissionStatus, PartnerInvoice } from '@prisma/client';
+import { CommissionStatus, Customer, Partner, PartnerInformation, PartnerInvoice, User } from '@prisma/client';
 import axios from 'axios';
 import { GetServerSideProps } from 'next';
 import { getSession } from 'next-auth/react';
@@ -10,14 +13,26 @@ import { useRouter } from 'next/router';
 import { useState } from 'react';
 import Stripe from 'stripe';
 
+type PartnerInvoiceList = (PartnerInvoice & {
+    partner: Partner & {
+        partnerInformation: PartnerInformation & {
+            user: User;
+        };
+    };
+    customer: Customer & {
+        user: User;
+    };
+})[];
+
 interface Props {
-    completedInvoiceList: PartnerInvoice[];
-    pendingInvoiceList: PartnerInvoice[];
-    waitPeriodPartnerInvoices: PartnerInvoice[];
-    emptyInvoiceList: PartnerInvoice[];
-    rejectedInvoiceList: PartnerInvoice[];
-    allInvoiceList: PartnerInvoice[];
+    completedInvoiceList: PartnerInvoiceList;
+    pendingInvoiceList: PartnerInvoiceList;
+    waitPeriodPartnerInvoices: PartnerInvoiceList;
+    emptyInvoiceList: PartnerInvoiceList;
+    rejectedInvoiceList: PartnerInvoiceList;
+    allInvoiceList: PartnerInvoiceList;
     balanceTransactions: Stripe.Response<Stripe.ApiList<Stripe.CustomerBalanceTransaction>>;
+    stripeBaseUrl: string;
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -34,7 +49,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 },
                 select: {
                     role: true,
-                    customer: true
+                    customer: true,
                 },
             });
 
@@ -65,42 +80,44 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 }
             });
 
-            // requery the waiting list because it could have been adjusted
-            const waitPeriodPartnerInvoices = await prisma.partnerInvoice.findMany({
-                where: {
-                    commissionStatus: CommissionStatus.waitPeriod,
-                },
-            });
-
-            // completed invoices we can do nothing about. No-operation once they are here
-            const completedPartnerInvoices = await prisma.partnerInvoice.findMany({
-                where: {
-                    commissionStatus: CommissionStatus.complete,
-                },
-            });
-
             const balanceTransactions = await stripe.customers.listBalanceTransactions(userInfo.customer.id);
 
-            const pendingPartnerInvoices = await prisma.partnerInvoice.findMany({
-                where: {
-                    commissionStatus: CommissionStatus.pending,
+            const allPartnerInvoices = (await prisma.partnerInvoice.findMany({
+                include: {
+                    partner: {
+                        include: {
+                            partnerInformation: {
+                                include: {
+                                    user: true,
+                                },
+                            },
+                        },
+                    },
+                    customer: {
+                        include: {
+                            user: {
+                                select: {
+                                    name: true,
+                                    id: true,
+                                },
+                            },
+                        },
+                    },
                 },
-            });
+            })).sort((a, b) => b.paidAt.valueOf() - a.paidAt.valueOf());
+
+            // requery the waiting list because it could have been adjusted
+            const waitPeriodPartnerInvoices = allPartnerInvoices.filter((invoice) => invoice.commissionStatus === 'waitPeriod');
+
+            const rejectedPartnerInvoices = allPartnerInvoices.filter((invoice) => invoice.commissionStatus === 'rejected');
 
             // This is when there is an invoice and the user did not use any specific promo code
-            const emptyPartnerInvoices = await prisma.partnerInvoice.findMany({
-                where: {
-                    commissionStatus: CommissionStatus.none,
-                },
-            });
+            const emptyPartnerInvoices = allPartnerInvoices.filter((invoice) => invoice.commissionStatus === 'none');
 
-            const rejectedPartnerInvoices = await prisma.partnerInvoice.findMany({
-                where: {
-                    commissionStatus: CommissionStatus.rejected,
-                },
-            });
+            const pendingPartnerInvoices = allPartnerInvoices.filter((invoice) => invoice.commissionStatus === 'pending');
 
-            const allPartnerInvoices = await prisma.partnerInvoice.findMany();
+            // completed invoices we can do nothing about. No-operation once they are here
+            const completedPartnerInvoices = allPartnerInvoices.filter((invoice) => invoice.commissionStatus === 'complete');
 
             return {
                 props: {
@@ -111,13 +128,23 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     rejectedInvoiceList: rejectedPartnerInvoices,
                     allInvoiceList: allPartnerInvoices,
                     balanceTransactions,
+                    stripeBaseUrl: process.env.STRIPE_DASHBOARD_BASEURL,
                 },
             };
         }
     }
 };
 
-export default function Page({ completedInvoiceList, pendingInvoiceList, waitPeriodPartnerInvoices, emptyInvoiceList, rejectedInvoiceList, allInvoiceList, balanceTransactions }: Props) {
+export default function Page({
+    completedInvoiceList,
+    pendingInvoiceList,
+    waitPeriodPartnerInvoices,
+    emptyInvoiceList,
+    rejectedInvoiceList,
+    allInvoiceList,
+    balanceTransactions,
+    stripeBaseUrl,
+}: Props) {
     useAdmin({ required: true });
     const toast = useToast();
 
@@ -146,33 +173,35 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, waitPer
         </Select>
     );
 
-    const PanelLayoutHelper = (invoiceList: PartnerInvoice[], pendingAction: boolean) => (
+    const PanelLayoutHelper = (invoiceList: PartnerInvoiceList, pendingAction: boolean) => (
         <TabPanel>
             <VStack spacing={8}>
-                <Box maxH="50vh" overflow={'scroll'}>
-                    <Table size="sm">
+                <Box maxH="50vh" overflow={'scroll'} w="full">
+                    <Table size="sm" w="full">
                         <Thead>
                             <Tr>
-                                <Th>Invoice Id</Th>
-                                <Th>Customer Id</Th>
-                                <Th>Partner Id</Th>
-                                <Th>Commission Amount</Th>
-                                <Th>Purchase Amount</Th>
-                                <Th>Invoice Paid Date</Th>
-                                <Th>Commission Paid Date</Th>
+                                <Th>Invoice</Th>
+                                <Th>Amount</Th>
+                                <Th>Date</Th>
+                                <Th>Partner</Th>
+                                <Th>Customer</Th>
+                                <Th>Commission</Th>
+                                <Th>Payout Date</Th>
                                 <Th>Payout Status</Th>
                             </Tr>
                         </Thead>
                         <Tbody>
                             {invoiceList.map((invoice) => (
                                 <Tr key={invoice.id}>
-                                    <Td>{invoice.id}</Td>
-                                    <Td>{invoice.customerId}</Td>
-                                    <Td>{invoice.partnerId}</Td>
-                                    <Td>${invoice.commissionAmount * 0.01}</Td>
-                                    <Td>${invoice.purchaseAmount * 0.01}</Td>
-                                    <Td>{invoice.paidAt.toDateString()}</Td>
-                                    <Td>{balanceTransactions.data.find((bt) => bt.id === invoice.balanceTransactionId)?.created ?? ''}</Td>
+                                    <Td>
+                                        <IdTag copyValue={invoice.id} id='View on Stripe' url={`${stripeBaseUrl}invoices/${invoice.id}`} urlTooltip="View on Stripe" />
+                                    </Td>
+                                    <Td isNumeric>{formatUsd(invoice.purchaseAmount)}</Td>
+                                    <Td>{invoice.paidAt.toLocaleString()}</Td>
+                                    <Td>{invoice.partnerId && <IdTag id={invoice.partner?.partnerInformation.user.name} copyValue={invoice.partnerId} />}</Td>
+                                    <Td>{invoice.customer?.user.name}</Td>
+                                    <Td isNumeric>{formatUsd(invoice.commissionAmount)}</Td>
+                                    <Td> {invoice.balanceTransactionId ? new Date(balanceTransactions.data.find((bt) => bt.id === invoice.balanceTransactionId)?.created * 1000).toLocaleString() : ''}</Td>
                                     {pendingAction ? <Td>{DropdownPayoutOption(invoice)}</Td> : <Td>{invoice.commissionStatus}</Td>}
                                 </Tr>
                             ))}
@@ -237,6 +266,8 @@ export default function Page({ completedInvoiceList, pendingInvoiceList, waitPer
 
     return (
         <Container maxW="container.xl">
+            <AdminPartnerNav />
+
             <Tabs colorScheme="purple" flexGrow={1}>
                 <TabList>
                     <Tab>Completed</Tab>
