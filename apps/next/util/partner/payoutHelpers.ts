@@ -1,25 +1,18 @@
 import { PartnerInvoice } from '@prisma/client';
 import prisma from '../ssr/prisma';
 
-export const getPartnerInvoice = async (invoiceId: string): Promise<Partial<PartnerInvoice> | undefined> => {
+export const getPartnerInvoice = async (invoiceId: string): Promise<PartnerInvoice> => {
     const partnerInvoice = await prisma.partnerInvoice.findUnique({
         where: {
             id: invoiceId,
-        },
-        select: {
-            partnerId: true,
-            commissionAmount: true,
-        },
+        }
     });
 
     if (partnerInvoice === null || partnerInvoice.partnerId === null || partnerInvoice.commissionAmount === null) {
         return undefined;
     }
 
-    return {
-        partnerId: partnerInvoice.partnerId,
-        commissionAmount: partnerInvoice.commissionAmount,
-    };
+    return partnerInvoice;
 };
 
 export const getPartnerInfo = async (partnerId: string): Promise<string | undefined> => {

@@ -6,27 +6,21 @@ import {
     Button,
     ButtonGroup,
     Container,
-    HStack,
-    Link,
     Select,
     Tab,
     Table,
     TabList,
-    Text,
     TabPanel,
     TabPanels,
     Tabs,
-    Tag,
     Tbody,
     Td,
     Th,
     Thead,
     Tr,
-    useClipboard,
     useColorMode,
     useToast,
     VStack,
-    Tooltip,
 } from '@chakra-ui/react';
 import { Partner, PartnerInformation, StripePartnerInfo, User } from '@prisma/client';
 import axios from 'axios';
@@ -35,6 +29,7 @@ import { getSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { IdTag } from '@app/components/table/IdTag';
+import { AdminPartnerNav } from '@app/modules/admin/partner/AdminPartnerNav';
 
 type PartnerList = (Partner & {
     partnerInformation: PartnerInformation & {
@@ -86,21 +81,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 };
             }
 
-            // get the partners
-            const activePartners = await prisma.partner.findMany({
-                where: {
-                    acceptanceStatus: 'active',
-                },
-                include: {
-                    stripePartnerInfo: true,
-                    partnerInformation: {
-                        include: {
-                            user: true,
-                        },
-                    },
-                },
-            });
-
             const allPartners = await prisma.partner.findMany({
                 include: {
                     partnerInformation: {
@@ -108,15 +88,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                             user: true,
                         },
                     },
+                    stripePartnerInfo: true,
                 },
             });
 
+            const activePartners = allPartners.filter((partner) => partner.acceptanceStatus === 'active');
             const pendingPartners = allPartners.filter((partner) => partner.acceptanceStatus === 'pending');
             const rejectedPartners = allPartners.filter((partner) => partner.acceptanceStatus === 'rejected');
             const suspendedPartners = allPartners.filter((partner) => partner.acceptanceStatus === 'suspended');
 
             const stripeBaseUrl = process.env.STRIPE_DASHBOARD_BASEURL;
-            console.log(allPartners);
             return {
                 props: {
                     activePartnerList: activePartners,
@@ -147,6 +128,8 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
 
     const DropdownOption = (partner: Partner) => (
         <Select
+            size="sm"
+            w='fit-content'
             onChange={(val) => {
                 setAffiliateStatuMap({ ...affiliateStatusMap, [partner.id]: val.target.value as AcceptanceStatus });
             }}
@@ -161,7 +144,7 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
 
     const numChanges = allPartnerList.filter((partner) => affiliateStatusMap[partner.id] && partner.acceptanceStatus !== affiliateStatusMap[partner.id]).length;
 
-    const PanelLayoutHelper = (partnerList: PartnerList, type?: 'pending') => (
+    const PanelLayoutHelper = (partnerList: PartnerList) => (
         <TabPanel px="0">
             <VStack spacing={8}>
                 <Box maxH="50vh" overflow={'scroll'} w="full">
@@ -170,13 +153,8 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
                             <Tr>
                                 <Th>Partner</Th>
                                 <Th>Promo Code</Th>
-                                {type === 'pending' && (
-                                    <>
-                                        <Th>Email</Th>
-                                        <Th>Notes</Th>
-                                        <Th>Status</Th>
-                                    </>
-                                )}
+                                <Th>Email</Th>
+                                <Th>Status</Th>
                             </Tr>
                         </Thead>
                         <Tbody>
@@ -200,20 +178,17 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
                                         />
                                     </Td>
                                     <Td>
-                                        <IdTag
-                                            id={partner.partnerCode}
-                                            copyValue={partner?.stripePartnerInfo?.stripePromoCode}
-                                            url={`${stripeBaseUrl}promotion_codes/${partner?.stripePartnerInfo?.stripePromoCode}`}
-                                        />
+                                        {partner.stripePartnerInfo?.stripePromoCode ? (
+                                            <IdTag
+                                                id={partner.partnerCode}
+                                                copyValue={partner?.stripePartnerInfo?.stripePromoCode}
+                                                url={`${stripeBaseUrl}promotion_codes/${partner?.stripePartnerInfo?.stripePromoCode}`}
+                                            />
+                                        ) : (
+                                            partner.partnerCode
+                                        )}
                                     </Td>
                                     <Td>{partner.email}</Td>
-                                    {type === 'pending' && (
-                                        <>
-                                            <Td>{partner.firstName}</Td>
-                                            <Td>{partner.lastName}</Td>
-                                            <Td>{partner.notes}</Td>
-                                        </>
-                                    )}
                                     <Td>{DropdownOption(partner)}</Td>
                                 </Tr>
                             ))}
@@ -263,10 +238,11 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
 
     return (
         <Container maxW="container.xl">
+            <AdminPartnerNav />
+
             <Tabs colorScheme="purple" flexGrow={1}>
                 <TabList>
                     <Tab>Active ({activePartnerList.length})</Tab>
-                    <Tab>Pending ({pendingPartnerList.length})</Tab>
                     <Tab>Rejected ({rejectedPartnerList.length})</Tab>
                     <Tab>Suspended ({suspendedPartnerList.length})</Tab>
                     <Tab>All ({allPartnerList.length})</Tab>
@@ -274,7 +250,6 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
 
                 <TabPanels flexGrow={1}>
                     {PanelLayoutHelper(activePartnerList)}
-                    {PanelLayoutHelper(pendingPartnerList, 'pending')}
                     {PanelLayoutHelper(rejectedPartnerList)}
                     {PanelLayoutHelper(suspendedPartnerList)}
                     {PanelLayoutHelper(allPartnerList)}

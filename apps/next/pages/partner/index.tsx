@@ -245,7 +245,7 @@ export default function Page({ partnerStatus, partnerCode }: Props) {
                     </Text>
                 </AccordionPanel>
             </AccordionItem>
-            <AccordionItem>
+            {/* <AccordionItem>
                 <AccordionButton>
                     <Text fontWeight={'semibold'} flex="1" textAlign="left">
                         I&#39;m an EMGG member, how do I apply?
@@ -259,7 +259,7 @@ export default function Page({ partnerStatus, partnerCode }: Props) {
                     </Text>
                     <Text>Note: EMGG members still need to be PulseBanner Members to become PulseBanner Partners.</Text>
                 </AccordionPanel>
-            </AccordionItem>
+            </AccordionItem> */}
             <AccordionItem>
                 <AccordionButton>
                     <Text fontWeight={'semibold'} flex="1" textAlign="left">
@@ -340,7 +340,7 @@ export default function Page({ partnerStatus, partnerCode }: Props) {
                     <Text>In the future, the Partner Program may evolve to support withdraws or payouts.</Text>
                 </AccordionPanel>
             </AccordionItem>
-            <AccordionItem>
+            {/* <AccordionItem>
                 <AccordionButton>
                     <Text fontWeight={'semibold'} flex="1" textAlign="left">
                         How long does it take for applications to be reviewed?
@@ -352,7 +352,7 @@ export default function Page({ partnerStatus, partnerCode }: Props) {
                     We try to review applications as fast as possible. It truly depends on how many applications we have at one time, but our goal is to respond within 5-7 business
                     days.
                 </AccordionPanel>
-            </AccordionItem>
+            </AccordionItem> */}
         </Accordion>
     );
 
@@ -553,13 +553,18 @@ export default function Page({ partnerStatus, partnerCode }: Props) {
                             </HStack>
                         </Center>
                         <Center w="full" textAlign={'center'}>
-                            The PulseBanner Partner Program is our way to give back to our users. With every new customer that uses your affiliate code at checkout, you
-                            automatically receive some of the proceeds from the purchase.
+                            <Text>
+                                The PulseBanner Partner Program is currently in closed beta.{' '}
+                                <strong>We are not accepting applications during the beta.</strong>{' '}
+                                Applications will open up to PulseBanner Members once the beta concludes.
+                            </Text>
                         </Center>
                     </Box>
                 </Flex>
                 {((session && router.query.beta === 'yes') || partnerStatus !== AcceptanceStatus.None) && availableForAccount() && UIDisplayMapping[partnerStatus]}
-                <Box w="full">{FAQSection()}</Box>
+                <Box w="full" pt="6">
+                    {FAQSection()}
+                </Box>
                 {/* ( logged in AND have the beta link     OR   be a partner (or have applied) )      AND    they need to be a paid user */}
             </Container>
         </>

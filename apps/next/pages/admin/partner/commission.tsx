@@ -1,4 +1,5 @@
 import { IdTag } from '@app/components/table/IdTag';
+import { AdminPartnerNav } from '@app/modules/admin/partner/AdminPartnerNav';
 import { useAdmin } from '@app/util/hooks/useAdmin';
 import prisma from '@app/util/ssr/prisma';
 import stripe from '@app/util/ssr/stripe';
@@ -81,7 +82,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
             const balanceTransactions = await stripe.customers.listBalanceTransactions(userInfo.customer.id);
 
-            const allPartnerInvoices = await prisma.partnerInvoice.findMany({
+            const allPartnerInvoices = (await prisma.partnerInvoice.findMany({
                 include: {
                     partner: {
                         include: {
@@ -103,9 +104,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                         },
                     },
                 },
-            });
-
-            type PartnerInvoiceList = typeof allPartnerInvoices;
+            })).sort((a, b) => b.paidAt.valueOf() - a.paidAt.valueOf());
 
             // requery the waiting list because it could have been adjusted
             const waitPeriodPartnerInvoices = allPartnerInvoices.filter((invoice) => invoice.commissionStatus === 'waitPeriod');
@@ -267,6 +266,8 @@ export default function Page({
 
     return (
         <Container maxW="container.xl">
+            <AdminPartnerNav />
+
             <Tabs colorScheme="purple" flexGrow={1}>
                 <TabList>
                     <Tab>Completed</Tab>

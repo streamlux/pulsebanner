@@ -40,7 +40,7 @@ import { formatUsd } from '@app/util/stringUtils';
 
 interface Props {
     balance: number;
-    nets: (Stripe.CustomerBalanceTransaction | Stripe.Invoice)[];
+    nets: (Stripe.Invoice | PartnerInvoice)[];
     partnerStatus: AcceptanceStatus;
     partnerCode?: string;
     completedInvoices: PartnerInvoice[];
@@ -49,6 +49,7 @@ interface Props {
     pendingPayouts?: number;
     pendingPayoutAmount?: number;
     pendingInvoices?: PartnerInvoice[];
+    balanceTransactions: Record<string, Stripe.CustomerBalanceTransaction>;
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -102,12 +103,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                         partnerId: partnerId,
                         commissionStatus: 'complete',
                     },
+                    orderBy: {
+                        paidAt: 'desc',
+                    },
                 });
 
                 const customerId = await getPartnerCustomerInfo(userId);
                 const customer = (await stripe.customers.retrieve(customerId)) as Stripe.Customer;
 
-                const unix60DaysAgo = Math.floor(Date.now() / 1000) - 60 * 24 * 60;
+                const unix60DaysAgo = Math.floor(Date.now() / 1000) - 60 * 60 * 24 * 60;
 
                 const invoices = await stripe.invoices.list({
                     customer: customerId,
@@ -116,11 +120,18 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     }, // current time in seconds - 30 days
                 });
 
-                const balanceTransactions = await stripe.customers.listBalanceTransactions(customerId, {
-                    limit: 100,
-                });
+                const balanceTransactions = (
+                    await stripe.customers.listBalanceTransactions(customerId, {
+                        limit: 100,
+                    })
+                ).data.reduce((a, v) => ({ ...a, [v.id]: v }), {});
 
-                const nets = [...balanceTransactions.data.filter((bt) => bt.created > unix60DaysAgo), ...invoices.data];
+                const nets = [...invoiceInfoPaid, ...invoices.data].sort((a: any, b: any) => {
+                    const aDate = a.paidAt ?? a.created;
+                    const bDate = b.paidAt ?? b.created;
+
+                    return bDate - aDate;
+                });
 
                 const invoiceInfoPending = await prisma.partnerInvoice.findMany({
                     where: {
@@ -137,6 +148,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                                 },
                             },
                         ],
+                    },
+                    orderBy: {
+                        paidAt: 'desc',
                     },
                 });
 
@@ -156,6 +170,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                         completedPayoutAmount: completedPayoutAmount ?? 0,
                         pendingInvoices: invoiceInfoPending ?? [],
                         completedInvoices: invoiceInfoPaid ?? [],
+                        balanceTransactions,
                     },
                 };
             } catch (e) {
@@ -178,7 +193,17 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
 };
 
-export default function Page({ partnerStatus, partnerCode, completedPayouts, completedPayoutAmount, pendingInvoices, balance, nets, completedInvoices }: Props) {
+export default function Page({
+    balanceTransactions,
+    partnerStatus,
+    partnerCode,
+    completedPayouts,
+    completedPayoutAmount,
+    pendingInvoices,
+    balance,
+    nets,
+    completedInvoices,
+}: Props) {
     const { colorMode } = useColorMode();
 
     const referralStatus: Record<CommissionStatus, string> = {
@@ -322,192 +347,204 @@ export default function Page({ partnerStatus, partnerCode, completedPayouts, com
                             </Box>
                         </Center>
 
-                        <Box py="12" experimental_spaceY={4} w="full">
-                            <Box overflow={'scroll'} w="full" minH="48" experimental_spaceY={4}>
+                        <VStack py="12" spacing={16} w="full">
+                            <Box overflow={'scroll'} w="full" experimental_spaceY={4}>
                                 <Heading size="md">Pending Referrals</Heading>
                                 <Text maxW={[undefined, '66%']}>
                                     Referrals are pending until they pass our refund period (7 days). Once 7 days pass, the refund period is over and we will apply the credit to
                                     your account.
                                 </Text>
-                                <Table size="sm" w="full">
-                                    <Thead>
-                                        <Tr>
-                                            <Th>
-                                                <HStack>
-                                                    <Text>Referral ID</Text>
-                                                    <Center as="span">
-                                                        <Tooltip w="min" label="Unique ID of the transaction">
-                                                            <InfoIcon />
-                                                        </Tooltip>
-                                                    </Center>
-                                                </HStack>
-                                            </Th>
-                                            <Th>
-                                                <HStack w="min">
-                                                    <Text>Date</Text>
-                                                    <Center as="span">
-                                                        <Tooltip label="Date the transaction was made">
-                                                            <InfoIcon />
-                                                        </Tooltip>
-                                                    </Center>
-                                                </HStack>
-                                            </Th>
-                                            <Th isNumeric>
-                                                <HStack w="min">
-                                                    <Text>Credit</Text>
-                                                    <Center as="span">
-                                                        <Tooltip label="The amount of credits you will earn (USD)">
-                                                            <InfoIcon />
-                                                        </Tooltip>
-                                                    </Center>
-                                                </HStack>
-                                            </Th>
-                                            <Th>
-                                                <HStack>
-                                                    <Text>Refund Period End</Text>
-                                                    <Center as="span">
-                                                        <Tooltip label="Date the refund period ends">
-                                                            <InfoIcon />
-                                                        </Tooltip>
-                                                    </Center>
-                                                </HStack>
-                                            </Th>
-                                            <Th>
-                                                <HStack>
-                                                    <Text>Status</Text>
-                                                </HStack>
-                                            </Th>
-                                        </Tr>
-                                    </Thead>
-                                    <Tbody>
-                                        {pendingInvoices?.map((invoice) => (
-                                            <Tr key="key">
-                                                <Td>{invoice.id}</Td>
-                                                <Td>{invoice.paidAt.toLocaleString()}</Td>
-                                                <Td isNumeric>{formatUsd(invoice.commissionAmount)}</Td>
-                                                <Td>{new Date(new Date(invoice.paidAt).setDate(invoice.paidAt.getDate() + 7)).toLocaleString()}</Td>
-                                                <Td>{referralStatus[invoice.commissionStatus]}</Td>
+                                <Box overflow={'scroll'} maxH="30vh">
+                                    <Table size="sm" w="full">
+                                        <Thead>
+                                            <Tr>
+                                                <Th>
+                                                    <HStack w="min">
+                                                        <Text>Date</Text>
+                                                        <Center as="span">
+                                                            <Tooltip label="Date the transaction was made">
+                                                                <InfoIcon />
+                                                            </Tooltip>
+                                                        </Center>
+                                                    </HStack>
+                                                </Th>
+                                                <Th isNumeric>
+                                                    <HStack w="min">
+                                                        <Text>Credit</Text>
+                                                        <Center as="span">
+                                                            <Tooltip label="The amount of credits you will earn (USD)">
+                                                                <InfoIcon />
+                                                            </Tooltip>
+                                                        </Center>
+                                                    </HStack>
+                                                </Th>
+                                                <Th>
+                                                    <HStack>
+                                                        <Text>Refund Period End</Text>
+                                                        <Center as="span">
+                                                            <Tooltip label="Date the refund period ends">
+                                                                <InfoIcon />
+                                                            </Tooltip>
+                                                        </Center>
+                                                    </HStack>
+                                                </Th>
+                                                <Th>
+                                                    <HStack>
+                                                        <Text>Status</Text>
+                                                    </HStack>
+                                                </Th>
+                                                <Th>
+                                                    <HStack>
+                                                        <Text>Referral ID</Text>
+                                                        <Center as="span">
+                                                            <Tooltip w="min" label="Unique ID of the transaction">
+                                                                <InfoIcon />
+                                                            </Tooltip>
+                                                        </Center>
+                                                    </HStack>
+                                                </Th>
                                             </Tr>
-                                        ))}
-                                    </Tbody>
-                                </Table>
-                                {pendingInvoices.length === 0 && (
-                                    <Center w="full" my="4">
-                                        <Text>Your referrals will show up here!</Text>
-                                    </Center>
-                                )}
-                            </Box>
-                            <Box maxH="50vh" maxW="100vw" overflow={'scroll'} w="full" minH="48" experimental_spaceY={4}>
-                                <Heading size="md">Completed Referrals</Heading>
-                                <Text>Referral credits that have been applied to your account balance.</Text>
-                                <Table size="sm">
-                                    <Thead>
-                                        <Tr>
-                                            <Th>
-                                                <HStack>
-                                                    <Text>Referral ID</Text>
-                                                    <Center as="span">
-                                                        <Tooltip label="Unique ID associated with each referral">
-                                                            <InfoIcon />
-                                                        </Tooltip>
-                                                    </Center>
-                                                </HStack>
-                                            </Th>
-                                            <Th>
-                                                <HStack>
-                                                    <Text>Credit Date</Text>
-                                                    <Center as="span">
-                                                        <Tooltip label="Date credit was applied to your account">
-                                                            <InfoIcon />
-                                                        </Tooltip>
-                                                    </Center>
-                                                </HStack>
-                                            </Th>
-                                            <Th>
-                                                <HStack>
-                                                    <Text w="full" textAlign={'right'}>
-                                                        Amount
-                                                    </Text>
-                                                    <Center as="span">
-                                                        <Tooltip label="Credits earned for referral (USD)">
-                                                            <InfoIcon />
-                                                        </Tooltip>
-                                                    </Center>
-                                                </HStack>
-                                            </Th>
-                                        </Tr>
-                                    </Thead>
-                                    <Tbody>
-                                        {nets
-                                            .filter((net) => net.object === 'customer_balance_transaction')
-                                            ?.map((net: Stripe.CustomerBalanceTransaction) => (
+                                        </Thead>
+                                        <Tbody>
+                                            {pendingInvoices?.map((invoice) => (
                                                 <Tr key="key">
-                                                    <Td align="left">{net.metadata.invoiceId}</Td>
-                                                    <Td>{new Date(net.created * 1000).toLocaleString()}</Td>
-                                                    <Td isNumeric>${net.amount * -0.01}</Td>
+                                                    <Td>{invoice.paidAt.toLocaleString()}</Td>
+                                                    <Td isNumeric>{formatUsd(invoice.commissionAmount)}</Td>
+                                                    <Td>{new Date(new Date(invoice.paidAt).setDate(invoice.paidAt.getDate() + 7)).toLocaleString()}</Td>
+                                                    <Td>{referralStatus[invoice.commissionStatus]}</Td>
+                                                    <Td>{invoice.id}</Td>
                                                 </Tr>
                                             ))}
-                                    </Tbody>
-                                </Table>
-                                {nets.filter((net) => net.object === 'customer_balance_transaction').length === 0 && (
-                                    <Center w="full" my="4">
-                                        <Text>Your completed referrals will show up here!</Text>
-                                    </Center>
-                                )}
+                                        </Tbody>
+                                    </Table>
+                                    {pendingInvoices.length === 0 && (
+                                        <Center w="full" my="4">
+                                            <Text>Your referrals will show up here!</Text>
+                                        </Center>
+                                    )}
+                                </Box>
                             </Box>
-                            <Box overflow={'scroll'} w="full" experimental_spaceY={4}>
+                            <Box maxH="50vh" w="full" experimental_spaceY={4}>
+                                <Heading size="md">Completed Referrals</Heading>
+                                <Text>Referral credits that have been applied to your account balance.</Text>
+                                <Box overflow={'scroll'} maxH="30vh">
+                                    <Table size="sm" w="full">
+                                        <Thead>
+                                            <Tr>
+                                                <Th>
+                                                    <HStack>
+                                                        <Text>Credit Date</Text>
+                                                        <Center as="span">
+                                                            <Tooltip label="Date credit was applied to your account">
+                                                                <InfoIcon />
+                                                            </Tooltip>
+                                                        </Center>
+                                                    </HStack>
+                                                </Th>
+                                                <Th>
+                                                    <HStack>
+                                                        <Text>Payout ID</Text>
+                                                        <Center as="span">
+                                                            <Tooltip label="Unique ID associated with each referral">
+                                                                <InfoIcon />
+                                                            </Tooltip>
+                                                        </Center>
+                                                    </HStack>
+                                                </Th>
+
+                                                <Th>
+                                                    <HStack>
+                                                        <Text w="full" textAlign={'right'}>
+                                                            Amount
+                                                        </Text>
+                                                        <Center as="span">
+                                                            <Tooltip label="Credits earned for referral (USD)">
+                                                                <InfoIcon />
+                                                            </Tooltip>
+                                                        </Center>
+                                                    </HStack>
+                                                </Th>
+                                                <Th>
+                                                    <HStack>
+                                                        <Text>Referral ID</Text>
+                                                        <Center as="span">
+                                                            <Tooltip label="Unique ID associated with each referral">
+                                                                <InfoIcon />
+                                                            </Tooltip>
+                                                        </Center>
+                                                    </HStack>
+                                                </Th>
+                                            </Tr>
+                                        </Thead>
+                                        <Tbody>
+                                            {completedInvoices.map((invoice) => {
+                                                const bt = balanceTransactions[invoice.balanceTransactionId];
+
+                                                return (
+                                                    <Tr key="key">
+                                                        <Td>{new Date(bt.created * 1000).toLocaleString()}</Td>
+                                                        <Td align="left">{invoice.balanceTransactionId}</Td>
+                                                        <Td isNumeric>{formatUsd(invoice.commissionAmount)}</Td>
+                                                        <Td align="left">{invoice.id}</Td>
+                                                    </Tr>
+                                                );
+                                            })}
+                                        </Tbody>
+                                    </Table>
+
+                                    {completedInvoices.length === 0 && (
+                                        <Center w="full" my="4">
+                                            <Text>Your completed referrals will show up here!</Text>
+                                        </Center>
+                                    )}
+                                </Box>
+                            </Box>
+                            <Box w="full" experimental_spaceY={4}>
                                 <Heading size="md">Account Balance History</Heading>
                                 <Text maxW={[undefined, '66%']}>Shows the last 60 days of account balance history. Including credit payouts, and subscription payments.</Text>
-                                <Table variant="simple" w="full" size="sm">
-                                    <Thead>
-                                        <Tr>
-                                            <Th>Date</Th>
-                                            <Th>Event</Th>
-                                            <Th isNumeric>Credit Balance</Th>
-                                            <Th isNumeric>Amount</Th>
-                                        </Tr>
-                                    </Thead>
-                                    <Tbody>
-                                        {nets.map((net) => (
-                                            <Tr key={net.id}>
-                                                <Td>{new Date(net.created * 1000).toLocaleString()}</Td>
-                                                {net.object === 'customer_balance_transaction' ? (
-                                                    <>
-                                                        <Td>Credit ({net.metadata.invoiceId})</Td>
-                                                        <Td isNumeric>${(net.ending_balance / -100).toFixed(2)}</Td>
-                                                        <Td isNumeric fontWeight={'bold'} color="green.400">
-                                                            +${(net.amount / -100).toFixed(2)}
-                                                        </Td>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Td>{net.subscription ? 'Subscription payment' : 'Payment'}</Td>
-                                                        <Td isNumeric>${(net.ending_balance / 100).toFixed(2)}</Td>
-                                                        <Td isNumeric fontWeight={'bold'} color="red.400">
-                                                            -${(net.amount_paid / 100).toFixed(2)}
-                                                        </Td>
-                                                    </>
-                                                )}
+                                <Box overflow={'scroll'}>
+                                    <Table variant="simple" w="full" size="sm">
+                                        <Thead>
+                                            <Tr>
+                                                <Th>Date</Th>
+                                                <Th>Event</Th>
+                                                <Th isNumeric>Credit Balance</Th>
+                                                <Th isNumeric>Amount</Th>
                                             </Tr>
-                                        ))}
-                                    </Tbody>
-                                </Table>
+                                        </Thead>
+                                        <Tbody>
+                                            {nets.map((net: any) => {
+                                                const bt = net.balanceTransactionId ? balanceTransactions[net.balanceTransactionId] : undefined;
+                                                const p = net as PartnerInvoice;
+                                                const i = net as Stripe.Invoice;
+                                                return (
+                                                    <Tr key={net.id}>
+                                                        <Td>{new Date((i.created ?? bt.created) * 1000).toLocaleString()}</Td>
+                                                        {net.object !== 'invoice' ? (
+                                                            <>
+                                                                <Td>Credit ({p.id})</Td>
+                                                                <Td isNumeric>${(bt.ending_balance / -100).toFixed(2)}</Td>
+                                                                <Td isNumeric fontWeight={'bold'} color="green.400">
+                                                                    +{formatUsd(bt.amount, true)}
+                                                                </Td>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Td>{net.subscription ? 'Subscription payment' : 'Payment'}</Td>
+                                                                <Td isNumeric>${(net.ending_balance / 100).toFixed(2)}</Td>
+                                                                <Td isNumeric fontWeight={'bold'} color="red.400">
+                                                                    -${(net.amount_paid / 100).toFixed(2)}
+                                                                </Td>
+                                                            </>
+                                                        )}
+                                                    </Tr>
+                                                );
+                                            })}
+                                        </Tbody>
+                                    </Table>
+                                </Box>
                             </Box>
-                        </Box>
-
-                        {/* <ShareToTwitter
-                            tweetPreview={
-                                <Text>
-                                    I just joined the <Link color="twitter.400">@PulseBanner</Link> Partner Program BETA! Use my code <b>{`${partnerCode}`}</b> at checkout for 10%
-                                    off!
-                                    <br />
-                                    <Link color="twitter.500">#PulseBanner</Link>
-                                    <br />
-                                    <Link color="twitter.500">PulseBanner.com/pricing</Link>
-                                </Text>
-                            }
-                            tweetText={activeText}
-                        /> */}
+                        </VStack>
                     </VStack>
                 </Container>
             </Container>
