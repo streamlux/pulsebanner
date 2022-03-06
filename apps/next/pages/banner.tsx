@@ -649,7 +649,7 @@ export default function Page({ banner, originalBanner }: Props) {
                                                     {Object.entries(BackgroundTemplates).map(([key, value]) => (
                                                         <Radio key={key} value={key} colorScheme="purple">
                                                             <Text fontSize="md">{value.name}</Text>
-                                                            <Text fontSize="sm" textColor={'gray.600'}>
+                                                            <Text fontSize="sm">
                                                                 {value.description}
                                                             </Text>
                                                         </Radio>
