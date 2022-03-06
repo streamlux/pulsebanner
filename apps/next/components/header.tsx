@@ -91,13 +91,6 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
         'base'
     );
 
-    // for newsletter modal
-    const { isOpen, onClose, onToggle } = useDisclosure();
-    const { isOpen: featuresOpen, onClose: onFeaturesClose, onToggle: onFeaturesToggle, onOpen: onFeaturesOpen } = useDisclosure();
-    const featuresRef = useRef();
-
-    const firstFieldRef = React.useRef<HTMLDivElement>(null);
-
     return (
         <>
             <header>
@@ -115,7 +108,7 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                             px={['2', '2', '4', '4']}
                             alignItems="center"
                             justify="space-evenly"
-                            w={['full', 'full', 'full', 'full', '70vw']}
+                            w={['full', 'full', 'full', 'full', 'container.lg', 'container.xl']}
                         >
                             <Flex h="100%" maxH="100%" w="full">
                                 <HStack maxH="10" w="200px">
@@ -179,21 +172,6 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
 
                                 <Spacer />
                                 <Flex experimental_spaceX="2" alignItems="center" justifySelf="flex-end">
-                                    {/* {breakpointValue.mobile && (
-                                    <IconButton
-                                        size="sm"
-                                        onClick={() => onToggle()}
-                                        aria-label="Newsletter"
-                                        title="Newsletter"
-                                        icon={<MdEmail />}
-                                        className={trackEvent('click', 'newsletter-button')}
-                                    />
-                                )}
-                                {!breakpointValue.mobile && (
-                                    <Button onClick={() => onToggle()} leftIcon={<MdEmail />} className={trackEvent('click', 'newsletter-button')}>
-                                        Subscribe for updates
-                                    </Button>
-                                )} */}
                                     {breakpointValue.mobile && (
                                         <IconButton
                                             size="sm"
@@ -205,13 +183,18 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                         />
                                     )}
                                     {!breakpointValue.mobile && (
-                                        <Button onClick={() => window.open('/discord', '_blank')} leftIcon={<FaDiscord />} className={trackEvent('click', 'discord-button')}>
+                                        <Button
+                                            size="sm"
+                                            onClick={() => window.open('/discord', '_blank')}
+                                            leftIcon={<FaDiscord />}
+                                            className={trackEvent('click', 'discord-button')}
+                                        >
                                             Join our Discord
                                         </Button>
                                     )}
 
                                     <IconButton
-                                        size={breakpoint === 'base' ? 'sm' : 'md'}
+                                        size={'sm'}
                                         aria-label="Toggle theme"
                                         icon={colorMode === 'dark' ? <SunIcon /> : <MoonIcon />}
                                         onClick={toggleColorMode}
@@ -221,33 +204,34 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                     </IconButton>
 
                                     {!session && (
-                                        <Button
-                                            as={Link}
-                                            href={`/api/auth/signin`}
-                                            className={styles.buttonPrimary}
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                signIn('twitter');
-                                            }}
-                                            size={breakpoint === 'base' ? 'sm' : 'md'}
-                                            colorScheme="twitter"
-                                            leftIcon={<FaTwitter />}
-                                        >
-                                            Sign in
-                                        </Button>
+                                        <NextLink href="/api/auth/signin" passHref>
+                                            <Button
+                                                as="a"
+                                                className={styles.buttonPrimary}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    signIn('twitter');
+                                                }}
+                                                size={breakpoint === 'base' ? 'sm' : 'md'}
+                                                colorScheme="twitter"
+                                                leftIcon={<FaTwitter />}
+                                            >
+                                                Sign in
+                                            </Button>
+                                        </NextLink>
                                     )}
                                     {session && (
                                         <Menu>
-                                            <Avatar as={MenuButton} name={session.user.name} src={session.user.image} />
+                                            <Avatar size="sm" as={MenuButton} name={session.user.name} src={session.user.image} />
                                             <Portal>
                                                 <MenuList>
                                                     <NextLink href="/account" passHref>
-                                                        <MenuItem>Account</MenuItem>
+                                                        <MenuItem as="a">Account</MenuItem>
                                                     </NextLink>
                                                     <MenuItem onClick={() => signOut({ redirect: false })}>Sign out</MenuItem>
                                                     {isAdmin && (
                                                         <NextLink href="/admin" passHref>
-                                                            <MenuItem>Admin</MenuItem>
+                                                            <MenuItem as="a">Admin</MenuItem>
                                                         </NextLink>
                                                     )}
                                                 </MenuList>
@@ -264,40 +248,40 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                 <Center id="nav-links" fontSize="lg">
                     <Wrap spacing={['2', '4', '8', '10']}>
                         <Menu autoSelect={false}>
-                            <MenuButton size="sm" as={Button} variant="ghost" rightIcon={<ChevronDownIcon />}>
+                            <MenuButton size="md" as={Button} variant="ghost" rightIcon={<ChevronDownIcon />}>
                                 Features
                             </MenuButton>
                             <Portal containerRef={headerPortalRef}>
                                 <MenuList flexDirection={'row'} h="auto" mx="8" maxW="90vw">
                                     <SimpleGrid columns={[1, 2, 3]} spacing={[0, 4]} p="4">
-                                    <HeaderMenuItem
-                                                                href="/profile"
-                                                                colorMode={colorMode}
-                                                                description="Update your Twitter profile picture when you go live."
-                                                                imageSrc={landingPageAsset('profileimage')}
-                                                                title="Profile Picture"
-                                                            />
-                                                            <HeaderMenuItem
-                                                                href="/banner"
-                                                                colorMode={colorMode}
-                                                                description="Update your Twitter profile picture when you go live."
-                                                                imageSrc={typeof headerBanner === 'string' ? headerBanner : headerBanner.src}
-                                                                title="Live Banner"
-                                                            />
-                                                            <HeaderMenuItem
-                                                                href="/name"
-                                                                colorMode={colorMode}
-                                                                description="Update your Twitter profile picture when you go live."
-                                                                imageSrc={typeof nameChangerLogo === 'string' ? nameChangerLogo : nameChangerLogo.src}
-                                                                title="Name Changer"
-                                                            />
+                                        <HeaderMenuItem
+                                            href="/profile"
+                                            colorMode={colorMode}
+                                            description="Update your Twitter profile picture when you go live."
+                                            imageSrc={landingPageAsset('profileimage')}
+                                            title="Profile Picture"
+                                        />
+                                        <HeaderMenuItem
+                                            href="/banner"
+                                            colorMode={colorMode}
+                                            description="Update your Twitter profile picture when you go live."
+                                            imageSrc={typeof headerBanner === 'string' ? headerBanner : headerBanner.src}
+                                            title="Live Banner"
+                                        />
+                                        <HeaderMenuItem
+                                            href="/name"
+                                            colorMode={colorMode}
+                                            description="Update your Twitter profile picture when you go live."
+                                            imageSrc={typeof nameChangerLogo === 'string' ? nameChangerLogo : nameChangerLogo.src}
+                                            title="Name Changer"
+                                        />
                                     </SimpleGrid>
                                 </MenuList>
                             </Portal>
                         </Menu>
 
                         <NextLink href="/pricing" passHref>
-                            <Button as="a" size="sm" variant={'ghost'}>
+                            <Button as="a" size="md" variant={'link'}>
                                 Pricing
                             </Button>
                         </NextLink>
