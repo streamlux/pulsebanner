@@ -63,7 +63,7 @@ const Page: NextPage = () => {
 
     return (
         <>
-            <NextSeo title="Account" />
+            <NextSeo title="Account" nofollow noindex />
             <Container maxW="container.lg">
                 <VStack>
                     <Heading mb="8">PulseBanner Account</Heading>

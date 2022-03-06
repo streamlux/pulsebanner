@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+
+- Removed sign in page
+- Made account page nofollow and noindex
+
 ## [0.9.4] - 2022-03-05
 
 ### Added
