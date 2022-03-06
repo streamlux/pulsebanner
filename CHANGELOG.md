@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.9.4] - 2022-03-05
+
+### Added
+
+- Upload a banner image directly to the website
+
 ## [0.9.3] - 2022-03-04
 
 ### Fixed
