@@ -36,6 +36,7 @@ import { InfoIcon } from '@chakra-ui/icons';
 import stripe from '@app/util/ssr/stripe';
 import Stripe from 'stripe';
 import { getPartnerCustomerInfo } from '@app/util/partner/payoutHelpers';
+import { formatUsd } from '@app/util/stringUtils';
 
 interface Props {
     balance: number;
@@ -179,10 +180,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 export default function Page({ partnerStatus, partnerCode, completedPayouts, completedPayoutAmount, pendingInvoices, balance, nets, completedInvoices }: Props) {
     const { colorMode } = useColorMode();
-
-    const formatUsd = (amount: number, negate?: boolean) => {
-        return `$${(amount / (100 * (negate ? -1 : 1))).toFixed(2)}`;
-    };
 
     const referralStatus: Record<CommissionStatus, string> = {
         complete: 'Completed',

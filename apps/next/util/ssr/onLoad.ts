@@ -7,10 +7,12 @@ let hasLoaded = false;
 
 // Function is called when prisma is loaded, which hopefully will be almost right at startup
 export function onLoad(): void {
+    logger.info('onLoad called');
     if (hasLoaded === true || process.env.NODE_ENV === 'development') {
+        logger.info('onLoad no-op');
         return;
     }
-
+    logger.info('onLoad running');
     try {
         hasLoaded = true;
         const scheduler = new ToadScheduler();
