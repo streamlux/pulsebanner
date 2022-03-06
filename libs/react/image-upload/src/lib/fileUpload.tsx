@@ -30,7 +30,7 @@ export const FileUpload = (props: FileUploadProps) => {
                     inputRef.current = e;
                 }}
             />
-            <>{children}</>
+            {children}
         </InputGroup>
     );
 };

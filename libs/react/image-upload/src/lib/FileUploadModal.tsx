@@ -1,34 +1,20 @@
-import {
-    Modal,
-    ModalBody,
-    ModalCloseButton,
-    ModalContent,
-    ModalHeader,
-    ModalOverlay,
-    Text,
-    Image,
-    Center,
-    HStack,
-    VStack,
-    ModalFooter,
-    Button,
-    Box,
-    toast,
-    useToast,
-} from '@chakra-ui/react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, Text, Image, Center, VStack, Box, useToast } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
-import React, { ReactElement, FC, useState, useEffect } from 'react';
+import { ReactElement, FC, useState, useEffect } from 'react';
 import { UploadForm } from './uploadForm';
 
 type FileUploadModalProps = {
     title: string;
     isOpen: boolean;
     onClose: () => void;
+    onUpload: (url: string) => void;
+    url: string;
 };
 
-export const FileUploadModal: FC<FileUploadModalProps> = ({ title, isOpen, onClose }): ReactElement => {
+export const FileUploadModal: FC<FileUploadModalProps> = ({ title, isOpen, onClose, url, onUpload }): ReactElement => {
     const [selectedFile, setSelectedFile] = useState();
-    const [preview, setPreview] = useState(undefined as string);
+    const [preview, setPreview] = useState<string | undefined>();
     const toast = useToast();
     const router = useRouter();
     // create a preview as a side effect, whenever selected file is changed
@@ -55,9 +41,9 @@ export const FileUploadModal: FC<FileUploadModalProps> = ({ title, isOpen, onClo
 
         // free memory when ever this component is unmounted
         return () => URL.revokeObjectURL(objectUrl);
-    }, [selectedFile]);
+    }, [selectedFile, toast]);
 
-    const onSelectFile = (e) => {
+    const onSelectFile = (e: any) => {
         if (!e.target.files || e.target.files.length === 0) {
             setSelectedFile(undefined);
             return;
@@ -67,28 +53,18 @@ export const FileUploadModal: FC<FileUploadModalProps> = ({ title, isOpen, onClo
         setSelectedFile(e.target.files[0]);
     };
 
-    const onSubmit = (data) => {
+    const onSubmit = (data: any) => {
         const formData = new FormData();
 
         formData.append('File', data.file_[0]);
 
-        fetch('/api/features/banner/offline', {
+        fetch(url, {
             method: 'POST',
             body: formData,
-        })
-            .then((result) => {
-                onClose();
-                toast({
-                    status: 'success',
-                    title: 'Offline banner saved',
-                    position: 'top',
-                });
-                router.reload();
-                console.log('Success:', result);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
+        }).then(async (result) => {
+            onUpload(await result.text());
+            onClose();
+        });
     };
 
     return (
@@ -102,13 +78,17 @@ export const FileUploadModal: FC<FileUploadModalProps> = ({ title, isOpen, onClo
                 <ModalBody py="4">
                     <VStack w="full">
                         <Center w="full">
-                            <Image src={preview} alt="Preview" maxW={['90vw', '900px']} maxH="300px" fallbackSrc="https://placehold.co/900x300?text=1500x500" />
+                            {preview ? (
+                                <Image src={preview} alt="Preview" maxW={['90vw', '900px']} maxH="300px" />
+                            ) : (
+                                <Image src="https://pb-static.sfo3.cdn.digitaloceanspaces.com/assets/placeholder.svg" alt="Preview" maxW={['90vw', '900px']} maxH="300px" />
+                            )}
                         </Center>
                         <Center>
                             <Box w="full">
                                 <UploadForm
                                     onSubmit={onSubmit}
-                                    onChange={(e) => {
+                                    onChange={(e: any) => {
                                         onSelectFile(e);
                                     }}
                                 />

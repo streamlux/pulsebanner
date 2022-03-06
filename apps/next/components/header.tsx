@@ -66,16 +66,19 @@ export default function Header() {
                 gridSpacing: 6,
             },
             lg: {
+                mobile: false,
                 gridColumns: 3,
                 gridSpacing: 6,
             },
             xl: {
+                mobile: false,
                 gridColumns: 3,
                 gridSpacing: 10,
             },
         },
         'base'
     );
+
     return (
         <>
             <header>
@@ -108,7 +111,7 @@ export default function Header() {
                                     </HStack>
                                 </LinkBox>
                             </HStack>
-                            {!breakpointValue.mobile && (
+                            {!breakpointValue?.mobile && (
                                 <Center id="nav-links" fontSize="lg">
                                     <Wrap spacing={['2', '4', '8', '8']}>
                                         <WrapItem>
@@ -156,7 +159,7 @@ export default function Header() {
                                         Subscribe for updates
                                     </Button>
                                 )} */}
-                                {breakpointValue.mobile && (
+                                {breakpointValue?.mobile && (
                                     <IconButton
                                         size="sm"
                                         onClick={() => window.open('/discord', '_blank')}
@@ -166,7 +169,7 @@ export default function Header() {
                                         className={trackEvent('click', 'discord-button')}
                                     />
                                 )}
-                                {!breakpointValue.mobile && (
+                                {!breakpointValue?.mobile && (
                                     <Button size="sm" onClick={() => window.open('/discord', '_blank')} leftIcon={<FaDiscord />} className={trackEvent('click', 'discord-button')}>
                                         Join our Discord
                                     </Button>
@@ -220,7 +223,7 @@ export default function Header() {
                         </Flex>
                     </Flex>
                 </Center>
-                {breakpointValue.mobile && (
+                {breakpointValue?.mobile && (
                     <Center className={`nojs-show ${!session && loading ? styles.loading : styles.loaded}`}>
                         <Box maxW={['95vw']} background={colorMode === 'dark' ? 'gray.700' : 'blackAlpha.200'} mx="2" py="2" rounded="md">
                             <Center id="nav-links" fontSize={['sm', 'md']} px="5vw">
@@ -255,7 +258,6 @@ export default function Header() {
                     </Center>
                 )}
             </header>
-
             {promo && (
                 <Center pt={['4', '2']}>
                     <Box px="4" py="2" mx="4" color={colorMode === 'dark' ? 'black' : 'black'} w={['fit-content']} bg="green.200" rounded="lg">

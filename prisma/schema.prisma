@@ -59,6 +59,7 @@ model User {
     renderedProfilePic  RenderedProfileImage?
     liveStreams         LiveStreams?
     pastStreams         PastStreams[]
+    partnerInformation  PartnerInformation?
     partner             Boolean               @default(false)
 
     @@map("users")
@@ -160,6 +161,18 @@ model RenderedProfileImage {
     @@map("rendered_profile_img")
 }
 
+// This is the affiliate information stored on the nextjs server side. Separate from the other partner service
+// It's on the user/nextjs server side to delete the user when the partner is no longer in our partner server
+model PartnerInformation {
+    id        String  @id @default(cuid())
+    userId    String  @unique @map("user_id")
+    user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    partnerId String  @unique @map("partner_id")
+    partner   Partner @relation(fields: [partnerId], references: [id])
+
+    @@map("partner_information")
+}
+
 // track who is currently live streaming
 model LiveStreams {
     id             String    @id @default(cuid())
@@ -190,11 +203,12 @@ model PastStreams {
 // Below models taken from https://github.com/gmpetrov/ultimate-saas-ts/blob/master/prisma/schema.prisma
 
 model Customer {
-    id        String   @id @default(cuid())
-    userId    String   @unique(map: "customers_user_id_unique") @map("user_id")
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @default(now()) @map("updated_at")
-    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    id             String          @id @default(cuid())
+    userId         String          @unique(map: "customers_user_id_unique") @map("user_id")
+    createdAt      DateTime        @default(now()) @map("created_at")
+    updatedAt      DateTime        @default(now()) @map("updated_at")
+    user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+    PartnerInvoice PartnerInvoice[]
 
     @@map("customers")
 }
@@ -272,4 +286,66 @@ enum PriceInterval {
     month
     week
     year
+}
+
+// all these tables are for the partner server. Makes it easier to split off in the future if needed.
+
+// enum for their acceptance status into the partner program
+enum AcceptanceStatus {
+    active
+    pending
+    suspended
+    rejected
+}
+
+// partner table stores all partners
+model Partner {
+    id               String           @id @default(cuid()) // This is the partnerId
+    email            String           @unique
+    firstName        String
+    lastName         String?
+    partnerCode      String           @unique
+    notes            String?
+    acceptanceStatus AcceptanceStatus
+
+    partnerInformation PartnerInformation?
+    stripePartnerInfo  StripePartnerInfo?
+    partnerInvoices    PartnerInvoice[] // list of all invoices associated withthe partner
+
+    @@map("partner")
+}
+
+// we do not create this until they have been moved to the 'active' affiliate state
+model StripePartnerInfo {
+    id              String  @id @default(cuid())
+    partnerId       String  @unique
+    partner         Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+    stripePromoCode String  @unique
+
+    @@map("stripe_partner_info")
+}
+
+enum CommissionStatus {
+    complete
+    waitPeriod // This is to wait out any refund that may be given
+    pendingCompletion // we move it to pending completion when we select it via the admin panel for a payout
+    pending
+    rejected
+    pendingRejection
+    none // We specify none when there is no coupon associded with the request
+}
+
+model PartnerInvoice {
+    id                   String           @id @unique // This is the invoice via stripe.
+    customerId           String           // this is the customer id on the invoice. We should link this to our customers table
+    customer             Customer         @relation(fields: [customerId], references: [id])
+    partnerId            String? // this cannot be unique in this table
+    partner              Partner?         @relation(fields: [partnerId], references: [id])
+    balanceTransactionId String? // stripe balance transaction id, if defined it means we've paid out this referral
+    paidAt               DateTime // the time the actual invoice completed. Not the payout of the commission
+    commissionAmount     Int // We include this even if there will not be a commission payout (if it's not the first month invoice)
+    purchaseAmount       Int
+    commissionStatus     CommissionStatus
+
+    @@map("partner_invoice")
 }

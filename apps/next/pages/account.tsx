@@ -63,7 +63,7 @@ const Page: NextPage = () => {
 
     return (
         <>
-            <NextSeo title="Account" />
+            <NextSeo title="Account" nofollow noindex />
             <Container maxW="container.lg">
                 <VStack>
                     <Heading mb="8">PulseBanner Account</Heading>
@@ -112,7 +112,7 @@ const Page: NextPage = () => {
                                         {({ isOpen, onClose }) => (
                                             <>
                                                 <PopoverTrigger>
-                                                    <Button colorScheme="red" disabled={paymentPlan !== 'Free'}>
+                                                    <Button colorScheme="red" disabled={paymentPlan !== 'Free' && paymentPlanResponse.partner !== true}>
                                                         Delete account and erase all data
                                                     </Button>
                                                 </PopoverTrigger>
