@@ -80,7 +80,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 }
             });
 
-            const balanceTransactions = await stripe.customers.listBalanceTransactions(userInfo.customer.id);
+            const balanceTransactions = await stripe.balanceTransactions.list();
 
             const allPartnerInvoices = (await prisma.partnerInvoice.findMany({
                 include: {

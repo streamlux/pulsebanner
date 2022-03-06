@@ -245,7 +245,7 @@ export default function Page({ partnerStatus, partnerCode }: Props) {
                     </Text>
                 </AccordionPanel>
             </AccordionItem>
-            {/* <AccordionItem>
+            <AccordionItem>
                 <AccordionButton>
                     <Text fontWeight={'semibold'} flex="1" textAlign="left">
                         I&#39;m an EMGG member, how do I apply?
@@ -254,12 +254,12 @@ export default function Page({ partnerStatus, partnerCode }: Props) {
                 </AccordionButton>
                 <AccordionPanel pb={4} experimental_spaceY={4}>
                     <Text>
-                        PulseBanner Members that are also EMGG members receive automatic acceptance as part of our partnership!{' '}
-                        <strong>Make sure to write that you are an EMGG member in the Notes section of the application form.</strong>
+                        PulseBanner Members that are also EMGG members will receive automatic acceptance as part of our partnership once the beta is over!{' '}
+                        {/* <strong>Make sure to write that you are an EMGG member in the Notes section of the application form.</strong> */}
                     </Text>
                     <Text>Note: EMGG members still need to be PulseBanner Members to become PulseBanner Partners.</Text>
                 </AccordionPanel>
-            </AccordionItem> */}
+            </AccordionItem>
             <AccordionItem>
                 <AccordionButton>
                     <Text fontWeight={'semibold'} flex="1" textAlign="left">
