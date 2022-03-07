@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Box, Button, chakra, Flex, Stack, Tag, Text, useColorMode, Portal, useDisclosure, CloseButton, Center, useBreakpoint, HStack } from '@chakra-ui/react';
 import Header from './header';
 import Footer from './footer';
@@ -18,12 +18,13 @@ export default function Layout({ children }) {
 
     const pagesWithoutPromo = ['/admin', '/admin/banner'];
     const showPromo = promo && isOpen && breakpoint !== 'base' && !pagesWithoutPromo.includes(router.asPath);
-
+    const headerPortalRef = useRef();
     return (
         <>
             <Flex direction="column" as={chakra.div} maxH="100%" overflow="hidden" minH="100vh" bg={emgg ? 'black' : 'transparent'}>
-                <Box as={chakra.header} zIndex={1}>
-                    <Header />
+                <Box as={chakra.header} zIndex={10}>
+                    <Header headerPortalRef={headerPortalRef} />
+                    <Box ref={headerPortalRef} />
                 </Box>
                 {emgg && (
                     <Box
