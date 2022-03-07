@@ -534,7 +534,6 @@ export default function Page({ partnerStatus, partnerCode }: Props) {
                     type: 'website',
                     url: 'https://pulsebanner.com/partner',
                     title: 'PulseBanner Partner Program',
-                    description: 'Easily earn money back the more users you refer to PulseBanner memberships',
                 }}
                 twitter={{
                     site: '@PulseBanner',
