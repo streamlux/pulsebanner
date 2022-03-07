@@ -3,8 +3,6 @@ import {
     Avatar,
     Flex,
     Box,
-    Link,
-    WrapItem,
     Button,
     Center,
     Wrap,
@@ -21,37 +19,30 @@ import {
     LinkBox,
     LinkOverlay,
     useBreakpoint,
-    useDisclosure,
     Text,
-    Fade,
     Spacer,
     Tag,
     Stack,
-    useOutsideClick,
-    Popover,
-    PopoverArrow,
-    PopoverCloseButton,
-    PopoverContent,
-    PopoverTrigger,
     SimpleGrid,
-    VStack,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import styles from './header.module.css';
-import React, { Ref, useRef } from 'react';
-import { ChevronDownIcon, EditIcon, MoonIcon, SunIcon } from '@chakra-ui/icons';
+import React from 'react';
+import { ChevronDownIcon, MoonIcon, SunIcon } from '@chakra-ui/icons';
 import { useAdmin } from '../util/hooks/useAdmin';
 import favicon from '@app/public/logo.webp';
-import { FaArrowRight, FaDiscord, FaPersonBooth, FaRegImage, FaTwitter, FaUserCircle, FaUserTag } from 'react-icons/fa';
-import { MdEmail } from 'react-icons/md';
+import { FaArrowRight, FaDiscord, FaTwitter } from 'react-icons/fa';
 import { trackEvent } from '@app/util/umami/trackEvent';
-import { holidayDecor, promo, promoCode } from '@app/util/constants';
-import { landingPageAsset } from '@app/pages';
+import {  promo, promoCode } from '@app/util/constants';
 import { HeaderMenuItem } from './header/HeaderMenuItem';
-import nameChangerLogo from '@app/public/header/namechanger.png';
-import headerBanner from '@app/public/header/header_banner.png';
-import headerProfile from '@app/public/header/header_profile.png';
+
+const headerImages = {
+    profile: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/assets/feature-nav/header_profile.svg',
+    banner: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/assets/feature-nav/header_banner.svg',
+    nameChangerDark: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/assets/feature-nav/namechanger.svg',
+    nameChangerLight: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/assets/feature-nav/namechanger_light.svg',
+};
 
 // The approach used in this component shows how to built a sign in and sign out
 // component that works on pages which support both client and server side
@@ -62,6 +53,7 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
     const [isAdmin] = useAdmin({ required: false });
     const { colorMode, toggleColorMode } = useColorMode();
     const breakpoint = useBreakpoint();
+    const nameChangerLogo = colorMode === 'dark' ? headerImages.nameChangerDark : headerImages.nameChangerLight;
     const breakpointValue = useBreakpointValue(
         {
             base: {
@@ -89,6 +81,51 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
             },
         },
         'base'
+    );
+
+    const NavLinks = () => (
+        <Center id="nav-links" fontSize="lg">
+            <Wrap spacing={['2', '4', '6', '6']}>
+                <Menu>
+                    <MenuButton size="md" as={Button} variant="ghost" rightIcon={<ChevronDownIcon />}>
+                        Features
+                    </MenuButton>
+                    <Portal containerRef={headerPortalRef}>
+                        <MenuList flexDirection={'row'} h="auto" mx="8" maxW="90vw">
+                            <SimpleGrid columns={[1, 2, 3]} spacing={[0, 4]} p="4">
+                                <HeaderMenuItem
+                                    href="/profile"
+                                    colorMode={colorMode}
+                                    description="Update your Twitter profile picture when you go live."
+                                    imageSrc={headerImages.profile}
+                                    title="Profile Picture"
+                                />
+                                <HeaderMenuItem
+                                    href="/banner"
+                                    colorMode={colorMode}
+                                    description="Update your Twitter profile picture when you go live."
+                                    imageSrc={headerImages.banner}
+                                    title="Live Banner"
+                                />
+                                <HeaderMenuItem
+                                    href="/name"
+                                    colorMode={colorMode}
+                                    description="Update your Twitter profile picture when you go live."
+                                    imageSrc={nameChangerLogo}
+                                    title="Name Changer"
+                                />
+                            </SimpleGrid>
+                        </MenuList>
+                    </Portal>
+                </Menu>
+
+                <NextLink href="/pricing" passHref>
+                    <Button as="a" size="md" variant={'ghost'}>
+                        Pricing
+                    </Button>
+                </NextLink>
+            </Wrap>
+        </Center>
     );
 
     return (
@@ -125,51 +162,7 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                         </HStack>
                                     </LinkBox>
                                 </HStack>
-                                {!breakpointValue.mobile && (
-                                    <Center id="nav-links" fontSize="lg">
-                                        <Wrap spacing={['2', '4', '6', '6']}>
-                                            <Menu>
-                                                <MenuButton size="md" as={Button} variant="ghost" rightIcon={<ChevronDownIcon />}>
-                                                    Features
-                                                </MenuButton>
-                                                <Portal containerRef={headerPortalRef}>
-                                                    <MenuList flexDirection={'row'} h="auto" mx="8" maxW="90vw">
-                                                        <SimpleGrid columns={[1, 2, 3]} spacing={[0, 4]} p="4">
-                                                            <HeaderMenuItem
-                                                                href="/profile"
-                                                                colorMode={colorMode}
-                                                                description="Update your Twitter profile picture when you go live."
-                                                                imageSrc={typeof headerProfile === 'string' ? headerProfile : headerProfile.src}
-                                                                title="Profile Picture"
-                                                            />
-                                                            <HeaderMenuItem
-                                                                href="/banner"
-                                                                colorMode={colorMode}
-                                                                description="Update your Twitter profile picture when you go live."
-                                                                imageSrc={typeof headerBanner === 'string' ? headerBanner : headerBanner.src}
-                                                                title="Live Banner"
-                                                            />
-                                                            <HeaderMenuItem
-                                                                href="/name"
-                                                                colorMode={colorMode}
-                                                                description="Update your Twitter profile picture when you go live."
-                                                                imageSrc={typeof nameChangerLogo === 'string' ? nameChangerLogo : nameChangerLogo.src}
-                                                                title="Name Changer"
-                                                            />
-                                                        </SimpleGrid>
-                                                    </MenuList>
-                                                </Portal>
-                                            </Menu>
-
-                                            <NextLink href="/pricing" passHref>
-                                                <Button as="a" size="md" variant={'ghost'}>
-                                                    Pricing
-                                                </Button>
-                                            </NextLink>
-                                        </Wrap>
-                                    </Center>
-                                )}
-
+                                {!breakpointValue.mobile && <NavLinks />}
                                 <Spacer />
                                 <Flex experimental_spaceX="2" alignItems="center" justifySelf="flex-end">
                                     {breakpointValue.mobile && (
@@ -244,50 +237,7 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                     </Center>
                 </Box>
             </header>
-            {breakpointValue.mobile && (
-                <Center id="nav-links" fontSize="lg">
-                    <Wrap spacing={['2', '4', '8', '10']}>
-                        <Menu autoSelect={false}>
-                            <MenuButton size="md" as={Button} variant="ghost" rightIcon={<ChevronDownIcon />}>
-                                Features
-                            </MenuButton>
-                            <Portal containerRef={headerPortalRef}>
-                                <MenuList flexDirection={'row'} h="auto" mx="8" maxW="90vw">
-                                    <SimpleGrid columns={[1, 2, 3]} spacing={[0, 4]} p="4">
-                                        <HeaderMenuItem
-                                            href="/profile"
-                                            colorMode={colorMode}
-                                            description="Update your Twitter profile picture when you go live."
-                                            imageSrc={landingPageAsset('profileimage')}
-                                            title="Profile Picture"
-                                        />
-                                        <HeaderMenuItem
-                                            href="/banner"
-                                            colorMode={colorMode}
-                                            description="Update your Twitter profile picture when you go live."
-                                            imageSrc={typeof headerBanner === 'string' ? headerBanner : headerBanner.src}
-                                            title="Live Banner"
-                                        />
-                                        <HeaderMenuItem
-                                            href="/name"
-                                            colorMode={colorMode}
-                                            description="Update your Twitter profile picture when you go live."
-                                            imageSrc={typeof nameChangerLogo === 'string' ? nameChangerLogo : nameChangerLogo.src}
-                                            title="Name Changer"
-                                        />
-                                    </SimpleGrid>
-                                </MenuList>
-                            </Portal>
-                        </Menu>
-
-                        <NextLink href="/pricing" passHref>
-                            <Button as="a" size="md" variant={'link'}>
-                                Pricing
-                            </Button>
-                        </NextLink>
-                    </Wrap>
-                </Center>
-            )}
+            {breakpointValue.mobile && <NavLinks />}
             {promo && (
                 <Center pt={['4', '2']}>
                     <Box px="4" py="2" mx="4" color={colorMode === 'dark' ? 'black' : 'black'} w={['fit-content']} bg="green.200" rounded="lg">
