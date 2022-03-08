@@ -1,5 +1,5 @@
 /* eslint-disable no-case-declarations */
-import { PriceType, SubscriptionStatus } from '@prisma/client';
+import { GiftStatus, PriceType } from '@prisma/client';
 import Stripe from 'stripe';
 import { timestampToDate } from '../../../util/common';
 import { createApiHandler } from '../../../util/ssr/createApiHandler';
@@ -14,6 +14,10 @@ import { flipFeatureEnabled, getTwitterInfo } from '@app/util/database/postgresH
 import { defaultBannerSettings } from '@app/pages/banner';
 import { logger } from '@app/util/logger';
 import { commissionLookupMap } from '@app/util/partner/constants';
+import { handleStripeCheckoutSessionCompletedForSubscription } from '@app/util/stripe/checkoutSessionCompleted/subscriptionPurchased';
+import { getInvoiceInformation, updateInvoiceTables } from '@app/util/stripe/invoiceHelpers';
+import { giftPricingLookupMap } from '@app/util/stripe/constants';
+import { handleStripePromoCode } from '@app/util/stripe/giftPurchased';
 
 // Stripe requires the raw body to construct the event.
 export const config = {
@@ -266,162 +270,123 @@ handler.post(async (req, res) => {
                 case 'checkout.session.completed': {
                     const data = event.data.object as Stripe.Checkout.Session;
 
-                    const subscription = await stripe.subscriptions.retrieve(data.subscription as string, {
-                        expand: ['default_payment_method'],
-                    });
+                    // we get the mode it is in. If it's a subscription mode, we know it's for a indivdiual account
+                    // otherwise, it's a giveaway
+                    const mode = data.mode;
 
-                    await prisma.subscription.upsert({
-                        where: {
-                            id: subscription.id,
-                        },
-                        create: {
-                            id: subscription.id,
-                            user: {
-                                connect: {
-                                    id: data.client_reference_id,
-                                },
-                            },
-                            price: {
-                                connect: {
-                                    id: subscription.items.data[0].price.id,
-                                },
-                            },
-                            status: subscription.status as SubscriptionStatus,
-                            metadata: subscription.metadata,
-                            cancel_at_period_end: subscription.cancel_at_period_end,
-                            canceled_at: timestampToDate(subscription.canceled_at),
-                            cancel_at: timestampToDate(subscription.cancel_at),
-                            start_date: timestampToDate(subscription.start_date),
-                            ended_at: timestampToDate(subscription.ended_at),
-                            trial_start: timestampToDate(subscription.trial_start),
-                            trial_end: timestampToDate(subscription.trial_end),
-                        },
-                        update: {
-                            status: subscription.status as SubscriptionStatus,
-                            metadata: subscription.metadata,
-                            price: {
-                                connect: {
-                                    id: subscription.items.data[0].price.id,
-                                },
-                            },
-                            cancel_at_period_end: subscription.cancel_at_period_end,
-                            canceled_at: timestampToDate(subscription.canceled_at),
-                            cancel_at: timestampToDate(subscription.cancel_at),
-                            start_date: timestampToDate(subscription.start_date),
-                            ended_at: timestampToDate(subscription.ended_at),
-                            trial_start: timestampToDate(subscription.trial_start),
-                            trial_end: timestampToDate(subscription.trial_end),
-                        },
-                    });
-
-                    const subscriptionInfo = await prisma.subscription.findUnique({
-                        where: {
-                            id: subscription.id,
-                        },
-                    });
-                    const userId = subscriptionInfo === null ? null : subscriptionInfo.userId;
-                    // send webhook to discord saying someone subscribed
-                    if (userId) {
-                        const notify = async () => {
-
-                            const user = await prisma.user.findUnique({
-                                where: {
-                                    id: userId
-                                },
-                            });
-
-                            const priceId = subscriptionInfo.priceId;
-                            const priceInfo = await prisma.price.findUnique({
-                                where: {
-                                    id: priceId,
-                                },
-                            });
-                            if (priceInfo !== null) {
-                                const intervalId = priceInfo.interval;
-                                const productId = priceInfo.productId;
-
-                                const productInfo = await prisma.product.findUnique({
-                                    where: {
-                                        id: productId,
-                                    },
-                                    select: {
-                                        name: true,
-                                    },
-                                });
-
-                                if (productInfo !== null) {
-                                    const msg = `${user.name} upgraded to a ${intervalId}ly ${productInfo.name} subscription.`;
-                                    logger.info(msg, { userId: userId });
-                                    const count = await prisma.subscription.count({
-                                        where: {
-                                            status: {
-                                                in: ['active', 'past_due']
-                                            }
-                                        }
-                                    });
-
-                                    sendMessage(`${msg} Total premium users: ${count}`, process.env.DISCORD_NEW_SUBSCRIBER_URL);
-                                }
-                            } else {
-                                logger.info(`User successfully signed up for a membership. User: ${userId}`, { userId: userId });
-                                prisma.subscription.count().then((value) => {
-                                    sendMessage(`"${userId}" signed up for a premium plan! Total premium users: ${value}`, process.env.DISCORD_NEW_SUBSCRIBER_URL);
-                                });
-                            }
-                        }
-
-                        // don't await this async method, it will finish in the background
-                        void notify();
+                    // we need to handle the payment mode in a diffrent
+                    if (mode === 'subscription') {
+                        // if it's a subscription, we handle as we have in the past
+                        await handleStripeCheckoutSessionCompletedForSubscription(data);
                     }
                     break;
                 }
                 case 'invoice.payment_succeeded': {
                     // for handling when a webhook
                     const data = event.data.object as Stripe.Invoice;
-                    const invoiceId = data.id;
-                    // const couponId = data.discount?.coupon?.id ?? undefined;
-                    const stripePromoCode = data.discount?.promotion_code?.toString() ?? undefined;
-                    const paidAt = new Date(data.status_transitions.paid_at * 1000); // date object is in milliseconds and timestamp is in seconds
 
-                    const customerId = data.customer.toString();
-
-                    // we want the priceId so we can apply the correct discount
-                    const priceId = data.lines.data[0]?.price.id ?? undefined;
-                    const purchaseAmount = data.subtotal;
+                    const invoiceInfo = await getInvoiceInformation(data);
 
                     // we need a way to get the partner (if they exist)
                     // lookup the couponId associated with the person
                     let partnerId = null;
-                    if (stripePromoCode) {
+                    let overrideCommissionAmount = false;
+
+                    const customerInfo = await prisma.customer.findUnique({
+                        where: {
+                            id: invoiceInfo.customerId,
+                        },
+                        select: {
+                            userId: true,
+                        },
+                    });
+
+                    // if a promoCode was used, track whose it was. If it's for a gift, ensure we don't credit their account if they try and use on their own account
+                    if (invoiceInfo.stripePromoCode) {
+                        // we see if the code is associated with a partner. If it is with a partner, we konw it was not a gift usage
                         const partnerInfo = await prisma.stripePartnerInfo.findUnique({
                             where: {
-                                stripePromoCode: stripePromoCode,
+                                stripePromoCode: invoiceInfo.stripePromoCode,
                             },
                         });
 
                         if (partnerInfo !== null) {
                             partnerId = partnerInfo.partnerId;
                         }
+
+                        const giftInfo = await prisma.giftPurchase.findUnique({
+                            where: {
+                                promoIdCreated: invoiceInfo.stripePromoCode,
+                            },
+                        });
+
+                        // a promo code for a partner can never be the same as a gift promo code
+
+                        // if the customer is using a gift
+                        if (giftInfo !== null && partnerInfo === null) {
+                            await prisma.giftPurchase.update({
+                                where: {
+                                    promoIdCreated: invoiceInfo.stripePromoCode,
+                                },
+                                data: {
+                                    activatedAt: invoiceInfo.paidAt,
+                                    activaterUserId: customerInfo.userId,
+                                    giftStatus: GiftStatus.Used,
+                                },
+                            });
+                            logger.info('Gift successfully used.', { activaterUserId: customerInfo.userId });
+                        }
+
+                        // we only allow them to get commission if it's a gift they bought using NOT their own code
+                        // check if user that purchased used their own code
+                        if (invoiceInfo.productId !== undefined && invoiceInfo.giftProducts.includes(invoiceInfo.productId) && partnerId !== null) {
+                            // it should never be null...We just created the customer
+                            if (customerInfo !== null) {
+                                // check the partnerInformation table and see if they are the same entry
+                                const partnerInfoCodeOwner = await prisma.partnerInformation.findUnique({
+                                    where: {
+                                        partnerId: partnerId,
+                                    },
+                                    select: {
+                                        id: true,
+                                    },
+                                });
+
+                                const partnerInfoCodeUser = await prisma.partnerInformation.findUnique({
+                                    where: {
+                                        userId: customerInfo.userId,
+                                    },
+                                    select: {
+                                        id: true,
+                                    },
+                                });
+
+                                if (partnerInfoCodeOwner !== null && partnerInfoCodeUser !== null) {
+                                    overrideCommissionAmount = partnerInfoCodeOwner.id === partnerInfoCodeUser.id ? true : false;
+                                }
+                            }
+                        }
                     }
 
                     // please note to be in accordance with stripe, commission is stored as cents (100 = $1)
                     let commissionAmount = 0.0;
-                    if (priceId) {
-                        commissionAmount = commissionLookupMap[priceId] * 100 ?? 0.0;
+                    if (invoiceInfo.priceId) {
+                        commissionAmount = commissionLookupMap[invoiceInfo.priceId] * 100 ?? 0.0;
                     }
 
-                    // update the PartnerInvoices table
-                    await prisma.partnerInvoice.create({
-                        data: {
-                            id: invoiceId,
-                            customerId: customerId,
-                            paidAt: paidAt,
-                            partnerId: partnerId,
-                            commissionAmount: commissionAmount,
-                            commissionStatus: partnerId === null ? 'none' : 'waitPeriod',
-                            purchaseAmount: purchaseAmount,
-                        },
-                    });
+                    const finalizedCommissionAmount = overrideCommissionAmount ? 0 : commissionAmount;
+                    await updateInvoiceTables(invoiceInfo, partnerId, overrideCommissionAmount ? 0 : finalizedCommissionAmount);
+
+                    if (customerInfo.userId !== null) {
+                        // check if its a gift
+                        const giftCouponId = giftPricingLookupMap[invoiceInfo.priceId];
+
+                        // we only create if it exists in the Record i.e. it's a gift price
+                        if (giftCouponId !== undefined) {
+                            await handleStripePromoCode(giftCouponId, invoiceInfo, customerInfo);
+                        }
+                    }
+
                     break;
                 }
                 default:

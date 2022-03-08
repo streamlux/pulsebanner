@@ -40,27 +40,29 @@ model Session {
 }
 
 model User {
-    id                  String                @id @default(cuid())
-    name                String?
-    email               String?               @unique
-    emailVerified       DateTime?
-    image               String?
-    createdAt           DateTime              @default(now()) @map("created_at")
-    role                Role                  @default(user)
-    accounts            Account[]
-    sessions            Session[]
-    customer            Customer?
-    subscription        Subscription?
-    banner              Banner?
-    tweet               Tweet?
-    twitterName         TwitterName?
-    twitterOriginalName TwitterOriginalName?
-    profileImage        ProfileImage?
-    renderedProfilePic  RenderedProfileImage?
-    liveStreams         LiveStreams?
-    pastStreams         PastStreams[]
-    partnerInformation  PartnerInformation?
-    partner             Boolean               @default(false)
+    id                     String                @id @default(cuid())
+    name                   String?
+    email                  String?               @unique
+    emailVerified          DateTime?
+    image                  String?
+    createdAt              DateTime              @default(now()) @map("created_at")
+    role                   Role                  @default(user)
+    accounts               Account[]
+    sessions               Session[]
+    customer               Customer?
+    subscription           Subscription?
+    banner                 Banner?
+    tweet                  Tweet?
+    twitterName            TwitterName?
+    twitterOriginalName    TwitterOriginalName?
+    profileImage           ProfileImage?
+    renderedProfilePic     RenderedProfileImage?
+    liveStreams            LiveStreams?
+    pastStreams            PastStreams[]
+    partnerInformation     PartnerInformation?
+    partner                Boolean               @default(false)
+    purchaserGiftPurchases GiftPurchase[]        @relation("purchaserUser")
+    activaterGiftPurchases GiftPurchase[]        @relation("activaterUser")
 
     @@map("users")
 }
@@ -209,6 +211,7 @@ model Customer {
     updatedAt      DateTime         @default(now()) @map("updated_at")
     user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
     PartnerInvoice PartnerInvoice[]
+    Invoice        Invoice[]
 
     @@map("customers")
 }
@@ -313,7 +316,7 @@ model Partner {
     partnerInvoices    PartnerInvoice[] // list of all invoices associated withthe partner
 
     createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @default(now()) @map("updated_at") @updatedAt
+    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
     @@map("partner")
 }
@@ -338,6 +341,20 @@ enum CommissionStatus {
     none // We specify none when there is no coupon associded with the request
 }
 
+model Invoice {
+    id             String        @id @unique
+    customerId     String
+    promoCodeId    String
+    productId      String
+    priceId        String
+    paidAt         DateTime
+    purchaseAmount Float
+    metadata       Json?
+    status         String
+    GiftPurchase   GiftPurchase?
+    customer       Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
 model PartnerInvoice {
     id                   String           @id @unique // This is the invoice via stripe.
     customerId           String // this is the customer id on the invoice. We should link this to our customers table
@@ -351,4 +368,21 @@ model PartnerInvoice {
     commissionStatus     CommissionStatus
 
     @@map("partner_invoice")
+}
+
+enum GiftStatus {
+    Valid
+    Used
+}
+
+model GiftPurchase {
+    id              String     @id @unique // this is the invoiceid
+    activatedAt     DateTime? // when the generated promo code is used (activated)
+    promoIdCreated  String     @unique // the promo code created that will be used for the giveaway
+    purchaserUserId String     @unique
+    activaterUserId String?    @unique
+    giftStatus      GiftStatus
+    purchaserUser   User       @relation(fields: [purchaserUserId], name: "purchaserUser", references: [id])
+    activaterUser   User?      @relation(fields: [activaterUserId], name: "activaterUser", references: [id])
+    invoice         Invoice    @relation(fields: [id], references: [id])
 }

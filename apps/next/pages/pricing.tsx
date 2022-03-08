@@ -51,6 +51,7 @@ type Props = {
 };
 
 const Page: NextPage<Props> = ({ products }) => {
+    console.log('products: ', products);
     const [paymentPlan, setPaymentPlan] = useState<PaymentPlan>();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { status, data: session } = useSession({ required: false }) as any;
@@ -75,7 +76,16 @@ const Page: NextPage<Props> = ({ products }) => {
         products: (Product & {
             prices: Price[];
         })[]
-    ) => products.sort((a, b) => a?.prices?.find((one) => one.interval === billingInterval)?.unitAmount - b?.prices?.find((one) => one.interval === billingInterval)?.unitAmount);
+    ) =>
+        products
+            .filter((a) => !a.name.includes('Gift'))
+            .sort((a, b) => a?.prices?.find((one) => one.interval === billingInterval)?.unitAmount - b?.prices?.find((one) => one.interval === billingInterval)?.unitAmount);
+
+    const giftingProducts = (
+        products: (Product & {
+            prices: Price[];
+        })[]
+    ) => products.filter((a) => a.name.includes('Gift'));
 
     useEffect(() => {
         (async () => {
@@ -216,9 +226,15 @@ const Page: NextPage<Props> = ({ products }) => {
                     </Text>
                 </Center>
             </Container>
-
             <VStack spacing={[6, 12]} w="full">
                 {AnnualBillingControl}
+                <HStack>
+                    {giftingProducts(products).map((product) => (
+                        <Button onClick={() => handlePricingClick(product.prices[0]?.id)} key={product.id}>
+                            {product.name}
+                        </Button>
+                    ))}
+                </HStack>
                 <Center w={['auto', 'auto', 'auto', '5xl']}>
                     <SimpleGrid columns={[1, 1, 1, 3]} spacing="4" w="full">
                         <WrapItem key="free" w="full" h="full">
