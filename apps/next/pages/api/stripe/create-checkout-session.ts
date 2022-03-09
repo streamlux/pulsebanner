@@ -7,7 +7,7 @@ const handler = createAuthApiHandler();
 
 handler.post(async (req, res) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { price, quantity = 1, metadata = {}, cancel_path = '/' } = req.body;
+    const { price, isSubscription, quantity = 1, metadata = {}, cancel_path = '/' } = req.body;
 
     if (!price) {
         throw new Error('Missing parameter price');
@@ -28,7 +28,7 @@ handler.post(async (req, res) => {
                 quantity: 1,
             },
         ],
-        mode: 'subscription',
+        mode: isSubscription ? 'subscription' : 'payment',
         allow_promotion_codes: true,
         subscription_data: {
             trial_from_plan: true,

@@ -102,7 +102,7 @@ const Page: NextPage<Props> = ({ products }) => {
     }, [status]);
 
     const handlePricingClick = useCallback(
-        async (priceId: string) => {
+        async (priceId: string, isSubscription: boolean) => {
             router.push({
                 query: {
                     priceId,
@@ -121,6 +121,7 @@ const Page: NextPage<Props> = ({ products }) => {
                     },
                     body: JSON.stringify({
                         price: priceId,
+                        isSubscription: isSubscription,
                     }),
                 });
 
@@ -133,17 +134,17 @@ const Page: NextPage<Props> = ({ products }) => {
         [router, paymentPlan, ensureSignUp]
     );
 
-    useEffect(() => {
-        if (modal === 'true') {
-            if (session && !session?.accounts?.twitter) {
-                onOpen();
-            }
-            router.replace(router.pathname);
-            if (priceId) {
-                handlePricingClick(priceId as string);
-            }
-        }
-    }, [modal, router, onOpen, session, onClose, handlePricingClick, priceId]);
+    // useEffect(() => {
+    //     if (modal === 'true') {
+    //         if (session && !session?.accounts?.twitter) {
+    //             onOpen();
+    //         }
+    //         router.replace(router.pathname);
+    //         if (priceId) {
+    //             handlePricingClick(priceId as string, true);
+    //         }
+    //     }
+    // }, [modal, router, onOpen, session, onClose, handlePricingClick, priceId]);
 
     const AnnualBillingControl = (
         <HStack display="flex" alignItems="center" spacing={4} fontSize="lg">
@@ -175,11 +176,11 @@ const Page: NextPage<Props> = ({ products }) => {
                 console.log('product: ', product.name);
                 if (product.name.includes('Gift')) {
                     console.log('product name has gift');
-                    list.push(<Button onClick={() => handlePricingClick(price.id)} key="gift">{`GIFT ${price.unitAmount * 0.01}`}</Button>);
+                    list.push(<Button onClick={() => handlePricingClick(price.id, false)} key="gift">{`GIFT ${price.unitAmount * 0.01}`}</Button>);
                 } else {
                     console.log('product name does not have gift');
                     list.push(
-                        <Button onClick={() => handlePricingClick(price.id)} key={price.id}>
+                        <Button onClick={() => handlePricingClick(price.id, true)} key={price.id}>
                             {price.unitAmount * 0.01}
                         </Button>
                     );

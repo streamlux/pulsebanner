@@ -353,6 +353,8 @@ model Invoice {
     status         String
     GiftPurchase   GiftPurchase?
     customer       Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+    @@map("invoice")
 }
 
 model PartnerInvoice {
@@ -385,4 +387,6 @@ model GiftPurchase {
     purchaserUser   User       @relation(fields: [purchaserUserId], name: "purchaserUser", references: [id])
     activaterUser   User?      @relation(fields: [activaterUserId], name: "activaterUser", references: [id])
     invoice         Invoice    @relation(fields: [id], references: [id])
+
+    @@map("gift_purchase")
 }
