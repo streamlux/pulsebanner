@@ -175,10 +175,14 @@ const Page: NextPage<Props> = ({ products }) => {
                 console.log('product: ', product.name);
                 if (product.name.includes('Gift')) {
                     console.log('product name has gift');
-                    list.push(<Button key="gift">{`GIFT ${price.unitAmount * 0.01}`}</Button>);
+                    list.push(<Button onClick={() => handlePricingClick(price.id)} key="gift">{`GIFT ${price.unitAmount * 0.01}`}</Button>);
                 } else {
                     console.log('product name does not have gift');
-                    list.push(<Button key={price.id}>{price.unitAmount * 0.01}</Button>);
+                    list.push(
+                        <Button onClick={() => handlePricingClick(price.id)} key={price.id}>
+                            {price.unitAmount * 0.01}
+                        </Button>
+                    );
                 }
             });
         });
