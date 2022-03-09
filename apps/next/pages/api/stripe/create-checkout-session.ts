@@ -30,10 +30,12 @@ handler.post(async (req, res) => {
         ],
         mode: isSubscription ? 'subscription' : 'payment',
         allow_promotion_codes: true,
-        subscription_data: {
-            trial_from_plan: true,
-            metadata: {},
-        },
+        subscription_data: isSubscription
+            ? {
+                  trial_from_plan: true,
+                  metadata: {},
+              }
+            : {},
         success_url: `${process.env.NEXTAUTH_URL}/account`,
         cancel_url: `${process.env.NEXTAUTH_URL}${cancel_path}`,
     });
