@@ -15,7 +15,7 @@ import { defaultBannerSettings } from '@app/pages/banner';
 import { logger } from '@app/util/logger';
 import { commissionLookupMap } from '@app/util/partner/constants';
 import { handleStripeCheckoutSessionCompletedForSubscription } from '@app/util/stripe/checkoutSessionCompleted/subscriptionPurchased';
-import { getInvoiceInformation, updateInvoiceTables } from '@app/util/stripe/invoiceHelpers';
+import { getInvoiceInformation, handlePartnerUsesOwnPromoCode, updateInvoiceTables } from '@app/util/stripe/invoiceHelpers';
 import { giftPricingLookupMap } from '@app/util/stripe/constants';
 import { handleStripePromoCode } from '@app/util/stripe/giftPurchased';
 
@@ -282,7 +282,6 @@ handler.post(async (req, res) => {
                     break;
                 }
                 case 'invoice.payment_succeeded': {
-                    // for handling when a webhook
                     const data = event.data.object as Stripe.Invoice;
 
                     const invoiceInfo = await getInvoiceInformation(data);
@@ -342,28 +341,7 @@ handler.post(async (req, res) => {
                         if (invoiceInfo.productId !== undefined && invoiceInfo.giftProducts.includes(invoiceInfo.productId) && partnerId !== null) {
                             // it should never be null...We just created the customer
                             if (customerInfo !== null) {
-                                // check the partnerInformation table and see if they are the same entry
-                                const partnerInfoCodeOwner = await prisma.partnerInformation.findUnique({
-                                    where: {
-                                        partnerId: partnerId,
-                                    },
-                                    select: {
-                                        id: true,
-                                    },
-                                });
-
-                                const partnerInfoCodeUser = await prisma.partnerInformation.findUnique({
-                                    where: {
-                                        userId: customerInfo.userId,
-                                    },
-                                    select: {
-                                        id: true,
-                                    },
-                                });
-
-                                if (partnerInfoCodeOwner !== null && partnerInfoCodeUser !== null) {
-                                    overrideCommissionAmount = partnerInfoCodeOwner.id === partnerInfoCodeUser.id ? true : false;
-                                }
+                                overrideCommissionAmount = await handlePartnerUsesOwnPromoCode(partnerId, customerInfo);
                             }
                         }
                     }
@@ -375,7 +353,7 @@ handler.post(async (req, res) => {
                     }
 
                     const finalizedCommissionAmount = overrideCommissionAmount ? 0 : commissionAmount;
-                    await updateInvoiceTables(invoiceInfo, partnerId, overrideCommissionAmount ? 0 : finalizedCommissionAmount);
+                    await updateInvoiceTables(invoiceInfo, partnerId, finalizedCommissionAmount);
 
                     if (customerInfo.userId !== null) {
                         // check if its a gift
@@ -386,7 +364,6 @@ handler.post(async (req, res) => {
                             await handleStripePromoCode(giftCouponId, invoiceInfo, customerInfo);
                         }
                     }
-
                     break;
                 }
                 default:
