@@ -70,7 +70,7 @@ export const updateInvoiceTables = async (invoiceInfo: InvoiceInformation, partn
     });
 };
 
-export const handlePartnerUsesOwnPromoCode = async (partnerId: string, customerInfo: { userId: string }): Promise<boolean> => {
+export const handlePartnerUsesOwnPromoCode = async (partnerId: string, userId: string): Promise<boolean> => {
     let overrideCommissionAmount = false;
     // check the partnerInformation table and see if they are the same entry
     const partnerInfoCodeOwner = await prisma.partnerInformation.findUnique({
@@ -84,7 +84,7 @@ export const handlePartnerUsesOwnPromoCode = async (partnerId: string, customerI
 
     const partnerInfoCodeUser = await prisma.partnerInformation.findUnique({
         where: {
-            userId: customerInfo.userId,
+            userId: userId,
         },
         select: {
             id: true,

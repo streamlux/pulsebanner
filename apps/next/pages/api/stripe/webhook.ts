@@ -1,5 +1,5 @@
 /* eslint-disable no-case-declarations */
-import { GiftStatus, PriceType } from '@prisma/client';
+import { PriceType } from '@prisma/client';
 import Stripe from 'stripe';
 import { timestampToDate } from '../../../util/common';
 import { createApiHandler } from '../../../util/ssr/createApiHandler';
@@ -15,9 +15,10 @@ import { defaultBannerSettings } from '@app/pages/banner';
 import { logger } from '@app/util/logger';
 import { commissionLookupMap } from '@app/util/partner/constants';
 import { handleStripeCheckoutSessionCompletedForSubscription } from '@app/util/stripe/checkoutSessionCompleted/subscriptionPurchased';
-import { getInvoiceInformation, handlePartnerUsesOwnPromoCode, updateInvoiceTables } from '@app/util/stripe/invoiceHelpers';
+import { getInvoiceInformation, updateInvoiceTables } from '@app/util/stripe/invoiceHelpers';
 import { giftPricingLookupMap } from '@app/util/stripe/constants';
 import { handleStripePromoCode } from '@app/util/stripe/giftPurchased';
+import { sendCouponCodeToCustomerEmail } from '@app/util/stripe/emailHelper';
 
 // Stripe requires the raw body to construct the event.
 export const config = {
@@ -279,6 +280,47 @@ handler.post(async (req, res) => {
                         // if it's a subscription, we handle as we have in the past
                         await handleStripeCheckoutSessionCompletedForSubscription(data);
                     }
+                    // this is one time payments. We need to generate a code for the specific price point and send email
+                    if (mode === 'payment') {
+                        // get the userId for the customer
+                        const customerId = data.customer as string;
+                        const customerEmail = data.customer_details.email;
+                        const customerInfo = await prisma.customer.findUnique({
+                            where: {
+                                id: customerId,
+                            },
+                            select: {
+                                userId: true,
+                            },
+                        });
+
+                        const lineItems = await stripe.checkout.sessions.listLineItems(data.id);
+
+                        if (customerInfo.userId) {
+                            if (lineItems.data[0]) {
+                                const priceId = lineItems.data[0].price.id;
+                                const amountTotal = lineItems.data[0].amount_total;
+
+                                // lookup the priceId to couponCode
+                                const giftCouponId = giftPricingLookupMap[priceId];
+
+                                if (giftCouponId) {
+                                    const couponCode = await handleStripePromoCode(giftCouponId, amountTotal, customerInfo.userId);
+                                    // if we successfully generated a couponCode, we send the customer an email
+                                    if (couponCode && customerEmail) {
+                                        sendCouponCodeToCustomerEmail(customerEmail, couponCode);
+                                    } else {
+                                        logger.error('Could not get either couponCode or customer email.', {
+                                            couponCode: couponCode,
+                                            email: customerEmail,
+                                            userId: customerInfo.userId,
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     break;
                 }
                 case 'invoice.payment_succeeded': {
@@ -289,20 +331,7 @@ handler.post(async (req, res) => {
                     // we need a way to get the partner (if they exist)
                     // lookup the couponId associated with the person
                     let partnerId = null;
-                    let overrideCommissionAmount = false;
-
-                    const customerInfo = await prisma.customer.findUnique({
-                        where: {
-                            id: invoiceInfo.customerId,
-                        },
-                        select: {
-                            userId: true,
-                        },
-                    });
-
-                    // if a promoCode was used, track whose it was. If it's for a gift, ensure we don't credit their account if they try and use on their own account
                     if (invoiceInfo.stripePromoCode) {
-                        // we see if the code is associated with a partner. If it is with a partner, we konw it was not a gift usage
                         const partnerInfo = await prisma.stripePartnerInfo.findUnique({
                             where: {
                                 stripePromoCode: invoiceInfo.stripePromoCode,
@@ -312,38 +341,6 @@ handler.post(async (req, res) => {
                         if (partnerInfo !== null) {
                             partnerId = partnerInfo.partnerId;
                         }
-
-                        const giftInfo = await prisma.giftPurchase.findUnique({
-                            where: {
-                                promoIdCreated: invoiceInfo.stripePromoCode,
-                            },
-                        });
-
-                        // a promo code for a partner can never be the same as a gift promo code
-
-                        // if the customer is using a gift
-                        if (giftInfo !== null && partnerInfo === null) {
-                            await prisma.giftPurchase.update({
-                                where: {
-                                    promoIdCreated: invoiceInfo.stripePromoCode,
-                                },
-                                data: {
-                                    activatedAt: invoiceInfo.paidAt,
-                                    activaterUserId: customerInfo.userId,
-                                    giftStatus: GiftStatus.Used,
-                                },
-                            });
-                            logger.info('Gift successfully used.', { activaterUserId: customerInfo.userId });
-                        }
-
-                        // we only allow them to get commission if it's a gift they bought using NOT their own code
-                        // check if user that purchased used their own code
-                        if (invoiceInfo.productId !== undefined && invoiceInfo.giftProducts.includes(invoiceInfo.productId) && partnerId !== null) {
-                            // it should never be null...We just created the customer
-                            if (customerInfo !== null) {
-                                overrideCommissionAmount = await handlePartnerUsesOwnPromoCode(partnerId, customerInfo);
-                            }
-                        }
                     }
 
                     // please note to be in accordance with stripe, commission is stored as cents (100 = $1)
@@ -352,18 +349,8 @@ handler.post(async (req, res) => {
                         commissionAmount = commissionLookupMap[invoiceInfo.priceId] * 100 ?? 0.0;
                     }
 
-                    const finalizedCommissionAmount = overrideCommissionAmount ? 0 : commissionAmount;
-                    await updateInvoiceTables(invoiceInfo, partnerId, finalizedCommissionAmount);
+                    await updateInvoiceTables(invoiceInfo, partnerId, commissionAmount);
 
-                    if (customerInfo.userId !== null) {
-                        // check if its a gift
-                        const giftCouponId = giftPricingLookupMap[invoiceInfo.priceId];
-
-                        // we only create if it exists in the Record i.e. it's a gift price
-                        if (giftCouponId !== undefined) {
-                            await handleStripePromoCode(giftCouponId, invoiceInfo, customerInfo);
-                        }
-                    }
                     break;
                 }
                 default:

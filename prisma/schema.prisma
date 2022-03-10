@@ -61,8 +61,7 @@ model User {
     pastStreams            PastStreams[]
     partnerInformation     PartnerInformation?
     partner                Boolean               @default(false)
-    purchaserGiftPurchases GiftPurchase[]        @relation("purchaserUser")
-    activaterGiftPurchases GiftPurchase[]        @relation("activaterUser")
+    purchaserGiftPurchases GiftPurchase[]
 
     @@map("users")
 }
@@ -342,7 +341,7 @@ enum CommissionStatus {
 }
 
 model Invoice {
-    id             String        @id @unique
+    id             String   @id @unique
     customerId     String
     promoCodeId    String
     productId      String
@@ -351,8 +350,7 @@ model Invoice {
     purchaseAmount Float
     metadata       Json?
     status         String
-    GiftPurchase   GiftPurchase?
-    customer       Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+    customer       Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
     @@map("invoice")
 }
@@ -372,21 +370,11 @@ model PartnerInvoice {
     @@map("partner_invoice")
 }
 
-enum GiftStatus {
-    Valid
-    Used
-}
-
 model GiftPurchase {
-    id              String     @id @unique // this is the invoiceid
-    activatedAt     DateTime? // when the generated promo code is used (activated)
-    promoIdCreated  String     @unique // the promo code created that will be used for the giveaway
-    purchaserUserId String     @unique
-    activaterUserId String?    @unique
-    giftStatus      GiftStatus
-    purchaserUser   User       @relation(fields: [purchaserUserId], name: "purchaserUser", references: [id])
-    activaterUser   User?      @relation(fields: [activaterUserId], name: "activaterUser", references: [id])
-    invoice         Invoice    @relation(fields: [id], references: [id])
+    id               String @id @default(cuid())
+    promoCodeCreated String @unique // the promo code created that will be used for the giveaway
+    purchaserUserId  String @unique
+    purchaserUser    User   @relation(fields: [purchaserUserId], references: [id])
 
     @@map("gift_purchase")
 }
