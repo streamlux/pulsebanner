@@ -163,6 +163,8 @@ const bannerTypes = {
     },
 };
 
+const lockedBanners = ['Emgg', 'Sway'];
+
 interface Props {
     banner: Banner;
     reAuthRequired?: boolean;
@@ -281,7 +283,7 @@ export default function Page({ banner, originalBanner }: Props) {
 
     const applyPreset = (preset: BannerPresetProps) => {
         setFgId(preset.foreground.id);
-        setFgProps(preset.foreground.props);
+        setFgProps({...preset.foreground.props, username: banner.foregroundProps.username });
         setBgId(preset.background.id);
         setBgProps(preset.background.props);
     };
@@ -555,7 +557,7 @@ export default function Page({ banner, originalBanner }: Props) {
                             <Tabs colorScheme="purple" flexGrow={1} size={breakpoint !== 'base' ? 'md' : 'sm'}>
                                 <TabList>
                                     <Tab className={trackEvent('click', 'banner-tab')}>Banner</Tab>
-                                    {preset !== 'emgg' && <Tab className={trackEvent('click', 'background-tab')}>Background</Tab>}
+                                    {!lockedBanners.includes(preset as string) && <Tab className={trackEvent('click', 'background-tab')}>Background</Tab>}
                                 </TabList>
 
                                 <TabPanels flexGrow={1}>
@@ -657,7 +659,7 @@ export default function Page({ banner, originalBanner }: Props) {
                                                 </Stack>
                                             </RadioGroup>
                                         </FormControl>
-                                        {fgId !== 'Emgg' && (
+                                        {!lockedBanners.includes(fgId) && (
                                             <Box py="4">
                                                 <Form
                                                     setProps={(p) => {

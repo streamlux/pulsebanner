@@ -12,3 +12,5 @@ export const promoCode = 'EMGG';
 export const emggBannerBackground = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/banner-backgrounds/emgg.png';
 
 export const emggLogoSrc = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/assets/emgg.webp';
+
+export const swayBannerBackground = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/banner-backgrounds/sway.png';
