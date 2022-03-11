@@ -283,7 +283,7 @@ export default function Page({ banner, originalBanner }: Props) {
 
     const applyPreset = (preset: BannerPresetProps) => {
         setFgId(preset.foreground.id);
-        setFgProps({...preset.foreground.props, username: banner.foregroundProps.username });
+        setFgProps({...preset.foreground.props, ...((banner.foregroundProps as any).username ? {username: (banner.foregroundProps as any).username} : {}) });
         setBgId(preset.background.id);
         setBgProps(preset.background.props);
     };
