@@ -115,17 +115,17 @@ export const BannerPresetList: FC<BannerPresetListProps> = ({ paymentPlan, showP
                                     leftIcon={preset.free || paymentPlan !== 'Free' ? undefined : <MdLock />}
                                     rightIcon={preset.free || paymentPlan !== 'Free' ? <FaArrowRight /> : undefined}
                                     colorScheme={'green'}
-                                    onClick={async () => {
+                                    onClick={() => {
                                         umami(`click-preset-${preset.name}`);
                                         if (!preset.free) {
                                             if (showPricingIfFree()) {
-                                                await router.push(`/banner?preset=${key}`, undefined, {
+                                                router.push(`/banner?preset=${key}`, undefined, {
                                                     scroll: true,
                                                 });
                                                 onSelect?.();
                                             }
                                         } else {
-                                            await router.push(`/banner?preset=${key}`, undefined, {
+                                            router.push(`/banner?preset=${key}`, undefined, {
                                                 scroll: true,
                                             });
                                             onSelect?.();
