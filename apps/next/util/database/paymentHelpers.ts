@@ -1,3 +1,4 @@
+import { Subscription } from '@prisma/client';
 import prisma from '../ssr/prisma';
 
 // add any other payment logic to this file in the future
@@ -6,6 +7,8 @@ export type PaymentPlan = 'Professional' | 'Personal' | 'Free';
 export type APIPaymentObject = {
     plan: PaymentPlan;
     partner: boolean;
+    priceId: string;
+    productId: string;
 };
 
 const checkPartnerAccount = async (userId: string): Promise<boolean> => {
@@ -21,21 +24,12 @@ const checkPartnerAccount = async (userId: string): Promise<boolean> => {
     return userInfo.partner ?? false;
 };
 
-const checkPaymentPlan = async (userId: string): Promise<PaymentPlan> => {
-    const paymentPlan = await prisma.subscription.findFirst({
-        where: {
-            userId: userId,
-        },
-        select: {
-            priceId: true,
-        },
-    });
-
+const checkPaymentPlan = async (userId: string, priceId: string | null): Promise<PaymentPlan> => {
     // check what price level they are using
-    if (paymentPlan !== null) {
+    if (priceId !== null) {
         const prices = await prisma.price.findFirst({
             where: {
-                id: paymentPlan.priceId,
+                id: priceId,
             },
             select: {
                 productId: true,
@@ -63,11 +57,29 @@ const checkPaymentPlan = async (userId: string): Promise<PaymentPlan> => {
 };
 
 export const productPlan = async (userId: string): Promise<APIPaymentObject> => {
-    const partnerAccount = await checkPartnerAccount(userId);
-    const paymentPlan = await checkPaymentPlan(userId);
+
+    const subscription = await prisma.subscription.findFirst({
+        where: {
+            userId: userId,
+        },
+        include: {
+            price: {
+                include: {
+                    product: true
+                }
+            }
+        }
+    });
+
+    const priceId: string | null = subscription?.priceId;
+
+    const partnerAccount: boolean = await checkPartnerAccount(userId);
+    const paymentPlan: PaymentPlan = await checkPaymentPlan(userId, priceId);
 
     return {
         partner: partnerAccount,
         plan: partnerAccount ? 'Professional' : paymentPlan,
+        priceId,
+        productId: subscription?.price?.productId,
     };
 };
