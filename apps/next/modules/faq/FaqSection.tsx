@@ -1,8 +1,9 @@
-import { Box, VStack, Heading, Divider, SimpleGrid, Text, useColorMode, HStack, Link, Button, Flex, Stack, Center } from '@chakra-ui/react';
+import { Box, VStack, Heading, Divider, SimpleGrid, Text, useColorMode, Link, Button, Stack, Center } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import React, { ReactElement, FC } from 'react';
 import { FaqItem } from './data';
 import { FaqItemC } from './FaqItem';
+import NextLink from 'next/link';
 
 type FaqSectionProps = {
     items: FaqItem[];
@@ -35,11 +36,11 @@ export const FaqSection: FC<FaqSectionProps> = ({ items }): ReactElement => {
                 </SimpleGrid>
                 {router.asPath !== '/faq' && (
                     <Center>
-                        <Link href="/faq" passHref>
+                        <NextLink href="/faq" passHref>
                             <Button as="a" variant="link" colorScheme={'twitter'}>
                                 All frequently asked questions
                             </Button>
-                        </Link>
+                        </NextLink>
                     </Center>
                 )}
             </VStack>

@@ -38,10 +38,7 @@ const Page: NextPage = () => {
         });
 
         const data = await res.json();
-
-        const url = data.url;
-
-        window.location.assign(url);
+        window.location.assign(data.url);
     };
 
     const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());

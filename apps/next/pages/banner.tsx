@@ -71,6 +71,7 @@ import { bannerPresets } from '@app/modules/banner/bannerPresets';
 import { BannerPresetList } from '@app/modules/banner/BannerPresetList';
 import Layout from '@app/components/layout';
 import { ChangePresetModal } from '@app/modules/banner/ChangePresetModal';
+import { usePaymentPlan } from '@app/util/hooks/usePaymentPlan';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof BannerForegrounds = 'ImLive';
@@ -264,9 +265,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 export default function Page({ banner, originalBanner }: Props) {
     const { data: sessionInfo } = useSession();
-
-    const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
-    const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
+    const [paymentPlan, paymentPlanResponse] = usePaymentPlan();
 
     const { data: streamingState } = useSWR('streamState', async () => await (await fetch(`/api/twitch/streaming/${session?.user['id']}`)).json());
     const streaming = streamingState ? streamingState.isStreaming : false;
