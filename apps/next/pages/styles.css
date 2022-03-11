@@ -6,6 +6,11 @@
 @import url('https://fonts.googleapis.com/css?family=Iceland');
 @import url('https://fonts.googleapis.com/css?family=Langar');
 
+@font-face {
+    font-family: RoadRage;
+    src: url('../public/Road_Rage.otf') format("opentype");
+}
+
 body {
     font-family: -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
         'Segoe UI Emoji', 'Segoe UI Symbol';

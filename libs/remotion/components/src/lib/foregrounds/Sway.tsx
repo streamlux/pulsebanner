@@ -91,7 +91,6 @@ export const Sway: React.FC<ImLiveProps> = ({
                                 fontSize: `${54 - (username?.length ?? 0)}px`,
                                 width: '100%',
                                 textAlign: 'center',
-                                fontWeight: 'bold',
                                 alignItems: 'flex-end',
                                 fontFamily: 'RoadRage',
                                 margin: 0,
