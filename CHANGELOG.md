@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.10.0] - 2022-03-11
+
+### Added
+- New navigation menu
+- Sway banner preset
+
 ## [0.9.5] - 2022-03-06
 
 ### Added
