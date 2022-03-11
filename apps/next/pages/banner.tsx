@@ -71,6 +71,7 @@ import { bannerPresets } from '@app/modules/banner/bannerPresets';
 import { BannerPresetList } from '@app/modules/banner/BannerPresetList';
 import Layout from '@app/components/layout';
 import { ChangePresetModal } from '@app/modules/banner/ChangePresetModal';
+import { usePaymentPlan } from '@app/util/hooks/usePaymentPlan';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof BannerForegrounds = 'ImLive';
@@ -162,6 +163,8 @@ const bannerTypes = {
         settings: emggBannerSettings,
     },
 };
+
+const lockedBanners = ['Emgg', 'Sway'];
 
 interface Props {
     banner: Banner;
@@ -264,9 +267,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 export default function Page({ banner, originalBanner }: Props) {
     const { data: sessionInfo } = useSession();
-
-    const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
-    const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
+    const [paymentPlan, paymentPlanResponse] = usePaymentPlan();
 
     const { data: streamingState } = useSWR('streamState', async () => await (await fetch(`/api/twitch/streaming/${session?.user['id']}`)).json());
     const streaming = streamingState ? streamingState.isStreaming : false;
@@ -555,7 +556,7 @@ export default function Page({ banner, originalBanner }: Props) {
                             <Tabs colorScheme="purple" flexGrow={1} size={breakpoint !== 'base' ? 'md' : 'sm'}>
                                 <TabList>
                                     <Tab className={trackEvent('click', 'banner-tab')}>Banner</Tab>
-                                    {preset !== 'emgg' && <Tab className={trackEvent('click', 'background-tab')}>Background</Tab>}
+                                    {!lockedBanners.includes(preset as string) && <Tab className={trackEvent('click', 'background-tab')}>Background</Tab>}
                                 </TabList>
 
                                 <TabPanels flexGrow={1}>
@@ -657,7 +658,7 @@ export default function Page({ banner, originalBanner }: Props) {
                                                 </Stack>
                                             </RadioGroup>
                                         </FormControl>
-                                        {fgId !== 'Emgg' && (
+                                        {!lockedBanners.includes(fgId) && (
                                             <Box py="4">
                                                 <Form
                                                     setProps={(p) => {

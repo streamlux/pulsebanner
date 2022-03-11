@@ -1,4 +1,4 @@
-import { emggBannerBackground } from "@app/util/constants";
+import { emggBannerBackground, swayBannerBackground } from "@app/util/constants";
 import { BackgroundTemplates, ForegroundTemplates } from "@pulsebanner/remotion/templates";
 
 const defaultForeground: keyof typeof BannerForegrounds = 'ImLive';
@@ -150,6 +150,19 @@ const emggBanner: BannerPresetProps = {
     },
 };
 
+const swayBanner: BannerPresetProps = {
+    foreground: {
+        id: 'Sway',
+        props: ForegroundTemplates['Sway'].defaultProps,
+    },
+    background: {
+        id: 'ImageBackground',
+        props: {
+            src: swayBannerBackground
+        },
+    },
+};
+
 
 function convertToProps(preset: BannerPresetProps): BannerProps {
     return {
@@ -175,6 +188,14 @@ export const bannerPresets: Record<string, BannerPreset> = {
         free: true,
         locked: true,
         ...emggBanner
+    },
+    sway: {
+        name: 'sway',
+        displayName: 'Sway Special Edition',
+        category: 'Special Edition',
+        free: true,
+        locked: true,
+        ...swayBanner
     },
     noArrow: {
         name: 'customtext',
@@ -217,5 +238,5 @@ export const bannerPresets: Record<string, BannerPreset> = {
         category: 'Default',
         free: false,
         ...imgPreset('https://pb-static.sfo3.cdn.digitaloceanspaces.com/banner-backgrounds/purple.jpeg')
-    }
+    },
 }
