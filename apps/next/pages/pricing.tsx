@@ -26,33 +26,26 @@ import {
     Flex,
     Link,
     Box,
-    Stack,
-    List,
-    ListIcon,
-    ListItem,
-    Spacer,
     WrapItem,
 } from '@chakra-ui/react';
 
 import getStripe from '../util/getStripe';
 import prisma from '../util/ssr/prisma';
-import { FaTwitter, FaCheck, FaArrowRight } from 'react-icons/fa';
+import { FaTwitter, FaCheck } from 'react-icons/fa';
 import { ProductCard } from '@app/components/pricing/ProductCard';
 import { trackEvent } from '@app/util/umami/trackEvent';
-import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
 import { NextSeo } from 'next-seo';
-import { Card } from '@app/components/Card';
-import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
 import { generalFaqItems, pricingFaqItems } from '@app/modules/faq/data';
 import { FaqSection } from '@app/modules/faq/FaqSection';
+import { usePaymentPlan } from '@app/util/hooks/usePaymentPlan';
+import { FreeProductCard } from '@app/components/pricing/FreeProductCard';
 
 type Props = {
     products: (Product & { prices: Price[] })[];
 };
 
 const Page: NextPage<Props> = ({ products }) => {
-    const [paymentPlan, setPaymentPlan] = useState<PaymentPlan>();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [paymentPlan, paymentPlanResponse] = usePaymentPlan();
     const { status, data: session } = useSession({ required: false }) as any;
 
     const router = useRouter();
@@ -77,20 +70,6 @@ const Page: NextPage<Props> = ({ products }) => {
         })[]
     ) => products.sort((a, b) => a?.prices?.find((one) => one.interval === billingInterval)?.unitAmount - b?.prices?.find((one) => one.interval === billingInterval)?.unitAmount);
 
-    useEffect(() => {
-        (async () => {
-            if (status === 'authenticated') {
-                const res = await fetch('/api/user/subscription');
-
-                const data: APIPaymentObject = await res.json();
-
-                if (data) {
-                    setPaymentPlan(data.plan);
-                }
-            }
-        })();
-    }, [status]);
-
     const handlePricingClick = useCallback(
         async (priceId: string) => {
             router.push({
@@ -99,8 +78,16 @@ const Page: NextPage<Props> = ({ products }) => {
                 },
             });
             if (ensureSignUp()) {
-                if (paymentPlan === 'Professional') {
-                    return router.push('/account');
+                if (paymentPlan === 'Professional' || paymentPlan === 'Personal') {
+                    const res = await fetch('/api/stripe/create-portal', {
+                        method: 'POST',
+                        headers: {
+                            'content-type': 'application/json',
+                        },
+                    });
+
+                    const data = await res.json();
+                    router.push(data.subscriptionUrl);
                 }
 
                 const res = await fetch('/api/stripe/create-checkout-session', {
@@ -221,89 +208,18 @@ const Page: NextPage<Props> = ({ products }) => {
                 {AnnualBillingControl}
                 <Center w={['auto', 'auto', 'auto', '5xl']}>
                     <SimpleGrid columns={[1, 1, 1, 3]} spacing="4" w="full">
-                        <WrapItem key="free" w="full" h="full">
-                            <Card props={{ w: 'full', h: 'full' }}>
-                                <Box w="full" experimental_spaceY={4}>
-                                    <Flex direction="row" justify="space-between" alignItems="center">
-                                        <VStack alignItems="start" spacing={0}>
-                                            <Heading size="lg">Free</Heading>
-                                            <Text>Features with limited customization</Text>
-                                        </VStack>
-                                    </Flex>
-                                </Box>
-                                <Flex direction="row" justify="space-between" alignItems="center" justifyContent="center">
-                                    <VStack spacing={0} cursor="pointer">
-                                        <Stack direction={['column', 'row']} alignItems={['center', 'center']} w="full" spacing={[0, 2]}>
-                                            <Text
-                                                fontSize="2xl"
-                                                fontWeight="extrabold"
-                                                lineHeight="tight"
-                                                as={chakra.span}
-                                                bg="green.200"
-                                                px="1"
-                                                py="0.5"
-                                                mb="4"
-                                                rounded="md"
-                                                color="black"
-                                            >
-                                                Free
-                                            </Text>
-                                        </Stack>
-                                    </VStack>
-                                </Flex>
-
-                                <Box flexGrow={2} experimental_spaceY={2}>
-                                    <Heading size="md">{"What's included"}</Heading>
-                                    <List>
-                                        {['Twitter Live Banner', 'Twitter Name Changer'].map((feature) => (
-                                            <ListItem key={feature}>
-                                                <ListIcon color="green.300" as={CheckIcon} />
-                                                {feature}
-                                            </ListItem>
-                                        ))}
-                                    </List>
-                                    <Heading size="md">{'What am I missing?'}</Heading>
-                                    <List>
-                                        <ListItem key="profile image">
-                                            <ListIcon color="red.400" as={CloseIcon} />
-                                            Live Twitter Profile Picture
-                                        </ListItem>
-                                        <ListItem key="profile image">
-                                            <ListIcon color="red.400" as={CloseIcon} />
-                                            Banner refreshing
-                                        </ListItem>
-                                        <ListItem key="profile image">
-                                            <ListIcon color="red.400" as={CloseIcon} />
-                                            Custom banner background image
-                                        </ListItem>
-                                    </List>
-                                </Box>
-
-                                <Box justifySelf="flex-end">
-                                    <Flex w="full" justifyContent="space-between">
-                                        <Spacer />
-                                        {session && (
-                                            <Button
-                                                fontWeight="bold"
-                                                colorScheme="green"
-                                                rightIcon={<FaArrowRight />}
-                                                onClick={() => {
-                                                    const url = new window.URL(window.location.href);
-                                                    url.searchParams.append('modal', 'true');
-                                                    signIn('twitter', {
-                                                        callbackUrl: url.pathname + url.search,
-                                                    });
-                                                }}
-                                            >
-                                                Sign up
-                                            </Button>
-                                        )}
-                                    </Flex>
-                                </Box>
-                            </Card>
+                        <WrapItem key={'free2'} w="full" h="full">
+                            <FreeProductCard />
                         </WrapItem>
                         {sortProductsByPrice(products).map((product) => (
-                            <ProductCard key={product.id} product={product} billingInterval={billingInterval} handlePricingClick={handlePricingClick} />
+                            <ProductCard
+                                key={product.id}
+                                product={product}
+                                billingInterval={billingInterval}
+                                handlePricingClick={handlePricingClick}
+                                paymentPlan={paymentPlan}
+                                paymentPlanResponse={paymentPlanResponse}
+                            />
                         ))}
                     </SimpleGrid>
                 </Center>
