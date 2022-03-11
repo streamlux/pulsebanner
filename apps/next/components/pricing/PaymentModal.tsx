@@ -4,15 +4,14 @@ import { holidayDecor, promoCode } from '@app/util/constants';
 import { PaymentPlan, APIPaymentObject } from '@app/util/database/paymentHelpers';
 import getStripe from '@app/util/getStripe';
 import { trackEvent } from '@app/util/umami/trackEvent';
-import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
 import { HStack, SimpleGrid, Stack, VStack } from '@chakra-ui/layout';
 import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay } from '@chakra-ui/modal';
-import { Box, Center, chakra, Flex, Heading, List, ListIcon, ListItem, Switch, Tag, Text, useColorMode, useDisclosure, WrapItem } from '@chakra-ui/react';
+import { Box, Center, chakra, Switch, Tag, Text, useColorMode, useDisclosure, WrapItem } from '@chakra-ui/react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import React, { useCallback, useEffect, useState } from 'react';
 import useSWR from 'swr';
-import { Card } from '../Card';
+import { FreeProductCard } from './FreeProductCard';
 import { ProductCard } from './ProductCard';
 
 type Props = {
@@ -88,16 +87,16 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
     );
 
     if (data === undefined) {
-        return <></>;
+        return null;
     }
 
     const AnnualBillingControl = (
         <HStack display="flex" alignItems="center" spacing={4} fontSize="lg">
             <Switch
                 id="billingInterval"
+                className={trackEvent('click', 'billing-interval-switch')}
                 size="lg"
                 colorScheme="green"
-                className={trackEvent('click', 'billing-interval-switch')}
                 isChecked={billingInterval === 'year'}
                 onChange={(v) => {
                     setBillingInterval(billingInterval === 'year' ? 'month' : 'year');
@@ -107,8 +106,8 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
             <Text style={{ WebkitTextStrokeWidth: billingInterval === 'year' ? '0.75px' : '0.25px' }} as={chakra.span}>
                 Yearly billing
             </Text>
-            <Tag size="md" variant="solid" background="green.200" color="black">
-                Two months free!
+            <Tag size="md" variant="solid" background={billingInterval === 'year' ? 'green.200' : 'gray.200'} color="black">
+                Save 15%
             </Tag>
         </HStack>
     );
@@ -152,77 +151,11 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
                             <Center w="full">
                                 <SimpleGrid columns={[1, 3]} spacing="4" w="full">
                                     <WrapItem key="free" w="full" h="full">
-                                        <Card props={{ w: 'full', h: 'full' }}>
-                                            <Box w="full" experimental_spaceY={4}>
-                                                <Flex direction="row" justify="space-between" alignItems="center">
-                                                    <VStack alignItems="start" spacing={0}>
-                                                        <Heading size="lg">Free</Heading>
-                                                        <Text>Features with limited customization</Text>
-                                                    </VStack>
-                                                </Flex>
-                                            </Box>
-                                            <Flex direction="row" justify="space-between" alignItems="center" justifyContent="center">
-                                                <VStack spacing={0} cursor="pointer">
-                                                    <Stack direction={['column', 'row']} alignItems={['center', 'center']} w="full" spacing={[0, 2]}>
-                                                        <Text
-                                                            fontSize="2xl"
-                                                            fontWeight="extrabold"
-                                                            lineHeight="tight"
-                                                            as={chakra.span}
-                                                            bg="green.200"
-                                                            px="1"
-                                                            py="0.5"
-                                                            mb="4"
-                                                            rounded="md"
-                                                            color="black"
-                                                        >
-                                                            Free
-                                                        </Text>
-                                                    </Stack>
-                                                </VStack>
-                                            </Flex>
-
-                                            <Box flexGrow={2} experimental_spaceY={2}>
-                                                <Heading size="md">{"What's included"}</Heading>
-                                                <List>
-                                                    {['Twitter Live Banner', 'Twitter Name Changer'].map((feature) => (
-                                                        <ListItem key={feature}>
-                                                            <ListIcon color="green.300" as={CheckIcon} />
-                                                            {feature}
-                                                        </ListItem>
-                                                    ))}
-                                                </List>
-                                                <Heading size="md">{'What am I missing?'}</Heading>
-                                                <List>
-                                                    <ListItem key="profile image">
-                                                        <ListIcon color="red.400" as={CloseIcon} />
-                                                        Live Twitter Profile Picture
-                                                    </ListItem>
-                                                    <ListItem key="profile image">
-                                                        <ListIcon color="red.400" as={CloseIcon} />
-                                                        Banner refreshing
-                                                    </ListItem>
-                                                    <ListItem key="profile image">
-                                                        <ListIcon color="red.400" as={CloseIcon} />
-                                                        Custom banner background image
-                                                    </ListItem>
-                                                </List>
-                                            </Box>
-
-                                            {/* <Box justifySelf="flex-end">
-                                    <Flex w="full" justifyContent="space-between">
-                                        <Spacer />
-                                        <Button fontWeight="bold" colorScheme="green" rightIcon={<FaArrowRight />}>
-                                            Sign up
-                                        </Button>
-                                    </Flex>
-                                </Box> */}
-                                        </Card>
+                                        <FreeProductCard />
                                     </WrapItem>
                                     {sortProductsByPrice(data).map((product) => (
                                         <Box key={product.id} w="full">
-                                            {/* eslint-disable-next-line @typescript-eslint/no-empty-function */}
-                                            <ProductCard key={product.id} product={product} billingInterval={billingInterval} handlePricingClick={handlePricingClick} />
+                                            <ProductCard key={product.id} product={product} billingInterval={billingInterval} handlePricingClick={handlePricingClick} paymentPlan={paymentPlan} />
                                         </Box>
                                     ))}
                                 </SimpleGrid>
