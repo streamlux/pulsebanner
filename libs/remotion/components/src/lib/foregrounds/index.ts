@@ -3,3 +3,4 @@ export * from './HelloWorld';
 export * from './ImLive';
 export * from './ProfilePic';
 export * from './Emgg';
+export * from './Sway';

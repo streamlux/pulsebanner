@@ -5,3 +5,8 @@
 @import url('https://fonts.googleapis.com/css?family=Lacquer');
 @import url('https://fonts.googleapis.com/css?family=Iceland');
 @import url('https://fonts.googleapis.com/css?family=Langar');
+
+@font-face {
+    font-family: RoadRage;
+    src: url("../../assets/Road_Rage.otf") format("opentype");
+}
