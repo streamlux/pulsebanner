@@ -6,12 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+## [0.10.1] - 2022-03-11
+
+### Fixed
+- Sway banner font
 
 ## [0.10.0] - 2022-03-11
 
 ### Added
 - New navigation menu
 - Sway banner preset
+
+### Changed
+- Pricing page now properly allows customers to change subscriptions
+- Product card components are now compound components
 
 ## [0.9.5] - 2022-03-06
 
