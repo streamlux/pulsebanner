@@ -45,6 +45,8 @@ import { Card } from '@app/components/Card';
 import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
 import { generalFaqItems, pricingFaqItems } from '@app/modules/faq/data';
 import { FaqSection } from '@app/modules/faq/FaqSection';
+import { sendCouponCodeToCustomerEmail } from '@app/util/stripe/emailHelper';
+import axios from 'axios';
 
 type Props = {
     products: (Product & { prices: Price[] })[];
