@@ -5,7 +5,7 @@ import prisma from '../ssr/prisma';
 
 const generateStripePromoCode = async (couponId: string): Promise<string | undefined> => {
     try {
-        const promoCode = await stripe.promotionCodes.create({ coupon: couponId });
+        const promoCode = await stripe.promotionCodes.create({ coupon: couponId, max_redemptions: 1 });
         return promoCode.code;
     } catch (err) {
         logger.error('Error generating the user promoCode for the given coupon.', { error: err, coupon: couponId });

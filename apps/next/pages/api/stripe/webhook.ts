@@ -308,7 +308,10 @@ handler.post(async (req, res) => {
                                     const couponCode = await handleStripePromoCode(giftCouponId, amountTotal, customerInfo.userId);
                                     // if we successfully generated a couponCode, we send the customer an email
                                     if (couponCode && customerEmail) {
-                                        sendCouponCodeToCustomerEmail(customerEmail, couponCode);
+                                        const notify = async () => {
+                                            sendCouponCodeToCustomerEmail(customerEmail, couponCode);
+                                        };
+                                        void notify();
                                     } else {
                                         logger.error('Could not get either couponCode or customer email.', {
                                             couponCode: couponCode,
@@ -319,6 +322,7 @@ handler.post(async (req, res) => {
                                 }
                             }
                         }
+                        // TODO - generate a new API endpoint that will automatically take them to checkout for the gift
                     }
 
                     break;
