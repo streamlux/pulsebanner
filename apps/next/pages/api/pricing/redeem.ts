@@ -6,7 +6,7 @@ import Stripe from 'stripe';
 
 const handler = createAuthApiHandler();
 
-handler.post(async (req, res) => {
+handler.get(async (req, res) => {
     logger.info('Inside the redeem endpoint');
     // get the query param
     const queryParam = req.query.promoCode as string;
