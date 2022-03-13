@@ -12,23 +12,18 @@ const Page: NextPage = () => {
         <Container maxW="container.lg">
             <Center>
                 <Box experimental_spaceY={4}>
-                    <Heading as="p">
-                        <Text as="span" color="red.300">
-                            404
-                        </Text>{' '}
-                        Page not FUCKING found
-                    </Heading>
+                    <Heading as="p">Uh oh! Gift has already been used</Heading>
                     <Image src={imgSrc} alt="" />
 
                     <Center>
                         <VStack spacing={4}>
                             <Box experimental_spaceY={2}>
-                                <Heading fontSize="lg">Try one of these pages 👇</Heading>
+                                <Heading fontSize="lg">Checkout one of these pages 👇</Heading>
                                 <Center id="nav-links" fontSize="lg">
                                     <Wrap spacing={['2', '4', '8', '10']}>
                                         <WrapItem>
-                                            <NextLink href="/banner" passHref>
-                                                <Link>Banner</Link>
+                                            <NextLink href="/" passHref>
+                                                <Link>Home Page</Link>
                                             </NextLink>
                                         </WrapItem>
                                         <WrapItem>
@@ -39,7 +34,7 @@ const Page: NextPage = () => {
                                     </Wrap>
                                 </Center>
                             </Box>
-                            <Heading fontSize="lg">Or complain to the developers 🤭</Heading>
+                            <Heading fontSize="lg">Talk to the developers 🤭</Heading>
                             <Link isExternal href={discordLink}>
                                 <Button as="a" size="sm" colorScheme="gray" rightIcon={<FaDiscord />}>
                                     Join our Discord
