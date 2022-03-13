@@ -307,6 +307,7 @@ handler.post(async (req, res) => {
                                 if (giftCouponId) {
                                     const couponCode = await handleStripePromoCode(giftCouponId, amountTotal, customerInfo.userId);
                                     // if we successfully generated a couponCode, we send the customer an email
+                                    logger.info('handled stripe promo code successfully');
                                     if (couponCode && customerEmail) {
                                         const notify = async () => {
                                             sendCouponCodeToCustomerEmail(customerEmail, couponCode);
@@ -322,7 +323,7 @@ handler.post(async (req, res) => {
                                 }
                             }
                         }
-                        // TODO - generate a new API endpoint that will automatically take them to checkout for the gift
+                        logger.info('end of the checkout.session.complete webhook');
                     }
 
                     break;

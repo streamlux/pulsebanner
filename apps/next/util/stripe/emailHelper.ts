@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import mg from 'nodemailer-mailgun-transport';
+import { logger } from '../logger';
 
 // we send an email out when someone purchases a gift
 export const sendCouponCodeToCustomerEmail = (customerEmail: string, promoCode: string) => {
@@ -15,14 +16,13 @@ export const sendCouponCodeToCustomerEmail = (customerEmail: string, promoCode: 
 
     const emailText = `Thank you for puchasing a PulseBanner gift!
     See below for your one time use code to giveaway.<br><br><b>${promoCode}</b></br></br>
-    You can also provide the winner with the following link which will take them right to checkout!<br><br>${checkoutUrl}</br></br>
+    You can also provide the winner with the following link which will take them right to checkout!<br><br><a>${checkoutUrl}</a></br></br>
     Have any questions? Feel free to email us at contact@pulsebanner.com and we'll be sure to get back to you!
     <br><br>Thank you ❤️</br></br>
     PulseBanner Team`;
 
     const nodemailerMailgun = nodemailer.createTransport(mg(auth));
 
-    console.log('have initialized nodemailer and mailgun');
     nodemailerMailgun.sendMail(
         {
             from: 'no-reply@pulsebanner.com',
@@ -33,11 +33,9 @@ export const sendCouponCodeToCustomerEmail = (customerEmail: string, promoCode: 
             //You can use "text:" to send plain-text content. It's oldschool!
             text: '',
         },
-        (err, info) => {
+        (err, _info) => {
             if (err) {
-                console.log(`Error: ${err}`);
-            } else {
-                console.log(`Response: ${info.toString()}`);
+                logger.error('Error forwarding gift code and link to user email.', { error: err });
             }
         }
     );

@@ -373,7 +373,7 @@ model PartnerInvoice {
 model GiftPurchase {
     id               String @id @default(cuid())
     promoCodeCreated String @unique // the promo code created that will be used for the giveaway
-    purchaserUserId  String @unique
+    purchaserUserId  String
     purchaserUser    User   @relation(fields: [purchaserUserId], references: [id])
 
     @@map("gift_purchase")
