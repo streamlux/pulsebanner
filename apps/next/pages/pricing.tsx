@@ -173,14 +173,11 @@ const Page: NextPage<Props> = ({ products }) => {
     const test = () => {
         const list = [];
         products.forEach((product) => {
-            console.log('product: ', product);
             product.prices.forEach((price) => {
                 console.log('product: ', product.name);
                 if (product.name.includes('Gift')) {
-                    console.log('product name has gift');
                     list.push(<Button onClick={() => handlePricingClick(price.id, false)} key="gift">{`GIFT ${price.unitAmount * 0.01}`}</Button>);
                 } else {
-                    console.log('product name does not have gift');
                     list.push(
                         <Button onClick={() => handlePricingClick(price.id, true)} key={price.id}>
                             {price.unitAmount * 0.01}

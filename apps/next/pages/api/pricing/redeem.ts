@@ -9,15 +9,15 @@ const handler = createAuthApiHandler();
 handler.get(async (req, res) => {
     logger.info('Inside the redeem endpoint');
     // get the query param
-    const queryParam = req.query.promoCode as string;
-    logger.info('Query param: ', queryParam);
+    const queryParam = req.query.promoCode;
+    logger.info('Query param: ', { queryParam: queryParam });
     if (queryParam === undefined) {
         logger.info('Query param is undefined. Redirecting to the home page.');
         return res.redirect('/');
     }
 
     // Check if the promo code is used and go to status
-    const promoCode = await stripe.promotionCodes.retrieve(queryParam);
+    const promoCode = await stripe.promotionCodes.retrieve(queryParam as string);
     logger.info('promoCode: ', { code: promoCode });
     if (promoCode.active === false) {
         return res.redirect('/redeem/status');
