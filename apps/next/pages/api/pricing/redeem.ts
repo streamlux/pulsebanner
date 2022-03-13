@@ -17,8 +17,13 @@ handler.get(async (req, res) => {
     }
 
     // Check if the promo code is used and go to status
-    const promoCode = await stripe.promotionCodes.retrieve(queryParam as string);
-    logger.info('promoCode: ', { code: promoCode });
+    const promoCodeList = await stripe.promotionCodes.list({ code: queryParam as string });
+    if (promoCodeList.data.length !== 1) {
+        logger.error('There is not 1 promo code. Throwing error');
+        return res.redirect('/');
+    }
+    const promoCode = promoCodeList.data[0];
+
     if (promoCode.active === false) {
         return res.redirect('/redeem/status');
     }
