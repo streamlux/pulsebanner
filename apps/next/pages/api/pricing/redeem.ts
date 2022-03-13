@@ -48,7 +48,6 @@ handler.get(async (req, res) => {
             },
         ],
         mode: 'subscription',
-        allow_promotion_codes: true,
         subscription_data: {
             trial_from_plan: true,
             metadata: {},
