@@ -1,3 +1,4 @@
+import { logger } from '@app/util/logger';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import stripe, { getCustomerId } from '@app/util/ssr/stripe';
 import { giftPromoCodeLookupMap } from '@app/util/stripe/constants';
@@ -6,15 +7,18 @@ import Stripe from 'stripe';
 const handler = createAuthApiHandler();
 
 handler.post(async (req, res) => {
+    logger.info('Inside the redeem endpoint');
     // get the query param
     const queryParam = req.query.promoCode as string;
-
+    logger.info('Query param: ', queryParam);
     if (queryParam === undefined) {
-        return res.status(400).send('Promo code not provided in query param');
+        logger.info('Query param is undefined. Redirecting to the home page.');
+        return res.redirect('/');
     }
 
     // Check if the promo code is used and go to status
-    const promoCode = (await stripe.promotionCodes.retrieve(queryParam)) as Stripe.PromotionCode;
+    const promoCode = await stripe.promotionCodes.retrieve(queryParam);
+    logger.info('promoCode: ', { code: promoCode });
     if (promoCode.active === false) {
         return res.redirect('/redeem/status');
     }
@@ -52,6 +56,8 @@ handler.post(async (req, res) => {
             },
         ],
     });
+
+    logger.info('Got to bottom of the endpoint. Going to the redirect');
 
     return res.redirect(checkoutSession.url);
 });

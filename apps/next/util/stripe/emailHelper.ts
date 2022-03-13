@@ -12,11 +12,11 @@ export const sendCouponCodeToCustomerEmail = (customerEmail: string, promoCode: 
         },
     };
 
-    const checkoutUrl = `https://pulsebanner.com/redeem?promoCode=${promoCode}`;
+    const checkoutUrl = `https://next.staging.pulsebanner.com/redeem?promoCode=${promoCode}`;
 
     const emailText = `Thank you for puchasing a PulseBanner gift!
     See below for your one time use code to giveaway.<br><br><b>${promoCode}</b></br></br>
-    You can also provide the winner with the following link which will take them right to checkout!<br><br><a>${checkoutUrl}</a></br></br>
+    You can also provide the winner with the following link which will take them right to checkout!<br><br><a href="url">${checkoutUrl}</a></br></br>
     Have any questions? Feel free to email us at contact@pulsebanner.com and we'll be sure to get back to you!
     <br><br>Thank you ❤️</br></br>
     PulseBanner Team`;
