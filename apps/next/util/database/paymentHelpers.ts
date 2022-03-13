@@ -24,9 +24,10 @@ const checkPartnerAccount = async (userId: string): Promise<boolean> => {
     return userInfo.partner ?? false;
 };
 
-const checkPaymentPlan = async (userId: string, priceId: string | null): Promise<PaymentPlan> => {
+const checkPaymentPlan = async (userId: string, priceId?: string): Promise<PaymentPlan> => {
+    console.log('checkPaymentPlan',  priceId);
     // check what price level they are using
-    if (priceId !== null) {
+    if (priceId !== undefined) {
         const prices = await prisma.price.findFirst({
             where: {
                 id: priceId,
@@ -71,7 +72,7 @@ export const productPlan = async (userId: string): Promise<APIPaymentObject> => 
         }
     });
 
-    const priceId: string | null = subscription?.priceId;
+    const priceId: string | undefined = subscription?.priceId;
 
     const partnerAccount: boolean = await checkPartnerAccount(userId);
     const paymentPlan: PaymentPlan = await checkPaymentPlan(userId, priceId);
