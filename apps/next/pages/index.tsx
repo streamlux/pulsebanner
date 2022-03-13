@@ -72,7 +72,6 @@ const staticAssets: Record<string, StaticAsset> = {
 
 export const landingPageAsset = (name: string) => `https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/${name}.webp`;
 
-
 export default function Page() {
     const { colorMode } = useColorMode();
     const breakpoint = useBreakpoint('ssr');
@@ -174,7 +173,7 @@ export default function Page() {
             <VStack spacing="16">
                 <Box>
                     <VStack>
-                        <Box w={['90vw', '80vw', '80vw', '80vw', '90vw', '90vw', '60vw']} maxW={1300} experimental_spaceY="16">
+                        <Box w={['90vw', '80vw', '80vw', '80vw', '90vw', '90vw', '60vw']} maxW={1300} experimental_spaceY="16" position={'relative'}>
                             <Stack direction={['column', 'column', 'column', 'column', 'row']} spacing={[8, 16]}>
                                 <Center maxW={['100%', '100%', '100%', '100%', '47%']}>
                                     <Box experimental_spaceY={[4, 8]}>
@@ -234,6 +233,7 @@ export default function Page() {
                                             )}
                                         </Box>
                                     </Center>
+
                                     <Center w="full" py="2">
                                         <Box>
                                             <FormControl display="flex" alignItems="center">
@@ -254,6 +254,16 @@ export default function Page() {
                                     </Center>
                                 </Stack>
                             </Stack>
+
+                            <div style={{ zIndex: -1, position: 'absolute', height: '30%', maxHeight: '400px', width: '100%', display: 'block' }}>
+                                <div className="contact-hero" style={{ position: 'relative', top: '-100px', left: '0px', height: '58%' }}>
+                                    <div className="bg-gradient-blur-wrapper contact-hero">
+                                        <div className="bg-gradient-blur-circle-3 pink top"></div>
+                                        <div className="bg-gradient-blur-circle-2 blue"></div>
+                                        <div className="bg-gradient-blur-circle-4 purple"></div>
+                                    </div>
+                                </div>
+                            </div>
 
                             {breakpoint === 'base' && SignUpButton}
 
