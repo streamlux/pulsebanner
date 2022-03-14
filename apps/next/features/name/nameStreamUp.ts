@@ -1,6 +1,7 @@
 import { productPlan } from '@app/util/database/paymentHelpers';
 import { getTwitterInfo, flipFeatureEnabled, getTwitterName, updateOriginalTwitterNameDB } from '@app/util/database/postgresHelpers';
 import { logger } from '@app/util/logger';
+import prisma from '@app/util/ssr/prisma';
 import { validateTwitterAuthentication, getCurrentTwitterName, updateTwitterName } from '@app/util/twitter/twitterHelpers';
 import { TwitterName } from '@prisma/client';
 import { Feature } from '../Feature';
@@ -25,53 +26,53 @@ const nameStreamUp: Feature<string> = async (userId: string): Promise<string> =>
         return 'Feature not enabled.';
     }
 
-    let updatedTwitterLiveName = undefined;
+    let liveTwitterName: string = twitterNameSettings.streamName;
+
+    // check if the user has changed their twitter name, if so, we can update free users names automatically
     if (twitterNameSettings.streamName && currentTwitterName && twitterNameSettings.streamName.indexOf(currentTwitterName) === -1) {
         // check if they are premium. if they are premium, we cannot do anything
         const plan = await productPlan(userId);
 
+        // check if the user is on the free plan
         if (!plan.partner && plan.plan === 'Free') {
-            updatedTwitterLiveName = `🔴 Live now | ${currentTwitterName}`.substring(0, 49);
-            logger.info(`Changing Twitter name from '${currentTwitterName}' to '${updatedTwitterLiveName}'.`, {
+            liveTwitterName = `🔴 Live now | ${currentTwitterName}`;
+            logger.info(`User changed their Twitter username. Updating live name from '${twitterNameSettings.streamName}' to '${liveTwitterName}'.`, {
                 userId,
                 originalName: currentTwitterName,
-                liveName: updatedTwitterLiveName,
+                oldName: twitterNameSettings.streamName,
+                newName: liveTwitterName,
             });
-        } else {
-            logger.info(`Changing Twitter name from '${currentTwitterName}' to '${twitterNameSettings.streamName}'.`, {
-                userId,
-                originalName: currentTwitterName,
-                liveName: twitterNameSettings.streamName,
+
+            // Update the live name in the database so next time we don't have to
+            await prisma.twitterName.update({
+                where: {
+                    userId,
+                },
+                data: {
+                    streamName: liveTwitterName,
+                }
             });
         }
-    } else {
-        logger.info(`Changing Twitter name from '${currentTwitterName}' to '${twitterNameSettings.streamName}'.`, {
-            userId,
-            originalName: currentTwitterName,
-            liveName: twitterNameSettings.streamName,
-        });
     }
+
+    // twitter limits usernames to 50 characters
+    const truncatedLiveTwitterName = liveTwitterName.substring(0, 49);
+
+    logger.info(`Changing Twitter name from '${currentTwitterName}' to '${liveTwitterName}'.`, {
+        userId,
+        originalName: currentTwitterName,
+        liveName: liveTwitterName,
+        truncatedLiveTwitterName
+    });
 
     // If it is not found return immediately and do not update normal twitwyter name
     if (twitterNameSettings && currentTwitterName !== '') {
-        if (updatedTwitterLiveName !== undefined) {
-            // post to twitter
-            const response = await updateTwitterName(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, updatedTwitterLiveName);
+        const response = await updateTwitterName(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, truncatedLiveTwitterName);
 
-            if (response === 200) {
-                await updateOriginalTwitterNameDB(userId, currentTwitterName);
-                logger.info('Successfully updated Twitter name on streamup.');
-                return 'success';
-            }
-        } else if (twitterNameSettings.streamName) {
-            // post to twitter
-            const response = await updateTwitterName(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterNameSettings.streamName);
-
-            if (response === 200) {
-                await updateOriginalTwitterNameDB(userId, currentTwitterName);
-                logger.info('Successfully updated Twitter name on streamup.');
-                return 'success';
-            }
+        if (response === 200) {
+            await updateOriginalTwitterNameDB(userId, currentTwitterName);
+            logger.info('Successfully updated Twitter name on streamup.', { userId });
+            return 'success';
         }
     }
     return 'Error updating Twitter name on streamup';
