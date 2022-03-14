@@ -91,7 +91,7 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                         Features
                     </MenuButton>
                     <Portal containerRef={headerPortalRef}>
-                        <MenuList flexDirection={'row'} h="auto" mx="8" maxW="90vw">
+                        <MenuList flexDirection={'row'} h="auto" mx="8" maxW="90vw" bg="gray.800">
                             <SimpleGrid columns={[1, 2, 3]} spacing={[0, 4]} p="4">
                                 <HeaderMenuItem
                                     href="/profile"

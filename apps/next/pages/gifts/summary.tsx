@@ -19,7 +19,7 @@ import {
     Tag,
     Divider,
 } from '@chakra-ui/react';
-import type { GetServerSideProps, NextPage } from 'next';
+import type { GetServerSideProps, GetServerSidePropsResult, NextPage } from 'next';
 import NextLink from 'next/link';
 import { discordLink, giftSummaryPath, twitterLink } from '@app/util/constants';
 import { FaDiscord, FaTwitter } from 'react-icons/fa';
@@ -55,11 +55,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         ctx: context,
     })) as any;
 
-    const redirectToHomePage = {
-        redirect: '/',
-        props: {
-            giftPurchase: undefined,
+    const redirectToHomePage: GetServerSidePropsResult<any> = {
+        redirect: {
+            destination: '/',
+            permanent: false
         },
+        props: {},
     };
 
     if (!session) {
@@ -80,7 +81,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 checkoutSessionId: true,
             },
         });
-        return result.checkoutSessionId;
+        return result?.checkoutSessionId;
     };
 
     const checkoutSessionId = csId ?? (await getLatestCheckoutSessionId());
@@ -148,7 +149,18 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 const Gift: React.FC<GiftInfo> = ({ redemptionUrl, redeemed }) => {
     const { onCopy, hasCopied } = useClipboard(redemptionUrl);
     return (
-        <Flex maxW="full" w="full" justifyContent={'space-between'} direction={['row', 'row']} experimental_spaceX={2} rounded="md" bg="whiteAlpha.200" p="2" px="3" alignItems='center'>
+        <Flex
+            maxW="full"
+            w="full"
+            justifyContent={'space-between'}
+            direction={['row', 'row']}
+            experimental_spaceX={2}
+            rounded="md"
+            bg="whiteAlpha.200"
+            p="2"
+            px="3"
+            alignItems="center"
+        >
             <NextLink href={redemptionUrl} passHref>
                 <Button colorScheme={redeemed ? undefined : 'blue'} as="a" variant={'link'} size="md" wordBreak={'break-all'} whiteSpace={'pre-wrap'}>
                     {redemptionUrl}
@@ -172,7 +184,7 @@ const Gift: React.FC<GiftInfo> = ({ redemptionUrl, redeemed }) => {
 const Page: NextPage<Props> = ({ gifts, allGiftPurchases }) => {
     return (
         <Container maxW={['container.lg']}>
-            <Box experimental_spaceY={12} pos='relative'>
+            <Box experimental_spaceY={12} pos="relative">
                 <Center w="full">
                     <VStack>
                         <VStack>
@@ -200,7 +212,7 @@ const Page: NextPage<Props> = ({ gifts, allGiftPurchases }) => {
                                         <Text size={'sm'} maxW="full">
                                             Gifts have a unique redemption link. Share this link with anyone to let them redeem the gift. View your gift redemption links below.
                                         </Text>
-                                        <Alert status="warning" bg={'whiteAlpha.300'} w="full" fontSize="sm" p="2" rounded='md'>
+                                        <Alert status="warning" bg={'whiteAlpha.300'} w="full" fontSize="sm" p="2" rounded="md">
                                             <AlertIcon />
                                             <AlertTitle mr={2} display={['none', 'inherit']}>
                                                 Warning
@@ -221,7 +233,7 @@ const Page: NextPage<Props> = ({ gifts, allGiftPurchases }) => {
                                         <strong>{gifts[0].gift.purchaserEmail}</strong>
                                         {" containing the Gift details and redemption link for safe keeping. Make sure you don't delete the gift email."}
                                     </Text>
-                                    <Alert status="info" w="full" fontSize="sm" p="2" bg={'whiteAlpha.300'} rounded='md'>
+                                    <Alert status="info" w="full" fontSize="sm" p="2" bg={'whiteAlpha.300'} rounded="md">
                                         <AlertIcon />
                                         <AlertDescription>The email may go to your junk folder.</AlertDescription>
                                     </Alert>

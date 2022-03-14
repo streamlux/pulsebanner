@@ -14,8 +14,6 @@ async function main() {
         limit: 100,
     });
 
-    console.log(prices);
-
     await Promise.all(
         products.data.map((each) =>
             prisma.product.upsert({

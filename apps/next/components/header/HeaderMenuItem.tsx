@@ -14,8 +14,8 @@ type HeaderMenuItemProps = {
 export const HeaderMenuItem: FC<HeaderMenuItemProps> = ({ imageSrc, title, description, colorMode, href }): ReactElement => {
     return (
         <NextLink href={href} passHref>
-            <MenuItem as="a" rounded="md" p="0">
-                <Button h={['auto', '56']} w={['90vw', '56']} variant={'ghost'} p="4" _focus={{ outline: 'none' }}>
+            <MenuItem as="a" rounded="md" p="0" _hover={{bg: 'whiteAlpha.100'}} _focus={{bg: 'whiteAlpha.100'}}>
+                <Button h={['auto', '56']} w={['90vw', '56']} variant={'ghost'} p="4" _focus={{ outline: 'none' }} _hover={{ bg: 'transparent'}}>
                     <VStack h="full">
                         <Box w="full" h={['32', '24']}>
                             <Center h="full">

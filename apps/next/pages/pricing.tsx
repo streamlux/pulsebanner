@@ -272,7 +272,7 @@ const Page: NextPage<Props> = ({ products }) => {
                 </ModalContent>
             </Modal>
 
-            <Container maxW="container.lg" experimental_spaceY="6" pb="8">
+            <Container maxW="container.lg" experimental_spaceY="6" pb="8" mt='-8'>
                 <Heading size="xl" textAlign="center" h="full" bgGradient="linear(to-r, #2AA9ff, #f246FF)" bgClip="text" fontSize={['5xl', '7xl']} fontWeight="bold">
                     PulseBanner Memberships
                 </Heading>
