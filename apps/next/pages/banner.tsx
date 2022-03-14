@@ -282,7 +282,7 @@ export default function Page({ banner, originalBanner }: Props) {
 
     const applyPreset = (preset: BannerPresetProps) => {
         setFgId(preset.foreground.id);
-        setFgProps({...preset.foreground.props, ...((banner?.foregroundProps as any)?.username ? {username: (banner?.foregroundProps as any)?.username} : {}) });
+        setFgProps({ ...preset.foreground.props, ...((banner?.foregroundProps as any)?.username ? { username: (banner?.foregroundProps as any)?.username } : {}) });
         setBgId(preset.background.id);
         setBgProps(preset.background.props);
     };
@@ -291,6 +291,7 @@ export default function Page({ banner, originalBanner }: Props) {
 
     useEffect(() => {
         if (preset && preset !== 'custom') {
+            setTabIndex(0);
             applyPreset(bannerPresets[preset as keyof typeof bannerPresets] ?? defaultBanner);
         }
     }, [preset]);
@@ -380,6 +381,8 @@ export default function Page({ banner, originalBanner }: Props) {
     const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
     const { isOpen: disableBannerIsOpen, onClose: disableBannerOnClose, onToggle: bannerDisabledToggle } = useDisclosure();
     const [sliderValue, setSliderValue] = useState(0);
+
+    const [tabIndex, setTabIndex] = useState(0);
 
     useEffect(() => {
         const getSliderValue = () => {
@@ -553,10 +556,10 @@ export default function Page({ banner, originalBanner }: Props) {
                         </Center>
 
                         <Flex {...styles} grow={1} p="4" my="4" rounded="md" w="full" direction="column" minH="lg">
-                            <Tabs colorScheme="purple" flexGrow={1} size={breakpoint !== 'base' ? 'md' : 'sm'}>
+                            <Tabs colorScheme="purple" flexGrow={1} size={breakpoint !== 'base' ? 'md' : 'sm'} index={tabIndex} onChange={setTabIndex}>
                                 <TabList>
                                     <Tab className={trackEvent('click', 'banner-tab')}>Banner</Tab>
-                                    {!lockedBanners.includes(preset as string) && <Tab className={trackEvent('click', 'background-tab')}>Background</Tab>}
+                                    <Tab className={trackEvent('click', 'background-tab')}>Background</Tab>
                                 </TabList>
 
                                 <TabPanels flexGrow={1}>
@@ -638,27 +641,26 @@ export default function Page({ banner, originalBanner }: Props) {
                                         </VStack>
                                     </TabPanel>
                                     <TabPanel>
-                                        <FormControl id="country">
-                                            <FormLabel>Background type</FormLabel>
-                                            <RadioGroup
-                                                onChange={(e) => {
-                                                    setBgId(e as keyof typeof BackgroundTemplates);
-                                                }}
-                                                value={bgId}
-                                            >
-                                                <Stack direction="column">
-                                                    {Object.entries(BackgroundTemplates).map(([key, value]) => (
-                                                        <Radio key={key} value={key} colorScheme="purple">
-                                                            <Text fontSize="md">{value.name}</Text>
-                                                            <Text fontSize="sm">
-                                                                {value.description}
-                                                            </Text>
-                                                        </Radio>
-                                                    ))}
-                                                </Stack>
-                                            </RadioGroup>
-                                        </FormControl>
-                                        {!lockedBanners.includes(fgId) && (
+                                    {!lockedBanners.includes(fgId) ? (
+                                        <>
+                                            <FormControl id="country">
+                                                <FormLabel>Background type</FormLabel>
+                                                <RadioGroup
+                                                    onChange={(e) => {
+                                                        setBgId(e as keyof typeof BackgroundTemplates);
+                                                    }}
+                                                    value={bgId}
+                                                >
+                                                    <Stack direction="column">
+                                                        {Object.entries(BackgroundTemplates).map(([key, value]) => (
+                                                            <Radio key={key} value={key} colorScheme="purple">
+                                                                <Text fontSize="md">{value.name}</Text>
+                                                                <Text fontSize="sm">{value.description}</Text>
+                                                            </Radio>
+                                                        ))}
+                                                    </Stack>
+                                                </RadioGroup>
+                                            </FormControl>
                                             <Box py="4">
                                                 <Form
                                                     setProps={(p) => {
@@ -669,8 +671,11 @@ export default function Page({ banner, originalBanner }: Props) {
                                                     accountLevel={paymentPlan}
                                                 />
                                             </Box>
-                                        )}
-                                    </TabPanel>
+                                        </>
+                                    ) : (
+                                        <Text pt='2'>You cannot customize the background of this banner template. Choose another template to customize the background.</Text>
+                                    )}
+                                        </TabPanel>
                                 </TabPanels>
                             </Tabs>
 
