@@ -29,12 +29,12 @@ import NextLink from 'next/link';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import styles from './header.module.css';
 import React from 'react';
-import { ChevronDownIcon, MoonIcon, SunIcon } from '@chakra-ui/icons';
+import { ChevronDownIcon } from '@chakra-ui/icons';
 import { useAdmin } from '../util/hooks/useAdmin';
 import favicon from '@app/public/logo.webp';
 import { FaArrowRight, FaDiscord, FaTwitter } from 'react-icons/fa';
 import { trackEvent } from '@app/util/umami/trackEvent';
-import { promo, promoCode } from '@app/util/constants';
+import { discordLink, promo, promoCode, twitterLink } from '@app/util/constants';
 import { HeaderMenuItem } from './header/HeaderMenuItem';
 
 const headerImages = {
@@ -188,23 +188,30 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                     )}
                                     {!breakpointValue.mobile && (
                                         <>
-                                            <IconButton
-                                                aria-label="Twitter"
-                                                variant={'ghost'}
-                                                size="sm"
-                                                onClick={() => window.open('https://twitter.com/pulsebanner', '_blank')}
-                                                icon={<FaTwitter />}
-                                                className={trackEvent('click', 'discord-button')}
-                                            />
-                                            <Button
-                                                variant={'ghost'}
-                                                size="sm"
-                                                onClick={() => window.open('/discord', '_blank')}
-                                                leftIcon={<FaDiscord />}
-                                                className={trackEvent('click', 'discord-button')}
-                                            >
-                                                Join our Discord
-                                            </Button>
+                                            <NextLink href={twitterLink} passHref>
+                                                <IconButton
+                                                    aria-label="Twitter"
+                                                    target={'_blank'}
+                                                    variant={'ghost'}
+                                                    size="sm"
+                                                    as="a"
+                                                    icon={<FaTwitter />}
+                                                    className={trackEvent('click', 'discord-button')}
+                                                />
+                                            </NextLink>
+
+                                            <NextLink href={discordLink} passHref>
+                                                <Button
+                                                    as="a"
+                                                    target={'_blank'}
+                                                    variant={'ghost'}
+                                                    size="sm"
+                                                    leftIcon={<FaDiscord />}
+                                                    className={trackEvent('click', 'discord-button')}
+                                                >
+                                                    Join our Discord
+                                                </Button>
+                                            </NextLink>
                                         </>
                                     )}
                                     {/*

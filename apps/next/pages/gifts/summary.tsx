@@ -14,7 +14,6 @@ import {
     AlertIcon,
     AlertTitle,
     VStack,
-    HStack,
     Tooltip,
     Tag,
     Divider,
@@ -31,7 +30,7 @@ import { getGiftRedemptionUrl } from '@app/util/stripe/gift/getGiftRedemptionUrl
 import { Card } from '@app/components/Card';
 import Stripe from 'stripe';
 import { getPromoCodeById, isPromoCodeRedeemed } from '@app/util/stripe/gift/redeemHelpers';
-import { CheckCircleIcon, CheckIcon, CloseIcon, CopyIcon } from '@chakra-ui/icons';
+import { CopyIcon } from '@chakra-ui/icons';
 
 /**
  * Gift Purchase Summary page
@@ -58,7 +57,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const redirectToHomePage: GetServerSidePropsResult<any> = {
         redirect: {
             destination: '/',
-            permanent: false
+            permanent: false,
         },
         props: {},
     };
@@ -322,6 +321,7 @@ const Page: NextPage<Props> = ({ gifts, allGiftPurchases }) => {
                         </div>
                     </div>
                 </div>
+
                 <div style={{ zIndex: -1, position: 'absolute', height: '50%', maxHeight: '700px', width: '100%', display: 'block' }}>
                     <div className="contact-hero" style={{ position: 'relative', top: '0px', right: '600px', height: '18%' }}>
                         <div className="bg-gradient-blur-wrapper contact-hero">
