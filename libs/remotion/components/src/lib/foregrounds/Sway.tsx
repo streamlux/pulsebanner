@@ -11,7 +11,7 @@ type ImLiveProps = {
     watermark: boolean;
 };
 
-export const Emgg: React.FC<ImLiveProps> = ({
+export const Sway: React.FC<ImLiveProps> = ({
     thumbnailUrl = 'https://static-cdn.jtvnw.net/previews-ttv/live_user_moistcr1tikal-440x248.jpg',
     text,
     showUsername = true,
@@ -21,7 +21,7 @@ export const Emgg: React.FC<ImLiveProps> = ({
     return (
         <>
             <AbsoluteFill>
-                <div style={{ position: 'absolute', left: '871px', top: '0px', overflow: 'hidden', fontFamily: 'Inter' }}>
+                <div style={{ position: 'absolute', left: '875px', top: '85px', overflow: 'hidden', fontFamily: 'Inter' }}>
                     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
                         <div style={{ display: 'flex', width: '100%', height: 'min', alignItems: 'bottom', justifyContent: 'flex-end' }}>
                             <div
@@ -66,8 +66,8 @@ export const Emgg: React.FC<ImLiveProps> = ({
                 <div
                     style={{
                         position: 'absolute',
-                        bottom: '30px',
-                        right: '110px',
+                        top: '75px',
+                        left: '290px',
                         display: 'flex',
                         padding: '2px 0 2px 0',
                         width: '392px',
@@ -87,13 +87,12 @@ export const Emgg: React.FC<ImLiveProps> = ({
                     >
                         <h1
                             style={{
-                                color: 'white',
+                                color: 'black',
                                 fontSize: `${54 - (username?.length ?? 0)}px`,
                                 width: '100%',
                                 textAlign: 'center',
-                                fontWeight: 'bold',
                                 alignItems: 'flex-end',
-                                fontFamily: 'Inter',
+                                fontFamily: 'RoadRage',
                                 margin: 0,
                                 whiteSpace: 'nowrap',
                                 overflow: 'none',

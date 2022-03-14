@@ -72,6 +72,7 @@ const staticAssets: Record<string, StaticAsset> = {
 
 export const landingPageAsset = (name: string) => `https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/${name}.webp`;
 
+
 export default function Page() {
     const { colorMode } = useColorMode();
     const breakpoint = useBreakpoint('ssr');

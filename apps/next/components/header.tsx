@@ -3,8 +3,6 @@ import {
     Avatar,
     Flex,
     Box,
-    Link,
-    WrapItem,
     Button,
     Center,
     Wrap,
@@ -21,33 +19,41 @@ import {
     LinkBox,
     LinkOverlay,
     useBreakpoint,
-    useDisclosure,
     Text,
     Spacer,
     Tag,
     Stack,
+    SimpleGrid,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import styles from './header.module.css';
 import React from 'react';
-import { MoonIcon, SunIcon } from '@chakra-ui/icons';
+import { ChevronDownIcon, MoonIcon, SunIcon } from '@chakra-ui/icons';
 import { useAdmin } from '../util/hooks/useAdmin';
 import favicon from '@app/public/logo.webp';
 import { FaArrowRight, FaDiscord, FaTwitter } from 'react-icons/fa';
-import { MdEmail } from 'react-icons/md';
 import { trackEvent } from '@app/util/umami/trackEvent';
-import { holidayDecor, promo, promoCode } from '@app/util/constants';
+import {  promo, promoCode } from '@app/util/constants';
+import { HeaderMenuItem } from './header/HeaderMenuItem';
+
+const headerImages = {
+    profile: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/assets/feature-nav/header_profile.svg',
+    banner: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/assets/feature-nav/header_banner.svg',
+    nameChangerDark: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/assets/feature-nav/namechanger.svg',
+    nameChangerLight: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/assets/feature-nav/namechanger_light.svg',
+};
 
 // The approach used in this component shows how to built a sign in and sign out
 // component that works on pages which support both client and server side
 // rendering, and avoids any flash incorrect content on initial page load.
-export default function Header() {
+export default function Header({ headerPortalRef }: { headerPortalRef: React.MutableRefObject<any> }) {
     const { data: session, status } = useSession({ required: false });
     const loading = status === 'loading';
     const [isAdmin] = useAdmin({ required: false });
     const { colorMode, toggleColorMode } = useColorMode();
     const breakpoint = useBreakpoint();
+    const nameChangerLogo = colorMode === 'dark' ? headerImages.nameChangerDark : headerImages.nameChangerLight;
     const breakpointValue = useBreakpointValue(
         {
             base: {
@@ -61,12 +67,10 @@ export default function Header() {
                 gridSpacing: 4,
             },
             md: {
-                mobile: true,
                 gridColumns: 2,
                 gridSpacing: 6,
             },
             lg: {
-                mobile: false,
                 gridColumns: 3,
                 gridSpacing: 6,
             },
@@ -79,185 +83,161 @@ export default function Header() {
         'base'
     );
 
+    const NavLinks = () => (
+        <Center id="nav-links" fontSize="lg">
+            <Wrap spacing={['2', '4', '6', '6']}>
+                <Menu>
+                    <MenuButton size="md" as={Button} variant="ghost" rightIcon={<ChevronDownIcon />}>
+                        Features
+                    </MenuButton>
+                    <Portal containerRef={headerPortalRef}>
+                        <MenuList flexDirection={'row'} h="auto" mx="8" maxW="90vw">
+                            <SimpleGrid columns={[1, 2, 3]} spacing={[0, 4]} p="4">
+                                <HeaderMenuItem
+                                    href="/profile"
+                                    colorMode={colorMode}
+                                    description="Update your Twitter profile picture when you go live."
+                                    imageSrc={headerImages.profile}
+                                    title="Profile Picture"
+                                />
+                                <HeaderMenuItem
+                                    href="/banner"
+                                    colorMode={colorMode}
+                                    description="Update your Twitter profile picture when you go live."
+                                    imageSrc={headerImages.banner}
+                                    title="Live Banner"
+                                />
+                                <HeaderMenuItem
+                                    href="/name"
+                                    colorMode={colorMode}
+                                    description="Update your Twitter profile picture when you go live."
+                                    imageSrc={nameChangerLogo}
+                                    title="Name Changer"
+                                />
+                            </SimpleGrid>
+                        </MenuList>
+                    </Portal>
+                </Menu>
+
+                <NextLink href="/pricing" passHref>
+                    <Button as="a" size="md" variant={'ghost'}>
+                        Pricing
+                    </Button>
+                </NextLink>
+            </Wrap>
+        </Center>
+    );
+
     return (
         <>
             <header>
                 <noscript>
                     <style>{`.nojs-show { opacity: 1; top: 0; }`}</style>
                 </noscript>
-                <Center w="full" className={styles.signedInStatus}>
-                    <Flex
-                        h="16"
-                        maxH="16"
-                        className={`nojs-show ${!session && loading ? styles.loading : styles.loaded}`}
-                        p={['2', '2', '4', '4']}
-                        px={['2', '2', '4', '4']}
-                        alignItems="center"
-                        justify="space-evenly"
-                        w={['full', 'full', 'full', 'full', '90vw', '70vw']}
-                    >
-                        <Flex h="100%" maxH="100%" w="full">
-                            <HStack maxH="10" w="200px">
-                                <LinkBox h="full" w="min">
-                                    <HStack height="100%">
-                                        <Image alt="PulseBanner logo" src={favicon.src} height="40px" width="40px" />
-                                        <NextLink href="/" passHref>
-                                            <LinkOverlay>
-                                                <Heading size="md" as="h1">
-                                                    PulseBanner
-                                                </Heading>
-                                            </LinkOverlay>
-                                        </NextLink>
-                                    </HStack>
-                                </LinkBox>
-                            </HStack>
-                            {!breakpointValue?.mobile && (
-                                <Center id="nav-links" fontSize="lg">
-                                    <Wrap spacing={['2', '4', '8', '8']}>
-                                        <WrapItem>
-                                            <NextLink href="/profile" passHref>
-                                                <HStack>
-                                                    <Link>Profile Picture</Link>
-                                                </HStack>
+                <Box>
+                    <Center w="full" className={styles.signedInStatus}>
+                        <Flex
+                            overflow={'visible'}
+                            h="16"
+                            maxH="16"
+                            className={`nojs-show ${!session && loading ? styles.loading : styles.loaded}`}
+                            p={['2', '2', '4', '4']}
+                            px={['2', '2', '4', '4']}
+                            alignItems="center"
+                            justify="space-evenly"
+                            w={['full', 'full', 'full', 'full', 'container.lg', 'container.xl']}
+                        >
+                            <Flex h="100%" maxH="100%" w="full">
+                                <HStack maxH="10" w="200px">
+                                    <LinkBox h="full" w="min">
+                                        <HStack height="100%">
+                                            <Image alt="PulseBanner logo" src={favicon.src} height="40px" width="40px" />
+                                            <NextLink href="/" passHref>
+                                                <LinkOverlay>
+                                                    <Heading size="md" as="h1">
+                                                        PulseBanner
+                                                    </Heading>
+                                                </LinkOverlay>
                                             </NextLink>
-                                        </WrapItem>
-                                        <WrapItem>
-                                            <NextLink href="/banner" passHref>
-                                                <Link>Banner</Link>
-                                            </NextLink>
-                                        </WrapItem>
-                                        <WrapItem>
-                                            <NextLink href="/name" passHref>
-                                                <Link>Name Changer</Link>
-                                            </NextLink>
-                                        </WrapItem>
+                                        </HStack>
+                                    </LinkBox>
+                                </HStack>
+                                {!breakpointValue.mobile && <NavLinks />}
+                                <Spacer />
+                                <Flex experimental_spaceX="2" alignItems="center" justifySelf="flex-end">
+                                    {breakpointValue.mobile && (
+                                        <IconButton
+                                            size="sm"
+                                            onClick={() => window.open('/discord', '_blank')}
+                                            aria-label="Discord"
+                                            title="Discord"
+                                            icon={<FaDiscord />}
+                                            className={trackEvent('click', 'discord-button')}
+                                        />
+                                    )}
+                                    {!breakpointValue.mobile && (
+                                        <Button
+                                            size="sm"
+                                            onClick={() => window.open('/discord', '_blank')}
+                                            leftIcon={<FaDiscord />}
+                                            className={trackEvent('click', 'discord-button')}
+                                        >
+                                            Join our Discord
+                                        </Button>
+                                    )}
 
-                                        <WrapItem>
-                                            <NextLink href="/pricing" passHref>
-                                                <Link>Pricing</Link>
-                                            </NextLink>
-                                        </WrapItem>
-                                    </Wrap>
-                                </Center>
-                            )}
-
-                            <Spacer />
-
-                            <Flex experimental_spaceX="2" alignItems="center" justifySelf="flex-end">
-                                {/* {breakpointValue.mobile && (
                                     <IconButton
-                                        size="sm"
-                                        onClick={() => onToggle()}
-                                        aria-label="Newsletter"
-                                        title="Newsletter"
-                                        icon={<MdEmail />}
-                                        className={trackEvent('click', 'newsletter-button')}
-                                    />
-                                )}
-                                {!breakpointValue.mobile && (
-                                    <Button onClick={() => onToggle()} leftIcon={<MdEmail />} className={trackEvent('click', 'newsletter-button')}>
-                                        Subscribe for updates
-                                    </Button>
-                                )} */}
-                                {breakpointValue?.mobile && (
-                                    <IconButton
-                                        size="sm"
-                                        onClick={() => window.open('/discord', '_blank')}
-                                        aria-label="Discord"
-                                        title="Discord"
-                                        icon={<FaDiscord />}
-                                        className={trackEvent('click', 'discord-button')}
-                                    />
-                                )}
-                                {!breakpointValue?.mobile && (
-                                    <Button size="sm" onClick={() => window.open('/discord', '_blank')} leftIcon={<FaDiscord />} className={trackEvent('click', 'discord-button')}>
-                                        Join our Discord
-                                    </Button>
-                                )}
-
-                                <IconButton
-                                    size="sm"
-                                    aria-label="Toggle theme"
-                                    icon={colorMode === 'dark' ? <SunIcon /> : <MoonIcon />}
-                                    onClick={toggleColorMode}
-                                    className={trackEvent('click', 'color-theme-button')}
-                                >
-                                    Toggle {colorMode === 'light' ? 'Dark' : 'Light'}
-                                </IconButton>
-
-                                {!session && (
-                                    <Button
-                                        as={Link}
-                                        href={`/api/auth/signin`}
-                                        className={styles.buttonPrimary}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            signIn('twitter');
-                                        }}
-                                        size={breakpoint === 'base' ? 'sm' : 'md'}
-                                        colorScheme="twitter"
-                                        leftIcon={<FaTwitter />}
+                                        size={'sm'}
+                                        aria-label="Toggle theme"
+                                        icon={colorMode === 'dark' ? <SunIcon /> : <MoonIcon />}
+                                        onClick={toggleColorMode}
+                                        className={trackEvent('click', 'color-theme-button')}
                                     >
-                                        Sign in
-                                    </Button>
-                                )}
-                                {session && (
-                                    <Menu>
-                                        <Avatar size="sm" as={MenuButton} src={session.user.image as string} />
-                                        <Portal>
-                                            <MenuList>
-                                                <NextLink href="/account" passHref>
-                                                    <MenuItem>Account</MenuItem>
-                                                </NextLink>
-                                                <MenuItem onClick={() => signOut({ redirect: false })}>Sign out</MenuItem>
-                                                {isAdmin && (
-                                                    <NextLink href="/admin" passHref>
-                                                        <MenuItem>Admin</MenuItem>
+                                        Toggle {colorMode === 'light' ? 'Dark' : 'Light'}
+                                    </IconButton>
+
+                                    {!session && (
+                                        <NextLink href="/api/auth/signin" passHref>
+                                            <Button
+                                                as="a"
+                                                className={styles.buttonPrimary}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    signIn('twitter');
+                                                }}
+                                                size={breakpoint === 'base' ? 'sm' : 'md'}
+                                                colorScheme="twitter"
+                                                leftIcon={<FaTwitter />}
+                                            >
+                                                Sign in
+                                            </Button>
+                                        </NextLink>
+                                    )}
+                                    {session && (
+                                        <Menu>
+                                            <Avatar size="sm" as={MenuButton} name={session.user.name} src={session.user.image} />
+                                            <Portal>
+                                                <MenuList>
+                                                    <NextLink href="/account" passHref>
+                                                        <MenuItem as="a">Account</MenuItem>
                                                     </NextLink>
-                                                )}
-                                            </MenuList>
-                                        </Portal>
-                                    </Menu>
-                                )}
+                                                    <MenuItem onClick={() => signOut({ redirect: false })}>Sign out</MenuItem>
+                                                    {isAdmin && (
+                                                        <NextLink href="/admin" passHref>
+                                                            <MenuItem as="a">Admin</MenuItem>
+                                                        </NextLink>
+                                                    )}
+                                                </MenuList>
+                                            </Portal>
+                                        </Menu>
+                                    )}
+                                </Flex>
                             </Flex>
                         </Flex>
-                    </Flex>
-                </Center>
-                {breakpointValue?.mobile && (
-                    <Center className={`nojs-show ${!session && loading ? styles.loading : styles.loaded}`}>
-                        <Box maxW={['95vw']} background={colorMode === 'dark' ? 'gray.700' : 'blackAlpha.200'} mx="2" py="2" rounded="md">
-                            <Center id="nav-links" fontSize={['sm', 'md']} px="5vw">
-                                <Wrap spacing={['4', '8', '8', '8']}>
-                                    <WrapItem>
-                                        <NextLink href="/profile" passHref>
-                                            <HStack>
-                                                <Link>Profile Pic</Link>
-                                            </HStack>
-                                        </NextLink>
-                                    </WrapItem>
-                                    <WrapItem>
-                                        <NextLink href="/banner" passHref>
-                                            <Link>Banner</Link>
-                                        </NextLink>
-                                    </WrapItem>
-                                    <WrapItem>
-                                        <NextLink href="/name" passHref>
-                                            <HStack>
-                                                <Link>Name Changer</Link>
-                                            </HStack>
-                                        </NextLink>
-                                    </WrapItem>
-                                    <WrapItem>
-                                        <NextLink href="/pricing" passHref>
-                                            <Link>Pricing</Link>
-                                        </NextLink>
-                                    </WrapItem>
-                                </Wrap>
-                            </Center>
-                        </Box>
                     </Center>
-                )}
+                </Box>
             </header>
+            {breakpointValue.mobile && <NavLinks />}
             {promo && (
                 <Center pt={['4', '2']}>
                     <Box px="4" py="2" mx="4" color={colorMode === 'dark' ? 'black' : 'black'} w={['fit-content']} bg="green.200" rounded="lg">

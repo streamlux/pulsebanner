@@ -7,8 +7,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 
 async function main() {
-    const products = await stripe.products.list();
-    const prices = await stripe.prices.list();
+    const products = await stripe.products.list({
+        limit: 100,
+    });
+    const prices = await stripe.prices.list({
+        limit: 100,
+    });
+
+    console.log(prices);
 
     await Promise.all(
         products.data.map((each) =>

@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.10.3] - 2022-03-13
+
+### Fixed
+- Don't show background page for locked presets.
+
+## [0.10.2] - 2022-03-12
+
+### Fixed
+- Fixed bug that gave everyone membership on frontend
+
+## [0.10.1] - 2022-03-11
+
+### Fixed
+- Sway banner font
+
+## [0.10.0] - 2022-03-11
+
+### Added
+- New navigation menu
+- Sway banner preset
+
+### Changed
+- Pricing page now properly allows customers to change subscriptions
+- Product card components are now compound components
+
+## [0.9.5] - 2022-03-06
+
 ### Added
 
 - Dedicated admin page for partner applications
