@@ -42,7 +42,7 @@ handler.post(async (req, res) => {
                   metadata: {},
               }
             : {},
-        success_url: `${process.env.NEXTAUTH_URL}/account`,
+        success_url: isSubscription ? `${process.env.NEXTAUTH_URL}/account` : `${process.env.NEXTAUTH_URL}/gift/purchase`,
         cancel_url: `${process.env.NEXTAUTH_URL}${cancel_path}`,
     });
 
