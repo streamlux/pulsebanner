@@ -28,8 +28,9 @@ export async function handleStripePromoCode(giftCouponId: string, amountTotal: n
         logger.info(msg, { userId: userId });
         sendMessage(`${msg}`, process.env.DISCORD_GIFT_PURCHASED_URL);
     } else {
-        logger.warn('A gift was successfully purchased, but promoCode for gift was not created successfully.', { giftCouponId: giftCouponId });
-        sendMessage(`A gift was successfully purchased, but promoCode for gift was not created successfully. Coupon id: ${giftCouponId}`, process.env.DISCORD_GIFT_PURCHASED_URL);
+        const msg = 'A gift was successfully purchased, but promoCode for gift was not created successfully.';
+        logger.warn(msg, { giftCouponId: giftCouponId });
+        sendMessage(`${msg} Coupon id: ${giftCouponId}`, process.env.DISCORD_GIFT_PURCHASED_URL);
     }
     return promoCode;
 };
@@ -40,7 +41,7 @@ export async function handleStripePromoCode(giftCouponId: string, amountTotal: n
  * @param couponId ID of coupon to create new promo code for
  * @returns ID of the created promo code, or undefined if it failed
  */
- async function generateStripePromoCode(couponId: string): Promise<string | undefined> {
+async function generateStripePromoCode(couponId: string): Promise<string | undefined> {
     try {
         const promoCode = await stripe.promotionCodes.create({ coupon: couponId, max_redemptions: 1 });
         return promoCode.code;

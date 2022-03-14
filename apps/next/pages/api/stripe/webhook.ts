@@ -29,7 +29,7 @@ export const config = {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function buffer(readable: any) {
-    const chunks = [];
+    const chunks: any[] = [];
     for await (const chunk of readable) {
         chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
     }
@@ -51,14 +51,14 @@ const handler = createApiHandler();
 
 handler.post(async (req, res) => {
     const buf = await buffer(req);
-    const sig = req.headers['stripe-signature'];
+    const sig = req.headers['stripe-signature'] as string;
     let event;
 
     try {
-        event = stripe.webhooks.constructEvent(buf, sig, process.env.STRIPE_WEBHOOK_SECRET);
+        event = stripe.webhooks.constructEvent(buf, sig, env.STRIPE_WEBHOOK_SECRET);
     } catch (err) {
         logger.error(`❌ Error verifying webhook. Message: ${err?.message}`);
-        logger.error('secret', process.env.STRIPE_WEBHOOK_SECRET);
+        logger.error('secret', env.STRIPE_WEBHOOK_SECRET);
         return res.status(400).send(`Webhook Error: ${err?.message}`);
     }
 
@@ -146,7 +146,7 @@ handler.post(async (req, res) => {
                      * 3. Reset name feature to be the default value. Again, handle if they are live gracefully by updating it right then to the default.
                      */
                     if (userId) {
-                        sendMessage(`"${userId}" unsubscribed from premium plan`, process.env.DISCORD_CANCELLED_SUBSCRIBER_URL);
+                        sendMessage(`"${userId}" unsubscribed from premium plan`, env.DISCORD_CANCELLED_SUBSCRIBER_URL);
 
                         // get the user's twitter info
                         const twitterInfo = await getTwitterInfo(userId);
@@ -283,7 +283,7 @@ handler.post(async (req, res) => {
                         // this is one time payments. We need to generate a code for the specific price point and send email
                         // get the userId for the customer
                         const customerId = data.customer as string;
-                        const customerEmail = data.customer_details.email;
+                        const customerEmail = data.customer_details?.email;
                         const customerInfo = await prisma.customer.findUnique({
                             where: {
                                 id: customerId,
@@ -295,16 +295,16 @@ handler.post(async (req, res) => {
 
                         const lineItems = await stripe.checkout.sessions.listLineItems(data.id);
 
-                        if (customerInfo.userId) {
+                        if (customerInfo?.userId) {
                             if (lineItems.data[0]) {
-                                const priceId = lineItems.data[0].price.id;
-                                const amountTotal = lineItems.data[0].amount_total;
+                                const priceId: string | undefined = lineItems.data[0]?.price?.id;
+                                const amountTotal: number = lineItems.data[0].amount_total;
 
                                 // lookup the priceId to couponCode
-                                const giftCouponId = giftPricingLookupMap[priceId];
+                                const giftCouponId: string | undefined = priceId ? giftPricingLookupMap[priceId] : undefined;
 
                                 if (giftCouponId) {
-                                    const couponCode = await handleStripePromoCode(giftCouponId, amountTotal, customerInfo.userId);
+                                    const couponCode: string | undefined = await handleStripePromoCode(giftCouponId, amountTotal, customerInfo.userId);
                                     // if we successfully generated a couponCode, we send the customer an email
                                     logger.info('handled stripe promo code successfully');
                                     if (couponCode && customerEmail) {
@@ -334,7 +334,7 @@ handler.post(async (req, res) => {
 
                     // we need a way to get the partner (if they exist)
                     // lookup the couponId associated with the person
-                    let partnerId = null;
+                    let partnerId: string | undefined;
                     if (invoiceInfo.stripePromoCode) {
                         const partnerInfo = await prisma.stripePartnerInfo.findUnique({
                             where: {
