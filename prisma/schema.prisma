@@ -371,10 +371,11 @@ model PartnerInvoice {
 }
 
 model GiftPurchase {
-    id               String @id @default(cuid())
-    promoCodeCreated String @unique // the promo code created that will be used for the giveaway
-    purchaserUserId  String
-    purchaserUser    User   @relation(fields: [purchaserUserId], references: [id])
+    id              String @id @default(cuid())
+    promoCodeId     String @unique // ID of created Stripe promo code
+    promoCodeCode   String // the Stripe promotion code code created that will be used for the giveaway
+    purchaserUserId String
+    purchaserUser   User   @relation(fields: [purchaserUserId], references: [id])
 
     createdAt DateTime @default(now()) @map("created_at")
     updatedAt DateTime @default(now()) @updatedAt @map("updated_at")

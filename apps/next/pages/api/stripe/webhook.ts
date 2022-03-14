@@ -1,5 +1,5 @@
 /* eslint-disable no-case-declarations */
-import { PriceType } from '@prisma/client';
+import { GiftPurchase, PriceType } from '@prisma/client';
 import Stripe from 'stripe';
 import { timestampToDate } from '../../../util/common';
 import { createApiHandler } from '../../../util/ssr/createApiHandler';
@@ -304,17 +304,19 @@ handler.post(async (req, res) => {
                                 const giftCouponId: string | undefined = priceId ? giftPricingLookupMap[priceId] : undefined;
 
                                 if (giftCouponId) {
-                                    const couponCode: string | undefined = await handleStripePromoCode(giftCouponId, amountTotal, customerInfo.userId);
+                                    const giftPurchase: GiftPurchase | undefined = await handleStripePromoCode(giftCouponId, amountTotal, customerInfo.userId);
                                     // if we successfully generated a couponCode, we send the customer an email
-                                    logger.info('handled stripe promo code successfully');
-                                    if (couponCode && customerEmail) {
+                                    logger.info('handled stripe promo code successfully', { giftPurchaseId: giftPurchase.id });
+                                    if (giftPurchase && customerEmail) {
                                         const notify = async () => {
-                                            sendCouponCodeToCustomerEmail(customerEmail, couponCode);
+                                            sendCouponCodeToCustomerEmail(customerEmail, giftPurchase.id, giftPurchase.promoCodeCode);
                                         };
                                         void notify();
                                     } else {
                                         logger.error('Could not get either couponCode or customer email.', {
-                                            couponCode: couponCode,
+                                            promoCodeCode: giftPurchase.promoCodeCode,
+                                            promoCodeId: giftPurchase.promoCodeId,
+                                            giftPurchaseId: giftPurchase.id,
                                             email: customerEmail,
                                             userId: customerInfo.userId,
                                         });

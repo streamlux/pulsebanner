@@ -27,3 +27,8 @@ export const giftPromoCodeLookupMap: Record<string, string> = {
     g5sqhpgr: 'price_1JwgPBJzF2VT0EeK31OQd0UG', // professional 6 month
     M0dg7iBM: 'price_1JwgShJzF2VT0EeKsIvKjFDc', // professional 1 year
 };
+
+/**
+ * Name of the query param that contains the id of the gift purchase to redeem.
+ */
+export const giftRedemptionLinkQueryParamName = 'giftId';

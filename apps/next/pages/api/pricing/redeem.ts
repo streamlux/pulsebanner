@@ -1,11 +1,13 @@
 import { logger } from '@app/util/logger';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
+import prisma from '@app/util/ssr/prisma';
 import stripe, { getCustomerId } from '@app/util/ssr/stripe';
-import { giftPromoCodeLookupMap } from '@app/util/stripe/constants';
+import { giftPromoCodeLookupMap, giftRedemptionLinkQueryParamName } from '@app/util/stripe/constants';
+import { GiftPurchase } from '@prisma/client';
 import Stripe from 'stripe';
 
 /**
- * We redirect requests to /redeem&code=<CODE> to this API endpoint. The redirect is setup in next.config.js.
+ * We redirect requests to /redeem&giftId=<ID> to this API endpoint. The redirect is setup in next.config.js.
  */
 
 const handler = createAuthApiHandler();
@@ -13,21 +15,33 @@ const handler = createAuthApiHandler();
 handler.get(async (req, res) => {
 
     // get the query param
-    const code: string = req.query.code as string;
-    if (code === undefined || typeof code !== 'string') {
-        logger.info('Query param is undefined or not a string. Redirecting to the home page.');
+    const giftPurchaseId: string = req.query[giftRedemptionLinkQueryParamName] as string;
+    if (giftPurchaseId === undefined || typeof giftPurchaseId !== 'string') {
+        logger.info('Query param giftId is undefined or not a string. Redirecting to the home page.');
         return res.redirect('/');
     }
 
-    const promoCode: Stripe.PromotionCode | undefined = await getPromoCodeByCode(code);
+    // lookup the gift purchase by the ID supplied in the query param
+    const giftPurchase: GiftPurchase | null = await prisma.giftPurchase.findUnique({
+        where: {
+            id: giftPurchaseId,
+        }
+    });
+
+    if (!giftPurchase) {
+        logger.error('Could not find Gift purchase. Redirecting to home page.', { id: giftPurchaseId });
+        return res.redirect('/');
+    }
+
+    // use Stripe API to get the promo code using the promotion code ID from the gift purchase
+    const promoCode: Stripe.PromotionCode | undefined = await getPromoCodeById(giftPurchase.promoCodeId);
     if (!promoCode) {
-        logger.error('Could not find Stripe promo code. Redirecting to home page.', { code });
+        logger.error('Could not find Stripe promo code. Redirecting to home page.', { id: giftPurchaseId, promoCodeId: giftPurchase.promoCodeId });
         return res.redirect('/');
     }
 
-    // Check if the gift has already been redeemed by checking if the Stripe promotion code is used and go to status
-    // Stripe sets the promo code to inactive once it has met the max_redemptions setting (which for gifts is 1).
-    if (promoCode.active === false) {
+    // Check if the gift has already been redeemed
+    if (isPromoCodeRedeemed(promoCode)) {
         // redirect the user to a page telling them that the gift has already been redeemed
         return res.redirect('/redeem/status');
     }
@@ -76,16 +90,22 @@ handler.get(async (req, res) => {
 export default handler;
 
 /**
- * Get a Stripe promo code via the promo code (not the ID).
+ * Get a Stripe promo code via ID.
  *
- * @param code promo code text
+ * @param id promo code ID
  * @returns Stripe promotion code
  */
-async function getPromoCodeByCode(code: string): Promise<Stripe.PromotionCode | undefined> {
-    // we have to use promotionCodes.list here to search by code, rather than retrieve it by id
-    const promoCodeList: Stripe.Response<Stripe.ApiList<Stripe.PromotionCode>> = await stripe.promotionCodes.list({ code: code });
-    if (promoCodeList.data.length !== 1) {
+async function getPromoCodeById(id: string): Promise<Stripe.PromotionCode | undefined> {
+    try {
+        const promoCode: Stripe.Response<Stripe.PromotionCode> = await stripe.promotionCodes.retrieve(id);
+        return promoCode;
+    } catch (e) {
+        logger.error('Error getting Stripe promo code.', { error: e, id });
         return undefined;
     }
-    return promoCodeList.data[0];
+}
+
+function isPromoCodeRedeemed(promoCode: Stripe.PromotionCode): boolean {
+    // Stripe sets the promo code to inactive once it has met the max_redemptions setting (which for gifts is 1).
+    return promoCode.active === false;
 }

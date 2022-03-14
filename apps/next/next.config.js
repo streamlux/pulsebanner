@@ -35,7 +35,7 @@ const nextConfig = {
                 has: [
                     {
                       type: 'query',
-                      key: 'code'
+                      key: 'giftId'
                     }
                 ]
             }
