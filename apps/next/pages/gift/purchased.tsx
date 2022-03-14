@@ -148,7 +148,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 const Gift: React.FC<GiftInfo> = ({ redemptionUrl, redeemed }) => {
     const { onCopy, hasCopied } = useClipboard(redemptionUrl);
     return (
-        <Flex maxW="full" w="full" justifyContent={'space-between'} direction={['row', 'row']} experimental_spaceX={2}>
+        <Flex maxW="full" w="full" justifyContent={'space-between'} direction={['row', 'row']} experimental_spaceX={2} rounded="md" bg="gray.600" p="2" px="3">
             <NextLink href={redemptionUrl} passHref>
                 <Button colorScheme={redeemed ? undefined : 'blue'} as="a" variant={'link'} size="md" wordBreak={'break-all'} whiteSpace={'pre-wrap'}>
                     {redemptionUrl}
@@ -212,10 +212,10 @@ const Page: NextPage<Props> = ({ gifts, allGiftPurchases }) => {
                                             <AlertTitle mr={2} display={['none', 'inherit']}>
                                                 Warning
                                             </AlertTitle>
-                                            <AlertDescription lineHeight={1.2}>Redemption link can be used by anyone! Keep it safe.</AlertDescription>
+                                            <AlertDescription lineHeight={1.2}>Redemption links can be used by anyone! Keep it safe.</AlertDescription>
                                         </Alert>
                                     </VStack>
-                                    <VStack w="full" rounded="md" bg="gray.600" p="2" px="3">
+                                    <VStack w="full">
                                         {gifts.map((gift) => (
                                             <Gift key={gift.gift.id} {...gift} />
                                         ))}
@@ -283,15 +283,23 @@ const Page: NextPage<Props> = ({ gifts, allGiftPurchases }) => {
                                     {allGiftPurchases.map((purchase) => (
                                         <Flex alignItems={'center'} w="full" py="1" justifyContent={'space-between'} key={purchase.checkoutSessionId}>
                                             <Box>
-                                                <Heading size="sm">{purchase.createdAt.toLocaleDateString()}</Heading>
+                                                <Heading size="sm" whiteSpace={'nowrap'}>
+                                                    {purchase.createdAt.toLocaleDateString()}
+                                                </Heading>
                                             </Box>
                                             <Divider w="full" mx="2" variant={'dashed'} />
                                             <Box>
-                                                <NextLink passHref href={`/gift/purchased?cs=${purchase.checkoutSessionId}`}>
-                                                    <Button size="sm" as="a">
-                                                        View Summary
+                                                {gifts[0].gift.checkoutSessionId !== purchase.checkoutSessionId ? (
+                                                    <NextLink passHref href={`/gift/purchased?cs=${purchase.checkoutSessionId}`}>
+                                                        <Button size="sm" as="a">
+                                                            View Summary
+                                                        </Button>
+                                                    </NextLink>
+                                                ) : (
+                                                    <Button size="sm" disabled>
+                                                        Viewing
                                                     </Button>
-                                                </NextLink>
+                                                )}
                                             </Box>
                                         </Flex>
                                     ))}

@@ -3,6 +3,8 @@ import { createAuthApiHandler } from '../../../util/ssr/createApiHandler';
 import stripe from '../../../util/ssr/stripe';
 import { getCustomerId } from '../../../util/ssr/stripe';
 
+const giftPurchaseSuccessPath = '/gift/purchased';
+
 const handler = createAuthApiHandler();
 
 handler.post(async (req, res) => {
@@ -42,7 +44,7 @@ handler.post(async (req, res) => {
                   metadata: {},
               }
             : {},
-        success_url: isSubscription ? `${process.env.NEXTAUTH_URL}/account` : `${process.env.NEXTAUTH_URL}/gift/purchase`,
+        success_url: isSubscription ? `${process.env.NEXTAUTH_URL}/account` : `${process.env.NEXTAUTH_URL}${giftPurchaseSuccessPath}`,
         cancel_url: `${process.env.NEXTAUTH_URL}${cancel_path}`,
     });
 

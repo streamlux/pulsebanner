@@ -297,22 +297,26 @@ handler.post(async (req, res) => {
                         });
 
                         if (userId) {
-                            const promises = lineItems.data.map(async (lineItem) => {
+                            const promises: (Promise<GiftPurchase>)[] = [];
+                            for await (const lineItem of lineItems.data) {
                                 for (let i = 0; i < lineItem.quantity; i++) {
-                                    const priceId: string = lineItem.price.id;
-                                    const amountTotal: number = lineItem.amount_total;
+                                    const promise = async () => {
+                                        const priceId: string = lineItem.price.id;
+                                        const amountTotal: number = lineItem.amount_total;
 
-                                    // lookup the priceId to couponCode
-                                    const giftCouponId: string | undefined = priceId ? giftPricingLookupMap[priceId] : undefined;
+                                        // lookup the priceId to couponCode
+                                        const giftCouponId: string | undefined = priceId ? giftPricingLookupMap[priceId] : undefined;
 
-                                    if (giftCouponId) {
-                                        const giftPurchase: GiftPurchase | undefined = await handleGiftPurchase(giftCouponId, amountTotal, userId, customerEmail, priceId, data.id, i);
-                                        // if we successfully generated a couponCode, we send the customer an email
-                                        logger.info('handled stripe promo code successfully', { giftPurchaseId: giftPurchase.id });
-                                        return giftPurchase;
-                                    }
+                                        if (giftCouponId) {
+                                            const giftPurchase: GiftPurchase | undefined = await handleGiftPurchase(giftCouponId, amountTotal, userId, customerEmail, priceId, data.id, i);
+                                            // if we successfully generated a couponCode, we send the customer an email
+                                            logger.info('handled stripe promo code successfully', { giftPurchaseId: giftPurchase.id });
+                                            return giftPurchase;
+                                        }
+                                    };
+                                    promises.push(promise());
                                 }
-                            });
+                            }
 
                             Promise.all(promises).then((giftPurchases) => {
                                 logger.info('Handle all line items.', { checkoutSessionId: data.id });
@@ -331,7 +335,6 @@ handler.post(async (req, res) => {
                                         userId: userId,
                                     });
                                 }
-
                             })
                                 .catch((reason: any) => {
                                     logger.error('Failed to handle all line items', { error: reason, checkoutSessionId: data.id });

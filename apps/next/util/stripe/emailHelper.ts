@@ -22,6 +22,8 @@ export const sendGiftPurchaseEmail = async (customerEmail: string, gifts: GiftPu
 
     let emailText = '';
 
+    gifts = gifts.sort((a, b) => a.index - b.index);
+
     const price = await prisma.price.findUnique({
         where: {
             id: gifts[0].priceId,
