@@ -1,46 +1,39 @@
 import React from 'react';
-import { Box, Center, Text, Container, Heading, Image, Link, VStack, Wrap, WrapItem, Button } from '@chakra-ui/react';
+import { Box, Center, Text, Container, Heading, Button, ButtonGroup } from '@chakra-ui/react';
 import type { NextPage } from 'next';
 import NextLink from 'next/link';
-import { discordLink } from '@app/util/constants';
-import { FaDiscord } from 'react-icons/fa';
+import { discordLink, twitterLink } from '@app/util/constants';
+import { FaDiscord, FaTwitter } from 'react-icons/fa';
 
-const imgSrc = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/404.webp';
-
+/**
+ * We redirect users to this page if they try to redeem a gift that's already been redeemed.
+ */
 const Page: NextPage = () => {
     return (
         <Container maxW="container.lg">
             <Center>
                 <Box experimental_spaceY={4}>
-                    <Heading as="p">Uh oh! Gift has already been used</Heading>
-                    <Image src={imgSrc} alt="" />
+                    <Heading as="p" textAlign={'center'}>
+                        Uh oh! This gift has already been redeemed
+                    </Heading>
+
+                    <Text fontSize="lg" textAlign={'center'}>
+                        If you think this is a mistake, please join message us in our Discord or DM us on Twitter.
+                    </Text>
 
                     <Center>
-                        <VStack spacing={4}>
-                            <Box experimental_spaceY={2}>
-                                <Heading fontSize="lg">Checkout one of these pages 👇</Heading>
-                                <Center id="nav-links" fontSize="lg">
-                                    <Wrap spacing={['2', '4', '8', '10']}>
-                                        <WrapItem>
-                                            <NextLink href="/" passHref>
-                                                <Link>Home Page</Link>
-                                            </NextLink>
-                                        </WrapItem>
-                                        <WrapItem>
-                                            <NextLink href="/pricing" passHref>
-                                                <Link>Pricing</Link>
-                                            </NextLink>
-                                        </WrapItem>
-                                    </Wrap>
-                                </Center>
-                            </Box>
-                            <Heading fontSize="lg">Talk to the developers 🤭</Heading>
-                            <Link isExternal href={discordLink}>
+                        <ButtonGroup>
+                            <NextLink passHref href={discordLink}>
                                 <Button as="a" size="sm" colorScheme="gray" rightIcon={<FaDiscord />}>
                                     Join our Discord
                                 </Button>
-                            </Link>
-                        </VStack>
+                            </NextLink>
+                            <NextLink passHref href={twitterLink}>
+                                <Button as="a" size="sm" colorScheme="twitter" rightIcon={<FaTwitter />}>
+                                    Twitter
+                                </Button>
+                            </NextLink>
+                        </ButtonGroup>
                     </Center>
                 </Box>
             </Center>
