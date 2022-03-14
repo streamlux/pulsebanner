@@ -21,7 +21,7 @@ import {
 } from '@chakra-ui/react';
 import type { GetServerSideProps, NextPage } from 'next';
 import NextLink from 'next/link';
-import { discordLink, twitterLink } from '@app/util/constants';
+import { discordLink, giftSummaryPath, twitterLink } from '@app/util/constants';
 import { FaDiscord, FaTwitter } from 'react-icons/fa';
 import Confetti from '@app/components/confetti/Confetti';
 import { getSession } from 'next-auth/react';
@@ -154,24 +154,17 @@ const Gift: React.FC<GiftInfo> = ({ redemptionUrl, redeemed }) => {
                     {redemptionUrl}
                 </Button>
             </NextLink>
-            {redeemed ? (
-                <Tooltip label="Gift has been redeemed." placement="top">
-                    <Tag size="lg">Redeemed</Tag>
-                </Tooltip>
-            ) : (
-                <Button
-                    flexGrow={0}
-                    flexShrink={0}
-                    colorScheme={'blue'}
-                    leftIcon={<CopyIcon />}
-                    aria-label="Copy redemption URL"
-                    onClick={() => onCopy()}
-                    icon={<CopyIcon />}
-                    size="sm"
-                >
-                    {hasCopied ? 'Copied!' : 'Copy'}
-                </Button>
-            )}
+            <Box flexGrow={0} flexShrink={0}>
+                {redeemed ? (
+                    <Tooltip label="Gift has been redeemed." placement="top">
+                        <Tag size="lg">Redeemed</Tag>
+                    </Tooltip>
+                ) : (
+                    <Button colorScheme={'blue'} leftIcon={<CopyIcon />} aria-label="Copy redemption URL" onClick={() => onCopy()} icon={<CopyIcon />} size="sm">
+                        {hasCopied ? 'Copied!' : 'Copy'}
+                    </Button>
+                )}
+            </Box>
         </Flex>
     );
 };
@@ -290,7 +283,7 @@ const Page: NextPage<Props> = ({ gifts, allGiftPurchases }) => {
                                             <Divider w="full" mx="2" variant={'dashed'} />
                                             <Box>
                                                 {gifts[0].gift.checkoutSessionId !== purchase.checkoutSessionId ? (
-                                                    <NextLink passHref href={`/gifts/purchased?cs=${purchase.checkoutSessionId}`}>
+                                                    <NextLink passHref href={`${giftSummaryPath}?cs=${purchase.checkoutSessionId}`}>
                                                         <Button size="sm" as="a">
                                                             View Summary
                                                         </Button>

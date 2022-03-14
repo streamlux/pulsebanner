@@ -1,9 +1,8 @@
+import { giftSummaryPath } from '@app/util/constants';
 import type { Stripe } from 'stripe';
 import { createAuthApiHandler } from '../../../util/ssr/createApiHandler';
 import stripe from '../../../util/ssr/stripe';
 import { getCustomerId } from '../../../util/ssr/stripe';
-
-const giftPurchaseSuccessPath = '/gifts/summary';
 
 const handler = createAuthApiHandler();
 
@@ -44,7 +43,7 @@ handler.post(async (req, res) => {
                   metadata: {},
               }
             : {},
-        success_url: isSubscription ? `${process.env.NEXTAUTH_URL}/account` : `${process.env.NEXTAUTH_URL}${giftPurchaseSuccessPath}`,
+        success_url: isSubscription ? `${process.env.NEXTAUTH_URL}/account` : `${process.env.NEXTAUTH_URL}${giftSummaryPath}`,
         cancel_url: `${process.env.NEXTAUTH_URL}${cancel_path}`,
     });
 
