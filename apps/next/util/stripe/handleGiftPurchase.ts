@@ -11,7 +11,7 @@ import prisma from '../ssr/prisma';
  * @param userId userId of the user who purchased the gift
  * @returns gift purchase object, or undefined if it failed
  */
-export async function handleGiftPurchase(giftCouponId: string, amountTotal: number, userId: string): Promise<GiftPurchase | undefined> {
+export async function handleGiftPurchase(giftCouponId: string, amountTotal: number, userId: string, customerEmail: string, priceId: string, checkoutSessionId: string): Promise<GiftPurchase | undefined> {
     const promoCode: Stripe.PromotionCode | undefined = await generateStripePromoCode(giftCouponId);
     if (promoCode !== undefined) {
         // if the promoCode was created, we add it to the db
@@ -20,6 +20,9 @@ export async function handleGiftPurchase(giftCouponId: string, amountTotal: numb
                 promoCodeId: promoCode.id,
                 promoCodeCode: promoCode.code,
                 purchaserUserId: userId,
+                purchaserEmail: customerEmail,
+                priceId,
+                checkoutSessionId
             },
         });
         const user = await prisma.user.findUnique({

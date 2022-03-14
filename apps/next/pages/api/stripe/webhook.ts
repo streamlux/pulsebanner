@@ -16,9 +16,9 @@ import { logger } from '@app/util/logger';
 import { commissionLookupMap } from '@app/util/partner/constants';
 import { handleSubscriptionCheckoutSessionComplete } from '@app/util/stripe/checkoutSessionCompleted/handleSubscriptionCheckoutSessionComplete';
 import { getInvoiceInformation, updateInvoiceTables } from '@app/util/stripe/invoiceHelpers';
-import { giftPricingLookupMap } from '@app/util/stripe/constants';
+import { giftPricingLookupMap } from '@app/util/stripe/gift/constants';
 import { handleGiftPurchase } from '@app/util/stripe/handleGiftPurchase';
-import { sendCouponCodeToCustomerEmail } from '@app/util/stripe/emailHelper';
+import { sendGiftPurchaseEmail } from '@app/util/stripe/emailHelper';
 
 // Stripe requires the raw body to construct the event.
 export const config = {
@@ -102,6 +102,8 @@ handler.post(async (req, res) => {
                             interval: data.recurring?.interval,
                             interval_count: data.recurring?.interval_count,
                             trial_period_days: data.recurring?.trial_period_days,
+                            nickname: data.nickname,
+                            metadata: data.metadata
                         },
                         create: {
                             id: data.id,
@@ -117,6 +119,8 @@ handler.post(async (req, res) => {
                                     id: data.product as string,
                                 },
                             },
+                            nickname: data.nickname,
+                            metadata: data.metadata
                         },
                     });
                     break;
@@ -282,48 +286,57 @@ handler.post(async (req, res) => {
                     } else if (mode === 'payment') {
                         // this is one time payments. We need to generate a code for the specific price point and send email
                         // get the userId for the customer
-                        const customerId = data.customer as string;
                         const customerEmail = data.customer_details?.email;
-                        const customerInfo = await prisma.customer.findUnique({
-                            where: {
-                                id: customerId,
-                            },
-                            select: {
-                                userId: true,
-                            },
-                        });
+
+                        // We use the `client_reference_id` on the checkout session to find the user.
+                        // We set the `client_reference_id` to the user ID when we create the checkout session in create-checkout-session.ts.
+                        const userId = data.client_reference_id;
 
                         const lineItems = await stripe.checkout.sessions.listLineItems(data.id);
 
-                        if (customerInfo?.userId) {
-                            if (lineItems.data[0]) {
-                                const priceId: string | undefined = lineItems.data[0]?.price?.id;
-                                const amountTotal: number = lineItems.data[0].amount_total;
+                        if (userId) {
+                            const promises = lineItems.data.map(async (lineItem) => {
+
+                                const priceId: string = lineItem.price.id;
+                                const amountTotal: number = lineItem.amount_total;
 
                                 // lookup the priceId to couponCode
                                 const giftCouponId: string | undefined = priceId ? giftPricingLookupMap[priceId] : undefined;
 
                                 if (giftCouponId) {
-                                    const giftPurchase: GiftPurchase | undefined = await handleGiftPurchase(giftCouponId, amountTotal, customerInfo.userId);
+                                    const giftPurchase: GiftPurchase | undefined = await handleGiftPurchase(giftCouponId, amountTotal, userId, customerEmail, priceId, data.id);
                                     // if we successfully generated a couponCode, we send the customer an email
                                     logger.info('handled stripe promo code successfully', { giftPurchaseId: giftPurchase.id });
-                                    if (giftPurchase && customerEmail) {
-                                        const notify = async () => {
-                                            sendCouponCodeToCustomerEmail(customerEmail, giftPurchase.id, giftPurchase.promoCodeCode);
-                                        };
-                                        void notify();
-                                    } else {
-                                        logger.error('Could not get either couponCode or customer email.', {
-                                            promoCodeCode: giftPurchase.promoCodeCode,
-                                            promoCodeId: giftPurchase.promoCodeId,
-                                            giftPurchaseId: giftPurchase.id,
-                                            email: customerEmail,
-                                            userId: customerInfo.userId,
-                                        });
-                                    }
+                                    return giftPurchase;
                                 }
-                            }
+                            });
+
+
+
+                            Promise.all(promises).then((giftPurchases) => {
+                                logger.info('Handle all line items.', { checkoutSessionId: data.id });
+
+                                // send an email containing all the gift info for all the gifts purchased
+
+                                if (customerEmail) {
+                                    const notify = async () => {
+                                        sendGiftPurchaseEmail(customerEmail, giftPurchases);
+                                    };
+                                    void notify();
+                                } else {
+                                    logger.error('Could not get either couponCode or customer email.', {
+                                        checkoutSessionId: data.id,
+                                        email: customerEmail,
+                                        userId: userId,
+                                    });
+                                }
+
+                            })
+                            .catch((reason: any) => {
+                                logger.error('Failed to handle all line items', { error: reason, checkoutSessionId: data.id });
+                            });
                         }
+
                         logger.info('end of the checkout.session.complete webhook');
                     }
 

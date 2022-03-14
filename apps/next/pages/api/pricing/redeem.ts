@@ -2,9 +2,13 @@ import { logger } from '@app/util/logger';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import prisma from '@app/util/ssr/prisma';
 import stripe, { getCustomerId } from '@app/util/ssr/stripe';
-import { giftPromoCodeLookupMap, giftRedemptionLinkQueryParamName } from '@app/util/stripe/constants';
+import { giftPromoCodeLookupMap, giftRedemptionLinkQueryParamName } from '@app/util/stripe/gift/constants';
+import { getPromoCodeById, isPromoCodeRedeemed } from '@app/util/stripe/gift/redeemHelpers';
 import { GiftPurchase } from '@prisma/client';
 import Stripe from 'stripe';
+
+const alreadyRedeemedUrl = '/gift/redeemed';
+const purchaseSuccessUrl = '/gift/purchased';
 
 /**
  * We redirect requests to /redeem&giftId=<ID> to this API endpoint. The redirect is setup in next.config.js.
@@ -43,7 +47,7 @@ handler.get(async (req, res) => {
     // Check if the gift has already been redeemed
     if (isPromoCodeRedeemed(promoCode)) {
         // redirect the user to a page telling them that the gift has already been redeemed
-        return res.redirect('/redeem/status');
+        return res.redirect(alreadyRedeemedUrl);
     }
 
     const couponId: string = promoCode.coupon.id;
@@ -69,7 +73,7 @@ handler.get(async (req, res) => {
             trial_from_plan: true,
             metadata: {},
         },
-        success_url: `${process.env.NEXTAUTH_URL}/account`,
+        success_url: `${process.env.NEXTAUTH_URL}${purchaseSuccessUrl}`,
         cancel_url: `${process.env.NEXTAUTH_URL}/`,
         discounts: [
             {
@@ -88,24 +92,3 @@ handler.get(async (req, res) => {
     }
 });
 export default handler;
-
-/**
- * Get a Stripe promo code via ID.
- *
- * @param id promo code ID
- * @returns Stripe promotion code
- */
-async function getPromoCodeById(id: string): Promise<Stripe.PromotionCode | undefined> {
-    try {
-        const promoCode: Stripe.Response<Stripe.PromotionCode> = await stripe.promotionCodes.retrieve(id);
-        return promoCode;
-    } catch (e) {
-        logger.error('Error getting Stripe promo code.', { error: e, id });
-        return undefined;
-    }
-}
-
-function isPromoCodeRedeemed(promoCode: Stripe.PromotionCode): boolean {
-    // Stripe sets the promo code to inactive once it has met the max_redemptions setting (which for gifts is 1).
-    return promoCode.active === false;
-}

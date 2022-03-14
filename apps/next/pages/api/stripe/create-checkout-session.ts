@@ -27,6 +27,11 @@ handler.post(async (req, res) => {
             {
                 price: price,
                 quantity: 1,
+                adjustable_quantity: {
+                    enabled: !isSubscription,
+                    minimum: 1,
+                    maximum: 100,
+                }
             },
         ],
         mode: isSubscription ? 'subscription' : 'payment',
