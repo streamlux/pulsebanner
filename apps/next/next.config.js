@@ -35,7 +35,7 @@ const nextConfig = {
                 has: [
                     {
                       type: 'query',
-                      key: 'promoCode'
+                      key: 'code'
                     }
                 ]
             }

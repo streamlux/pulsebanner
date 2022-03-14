@@ -9,7 +9,7 @@ const handler = createAuthApiHandler();
 handler.get(async (req, res) => {
     logger.info('Inside the redeem endpoint');
     // get the query param
-    const queryParam = req.query.promoCode;
+    const queryParam = req.query.code;
     logger.info('Query param: ', { queryParam: queryParam });
     if (queryParam === undefined) {
         logger.info('Query param is undefined. Redirecting to the home page.');
