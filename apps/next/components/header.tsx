@@ -34,7 +34,7 @@ import { useAdmin } from '../util/hooks/useAdmin';
 import favicon from '@app/public/logo.webp';
 import { FaArrowRight, FaDiscord, FaTwitter } from 'react-icons/fa';
 import { trackEvent } from '@app/util/umami/trackEvent';
-import {  promo, promoCode } from '@app/util/constants';
+import { promo, promoCode } from '@app/util/constants';
 import { HeaderMenuItem } from './header/HeaderMenuItem';
 
 const headerImages = {
@@ -166,26 +166,48 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                 <Spacer />
                                 <Flex experimental_spaceX="2" alignItems="center" justifySelf="flex-end">
                                     {breakpointValue.mobile && (
-                                        <IconButton
-                                            size="sm"
-                                            onClick={() => window.open('/discord', '_blank')}
-                                            aria-label="Discord"
-                                            title="Discord"
-                                            icon={<FaDiscord />}
-                                            className={trackEvent('click', 'discord-button')}
-                                        />
+                                        <>
+                                            <IconButton
+                                                aria-label="Twitter"
+                                                variant={'ghost'}
+                                                size="sm"
+                                                onClick={() => window.open('https://twitter.com/pulsebanner', '_blank')}
+                                                icon={<FaTwitter />}
+                                                className={trackEvent('click', 'discord-button')}
+                                            />
+                                            <IconButton
+                                                size="sm"
+                                                onClick={() => window.open('/discord', '_blank')}
+                                                aria-label="Discord"
+                                                title="Discord"
+                                                variant="ghost"
+                                                icon={<FaDiscord />}
+                                                className={trackEvent('click', 'discord-button')}
+                                            />
+                                        </>
                                     )}
                                     {!breakpointValue.mobile && (
-                                        <Button
-                                            size="sm"
-                                            onClick={() => window.open('/discord', '_blank')}
-                                            leftIcon={<FaDiscord />}
-                                            className={trackEvent('click', 'discord-button')}
-                                        >
-                                            Join our Discord
-                                        </Button>
+                                        <>
+                                            <IconButton
+                                                aria-label="Twitter"
+                                                variant={'ghost'}
+                                                size="sm"
+                                                onClick={() => window.open('https://twitter.com/pulsebanner', '_blank')}
+                                                icon={<FaTwitter />}
+                                                className={trackEvent('click', 'discord-button')}
+                                            />
+                                            <Button
+                                                variant={'ghost'}
+                                                size="sm"
+                                                onClick={() => window.open('/discord', '_blank')}
+                                                leftIcon={<FaDiscord />}
+                                                className={trackEvent('click', 'discord-button')}
+                                            >
+                                                Join our Discord
+                                            </Button>
+                                        </>
                                     )}
-{/*
+                                    {/*
                                     <IconButton
                                         size={'sm'}
                                         aria-label="Toggle theme"
@@ -217,7 +239,7 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                         <Menu>
                                             <Avatar size="sm" as={MenuButton} name={session.user.name} src={session.user.image} />
                                             <Portal>
-                                                <MenuList>
+                                                <MenuList zIndex={11} bg="gray.800">
                                                     <NextLink href="/account" passHref>
                                                         <MenuItem as="a">Account</MenuItem>
                                                     </NextLink>
