@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.10.3] - 2022-03-13
+
 ### Fixed
 - Don't show background page for locked presets.
 
