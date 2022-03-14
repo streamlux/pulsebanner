@@ -376,5 +376,8 @@ model GiftPurchase {
     purchaserUserId  String
     purchaserUser    User   @relation(fields: [purchaserUserId], references: [id])
 
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
     @@map("gift_purchase")
 }
