@@ -292,26 +292,27 @@ handler.post(async (req, res) => {
                         // We set the `client_reference_id` to the user ID when we create the checkout session in create-checkout-session.ts.
                         const userId = data.client_reference_id;
 
-                        const lineItems = await stripe.checkout.sessions.listLineItems(data.id);
+                        const lineItems = await stripe.checkout.sessions.listLineItems(data.id, {
+                            limit: 100,
+                        });
 
                         if (userId) {
                             const promises = lineItems.data.map(async (lineItem) => {
+                                for (let i = 0; i < lineItem.quantity; i++) {
+                                    const priceId: string = lineItem.price.id;
+                                    const amountTotal: number = lineItem.amount_total;
 
-                                const priceId: string = lineItem.price.id;
-                                const amountTotal: number = lineItem.amount_total;
+                                    // lookup the priceId to couponCode
+                                    const giftCouponId: string | undefined = priceId ? giftPricingLookupMap[priceId] : undefined;
 
-                                // lookup the priceId to couponCode
-                                const giftCouponId: string | undefined = priceId ? giftPricingLookupMap[priceId] : undefined;
-
-                                if (giftCouponId) {
-                                    const giftPurchase: GiftPurchase | undefined = await handleGiftPurchase(giftCouponId, amountTotal, userId, customerEmail, priceId, data.id);
-                                    // if we successfully generated a couponCode, we send the customer an email
-                                    logger.info('handled stripe promo code successfully', { giftPurchaseId: giftPurchase.id });
-                                    return giftPurchase;
+                                    if (giftCouponId) {
+                                        const giftPurchase: GiftPurchase | undefined = await handleGiftPurchase(giftCouponId, amountTotal, userId, customerEmail, priceId, data.id, i);
+                                        // if we successfully generated a couponCode, we send the customer an email
+                                        logger.info('handled stripe promo code successfully', { giftPurchaseId: giftPurchase.id });
+                                        return giftPurchase;
+                                    }
                                 }
                             });
-
-
 
                             Promise.all(promises).then((giftPurchases) => {
                                 logger.info('Handle all line items.', { checkoutSessionId: data.id });
@@ -332,9 +333,9 @@ handler.post(async (req, res) => {
                                 }
 
                             })
-                            .catch((reason: any) => {
-                                logger.error('Failed to handle all line items', { error: reason, checkoutSessionId: data.id });
-                            });
+                                .catch((reason: any) => {
+                                    logger.error('Failed to handle all line items', { error: reason, checkoutSessionId: data.id });
+                                });
                         }
 
                         logger.info('end of the checkout.session.complete webhook');

@@ -382,6 +382,7 @@ model GiftPurchase {
     price   Price  @relation(fields: [priceId], references: [id])
 
     checkoutSessionId String // ID of the checkout session
+    index            Int // local to a single checkout session, ex if someone buys 3 gifts in a session, the gifts will be 0, 1, 2
 
     purchaserUserId String
     purchaserUser   User   @relation(fields: [purchaserUserId], references: [id])
