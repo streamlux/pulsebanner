@@ -290,7 +290,7 @@ const Page: NextPage<Props> = ({ gifts, allGiftPurchases }) => {
                                             <Divider w="full" mx="2" variant={'dashed'} />
                                             <Box>
                                                 {gifts[0].gift.checkoutSessionId !== purchase.checkoutSessionId ? (
-                                                    <NextLink passHref href={`/gift/purchased?cs=${purchase.checkoutSessionId}`}>
+                                                    <NextLink passHref href={`/gifts/purchased?cs=${purchase.checkoutSessionId}`}>
                                                         <Button size="sm" as="a">
                                                             View Summary
                                                         </Button>

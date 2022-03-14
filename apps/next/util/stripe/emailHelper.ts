@@ -42,7 +42,7 @@ export const sendGiftPurchaseEmail = async (customerEmail: string, gifts: GiftPu
 <div class="container mx-auto" style="padding-left: 24px; padding-right: 24px">
         <h1 class="text-xl font-bold">PulseBanner Gift Purchase Receipt</h1><h3 class="text-base">Thank you for puchasing PulseBanner gifts! ❤️</h3>`;
 
-    const bodyText = `<h2><a href="${process.env.NEXTAUTH_URL}/gift/purchased?cs=${gifts[0].checkoutSessionId}">View Gift Purchase Summary</a></h2>`;
+    const bodyText = `<h2><a href="${process.env.NEXTAUTH_URL}/gifts/purchased?cs=${gifts[0].checkoutSessionId}">View Gift Purchase Summary</a></h2>`;
 
     let body = `<h2>${gifts.length}x ${price.nickname} ${price.product.name}</h2>`;
 
@@ -62,7 +62,7 @@ export const sendGiftPurchaseEmail = async (customerEmail: string, gifts: GiftPu
     // const body = `See below for your one time use code to giveaway.<br><br><b>${gift.promoCodeCode}</b></></br>
     // You can also provide the winner with the following link which will take them right to checkout!<br><br><a href="url">${redemptionUrl}</a></br></br>
     const footer = `
-        <h2><a href="${process.env.NEXTAUTH_URL}/gift/purchased?cs=${gifts[0].checkoutSessionId}">View Gift Purchase Summary</a></h2>
+        <h2><a href="${process.env.NEXTAUTH_URL}/gifts/purchased?cs=${gifts[0].checkoutSessionId}">View Gift Purchase Summary</a></h2>
         <br>Have any questions? Feel free to email us at contact@pulsebanner.com and we'll be sure to get back to you!
         <br><br>Thank you ❤️</br></br>
         <img width="256px" src="https://pb-static.sfo3.cdn.digitaloceanspaces.com/logos/tf_color_dark.png">
