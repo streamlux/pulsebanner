@@ -7,8 +7,8 @@ import { getPromoCodeById, isPromoCodeRedeemed } from '@app/util/stripe/gift/red
 import { GiftPurchase } from '@prisma/client';
 import Stripe from 'stripe';
 
-const alreadyRedeemedUrl = '/gifts/redeemed';
-const purchaseSuccessUrl = '/gifts/purchased';
+const alreadyRedeemedUrl = '/gifts/redeem/fail';
+const purchaseSuccessUrl = '/gifts/redeem/success';
 
 /**
  * We redirect requests to /redeem&giftId=<ID> to this API endpoint. The redirect is setup in next.config.js.

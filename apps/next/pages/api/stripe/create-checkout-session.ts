@@ -3,7 +3,7 @@ import { createAuthApiHandler } from '../../../util/ssr/createApiHandler';
 import stripe from '../../../util/ssr/stripe';
 import { getCustomerId } from '../../../util/ssr/stripe';
 
-const giftPurchaseSuccessPath = '/gifts/purchased';
+const giftPurchaseSuccessPath = '/gifts/summary';
 
 const handler = createAuthApiHandler();
 
