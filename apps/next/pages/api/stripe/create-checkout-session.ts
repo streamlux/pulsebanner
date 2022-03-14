@@ -21,6 +21,7 @@ handler.post(async (req, res) => {
         payment_method_types: ['card'],
         billing_address_collection: 'required',
         customer: customerId,
+        // used to link the created subscription back to the user when the payment is complete
         client_reference_id: userId,
         line_items: [
             {

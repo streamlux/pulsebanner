@@ -2,20 +2,29 @@ import { sendMessage } from '@app/util/discord/sendMessage';
 import { logger } from '@app/util/logger';
 import prisma from '@app/util/ssr/prisma';
 import stripe from '@app/util/ssr/stripe';
+import { Subscription } from '@prisma/client';
 import Stripe from 'stripe';
-import { updateOrCreateSubscription } from './helpers';
+import { upsertSubscriptionFromCheckoutSession } from './upsertSubscription';
 
-export const handleStripeCheckoutSessionCompletedForSubscription = async (data: Stripe.Checkout.Session) => {
-    const subscription = await stripe.subscriptions.retrieve(data.subscription as string, {
+/**
+ * Handles the Stripe checkout.session.completed event when mode is subscription.
+ *
+ * @param checkoutSession Stripe checkout session data from webhook
+ */
+export async function handleSubscriptionCheckoutSessionComplete(checkoutSession: Stripe.Checkout.Session): Promise<void> {
+    const subscription: Stripe.Response<Stripe.Subscription> = await stripe.subscriptions.retrieve(checkoutSession.subscription as string, {
         expand: ['default_payment_method'],
     });
 
     // get the subscription info
-    const subscriptionInfo = await updateOrCreateSubscription(data, subscription);
+    const subscriptionInfo: Subscription = await upsertSubscriptionFromCheckoutSession(subscription, checkoutSession.client_reference_id);
 
     const userId = subscriptionInfo === null ? null : subscriptionInfo.userId;
+    sendDiscordNotification(userId, subscriptionInfo);
+};
 
-    // send webhook to discord saying someone subscribed
+// send webhook to discord saying someone subscribed
+function sendDiscordNotification(userId: string, subscriptionInfo: Subscription) {
     if (userId) {
         const notify = async () => {
             const user = await prisma.user.findUnique({
@@ -65,4 +74,4 @@ export const handleStripeCheckoutSessionCompletedForSubscription = async (data: 
         };
         void notify();
     }
-};
+}

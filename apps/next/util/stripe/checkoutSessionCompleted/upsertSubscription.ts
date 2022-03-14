@@ -3,8 +3,16 @@ import prisma from "@app/util/ssr/prisma";
 import { Subscription, SubscriptionStatus } from "@prisma/client";
 import Stripe from "stripe";
 
-export const updateOrCreateSubscription = async (data: Stripe.Checkout.Session, subscription: Stripe.Response<Stripe.Subscription>): Promise<Subscription> => {
-    await prisma.subscription.upsert({
+/**
+ * Create or update a subscription in the database from a checkout session.
+ *
+ * @param subscription Stripe subscription object
+ * @param userId User ID of the user who purchased the subscription. We use the `client_reference_id` on the checkout session to find the user.
+ * We set the `client_reference_id` to the user ID when we create the checkout session in create-checkout-session.ts.
+ * @returns created or updated subscription
+ */
+export async function upsertSubscriptionFromCheckoutSession(subscription: Stripe.Response<Stripe.Subscription>, userId: string): Promise<Subscription> {
+    const resultingSubscription = await prisma.subscription.upsert({
         where: {
             id: subscription.id,
         },
@@ -12,7 +20,7 @@ export const updateOrCreateSubscription = async (data: Stripe.Checkout.Session, 
             id: subscription.id,
             user: {
                 connect: {
-                    id: data.client_reference_id,
+                    id: userId,
                 },
             },
             price: {
@@ -48,11 +56,5 @@ export const updateOrCreateSubscription = async (data: Stripe.Checkout.Session, 
         },
     });
 
-    const subscriptionInfo = await prisma.subscription.findUnique({
-        where: {
-            id: subscription.id,
-        },
-    });
-
-    return subscriptionInfo;
+    return resultingSubscription;
 }

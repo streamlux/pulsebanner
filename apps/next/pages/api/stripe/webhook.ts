@@ -14,7 +14,7 @@ import { flipFeatureEnabled, getTwitterInfo } from '@app/util/database/postgresH
 import { defaultBannerSettings } from '@app/pages/banner';
 import { logger } from '@app/util/logger';
 import { commissionLookupMap } from '@app/util/partner/constants';
-import { handleStripeCheckoutSessionCompletedForSubscription } from '@app/util/stripe/checkoutSessionCompleted/subscriptionPurchased';
+import { handleSubscriptionCheckoutSessionComplete } from '@app/util/stripe/checkoutSessionCompleted/handleSubscriptionCheckoutSessionComplete';
 import { getInvoiceInformation, updateInvoiceTables } from '@app/util/stripe/invoiceHelpers';
 import { giftPricingLookupMap } from '@app/util/stripe/constants';
 import { handleStripePromoCode } from '@app/util/stripe/giftPurchased';
@@ -273,15 +273,14 @@ handler.post(async (req, res) => {
 
                     // we get the mode it is in. If it's a subscription mode, we know it's for a indivdiual account
                     // otherwise, it's a giveaway
-                    const mode = data.mode;
+                    const mode: Stripe.Checkout.Session.Mode = data.mode;
 
                     // we need to handle the payment mode in a diffrent
                     if (mode === 'subscription') {
                         // if it's a subscription, we handle as we have in the past
-                        await handleStripeCheckoutSessionCompletedForSubscription(data);
-                    }
-                    // this is one time payments. We need to generate a code for the specific price point and send email
-                    if (mode === 'payment') {
+                        await handleSubscriptionCheckoutSessionComplete(data);
+                    } else if (mode === 'payment') {
+                        // this is one time payments. We need to generate a code for the specific price point and send email
                         // get the userId for the customer
                         const customerId = data.customer as string;
                         const customerEmail = data.customer_details.email;
