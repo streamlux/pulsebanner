@@ -17,7 +17,7 @@ import { commissionLookupMap } from '@app/util/partner/constants';
 import { handleSubscriptionCheckoutSessionComplete } from '@app/util/stripe/checkoutSessionCompleted/handleSubscriptionCheckoutSessionComplete';
 import { getInvoiceInformation, updateInvoiceTables } from '@app/util/stripe/invoiceHelpers';
 import { giftPricingLookupMap } from '@app/util/stripe/constants';
-import { handleStripePromoCode } from '@app/util/stripe/giftPurchased';
+import { handleGiftPurchase } from '@app/util/stripe/handleGiftPurchase';
 import { sendCouponCodeToCustomerEmail } from '@app/util/stripe/emailHelper';
 
 // Stripe requires the raw body to construct the event.
@@ -304,7 +304,7 @@ handler.post(async (req, res) => {
                                 const giftCouponId: string | undefined = priceId ? giftPricingLookupMap[priceId] : undefined;
 
                                 if (giftCouponId) {
-                                    const giftPurchase: GiftPurchase | undefined = await handleStripePromoCode(giftCouponId, amountTotal, customerInfo.userId);
+                                    const giftPurchase: GiftPurchase | undefined = await handleGiftPurchase(giftCouponId, amountTotal, customerInfo.userId);
                                     // if we successfully generated a couponCode, we send the customer an email
                                     logger.info('handled stripe promo code successfully', { giftPurchaseId: giftPurchase.id });
                                     if (giftPurchase && customerEmail) {
