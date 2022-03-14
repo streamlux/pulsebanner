@@ -2,9 +2,13 @@ import nodemailer from 'nodemailer';
 import mg from 'nodemailer-mailgun-transport';
 import { logger } from '../logger';
 
-// we send an email out when someone purchases a gift
+/**
+ * Send an email out when someone purchases a gift
+ *
+ * @param customerEmail recipient email
+ * @param promoCode discount code text
+ */
 export const sendCouponCodeToCustomerEmail = (customerEmail: string, promoCode: string) => {
-    console.log('seindg coupon Code method');
     const auth = {
         auth: {
             api_key: process.env.NODEMAILER_API_KEY,
@@ -12,7 +16,7 @@ export const sendCouponCodeToCustomerEmail = (customerEmail: string, promoCode: 
         },
     };
 
-    const checkoutUrl = `https://next.staging.pulsebanner.com/redeem?promoCode=${promoCode}`;
+    const checkoutUrl = `${process.env.NEXTAUTH_URL}/redeem?code=${promoCode}`;
 
     const emailText = `Thank you for puchasing a PulseBanner gift!
     See below for your one time use code to giveaway.<br><br><b>${promoCode}</b></br></br>
@@ -26,8 +30,8 @@ export const sendCouponCodeToCustomerEmail = (customerEmail: string, promoCode: 
     nodemailerMailgun.sendMail(
         {
             from: 'no-reply@pulsebanner.com',
-            to: `andrewespn@hotmail.com`, // An array if you have multiple recipients.
-            subject: 'Thank you from PulseBanner: Gift Purchased!',
+            to: customerEmail, // An array if you have multiple recipients.
+            subject: 'PulseBanner Membership Gift Code',
             // You can use "html:" to send HTML email content. It's magic!
             html: `${emailText}`,
             //You can use "text:" to send plain-text content. It's oldschool!
@@ -35,7 +39,7 @@ export const sendCouponCodeToCustomerEmail = (customerEmail: string, promoCode: 
         },
         (err, _info) => {
             if (err) {
-                logger.error('Error forwarding gift code and link to user email.', { error: err });
+                logger.error('Error gift code email.', { error: err, promoCode, customerEmail });
             }
         }
     );
