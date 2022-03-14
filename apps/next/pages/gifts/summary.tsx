@@ -148,7 +148,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 const Gift: React.FC<GiftInfo> = ({ redemptionUrl, redeemed }) => {
     const { onCopy, hasCopied } = useClipboard(redemptionUrl);
     return (
-        <Flex maxW="full" w="full" justifyContent={'space-between'} direction={['row', 'row']} experimental_spaceX={2} rounded="md" bg="gray.600" p="2" px="3">
+        <Flex maxW="full" w="full" justifyContent={'space-between'} direction={['row', 'row']} experimental_spaceX={2} rounded="md" bg="whiteAlpha.200" p="2" px="3" alignItems='center'>
             <NextLink href={redemptionUrl} passHref>
                 <Button colorScheme={redeemed ? undefined : 'blue'} as="a" variant={'link'} size="md" wordBreak={'break-all'} whiteSpace={'pre-wrap'}>
                     {redemptionUrl}
@@ -172,7 +172,7 @@ const Gift: React.FC<GiftInfo> = ({ redemptionUrl, redeemed }) => {
 const Page: NextPage<Props> = ({ gifts, allGiftPurchases }) => {
     return (
         <Container maxW={['container.lg']}>
-            <Box experimental_spaceY={12}>
+            <Box experimental_spaceY={12} pos='relative'>
                 <Center w="full">
                     <VStack>
                         <VStack>
@@ -200,7 +200,7 @@ const Page: NextPage<Props> = ({ gifts, allGiftPurchases }) => {
                                         <Text size={'sm'} maxW="full">
                                             Gifts have a unique redemption link. Share this link with anyone to let them redeem the gift. View your gift redemption links below.
                                         </Text>
-                                        <Alert status="warning" w="full" fontSize="sm" p="2">
+                                        <Alert status="warning" bg={'whiteAlpha.300'} w="full" fontSize="sm" p="2" rounded='md'>
                                             <AlertIcon />
                                             <AlertTitle mr={2} display={['none', 'inherit']}>
                                                 Warning
@@ -221,7 +221,7 @@ const Page: NextPage<Props> = ({ gifts, allGiftPurchases }) => {
                                         <strong>{gifts[0].gift.purchaserEmail}</strong>
                                         {" containing the Gift details and redemption link for safe keeping. Make sure you don't delete the gift email."}
                                     </Text>
-                                    <Alert status="info" w="full" fontSize="sm" p="2">
+                                    <Alert status="info" w="full" fontSize="sm" p="2" bg={'whiteAlpha.300'} rounded='md'>
                                         <AlertIcon />
                                         <AlertDescription>The email may go to your junk folder.</AlertDescription>
                                     </Alert>
@@ -301,6 +301,24 @@ const Page: NextPage<Props> = ({ gifts, allGiftPurchases }) => {
                         </VStack>
                     </Card>
                 </Center>
+                <div style={{ zIndex: -1, position: 'absolute', height: '50%', maxHeight: '700px', width: '100%', display: 'block' }}>
+                    <div className="contact-hero" style={{ position: 'relative', top: '-800px', right: '-100px', height: '38%' }}>
+                        <div className="bg-gradient-blur-wrapper contact-hero">
+                            <div className="bg-gradient-blur-circle-3 pink top"></div>
+                            <div className="bg-gradient-blur-circle-2 blue"></div>
+                            <div className="bg-gradient-blur-circle-4 purple"></div>
+                        </div>
+                    </div>
+                </div>
+                <div style={{ zIndex: -1, position: 'absolute', height: '50%', maxHeight: '700px', width: '100%', display: 'block' }}>
+                    <div className="contact-hero" style={{ position: 'relative', top: '0px', right: '600px', height: '18%' }}>
+                        <div className="bg-gradient-blur-wrapper contact-hero">
+                            <div className="bg-gradient-blur-circle-3 pink top"></div>
+                            <div className="bg-gradient-blur-circle-2 blue"></div>
+                            <div className="bg-gradient-blur-circle-4 purple"></div>
+                        </div>
+                    </div>
+                </div>
             </Box>
             <Confetti />
         </Container>

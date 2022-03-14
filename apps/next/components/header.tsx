@@ -185,7 +185,7 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                             Join our Discord
                                         </Button>
                                     )}
-
+{/*
                                     <IconButton
                                         size={'sm'}
                                         aria-label="Toggle theme"
@@ -194,7 +194,7 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                         className={trackEvent('click', 'color-theme-button')}
                                     >
                                         Toggle {colorMode === 'light' ? 'Dark' : 'Light'}
-                                    </IconButton>
+                                    </IconButton> */}
 
                                     {!session && (
                                         <NextLink href="/api/auth/signin" passHref>

@@ -1,10 +1,10 @@
 import { CheckIcon } from '@chakra-ui/icons';
-import { Box, Flex, VStack, Heading, Text, Center, List, ListIcon, ListItem, Stack, chakra, ScaleFade } from '@chakra-ui/react';
+import { Box, Flex, VStack, Heading, Text, Center, List, ListIcon, ListItem, Stack, chakra, ScaleFade, HStack } from '@chakra-ui/react';
 import React from 'react';
 
 export const ProductCardHeading: React.FC = ({ children }) => {
     return (
-        <Box w="full" experimental_spaceY={4}>
+        <Box experimental_spaceY={4}>
             <Flex direction="row" justify="space-between" alignItems="center">
                 <VStack alignItems="start" spacing={0}>
                     {children}

@@ -28,7 +28,7 @@ interface ProductProps {
     paymentPlanResponse?: APIPaymentObject;
 }
 
-export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, handlePricingClick, paymentPlan, paymentPlanResponse }) => {
+export const ProductCardDesktop: React.FC<ProductProps> = ({ product, billingInterval, handlePricingClick, paymentPlan, paymentPlanResponse }) => {
     const price: Price = product?.prices?.find((one: Price) => one.interval === billingInterval);
     const monthlyPrice: Price = product?.prices.find((one: Price) => one.interval === 'month');
 
@@ -38,7 +38,7 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
 
     const isCurrentPlan = paymentPlanResponse?.priceId === price.id;
 
-    const sharedFeatureList = ['Live Twitter profile picture', 'Custom banner colors', 'Custom banner background image', 'Custom fonts!', 'Fully customize Name Changer'];
+    const sharedFeatureList = ['Live Twitter profile picture', 'Custom banner colors', 'Custom background image', 'Custom fonts!', 'Fully customize Name Changer'];
     const personalFeatureList = sharedFeatureList.concat(['High quality image rendering', 'Banner refreshing (60 min)']);
     const professionalFeatureList = sharedFeatureList.concat(['Remove watermark', 'Ultra high image quality', 'Fastest banner refreshing (10 min)', 'Unlock all features']);
 
@@ -85,16 +85,12 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
 
                 <ProductCardFooter>
                     {isCurrentPlan ? (
-                        <Tag colorScheme={'green'} px="4" fontSize="lg" size='lg' h='40px' fontWeight={'bold'}>
+                        <Tag colorScheme={'green'} px="4" py="2" fontSize="lg" fontWeight={'bold'}>
                             Current Subscription
                         </Tag>
                     ) : (
                         <Button
                             fontWeight="bold"
-                            // _hover={{
-                            //     bgGradient: "linear(to-r, #2AA9ff, #9246FF)"
-                            // }}
-                            // bgGradient="linear(to-r, #2AA9ff, #9246FF)"
                             disabled={isCurrentPlan}
                             onClick={() => handlePricingClick(price.id)}
                             colorScheme="green"
