@@ -1,3 +1,5 @@
+import { PaymentPlan } from "@app/util/database/paymentHelpers";
+
 // for gifting. Price id to coupon id
 export const giftPricingLookupMap: Record<string, string> = {
     // test env
@@ -32,3 +34,25 @@ export const giftPromoCodeLookupMap: Record<string, string> = {
  * Name of the query param that contains the id of the gift purchase to redeem.
  */
 export const giftRedemptionLinkQueryParamName = 'giftId';
+
+type GiftDurations = 'oneMonth' | 'threeMonths' | 'sixMonths' | 'oneYear';
+
+const personalGiftPriceIds: Record<GiftDurations, string> = {
+    oneMonth: 'price_1KaRx2JzF2VT0EeK9kcprJar',
+    threeMonths: 'price_1KaRwdJzF2VT0EeKUc14FMC1',
+    sixMonths: 'price_1KaRvXJzF2VT0EeKhpeH0DOq',
+    oneYear: 'price_1KaaNyJzF2VT0EeKSuIGAE09',
+
+}
+
+const professionalGiftPriceIds: Record<GiftDurations, string> = {
+    oneMonth: 'price_1KaRyWJzF2VT0EeKxTySB9Yy',
+    threeMonths: 'price_1KaRyWJzF2VT0EeKCuKPCfR9',
+    sixMonths: 'price_1KaRyWJzF2VT0EeKLkHcHWFk',
+    oneYear: 'price_1KaaPRJzF2VT0EeKkEfow72g',
+}
+
+export const giftPriceIds: Record<Exclude<PaymentPlan, 'Free'>, typeof professionalGiftPriceIds> = {
+    Personal: personalGiftPriceIds,
+    Professional: professionalGiftPriceIds,
+}

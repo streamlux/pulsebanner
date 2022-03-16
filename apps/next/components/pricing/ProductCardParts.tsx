@@ -77,6 +77,14 @@ export const ProductCardPrice: React.FC = ({ children }) => {
     );
 };
 
+export const GiftCardPrice: React.FC = ({ children }) => {
+    return (
+        <Stack direction={['column', 'row']} alignItems={['center', 'center']} w="full" spacing={2}>
+            {children}
+        </Stack>
+    );
+};
+
 export const ProductCardPriceAmount: React.FC<TextProps> = ({ children, ...props }) => {
     return (
         <Text fontSize="2xl" fontWeight="extrabold" lineHeight="tight" as={chakra.span} bg="green.200" px="1" py="0.5" rounded="md" color="black" {...props}>

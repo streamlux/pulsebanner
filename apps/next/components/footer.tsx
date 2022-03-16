@@ -3,7 +3,7 @@ import { Button, Center, Divider, Heading, Link, Spacer, Text, VStack, Wrap, Wra
 import styles from './footer.module.css';
 import React from 'react';
 import { FaDiscord, FaTwitter } from 'react-icons/fa';
-import { discordLink, instagramLink, twitterLink } from '@app/util/constants';
+import { discordLink, instagramLink, tiktokLink, twitterLink } from '@app/util/constants';
 import { useRouter } from 'next/router';
 
 export default function Footer() {
@@ -40,19 +40,14 @@ export default function Footer() {
                 <Center>
                     <Wrap justify="center" spacing={['2', '6']}>
                         <WrapItem className={styles.navItem}>
-                            <Link isExternal href={discordLink}>
-                                Discord
-                            </Link>
+                            <NextLink href="/gifts" passHref>
+                                <Link>Pricing</Link>
+                            </NextLink>
                         </WrapItem>
                         <WrapItem className={styles.navItem}>
-                            <Link isExternal href={twitterLink}>
-                                Twitter
-                            </Link>
-                        </WrapItem>
-                        <WrapItem className={styles.navItem}>
-                            <Link isExternal href={instagramLink}>
-                                Instagram
-                            </Link>
+                            <NextLink href="/gifts" passHref>
+                                <Link>Gifts</Link>
+                            </NextLink>
                         </WrapItem>
                         <WrapItem className={styles.navItem}>
                             <NextLink href="/faq" passHref>
@@ -78,6 +73,30 @@ export default function Footer() {
                             <NextLink href="/conduct" passHref>
                                 <Link>Code of Conduct</Link>
                             </NextLink>
+                        </WrapItem>
+                    </Wrap>
+                </Center>
+                <Center>
+                    <Wrap justify="center" spacing={['2', '6']}>
+                        <WrapItem className={styles.navItem}>
+                            <Link isExternal href={discordLink}>
+                                Discord
+                            </Link>
+                        </WrapItem>
+                        <WrapItem className={styles.navItem}>
+                            <Link isExternal href={twitterLink}>
+                                Twitter
+                            </Link>
+                        </WrapItem>
+                        <WrapItem className={styles.navItem}>
+                            <Link isExternal href={instagramLink}>
+                                Instagram
+                            </Link>
+                        </WrapItem>
+                        <WrapItem className={styles.navItem}>
+                            <Link isExternal href={tiktokLink}>
+                                TikTok
+                            </Link>
                         </WrapItem>
                     </Wrap>
                 </Center>

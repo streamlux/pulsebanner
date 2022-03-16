@@ -151,7 +151,7 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
                             <Center w="full">
                                 <SimpleGrid columns={[1, 3]} spacing="4" w="full">
                                     <WrapItem key="free" w="full" h="full">
-                                        <FreeProductCard />
+                                        <FreeProductCard modal />
                                     </WrapItem>
                                     {sortProductsByPrice(data).map((product) => (
                                         <Box key={product.id} w="full">

@@ -42,9 +42,7 @@ import {
     Spacer,
 } from '@chakra-ui/react';
 
-import getStripe from '../util/getStripe';
-import prisma from '../util/ssr/prisma';
-import { FaTwitter, FaCheck, FaArrowRight, FaHeart } from 'react-icons/fa';
+import { FaTwitter, FaCheck } from 'react-icons/fa';
 import { ProductCard } from '@app/components/pricing/ProductCard';
 import { trackEvent } from '@app/util/umami/trackEvent';
 import { PaymentPlan } from '@app/util/database/paymentHelpers';
@@ -54,21 +52,18 @@ import { FaqSection } from '@app/modules/faq/FaqSection';
 import { usePaymentPlan } from '@app/util/hooks/usePaymentPlan';
 import { FreeProductCard } from '@app/components/pricing/FreeProductCard';
 import { Card } from '@app/components/Card';
-import { landingPageAsset } from '.';
 import { ArrowRightIcon } from '@chakra-ui/icons';
 import { GiftCard } from '@app/components/pricing/GiftCard';
 import { ButtonSwitch } from '@app/components/buttonSwitch/ButtonSwitch';
 import ReactCanvasConfetti from 'react-canvas-confetti';
 import { giftPriceIds } from '@app/util/stripe/gift/constants';
-import { GiftPricing } from '@app/modules/pricing/GiftPricing';
+import getStripe from '@app/util/getStripe';
 
 type Props = {
-    products: (Product & { prices: Price[] })[];
-    prices: (Price & { product: Product })[];
     priceMap: Record<string, Price & { product: Product }>;
 };
 
-const Page: NextPage<Props> = ({ products, priceMap }) => {
+export const GiftPricing: React.FC<Props> = ({ priceMap }) => {
     const [paymentPlan, paymentPlanResponse] = usePaymentPlan();
     const { data: session } = useSession({ required: false }) as any;
 
@@ -305,173 +300,94 @@ const Page: NextPage<Props> = ({ products, priceMap }) => {
                 </ModalContent>
             </Modal>
 
-            <Container maxW="container.lg" experimental_spaceY="6" pb="8" mt="-8">
-                <Heading size="xl" textAlign="center" h="full" bgGradient="linear(to-r, #2AA9ff, #f246FF)" bgClip="text" fontSize={['5xl', '7xl']} fontWeight="bold">
-                    PulseBanner Memberships
-                </Heading>
-            </Container>
-
-            <VStack spacing={[6, 12]} w="full">
-                <Container maxW="container.xl" position={'relative'} experimental_spaceY={24}>
-                    <Container maxW="container.lg">
-                        {breakpoint !== 'base' && (
-                            <Box my="4">
-                                <FreeProductCard />
-                            </Box>
-                        )}
-                        <Center w={['auto', 'auto', 'auto', 'auto']}>
-                            <SimpleGrid columns={[1, 1, 1, 3]} spacing="4" w="full">
-                                <WrapItem key={'free2'} w="full" h="full">
-                                    <Card props={{ color: 'white', p: '0', border: 'none', w: 'full', h: 'full', bgGradient: 'linear(to-tr, #9246FF, #2AA9E0)' }}>
-                                        <Flex direction={'column'} justifyItems="stretch" h="full" rounded="md">
-                                            <Box p="4" px="6" flexGrow={1} w="full">
-                                                <Text fontSize={'2xl'}>Level up with a</Text>
-                                                <Heading>PulseBanner Membership.</Heading>
-                                                <Text my="4">Choose a plan and begin customizing in seconds. Then experience how PulseBanner can help you grow.</Text>
-
-                                                {breakpoint !== 'base' && (
-                                                    <HStack>
-                                                        <Text fontWeight={'bold'} fontSize={'xl'}>
-                                                            Select a plan
-                                                        </Text>
-                                                        <ArrowRightIcon />
-                                                    </HStack>
-                                                )}
-                                                {breakpoint === 'base' && <Center mb="6">{AnnualBillingControl}</Center>}
-                                                {breakpoint === 'base' && (
-                                                    <HStack>
-                                                        <Text fontWeight={'bold'} fontSize={'xl'}>
-                                                            Select a plan
-                                                        </Text>
-                                                        <ArrowRightIcon transform={'rotate(90deg)'} />
-                                                    </HStack>
-                                                )}
-                                            </Box>
-                                            {breakpoint !== 'base' && <Center mb="2">{AnnualBillingControl}</Center>}
-                                        </Flex>
-                                    </Card>
-                                </WrapItem>
-                                {sortProductsByPrice(products).map((product) => (
-                                    <ProductCard
-                                        key={product.id}
-                                        product={product}
-                                        billingInterval={billingInterval}
-                                        handlePricingClick={(priceId) => handlePricingClick(priceId, true)}
-                                        paymentPlan={paymentPlan}
-                                        paymentPlanResponse={paymentPlanResponse}
-                                    />
-                                ))}
-                                {breakpoint === 'base' && (
-                                    <Box>
-                                        <FreeProductCard modal />
-                                    </Box>
-                                )}
-                            </SimpleGrid>
-                        </Center>
-                        <Container centerContent maxW="container.lg" experimental_spaceY="4" pt="4">
-                            <Text fontSize="md">Prices in USD. VAT may apply. Membership is tied to one Twitter account.</Text>
-                        </Container>
-                    </Container>
-                    <div style={{ zIndex: -1, position: 'absolute', height: '50%', maxHeight: '700px', width: '80%', display: 'block' }}>
-                        <div className="contact-hero" style={{ position: 'relative', top: '-500px', left: '-600px', height: '38%' }}>
-                            <div className="bg-gradient-blur-wrapper contact-hero">
-                                <div className="bg-gradient-blur-circle-2 blue"></div>
-                                <div className="bg-gradient-blur-circle-4 purple"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div style={{ zIndex: -1, position: 'absolute', height: '50%', maxHeight: '700px', width: '100%', display: 'block' }}>
-                        <div className="contact-hero" style={{ position: 'relative', top: '-300px', left: '0px', height: '78%' }}>
-                            <div className="bg-gradient-blur-wrapper contact-hero">
-                                <div className="bg-gradient-blur-circle-3 pink top"></div>
-                                <div className="bg-gradient-blur-circle-2 blue"></div>
-                                <div className="bg-gradient-blur-circle-4 purple"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div style={{ zIndex: -1, position: 'absolute', height: '50%', maxHeight: '700px', width: '70%', display: 'block' }}>
-                        <div className="contact-hero" style={{ position: 'relative', top: '480px', left: '-300px', height: '58%' }}>
-                            <div className="bg-gradient-blur-wrapper contact-hero">
-                                <div className="bg-gradient-blur-circle-3 pink top"></div>
-                                <div className="bg-gradient-blur-circle-2 blue"></div>
-                                <div className="bg-gradient-blur-circle-4 purple"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <Box>
-                        <Center>
-                            <Text textAlign="center" fontSize="3xl" maxW="container.md">
-                                Unlock even more awesome features and kindly support us by becoming a PulseBanner Member ♥️
-                            </Text>
-                        </Center>
-                    </Box>
-
+            <VStack w="full">
+                <Container maxW="container.xl" experimental_spaceY={24}>
                     <Container w="full" maxW={[undefined, 'container.xl']} px="0">
-                        <GiftPricing priceMap={priceMap} />
+                        <Grid templateRows={['repeat(1, 1fr)', 'repeat(3, 1fr)']} templateColumns={['repeat(1, 1fr)', 'repeat(3, 1fr)']} gap={4} w="full">
+                            <GridItem rowSpan={[1, 3]} colSpan={1} w="full">
+                                <Card props={{ color: 'white', p: '0', border: 'none', w: 'full', h: 'full', bgGradient: 'linear(to-tr, #9246FF, #2AA9E0)' }}>
+                                    <Flex direction={'column'} justifyItems="stretch" h="full" rounded="md">
+                                        <Box p="4" px="6" flexGrow={1} w="full">
+                                            <Text fontSize={'2xl'}>Feeling generous?</Text>
+                                            <HStack>
+                                                <Heading>
+                                                    PulseBanner Membership Gifts
+                                                    {breakpoint !== 'base' && (
+                                                        <Tooltip label="Click me!">
+                                                            <Button zIndex={20} p="0" fontSize={28} variant="ghost" ml="2" onClick={fire}>
+                                                                🎁
+                                                            </Button>
+                                                        </Tooltip>
+                                                    )}
+                                                </Heading>
+
+                                                <ReactCanvasConfetti refConfetti={getInstance} style={canvasStyles} />
+                                            </HStack>
+                                            <Text my="4">A PulseBanner Membership makes the perfect gift for streamers!</Text>
+                                            <Text my="4">Once purchased, gifts are easily shared using a unique link.</Text>
+                                            <Text my="4">Perfect for giveaways, no shipping needed!</Text>
+
+                                            {breakpoint !== 'base' && (
+                                                <HStack>
+                                                    <Text fontWeight={'bold'} fontSize={'xl'}>
+                                                        Select a gift
+                                                    </Text>
+                                                    <ArrowRightIcon />
+                                                </HStack>
+                                            )}
+                                            {breakpoint === 'base' && GiftProductSwitch}
+                                            {breakpoint === 'base' && (
+                                                <HStack>
+                                                    <Text fontWeight={'bold'} fontSize={'xl'}>
+                                                        Select a gift
+                                                    </Text>
+                                                    <ArrowRightIcon transform={'rotate(90deg)'} />
+                                                </HStack>
+                                            )}
+                                        </Box>
+                                        {breakpoint !== 'base' && GiftProductSwitch}
+                                    </Flex>
+                                </Card>
+                            </GridItem>
+                            <GridItem colSpan={[1, 2]}>
+                                <GiftCard
+                                    onClickBuy={async (q) => handlePricingClick(gift('oneMonth').id, false, q)}
+                                    variant="large"
+                                    duration="1-month"
+                                    price={gift('oneMonth').unitAmount}
+                                    product={giftProduct}
+                                />
+                            </GridItem>
+                            <GridItem colSpan={[1]}>
+                                <GiftCard
+                                    onClickBuy={async (q) => handlePricingClick(gift('threeMonths').id, false, q)}
+                                    duration="3-months"
+                                    price={gift('threeMonths').unitAmount}
+                                    product={giftProduct}
+                                />
+                            </GridItem>
+                            <GridItem colSpan={[1]}>
+                                <GiftCard
+                                    onClickBuy={async (q) => handlePricingClick(gift('sixMonths').id, false, q)}
+                                    duration="6-months"
+                                    price={gift('sixMonths').unitAmount}
+                                    product={giftProduct}
+                                />
+                            </GridItem>
+                            <GridItem colSpan={[1, 2]}>
+                                <GiftCard
+                                    onClickBuy={async (q) => handlePricingClick(gift('oneYear').id, false, q)}
+                                    variant="large"
+                                    duration="1-year"
+                                    price={gift('oneYear').unitAmount}
+                                    discount={gift('oneMonth').unitAmount * 12}
+                                    product={giftProduct}
+                                />
+                            </GridItem>
+                        </Grid>
                     </Container>
-                </Container>
-
-                <Container centerContent maxW="container.lg" experimental_spaceY="4">
-                    <Text textAlign="center" maxW="4xl" px="4" fontSize="2xl">
-                        Just like you, the people behind PulseBanner are creators. And like you, we rely on PulseBanner Memberships to keep improving and maintaining PulseBanner.
-                    </Text>
-
-                    <Text textAlign="center" maxW="4xl" px="4" fontSize="2xl">
-                        Help empower creators by supporting us ♥️
-                    </Text>
-                    <Box pt="32">
-                        <FaqSection items={pricingFaqItems.concat(generalFaqItems)} />
-                    </Box>
                 </Container>
             </VStack>
         </>
     );
 };
-
-// Since we export getServerSideProps method in this file, it means this page will be rendered on the server
-// aka this page is server-side rendered
-// This method is run on the server, then the return value is passed in as props to the component above
-export const getStaticProps: GetStaticProps<Props> = async (context) => {
-    const products = await prisma.product.findMany({
-        where: {
-            active: true,
-        },
-        include: {
-            prices: {
-                where: {
-                    active: true,
-                },
-            },
-        },
-    });
-
-    const prices = await prisma.price.findMany({
-        where: {
-            active: true,
-            AND: {
-                product: {
-                    active: true,
-                },
-            },
-        },
-        include: {
-            product: true,
-        },
-    });
-
-    const priceMap: Record<string, typeof prices[0]> = prices.reduce((map, obj) => {
-        map[obj.id] = obj;
-        return map;
-    }, {});
-
-    return {
-        props: {
-            products,
-            prices,
-            priceMap,
-        },
-    };
-};
-
-export default Page;

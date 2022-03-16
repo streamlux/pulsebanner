@@ -1,39 +1,122 @@
-import { ArrowRightIcon } from '@chakra-ui/icons';
-import { Box, Button, Flex, Heading, HStack, Spacer, Text, VStack, Wrap, WrapItem } from '@chakra-ui/react';
-import React, { ReactElement, FC } from 'react';
-import { CgGift } from 'react-icons/cg';
-import { FaArrowRight, FaGift, FaGifts, FaPlus } from 'react-icons/fa';
+import { formatUsd } from '@app/util/stringUtils';
+import { AddIcon, MinusIcon } from '@chakra-ui/icons';
+import {
+    Box,
+    Button,
+    ButtonGroup,
+    chakra,
+    Flex,
+    Heading,
+    HStack,
+    IconButton,
+    Popover,
+    PopoverArrow,
+    PopoverBody,
+    PopoverCloseButton,
+    PopoverContent,
+    PopoverHeader,
+    PopoverTrigger,
+    Spacer,
+    Tag,
+    Tooltip,
+    Text,
+    useBoolean,
+    useBreakpoint,
+    VStack,
+    Wrap,
+    WrapItem,
+    Center,
+} from '@chakra-ui/react';
+import React, { ReactElement, FC, useState } from 'react';
+import { FaArrowRight } from 'react-icons/fa';
 import { FiGift } from 'react-icons/fi';
 import { Card } from '../Card';
-import { ProductCardPriceAmount } from './ProductCardParts';
+import { GiftCardPrice, ProductCardPrice, ProductCardPriceAmount, ProductCardPriceDiscount } from './ProductCardParts';
 
 type GiftCardProps = {
     duration: string;
-    price: string;
+    price: number;
     product: string;
+    discount?: number;
+    variant?: 'large' | 'small';
+    onClickBuy: (quantity: number) => Promise<void> | void;
 };
 
-export const GiftCard: FC<GiftCardProps> = ({ product, price, duration }): ReactElement => {
+export const GiftCard: FC<GiftCardProps> = ({ onClickBuy, product, price, duration, discount, variant = 'small' }): ReactElement => {
+    const small = variant === 'small';
+    const mobile = useBreakpoint() === 'base';
+    const [quantity, setQuantity] = useState(1);
+    const incrementQuantity = () => setQuantity(quantity + 1);
+    const decrememntQuantity = () => setQuantity(quantity - 1 > 0 ? quantity - 1 : 1);
     return (
-        <Card props={{ w: 'full', h: 'auto' }}>
-            <HStack>
-                <HStack w="full">
-                    <FiGift fontSize={'32px'} />
-                    <Heading size="md">{duration}</Heading>
+        <Center>
+            <Card props={{ w: 'full', h: 'auto', maxW: 'xl' }}>
+                <Flex w="full">
+                    <HStack align={'center'} w="full">
+                        <FiGift fontSize={'32px'} />
+                        <Heading fontSize={['2xl', '3xl']} whiteSpace={'nowrap'}>
+                            {duration}
+                        </Heading>
+                        {!mobile && discount && (
+                            <Box flexShrink={0}>
+                                <Tag colorScheme={'green'} size="lg" fontWeight={'bold'}>
+                                    15% off
+                                </Tag>
+                            </Box>
+                        )}
+                    </HStack>
+                    <Box flexShrink={0}>
+                        <GiftCardPrice>
+                            <ProductCardPriceAmount fontSize="2xl">{formatUsd(price)}</ProductCardPriceAmount>
+                            {discount && <ProductCardPriceDiscount>{formatUsd(discount)}</ProductCardPriceDiscount>}
+                        </GiftCardPrice>
+                    </Box>
+                </Flex>
+                <Heading size={'md'} whiteSpace={'nowrap'} w="full">
+                    {product} Membership
+                </Heading>
+                <HStack spacing={0} w="full">
+                    {!small && <Spacer />}
+                    <Button
+                        onClick={async () => onClickBuy(quantity)}
+                        roundedRight="none"
+                        rightIcon={<FaArrowRight />}
+                        maxW={small || mobile ? undefined : 64}
+                        size="md"
+                        h="12"
+                        w={small || mobile ? 'full' : 64}
+                        colorScheme={'green'}
+                        fontWeight={'bold'}
+                        leftIcon={<FiGift />}
+                    >
+                        Buy Now (x{quantity})
+                    </Button>
+
+                    <VStack spacing={0}>
+                        <IconButton
+                            roundedLeft="none"
+                            roundedBottom={'none'}
+                            colorScheme={'gray'}
+                            fontSize="xs"
+                            size="xs"
+                            aria-label="Add to friends"
+                            icon={<AddIcon />}
+                            onClick={incrementQuantity}
+                        />
+                        <IconButton
+                            roundedLeft="none"
+                            roundedTop={'none'}
+                            colorScheme={'gray'}
+                            fontSize="xs"
+                            size="xs"
+                            aria-label="Add to friends"
+                            icon={<MinusIcon />}
+                            disabled={quantity <= 1}
+                            onClick={decrememntQuantity}
+                        />
+                    </VStack>
                 </HStack>
-                <Box>
-                    <ProductCardPriceAmount fontSize="2xl">{price}</ProductCardPriceAmount>
-                </Box>
-            </HStack>
-            <Heading size="md" whiteSpace={'nowrap'}>
-                {product} Membership
-            </Heading>
-            <Flex w="full">
-                <Spacer />
-                <Button w="fit-content" colorScheme={'green'} fontWeight={'bold'} rightIcon={<FaPlus />}>
-                    Add to cart
-                </Button>
-            </Flex>
-        </Card>
+            </Card>
+        </Center>
     );
 };

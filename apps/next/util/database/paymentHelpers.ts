@@ -1,4 +1,3 @@
-import { Subscription } from '@prisma/client';
 import prisma from '../ssr/prisma';
 
 // add any other payment logic to this file in the future
