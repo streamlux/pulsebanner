@@ -36,6 +36,7 @@ import Head from 'next/head';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
 import { NextSeo } from 'next-seo';
 import { trackEvent } from '@app/util/umami/trackEvent';
+import { Card } from '@app/components/Card';
 
 interface StaticAsset {
     src: string;
@@ -82,7 +83,9 @@ export default function Page() {
 
     const SignUpButton = (
         <Box experimental_spaceY={2} pt={['6']} minW="12" color={colorMode === 'dark' ? 'gray.300' : 'gray.700'}>
-            <Heading textAlign="left">1 minute setup.</Heading>
+            <Heading textAlign="left" color="gray.200">
+                1 minute setup.
+            </Heading>
             <Text as="span" fontSize="sm" textAlign="left">
                 Use for <strong>free forever</strong>, or upgrade anytime for{' '}
             </Text>
@@ -104,6 +107,7 @@ export default function Page() {
             <Flex experimental_spaceX={4}>
                 <Button
                     size="lg"
+                    fontSize="lg"
                     colorScheme="twitter"
                     leftIcon={<FaTwitter />}
                     className={trackEvent('click', 'hero-signup')}
@@ -184,7 +188,7 @@ export default function Page() {
                                             </Box>
                                         </Heading>
                                         <Text fontSize="2xl" textAlign="left" color={colorMode === 'dark' ? 'gray.200' : 'gray.600'}>
-                                            Sync your Twitter profile with your Twitch stream. Promote your stream like never before.
+                                            Automatically sync your Twitter profile with your Twitch stream. Promote your stream like never before.
                                         </Text>
 
                                         <SimpleGrid w="fit-content" columns={[1, 1, 2, 2, 2]} spacingY={2} spacingX={6}>
@@ -400,7 +404,6 @@ export default function Page() {
                                     </Box>
                                 </Container>
                             </Center>
-
                             <Box>
                                 <Center>
                                     <Box experimental_spaceY={4}>
@@ -408,11 +411,18 @@ export default function Page() {
                                         <Center>
                                             <Text fontSize="xl" textAlign={'center'} maxW="3xl">
                                                 {
-                                                    'PulseBanner is the best way to get your stream noticed on Twitter. Created for creators by creators. We are loved by hundreds Twitch streamers. Get started now 👇'
+                                                    'PulseBanner is the best way to get your stream noticed on Twitter. Created for creators by creators. Loved by thousands of Twitch streamers.'
                                                 }
                                             </Text>
                                         </Center>
                                     </Box>
+                                </Center>
+                            </Box>
+                            <Box experimental_spaceY={2} pt="4">
+                                <Center>
+                                    <Text fontSize="xl" textAlign={'center'} maxW="3xl">
+                                        {'Get started now 👇'}
+                                    </Text>
                                 </Center>
                                 <Center mt="8">
                                     <Button

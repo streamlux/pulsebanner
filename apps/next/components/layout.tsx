@@ -8,7 +8,10 @@ import { emggLogoSrc, promo, promoCode } from '@app/util/constants';
 import { useRouter } from 'next/router';
 
 export default function Layout({ children }) {
-    const { colorMode } = useColorMode();
+    const { colorMode, setColorMode } = useColorMode();
+    if (colorMode === 'light') {
+        setColorMode('dark');
+    }
     const { onClose, isOpen } = useDisclosure({
         defaultIsOpen: true,
     });
@@ -19,9 +22,10 @@ export default function Layout({ children }) {
     const pagesWithoutPromo = ['/admin', '/admin/banner'];
     const showPromo = promo && isOpen && breakpoint !== 'base' && !pagesWithoutPromo.includes(router.asPath);
     const headerPortalRef = useRef();
+
     return (
         <Flex direction="column" as={chakra.div} maxH="100%" overflow="hidden" minH="100vh" bg={emgg ? 'black' : 'transparent'}>
-            <Box as={chakra.header} zIndex={10} position={breakpoint !== undefined ? 'fixed' : undefined} bg="rgba(26, 32, 44, 0.95)" w="full">
+            <Box as={chakra.header} zIndex={10} position={breakpoint !== undefined ? 'fixed' : undefined} w="full">
                 <Header headerPortalRef={headerPortalRef} />
                 <Box ref={headerPortalRef} />
             </Box>
