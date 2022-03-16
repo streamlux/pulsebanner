@@ -133,10 +133,25 @@ export default function Page({ partnerStatus, partnerCode }: Props) {
         }
     );
 
+    // order of the if statements matter
     const availableForAccount = (): boolean => {
-        if (paymentPlan === 'Free' || (paymentPlanResponse.partner && !(session?.role === 'admin'))) {
+
+        // let legacy partners apply
+        if (paymentPlanResponse.partner) {
+            return true;
+        }
+
+        // let admins apply
+        if (session?.role === 'admin') {
+            return true;
+        }
+
+        // don't let free users apply
+        if (paymentPlan === 'Free') {
             return false;
         }
+
+        // let paid users apply
         return true;
     };
 
