@@ -13,7 +13,7 @@ let numClients = 0;
 
 const createPrismaClient = () => {
     if (process.env.GITHUB_ACTIONS) {
-        return;
+        return new PrismaClient();
     }
     console.log(process.env);
     logger.info('Creating new Prisma client...');
