@@ -40,7 +40,7 @@ export default function Footer() {
                 <Center>
                     <Wrap justify="center" spacing={['2', '6']}>
                         <WrapItem className={styles.navItem}>
-                            <NextLink href="/gifts" passHref>
+                            <NextLink href="/pricing" passHref>
                                 <Link>Pricing</Link>
                             </NextLink>
                         </WrapItem>
