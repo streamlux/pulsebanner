@@ -1,5 +1,5 @@
 import { CheckIcon } from '@chakra-ui/icons';
-import { Box, Flex, VStack, Heading, Text, Center, List, ListIcon, ListItem, Stack, chakra, ScaleFade, HStack } from '@chakra-ui/react';
+import { Box, Flex, VStack, Heading, Text, Center, List, ListIcon, ListItem, Stack, chakra, ScaleFade, HStack, TextProps } from '@chakra-ui/react';
 import React from 'react';
 
 export const ProductCardHeading: React.FC = ({ children }) => {
@@ -77,9 +77,9 @@ export const ProductCardPrice: React.FC = ({ children }) => {
     );
 };
 
-export const ProductCardPriceAmount: React.FC = ({ children }) => {
+export const ProductCardPriceAmount: React.FC<TextProps> = ({ children, ...props }) => {
     return (
-        <Text fontSize="2xl" fontWeight="extrabold" lineHeight="tight" as={chakra.span} bg="green.200" px="1" py="0.5" rounded="md" color="black">
+        <Text fontSize="2xl" fontWeight="extrabold" lineHeight="tight" as={chakra.span} bg="green.200" px="1" py="0.5" rounded="md" color="black" {...props}>
             {children}
         </Text>
     );

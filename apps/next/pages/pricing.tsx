@@ -36,6 +36,8 @@ import {
     useBreakpoint,
     LightMode,
     DarkMode,
+    Grid,
+    GridItem,
 } from '@chakra-ui/react';
 
 import getStripe from '../util/getStripe';
@@ -53,6 +55,8 @@ import { useColorTheme } from '@app/util/hooks/useColorMode';
 import { Card } from '@app/components/Card';
 import { landingPageAsset } from '.';
 import { ArrowDownIcon, ArrowRightIcon, ArrowUpDownIcon, ArrowUpIcon } from '@chakra-ui/icons';
+import { GiftCard } from '@app/components/pricing/GiftCard';
+import { ButtonSwitch } from '@app/components/buttonSwitch/ButtonSwitch';
 
 type Props = {
     products: (Product & { prices: Price[] })[];
@@ -69,6 +73,8 @@ const Page: NextPage<Props> = ({ products }) => {
     const { modal, priceId } = router.query;
 
     const { isOpen, onOpen, onClose } = useDisclosure();
+
+    const [giftProduct, setGiftProduct] = useState<Omit<PaymentPlan, 'Free'>>('Personal');
 
     const breakpoint = useBreakpoint('sm');
 
@@ -151,13 +157,7 @@ const Page: NextPage<Props> = ({ products }) => {
 
     const AnnualBillingControl = (
         <VStack spacing={1}>
-            <Tabs
-                variant="enclosed"
-                colorScheme={'gray'}
-                rounded="xl"
-                border="none"
-                borderWidth={0}
-                bg="transparent"
+            <ButtonSwitch
                 defaultIndex={1}
                 onChange={(index) => {
                     if (index === 0) {
@@ -167,36 +167,16 @@ const Page: NextPage<Props> = ({ products }) => {
                     }
                 }}
             >
-                <TabList h="16" borderWidth={0} w={['auto', 'full']} bg={themeValue('whiteAlpha.600', 'whiteAlpha.400')} rounded="xl">
-                    <Tab
-                        rounded="xl"
-                        w="50%"
-                        fontWeight={'bold'}
-                        m="0"
-                        textColor={themeValue('gray.700', 'whiteAlpha.800')}
-                        _selected={{ bg: themeValue('white', 'whiteAlpha.800'), color: themeValue('gray.800', 'gray.800') }}
-                    >
-                        Monthly billing
-                    </Tab>
-                    <Tab
-                        m="0"
-                        fontWeight={'bold'}
-                        rounded="xl"
-                        w="50%"
-                        textColor={themeValue('gray.700', 'whiteAlpha.800')}
-                        _selected={{ bg: themeValue('white', 'whiteAlpha.800'), color: themeValue('gray.800', 'gray.800') }}
-                    >
-                        <VStack spacing={0}>
-                            <Text>Yearly billing</Text>
-                            <LightMode>
-                                <Tag size="sm" colorScheme={'green'} fontSize={'xs'}>
-                                    Save 15%
-                                </Tag>
-                            </LightMode>
-                        </VStack>
-                    </Tab>
-                </TabList>
-            </Tabs>
+                <Text>Monthly billing</Text>
+                <VStack spacing={0}>
+                    <Text>Yearly billing</Text>
+                    <LightMode>
+                        <Tag size="sm" colorScheme={'green'} fontSize={'xs'}>
+                            Save 15%
+                        </Tag>
+                    </LightMode>
+                </VStack>
+            </ButtonSwitch>
             <Center>
                 <Text fontSize="xs">Choose between monthly or annual pricing</Text>
             </Center>
@@ -272,81 +252,73 @@ const Page: NextPage<Props> = ({ products }) => {
                 </ModalContent>
             </Modal>
 
-            <Container maxW="container.lg" experimental_spaceY="6" pb="8" mt='-8'>
+            <Container maxW="container.lg" experimental_spaceY="6" pb="8" mt="-8">
                 <Heading size="xl" textAlign="center" h="full" bgGradient="linear(to-r, #2AA9ff, #f246FF)" bgClip="text" fontSize={['5xl', '7xl']} fontWeight="bold">
                     PulseBanner Memberships
                 </Heading>
-                {/* <Heading size="xl" textAlign="center" h="full" color='white' fontSize="6xl" fontWeight="extrabold">
-                    PulseBanner Memberships
-                </Heading> */}
             </Container>
 
             <VStack spacing={[6, 12]} w="full">
-                <Container maxW="container.lg" position={'relative'}>
-                    {breakpoint !== 'base' && (
-                        <Box my="4">
-                            <FreeProductCard />
-                        </Box>
-                    )}
-                    <Center w={['auto', 'auto', 'auto', 'auto']}>
-                        <SimpleGrid columns={[1, 1, 1, 3]} spacing="4" w="full">
-                            <WrapItem key={'free2'} w="full" h="full">
-                                <Card props={{ color: 'white', p: '0', border: 'none', w: 'full', h: 'full', bgGradient: 'linear(to-tr, #9246FF, #2AA9E0)' }}>
-                                    <Flex direction={'column'} justifyItems="stretch" h="full" rounded="md">
-                                        <Box p="4" px="6" flexGrow={1} w="full">
-                                            <Text fontSize={'2xl'}>Level up with a</Text>
-                                            <Heading>PulseBanner Membership.</Heading>
-                                            <Text my="4">Choose a plan and begin customizing in seconds. Then experience how PulseBanner can help you grow.</Text>
+                <Container maxW="container.lg" position={'relative'} experimental_spaceY={24}>
+                    <Box>
+                        {/* <Box>
+                            <Center>
+                                <Text textAlign="center" fontSize="2xl" maxW="container.sm">
+                                    Unlock even more awesome features and customization options and kindly support PulseBanner by becoming a Member
+                                </Text>
+                            </Center>
+                        </Box> */}
+                        {breakpoint !== 'base' && (
+                            <Box my="4">
+                                <FreeProductCard />
+                            </Box>
+                        )}
+                        <Center w={['auto', 'auto', 'auto', 'auto']}>
+                            <SimpleGrid columns={[1, 1, 1, 3]} spacing="4" w="full">
+                                <WrapItem key={'free2'} w="full" h="full">
+                                    <Card props={{ color: 'white', p: '0', border: 'none', w: 'full', h: 'full', bgGradient: 'linear(to-tr, #9246FF, #2AA9E0)' }}>
+                                        <Flex direction={'column'} justifyItems="stretch" h="full" rounded="md">
+                                            <Box p="4" px="6" flexGrow={1} w="full">
+                                                <Text fontSize={'2xl'}>Level up with a</Text>
+                                                <Heading>PulseBanner Membership.</Heading>
+                                                <Text my="4">Choose a plan and begin customizing in seconds. Then experience how PulseBanner can help you grow.</Text>
 
-                                            {breakpoint !== 'base' && (
-                                                <HStack>
-                                                    <Text fontWeight={'bold'} fontSize={'xl'}>
-                                                        Select a plan
-                                                    </Text>
-                                                    <ArrowRightIcon />
-                                                </HStack>
-                                            )}
-                                            {breakpoint === 'base' && <Center mb="6">{AnnualBillingControl}</Center>}
-                                            {breakpoint === 'base' && (
-                                                <HStack>
-                                                    <Text fontWeight={'bold'} fontSize={'xl'}>
-                                                        Select a plan
-                                                    </Text>
-                                                    <ArrowRightIcon transform={'rotate(90deg)'} />
-                                                </HStack>
-                                            )}
-                                        </Box>
-                                        {breakpoint !== 'base' && <Center mb="2">{AnnualBillingControl}</Center>}
-
-                                        {/* <Box mb='5'>
-                                        <Center>
-                                            <Box w="50%">
-                                                {theme === 'dark' ? (
-                                                    <Image src={landingPageAsset('twitterxtwitch')} alt="Banner" />
-                                                ) : (
-                                                    <Image src={landingPageAsset('twitterxtwitch_light')} alt="Banner" />
+                                                {breakpoint !== 'base' && (
+                                                    <HStack>
+                                                        <Text fontWeight={'bold'} fontSize={'xl'}>
+                                                            Select a plan
+                                                        </Text>
+                                                        <ArrowRightIcon />
+                                                    </HStack>
+                                                )}
+                                                {breakpoint === 'base' && <Center mb="6">{AnnualBillingControl}</Center>}
+                                                {breakpoint === 'base' && (
+                                                    <HStack>
+                                                        <Text fontWeight={'bold'} fontSize={'xl'}>
+                                                            Select a plan
+                                                        </Text>
+                                                        <ArrowRightIcon transform={'rotate(90deg)'} />
+                                                    </HStack>
                                                 )}
                                             </Box>
-                                        </Center>
-                                    </Box> */}
+                                            {breakpoint !== 'base' && <Center mb="2">{AnnualBillingControl}</Center>}
+                                        </Flex>
+                                    </Card>
+                                </WrapItem>
+                                {sortProductsByPrice(products).map((product) => (
+                                    <ProductCard
+                                        key={product.id}
+                                        product={product}
+                                        billingInterval={billingInterval}
+                                        handlePricingClick={(priceId) => handlePricingClick(priceId, true)}
+                                        paymentPlan={paymentPlan}
+                                        paymentPlanResponse={paymentPlanResponse}
+                                    />
+                                ))}
+                            </SimpleGrid>
+                        </Center>
+                    </Box>
 
-                                        {/* <Image rounded="md" alignSelf={'self-end'} justifySelf={'flex-end'} src={landingPageAsset('showcase')} alt="showcase" /> */}
-                                    </Flex>
-                                </Card>
-                            </WrapItem>
-                            {sortProductsByPrice(products).map((product) => (
-                                <ProductCard
-                                    key={product.id}
-                                    product={product}
-                                    billingInterval={billingInterval}
-                                    handlePricingClick={(priceId) => handlePricingClick(priceId, true)}
-                                    paymentPlan={paymentPlan}
-                                    paymentPlanResponse={paymentPlanResponse}
-                                />
-                            ))}
-                        </SimpleGrid>
-                    </Center>
-                    {/* <Box w="100vw" position={'relative'} h='50vh'> */}
                     <div style={{ zIndex: -1, position: 'absolute', height: '50%', maxHeight: '700px', width: '100%', display: 'block' }}>
                         <div className="contact-hero" style={{ position: 'relative', top: '-300px', left: '0px', height: '78%' }}>
                             <div className="bg-gradient-blur-wrapper contact-hero">
@@ -356,7 +328,115 @@ const Page: NextPage<Props> = ({ products }) => {
                             </div>
                         </div>
                     </div>
-                    {/* </Box> */}
+                    <div style={{ zIndex: -1, position: 'absolute', height: '50%', maxHeight: '700px', width: '70%', display: 'block' }}>
+                        <div className="contact-hero" style={{ position: 'relative', top: '800px', left: '-400px', height: '58%' }}>
+                            <div className="bg-gradient-blur-wrapper contact-hero">
+                                <div className="bg-gradient-blur-circle-3 pink top"></div>
+                                <div className="bg-gradient-blur-circle-2 blue"></div>
+                                <div className="bg-gradient-blur-circle-4 purple"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <Box>
+                        <Center>
+                            <Text textAlign="center" fontSize="2xl" maxW="container.sm">
+                                Unlock even more awesome features and kindly support PulseBanner by becoming a Member
+                            </Text>
+                        </Center>
+                    </Box>
+
+                    <Container maxW="container.lg">
+                        <Grid templateRows="repeat(3, 1fr)" templateColumns="repeat(5, 1fr)" gap={4}>
+                            <GridItem rowSpan={3} colSpan={1}>
+                                <Card props={{ color: 'white', p: '0', border: 'none', maxW: 'sm', w: 'full', h: 'full', bgGradient: 'linear(to-tr, #9246FF, #2AA9E0)' }}>
+                                    <Flex direction={'column'} justifyItems="stretch" h="full" rounded="md">
+                                        <Box p="4" px="6" flexGrow={1} w="full">
+                                            <Text fontSize={'2xl'}>Feeling generous?</Text>
+                                            <HStack>
+                                                <Heading>PulseBanner Membership Gifts</Heading>
+                                            </HStack>
+                                            <Text my="4">A PulseBanner Membership makes the perfect gift for streamers!</Text>
+
+                                            {breakpoint !== 'base' && (
+                                                <HStack>
+                                                    <Text fontWeight={'bold'} fontSize={'xl'}>
+                                                        Select a plan
+                                                    </Text>
+                                                    <ArrowRightIcon />
+                                                </HStack>
+                                            )}
+                                            {breakpoint === 'base' && (
+                                                <Center mb="6">
+                                                    <ButtonSwitch
+                                                        defaultIndex={0}
+                                                        onChange={(index) => {
+                                                            setGiftProduct(index ? 'Professional' : 'Personal');
+                                                        }}
+                                                    >
+                                                        <Text>Personal</Text>
+                                                        <Text>Professional</Text>
+                                                    </ButtonSwitch>
+                                                </Center>
+                                            )}
+                                            {breakpoint === 'base' && (
+                                                <HStack>
+                                                    <Text fontWeight={'bold'} fontSize={'xl'}>
+                                                        Select a plan
+                                                    </Text>
+                                                    <ArrowRightIcon transform={'rotate(90deg)'} />
+                                                </HStack>
+                                            )}
+                                        </Box>
+                                        {breakpoint !== 'base' && (
+                                            <Center mb="2">
+                                                <ButtonSwitch
+                                                    defaultIndex={0}
+                                                    onChange={(index) => {
+                                                        setGiftProduct(index ? 'Professional' : 'Personal');
+                                                    }}
+                                                >
+                                                    <Text>Personal</Text>
+                                                    <Text>Professional</Text>
+                                                </ButtonSwitch>
+                                            </Center>
+                                        )}
+                                    </Flex>
+                                </Card>
+                            </GridItem>
+                            {giftProduct === 'Personal' ? (
+                                <>
+                                    <GridItem colSpan={4}>
+                                        <GiftCard duration="1-month" price="$7.99" product="Personal" />
+                                    </GridItem>
+                                    <GridItem colSpan={2}>
+                                        <GiftCard duration="3-months" price="$23.97" product="Personal" />
+                                    </GridItem>
+                                    <GridItem colSpan={2}>
+                                        <GiftCard duration="6-months" price="$47.94" product="Personal" />
+                                    </GridItem>
+                                    <GridItem colSpan={4}>
+                                        <GiftCard duration="1-year" price="$71.88" product="Personal" />
+                                    </GridItem>
+                                </>
+                            ) : (
+                                <>
+                                    <GridItem colSpan={4}>
+                                        <GiftCard duration="1-month" price="$23.99" product="Professional" />
+                                    </GridItem>
+                                    <GridItem colSpan={2}>
+                                        <GiftCard duration="3-months" price="$71.97" product="Professional" />
+                                    </GridItem>
+                                    <GridItem colSpan={2}>
+                                        <GiftCard duration="6-months" price="$143.94" product="Professional" />
+                                    </GridItem>
+                                    <GridItem colSpan={4}>
+                                        <GiftCard duration="1-year" price="$239.88" product="Professional" />
+                                    </GridItem>
+                                </>
+                            )}
+                        </Grid>
+                    </Container>
 
                     <Box py="8">{test()}</Box>
                     <Container my="16">

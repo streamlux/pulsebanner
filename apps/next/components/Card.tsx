@@ -14,7 +14,7 @@ export const Card: React.FC<{ props?: BoxProps }> = ({ children, props }) => {
     );
 
     return (
-        <Flex direction="column" rounded="md" p="4" experimental_spaceY="8" {...styles} {...(props ?? {})}>
+        <Flex direction="column" shadow={'md'} rounded="md" p="4" experimental_spaceY="8" {...styles} {...(props ?? {})}>
             {children}
         </Flex>
     );
