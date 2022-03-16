@@ -42,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return;
             }
             const userSubscriptions = allSubscriptions.filter((subscription) => subscription.condition.broadcaster_user_id === twitchAccount.providerAccountId);
-            userSubscriptions.forEach(async (webhook) => {
+            const deleteRequests = userSubscriptions.map(async (webhook) => {
                 await twitchAxios.delete(`/helix/eventsub/subscriptions?id=${webhook.id}`, {
                     headers: {
                         'Client-ID': process.env.TWITCH_CLIENT_ID,
@@ -50,6 +50,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     },
                 });
             });
+            Promise.all(deleteRequests);
             res.send(200);
         }
     } else {
