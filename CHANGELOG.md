@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+- Let users disconnect their Twitch account
+- Low effort UI improvement to account page
+- Upgrade to TypeScript ^4.6.0 to get access to the `Awaited` utility type.
+
 ## [0.10.5] - 2022-03-15
 ### Fixed
 - Let legacy partners apply for partner program
