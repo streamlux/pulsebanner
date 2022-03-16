@@ -56,10 +56,6 @@ const staticAssets: Record<string, StaticAsset> = {
         preload: true,
         src: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/showcase_light.webp',
     },
-    showcaseLightOffline: {
-        preload: true,
-        src: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/showcase_offline_light.webp',
-    },
     mayjaAvatar: {
         src: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/avatars/mayja.webp',
     },
@@ -145,13 +141,6 @@ export default function Page() {
 
     return (
         <>
-            <Head>
-                {Object.values(staticAssets)
-                    .filter((asset) => asset.preload)
-                    .map((asset) => (
-                        <link key={asset.src} rel="preload" href={asset.src} as="image" />
-                    ))}
-            </Head>
             <NextSeo
                 title="Stand out on Twitter"
                 openGraph={{
@@ -224,16 +213,10 @@ export default function Page() {
                                 <Stack direction={['column-reverse', 'column-reverse', 'column-reverse', 'column-reverse', 'column']}>
                                     <Center>
                                         <Box maxW="700px" p="2" rounded="lg" bg={offline ? 'gray.200' : undefined} className={!offline ? 'animated-gradient' : undefined}>
-                                            {!offline ? (
-                                                colorMode === 'dark' ? (
-                                                    <Image rounded="lg" alt="showcase" src={staticAssets.showcase.src} load />
-                                                ) : (
-                                                    <Image rounded="lg" alt="showcase" src={staticAssets.showcaseLight.src} />
-                                                )
-                                            ) : colorMode === 'dark' ? (
+                                            {offline ? (
                                                 <Image rounded="lg" alt="showcase" src={staticAssets.showcaseOffline.src} />
                                             ) : (
-                                                <Image rounded="lg" alt="showcase" src={staticAssets.showcaseLightOffline.src} />
+                                                <Image rounded="lg" alt="showcase" src={staticAssets.showcase.src} loading="eager" />
                                             )}
                                         </Box>
                                     </Center>
@@ -336,11 +319,7 @@ export default function Page() {
 
                                         <Center py="8">
                                             <Box maxW="1000" minW={['95vw', 'unset']}>
-                                                {colorMode === 'dark' ? (
-                                                    <Image src={landingPageAsset('banner')} alt="Banner" />
-                                                ) : (
-                                                    <Image src={landingPageAsset('banner_light')} alt="Banner" />
-                                                )}
+                                                <Image src={landingPageAsset('banner')} alt="Banner" />
                                             </Box>
                                         </Center>
                                         <NextLink passHref href="/banner">
@@ -390,11 +369,7 @@ export default function Page() {
                                             </Text>
                                         </Box>
                                         <Center py="16">
-                                            {colorMode === 'dark' ? (
-                                                <Image src={landingPageAsset('namechanger')} alt="Banner" w="full" />
-                                            ) : (
-                                                <Image src={landingPageAsset('namechanger_light')} alt="Banner" w="full" />
-                                            )}
+                                            <Image src={landingPageAsset('namechanger')} alt="Banner" w="full" />
                                         </Center>
                                         <NextLink passHref href="/name">
                                             <Button as="a" size="lg" rightIcon={<FaArrowRight />} colorScheme="green" className={trackEvent('click', 'setup-name-changer')}>
@@ -443,11 +418,7 @@ export default function Page() {
 
                             <Center py="4">
                                 <Box maxW="400px" w="60vw">
-                                    {colorMode === 'dark' ? (
-                                        <Image src={landingPageAsset('twitterxtwitch')} alt="Banner" />
-                                    ) : (
-                                        <Image src={landingPageAsset('twitterxtwitch_light')} alt="Banner" />
-                                    )}
+                                    <Image src={landingPageAsset('twitterxtwitch')} alt="Banner" />
                                 </Box>
                             </Center>
 

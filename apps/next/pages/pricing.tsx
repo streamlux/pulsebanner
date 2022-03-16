@@ -1,15 +1,14 @@
 import { Price, PriceInterval, Product } from '@prisma/client';
-import type { GetServerSideProps, GetStaticProps, NextPage } from 'next';
+import type { GetStaticProps, NextPage } from 'next';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import { signIn, useSession } from 'next-auth/react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
     Button,
     Heading,
     Text,
     Center,
-    chakra,
     Container,
     VStack,
     SimpleGrid,
@@ -21,32 +20,19 @@ import {
     ModalContent,
     ModalHeader,
     ModalOverlay,
-    Switch,
     Tag,
     Flex,
     Link,
     Box,
     WrapItem,
-    Tab,
-    TabList,
-    TabPanel,
-    TabPanels,
-    Tabs,
-    Image,
     useBreakpoint,
     LightMode,
-    DarkMode,
-    Grid,
-    GridItem,
-    Tooltip,
-    Spacer,
+    keyframes,
 } from '@chakra-ui/react';
-
 import getStripe from '../util/getStripe';
 import prisma from '../util/ssr/prisma';
-import { FaTwitter, FaCheck, FaArrowRight, FaHeart } from 'react-icons/fa';
+import { FaTwitter, FaCheck, FaArrowDown } from 'react-icons/fa';
 import { ProductCard } from '@app/components/pricing/ProductCard';
-import { trackEvent } from '@app/util/umami/trackEvent';
 import { PaymentPlan } from '@app/util/database/paymentHelpers';
 import { NextSeo } from 'next-seo';
 import { generalFaqItems, pricingFaqItems } from '@app/modules/faq/data';
@@ -54,42 +40,46 @@ import { FaqSection } from '@app/modules/faq/FaqSection';
 import { usePaymentPlan } from '@app/util/hooks/usePaymentPlan';
 import { FreeProductCard } from '@app/components/pricing/FreeProductCard';
 import { Card } from '@app/components/Card';
-import { landingPageAsset } from '.';
 import { ArrowRightIcon } from '@chakra-ui/icons';
-import { GiftCard } from '@app/components/pricing/GiftCard';
 import { ButtonSwitch } from '@app/components/buttonSwitch/ButtonSwitch';
-import ReactCanvasConfetti from 'react-canvas-confetti';
 import { giftPriceIds } from '@app/util/stripe/gift/constants';
 import { GiftPricing } from '@app/modules/pricing/GiftPricing';
 
+type ProductType = Product & { prices: Price[] };
+type Products = ProductType[];
 type Props = {
-    products: (Product & { prices: Price[] })[];
+    products: Products;
     prices: (Price & { product: Product })[];
     priceMap: Record<string, Price & { product: Product }>;
 };
+
+const arrowAnimation = keyframes`
+  from {
+    transform: scale(1);
+  }
+  to {
+      transform: scale(1.3);
+  }`;
+
+const sortProductsByPrice = (products: Products, billingInterval: PriceInterval) =>
+    products
+        .filter((a: ProductType) => !a.name.includes('Gift'))
+        .sort((a, b) => a?.prices?.find((one) => one.interval === billingInterval)?.unitAmount - b?.prices?.find((one) => one.interval === billingInterval)?.unitAmount);
 
 const Page: NextPage<Props> = ({ products, priceMap }) => {
     const [paymentPlan, paymentPlanResponse] = usePaymentPlan();
     const { data: session } = useSession({ required: false }) as any;
 
     const router = useRouter();
-
-    const { isOpen, onOpen, onClose } = useDisclosure();
-
-    const [giftProduct, setGiftProduct] = useState<Exclude<PaymentPlan, 'Free'>>('Personal');
-
     const breakpoint = useBreakpoint('sm');
 
-    const canvasStyles: React.CSSProperties = {
-        position: 'absolute',
-        pointerEvents: 'none',
-        width: '100%',
-        height: '100%',
-        top: breakpoint === 'base' ? 100 : 500,
-        right: 0,
-    };
+    const { isOpen, onOpen, onClose } = useDisclosure();
+    const [billingInterval, setBillingInterval] = useState<PriceInterval>('year');
 
-    const ensureSignUp = useCallback(() => {
+    /**
+     * Checks if they are signed in with twitter, if not then show the modal
+     */
+    const ensureSignUp: () => boolean = useCallback(() => {
         if (session?.accounts?.twitter) {
             return true;
         }
@@ -97,25 +87,8 @@ const Page: NextPage<Props> = ({ products, priceMap }) => {
         return false;
     }, [session, onOpen]);
 
-    const [billingInterval, setBillingInterval] = useState<PriceInterval>('year');
-
-    const sortProductsByPrice = (
-        products: (Product & {
-            prices: Price[];
-        })[]
-    ) =>
-        products
-            .filter((a) => !a.name.includes('Gift'))
-            .sort((a, b) => a?.prices?.find((one) => one.interval === billingInterval)?.unitAmount - b?.prices?.find((one) => one.interval === billingInterval)?.unitAmount);
-
-    const giftingProducts = (
-        products: (Product & {
-            prices: Price[];
-        })[]
-    ) => products.filter((a) => a.name.includes('Gift'));
-
-    const handlePricingClick = useCallback(
-        async (priceId: string, isSubscription: boolean, quantity?: number) => {
+    const onClickSubscription = useCallback(
+        async (priceId: string) => {
             router.push(
                 {
                     query: {
@@ -126,7 +99,7 @@ const Page: NextPage<Props> = ({ products, priceMap }) => {
                 { shallow: true }
             );
             if (ensureSignUp()) {
-                if (isSubscription && (paymentPlan === 'Professional' || paymentPlan === 'Personal')) {
+                if (paymentPlan === 'Professional' || paymentPlan === 'Personal') {
                     const res = await fetch('/api/stripe/create-portal', {
                         method: 'POST',
                         headers: {
@@ -145,8 +118,8 @@ const Page: NextPage<Props> = ({ products, priceMap }) => {
                     },
                     body: JSON.stringify({
                         price: priceId,
-                        isSubscription,
-                        quantity: quantity ?? 1,
+                        isSubscription: true,
+                        quantity: 1, // quantity is always 1 for subscriptions
                     }),
                 });
 
@@ -158,50 +131,6 @@ const Page: NextPage<Props> = ({ products, priceMap }) => {
         },
         [router, paymentPlan, ensureSignUp]
     );
-
-    const refAnimationInstance = useRef(null);
-
-    const getInstance = useCallback((instance) => {
-        refAnimationInstance.current = instance;
-    }, []);
-
-    const makeShot = useCallback((particleRatio, opts) => {
-        refAnimationInstance.current &&
-            refAnimationInstance.current({
-                ...opts,
-                origin: { y: 0.7 },
-                particleCount: Math.floor(200 * particleRatio),
-            });
-    }, []);
-
-    const fire = useCallback(() => {
-        makeShot(0.25, {
-            spread: 26,
-            startVelocity: 55,
-        });
-
-        makeShot(0.2, {
-            spread: 60,
-        });
-
-        makeShot(0.35, {
-            spread: 100,
-            decay: 0.91,
-            scalar: 0.8,
-        });
-
-        makeShot(0.1, {
-            spread: 120,
-            startVelocity: 25,
-            decay: 0.92,
-            scalar: 1.2,
-        });
-
-        makeShot(0.1, {
-            spread: 120,
-            startVelocity: 45,
-        });
-    }, [makeShot]);
 
     const AnnualBillingControl = (
         <VStack spacing={1}>
@@ -231,32 +160,17 @@ const Page: NextPage<Props> = ({ products, priceMap }) => {
         </VStack>
     );
 
-    const GiftProductSwitch = (
-        <VStack mb="4">
-            <Center>
-                <ButtonSwitch
-                    defaultIndex={0}
-                    onChange={(index) => {
-                        setGiftProduct(index ? 'Professional' : 'Personal');
-                    }}
-                >
-                    <Text>Personal</Text>
-                    <Text>Professional</Text>
-                </ButtonSwitch>
-            </Center>
-            <Center>
-                <Text fontSize="xs" whiteSpace={'pre-wrap'} mx="4" textAlign={'center'}>
-                    Choose between Personal or Professional gifts
-                </Text>
-            </Center>
-        </VStack>
-    );
-
-    const giftIds = giftPriceIds[giftProduct];
-    const gift = (duration: keyof typeof giftIds) => priceMap[giftIds[duration]];
     return (
         <>
-            <NextSeo title="Pricing" />
+            {PricingSEO}
+            <div style={{ position: 'absolute', left: '220px', top: '700px' }}>
+                <VStack>
+                    <Heading>🎁</Heading>
+                    <Box animation={`${arrowAnimation} alternate infinite 1.4s linear`}>
+                        <FaArrowDown fontSize={28} />
+                    </Box>
+                </VStack>
+            </div>
             <Modal onClose={onClose} size={'xl'} isOpen={isOpen}>
                 <ModalOverlay />
                 <ModalContent>
@@ -351,12 +265,12 @@ const Page: NextPage<Props> = ({ products, priceMap }) => {
                                         </Flex>
                                     </Card>
                                 </WrapItem>
-                                {sortProductsByPrice(products).map((product) => (
+                                {sortProductsByPrice(products, billingInterval).map((product) => (
                                     <ProductCard
                                         key={product.id}
                                         product={product}
                                         billingInterval={billingInterval}
-                                        handlePricingClick={(priceId) => handlePricingClick(priceId, true)}
+                                        handlePricingClick={(priceId) => onClickSubscription(priceId)}
                                         paymentPlan={paymentPlan}
                                         paymentPlanResponse={paymentPlanResponse}
                                     />
@@ -473,5 +387,30 @@ export const getStaticProps: GetStaticProps<Props> = async (context) => {
         },
     };
 };
+
+const PricingSEO = (
+    <NextSeo
+        title="Pricing"
+        openGraph={{
+            site_name: 'Pricing',
+            type: 'website',
+            url: 'https://pulsebanner.com/pricing',
+            title: 'PulseBanner - Memberships',
+            description: 'Stand out on Twitter and attract more viewers to your stream',
+            images: [
+                {
+                    url: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/seo/pricing_og.webp',
+                    width: 1200,
+                    height: 627,
+                    alt: 'Stand out on Twitter with PulseBanner!',
+                },
+            ],
+        }}
+        twitter={{
+            site: '@PulseBanner',
+            cardType: 'summary_large_image',
+        }}
+    />
+);
 
 export default Page;
