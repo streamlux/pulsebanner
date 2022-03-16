@@ -160,11 +160,17 @@ const Gift: React.FC<GiftInfo> = ({ redemptionUrl, redeemed }) => {
             px="3"
             alignItems="center"
         >
-            <NextLink href={redemptionUrl} passHref>
-                <Button colorScheme={redeemed ? undefined : 'blue'} as="a" variant={'link'} size="md" wordBreak={'break-all'} whiteSpace={'pre-wrap'}>
+            {redeemed ? (
+                <Text fontWeight={'semibold'} colorScheme={redeemed ? undefined : 'blue'} variant={'link'} size="md" wordBreak={'break-all'} whiteSpace={'pre-wrap'}>
                     {redemptionUrl}
-                </Button>
-            </NextLink>
+                </Text>
+            ) : (
+                <NextLink href={redemptionUrl} passHref>
+                    <Button colorScheme={redeemed ? undefined : 'blue'} as="a" variant={'link'} size="md" wordBreak={'break-all'} whiteSpace={'pre-wrap'}>
+                        {redemptionUrl}
+                    </Button>
+                </NextLink>
+            )}
             <Box flexGrow={0} flexShrink={0}>
                 {redeemed ? (
                     <Tooltip label="Gift has been redeemed." placement="top">
