@@ -55,7 +55,7 @@ import { useForm } from 'react-hook-form';
 interface Props {
     partnerStatus: AcceptanceStatus;
     partnerCode?: string;
-    payment: APIPaymentObject;
+    payment?: APIPaymentObject;
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -63,9 +63,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         ctx: context,
     })) as any;
 
-    const payment = await productPlan(session.userId);
 
     if (session) {
+        const payment = await productPlan(session.userId);
         const partnerStatus = await prisma.partnerInformation.findUnique({
             where: {
                 userId: session.userId,
@@ -98,7 +98,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
         props: {
             partnerStatus: AcceptanceStatus.None,
-            payment,
+            payment: undefined,
         },
     };
 };
@@ -141,7 +141,7 @@ export default function Page({ partnerStatus, partnerCode, payment }: Props) {
     const availableForAccount = (): boolean => {
 
         // let legacy partners apply
-        if (payment.partner) {
+        if (payment?.partner) {
             return true;
         }
 
