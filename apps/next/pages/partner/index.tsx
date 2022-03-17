@@ -1,6 +1,6 @@
 import { PaymentModal } from '@app/components/pricing/PaymentModal';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
-import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
+import { APIPaymentObject, PaymentPlan, productPlan } from '@app/util/database/paymentHelpers';
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import prisma from '@app/util/ssr/prisma';
 import {
@@ -55,12 +55,15 @@ import { useForm } from 'react-hook-form';
 interface Props {
     partnerStatus: AcceptanceStatus;
     partnerCode?: string;
+    payment: APIPaymentObject;
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
     const session = (await getSession({
         ctx: context,
     })) as any;
+
+    const payment = await productPlan(session.userId);
 
     if (session) {
         const partnerStatus = await prisma.partnerInformation.findUnique({
@@ -83,6 +86,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     props: {
                         partnerStatus: partnerInfo.acceptanceStatus as AcceptanceStatus,
                         partnerCode: partnerInfo.partnerCode,
+                        payment,
                     },
                 };
             } catch (e) {
@@ -94,14 +98,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
         props: {
             partnerStatus: AcceptanceStatus.None,
+            payment,
         },
     };
 };
 
-export default function Page({ partnerStatus, partnerCode }: Props) {
+export default function Page({ partnerStatus, partnerCode, payment }: Props) {
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('/partner');
-    const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
-    const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
+    const paymentPlan: PaymentPlan = payment === undefined ? 'Free' : payment.plan;
 
     const toast = useToast();
     const router = useRouter();
@@ -137,7 +141,7 @@ export default function Page({ partnerStatus, partnerCode }: Props) {
     const availableForAccount = (): boolean => {
 
         // let legacy partners apply
-        if (paymentPlanResponse.partner) {
+        if (payment.partner) {
             return true;
         }
 

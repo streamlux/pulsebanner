@@ -154,8 +154,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     },
                 });
 
-                const completedPayoutAmount = invoiceInfoPaid
-                    .map((a) => a.commissionAmount)
+                const completedPayoutAmount = invoiceInfoPaid?.map((a) => a.commissionAmount)
                     .reduce((a, b) => {
                         return a + b;
                     }, 0);
@@ -166,7 +165,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                         balance: customer.balance,
                         partnerStatus: partner.acceptanceStatus as AcceptanceStatus,
                         partnerCode: partner.partnerCode,
-                        completedPayouts: invoiceInfoPaid.length ?? 0,
+                        completedPayouts: invoiceInfoPaid?.length ?? 0,
                         completedPayoutAmount: completedPayoutAmount ?? 0,
                         pendingInvoices: invoiceInfoPending ?? [],
                         completedInvoices: invoiceInfoPaid ?? [],
@@ -288,7 +287,7 @@ export default function Page({
                                                         </Center>
                                                     </HStack>
                                                 </StatLabel>
-                                                <StatNumber>{pendingInvoices.length ?? 0}</StatNumber>
+                                                <StatNumber>{pendingInvoices?.length ?? 0}</StatNumber>
                                             </Stat>
                                             <Stat w="50%">
                                                 <StatLabel>
@@ -417,7 +416,7 @@ export default function Page({
                                             ))}
                                         </Tbody>
                                     </Table>
-                                    {pendingInvoices.length === 0 && (
+                                    {!pendingInvoices?.length && (
                                         <Center w="full" my="4">
                                             <Text>Your referrals will show up here!</Text>
                                         </Center>
@@ -477,7 +476,7 @@ export default function Page({
                                             </Tr>
                                         </Thead>
                                         <Tbody>
-                                            {completedInvoices.map((invoice) => {
+                                            {completedInvoices?.map((invoice) => {
                                                 const bt = balanceTransactions[invoice.balanceTransactionId];
 
                                                 return (
@@ -492,7 +491,7 @@ export default function Page({
                                         </Tbody>
                                     </Table>
 
-                                    {completedInvoices.length === 0 && (
+                                    {!completedInvoices.length && (
                                         <Center w="full" my="4">
                                             <Text>Your completed referrals will show up here!</Text>
                                         </Center>
