@@ -1,5 +1,5 @@
-import { env } from "process";
 import { createS3 } from "../database/s3ClientHelper";
+import env from "../env";
 import { logger } from "../logger";
 
 export async function uploadBase64(bucket: string, key: string, base64: string): Promise<void> {

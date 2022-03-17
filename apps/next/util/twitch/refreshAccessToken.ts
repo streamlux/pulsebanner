@@ -1,5 +1,6 @@
 import { Account } from "@prisma/client";
 import { getSecondsSinceEpoch } from "../common";
+import env from "../env";
 import { logger } from "../logger";
 
 export async function refreshAccessToken(refreshToken: string): Promise<Pick<Account, 'access_token' | 'expires_at' | 'scope' | 'token_type' | 'refresh_token'>> {
@@ -7,8 +8,8 @@ export async function refreshAccessToken(refreshToken: string): Promise<Pick<Acc
         const url =
             'https://id.twitch.tv/oauth2/token?' +
             new URLSearchParams({
-                client_id: process.env.TWITCH_CLIENT_ID,
-                client_secret: process.env.TWITCH_CLIENT_SECRET,
+                client_id: env.TWITCH_CLIENT_ID,
+                client_secret: env.TWITCH_CLIENT_SECRET,
                 grant_type: 'refresh_token',
                 refresh_token: refreshToken,
             });
@@ -35,5 +36,6 @@ export async function refreshAccessToken(refreshToken: string): Promise<Pick<Acc
         };
     } catch (error) {
         logger.error('Error refreshing twitch access token', error);
+        throw error;
     }
 }

@@ -1,9 +1,9 @@
 import { getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { createS3 } from '@app/util/database/s3ClientHelper';
+import env from '@app/util/env';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import { getBanner } from '@app/util/twitter/twitterHelpers';
 import axios from 'axios';
-import { env } from 'process';
 
 const handler = createAuthApiHandler();
 
@@ -17,6 +17,9 @@ handler.post(async (req, res) => {
 
     try {
         const twitterInfo = await getTwitterInfo(userId, true);
+        if (!twitterInfo) {
+            return res.send(400);
+        }
         const twitterBanner = await getBanner(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
         const { data } = await axios.get(twitterBanner, { responseType: "stream" });
 

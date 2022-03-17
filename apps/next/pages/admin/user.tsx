@@ -27,7 +27,6 @@ import { GetServerSideProps } from 'next';
 import { getAccountsById } from '@app/util/getAccountsById';
 import { getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { download } from '@app/util/s3/download';
-import { env } from 'process';
 import { getBanner, getUserInfo } from '@app/util/twitter/twitterHelpers';
 import { TwitchClientAuthService } from '@app/services/TwitchClientAuthService';
 import { twitchAxios } from '@app/util/axios';
@@ -38,6 +37,8 @@ import axios from 'axios';
 import { Features } from '@app/services/FeaturesService';
 import prisma from '@app/util/ssr/prisma';
 import { User } from '@prisma/client';
+import { CustomSession } from '@app/services/auth/CustomSession';
+import env from '@app/util/env';
 
 type PageProps = {
     userId: string;
@@ -58,11 +59,9 @@ type PageProps = {
 export const getServerSideProps: GetServerSideProps<PageProps | any> = async (context) => {
     const session = (await getSession({
         ctx: context,
-    })) as any;
+    })) as CustomSession;
 
     const userId = context.query.userId;
-
-    console.log(userId);
 
     if (typeof userId !== 'string' || userId === '') {
         return {
@@ -73,9 +72,15 @@ export const getServerSideProps: GetServerSideProps<PageProps | any> = async (co
     try {
         const accounts = await getAccountsById(userId);
         const twitchUserId = accounts['twitch'].providerAccountId;
-        const imageBase64: string = await download(env.IMAGE_BUCKET_NAME, userId);
-        const backupBase64: string = await download(env.BANNER_BACKUP_BUCKET, userId);
+        const imageBase64 = await download(env.IMAGE_BUCKET_NAME, userId);
+        const backupBase64 = await download(env.BANNER_BACKUP_BUCKET, userId);
         const twitterInfo = await getTwitterInfo(userId, true);
+
+        if (!twitterInfo) {
+            return {
+                props: {},
+            };
+        }
 
         const user = await prisma.user.findUnique({
             where: {
@@ -93,7 +98,7 @@ export const getServerSideProps: GetServerSideProps<PageProps | any> = async (co
         const userResponse = await authedTwitchAxios.get(`/helix/users?id=${twitchUserId}`);
         const twitchUserInfo = userResponse.data.data[0];
 
-        const twitterUserInfo: UsersLookup = await getUserInfo(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
+        const twitterUserInfo = await getUserInfo(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
 
         return {
             props: {

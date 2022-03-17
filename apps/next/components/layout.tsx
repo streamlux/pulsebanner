@@ -7,7 +7,7 @@ import NextLink from 'next/link';
 import { emggLogoSrc, promo, promoCode } from '@app/util/constants';
 import { useRouter } from 'next/router';
 
-export default function Layout({ children }) {
+export default function Layout({ children }: any) {
     const { colorMode, setColorMode } = useColorMode();
     if (colorMode === 'light') {
         setColorMode('dark');
@@ -27,7 +27,7 @@ export default function Layout({ children }) {
         <Flex direction="column" as={chakra.div} maxH="100%" overflow="hidden" minH="100vh" bg={emgg ? 'black' : 'transparent'}>
             <Box as={chakra.header} zIndex={10} position={breakpoint !== undefined ? 'fixed' : undefined} w="full">
                 <Header headerPortalRef={headerPortalRef} />
-                <Box ref={headerPortalRef} />
+                <Box ref={headerPortalRef as any} />
             </Box>
             {emgg && (
                 <Box

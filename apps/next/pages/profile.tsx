@@ -78,8 +78,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     })) as any;
 
     if (session) {
-        const twitterInfo: PostgresTwitterInfo = await getTwitterInfo(session.userId, true);
-        const isTwitterAuthValid: boolean = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+        const twitterInfo = await getTwitterInfo(session.userId, true);
+        if (!twitterInfo) {
+            return {
+                props: {
+                    twitterPic: undefined,
+                    twitterProfile: {},
+                },
+            };
+        }
+            const isTwitterAuthValid: boolean = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
 
         // if Twitter auth is invalid
         if (!isTwitterAuthValid) {
@@ -91,7 +99,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             };
         }
 
-        const profilePic: ProfileImage = await prisma.profileImage.findUnique({
+        const profilePic = await prisma.profileImage.findUnique({
             where: {
                 userId: session.userId,
             },
@@ -146,7 +154,7 @@ export default function Page({ profilePic, twitterPic }: Props) {
         ...(twitterPic ? { imageUrl: twitterPic } : {}),
     });
 
-    const styles: BoxProps = useColorModeValue<BoxProps>(
+    const styles: BoxProps = useColorModeValue<BoxProps, BoxProps>(
         {
             border: '1px solid',
             borderColor: 'gray.300',

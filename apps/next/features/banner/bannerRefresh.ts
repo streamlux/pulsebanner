@@ -54,6 +54,7 @@ export const bannerRefresh: Feature<string> = async (userId: string): Promise<st
         return bannerStatus === 200 ? 'Set banner to given template' : 'Unable to set banner';
     } else {
         logger.warn('Stream ended while rendering banner for refresh.', { userId });
+        return 'Stream ended while rendering banner for refresh.';
     }
 
 }

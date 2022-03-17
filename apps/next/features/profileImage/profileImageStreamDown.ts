@@ -1,8 +1,8 @@
 import { flipFeatureEnabled, getProfilePicEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
+import env from '@app/util/env';
 import { logger } from '@app/util/logger';
 import { download } from '@app/util/s3/download';
 import { TwitterResponseCode, updateProfilePic, validateTwitterAuthentication } from '@app/util/twitter/twitterHelpers';
-import { env } from 'process';
 import { Feature } from '../Feature';
 
 const profileImageStreamDown: Feature<string> = async (userId: string): Promise<string> => {
@@ -12,7 +12,7 @@ const profileImageStreamDown: Feature<string> = async (userId: string): Promise<
 
     const twitterInfo = await getTwitterInfo(userId);
 
-    const validatedTwitter = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    const validatedTwitter = twitterInfo && await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
     if (!validatedTwitter) {
         await flipFeatureEnabled(userId, 'profileImage');
         logger.error('Unauthenticated Twitter. Disabling feature profileImage and requiring re-auth.', { userId });

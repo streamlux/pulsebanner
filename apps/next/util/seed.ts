@@ -1,6 +1,7 @@
 import Stripe from 'stripe';
+import env from './env';
 import prisma from './ssr/prisma';
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
     apiVersion: '2020-08-27',
 });
 

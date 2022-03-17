@@ -17,7 +17,7 @@ export async function getLiveUserInfo(userId: string): Promise<LiveUserInfo | un
     // first call twitter and try and get their twitter username. Handle all error codes gracefully and return null if any come
     const twitterInfo = await getTwitterInfo(userId);
     let twitterLink = null;
-    if (twitterInfo) {
+    if (twitterInfo && twitterInfo.oauth_token && twitterInfo.oauth_token_secret) {
         twitterLink = await getTwitterUserLink(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
     }
     // get the twitch username/stream link

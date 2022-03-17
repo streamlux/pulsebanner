@@ -1,6 +1,6 @@
 import { PaymentModal } from '@app/components/pricing/PaymentModal';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
-import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
+import { APIPaymentObject, PaymentPlan, productPlan } from '@app/util/database/paymentHelpers';
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import prisma from '@app/util/ssr/prisma';
 import {
@@ -55,6 +55,7 @@ import { useForm } from 'react-hook-form';
 interface Props {
     partnerStatus: AcceptanceStatus;
     partnerCode?: string;
+    payment?: APIPaymentObject;
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -62,7 +63,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         ctx: context,
     })) as any;
 
+
     if (session) {
+        const payment = await productPlan(session.userId);
         const partnerStatus = await prisma.partnerInformation.findUnique({
             where: {
                 userId: session.userId,
@@ -79,10 +82,19 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     },
                 });
 
+                if (!partnerInfo) {
+                    return {
+                        props: {
+                            partnerStatus: AcceptanceStatus.None
+                        }
+                    }
+                }
+
                 return {
                     props: {
                         partnerStatus: partnerInfo.acceptanceStatus as AcceptanceStatus,
                         partnerCode: partnerInfo.partnerCode,
+                        payment,
                     },
                 };
             } catch (e) {
@@ -94,14 +106,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
         props: {
             partnerStatus: AcceptanceStatus.None,
+            payment: undefined,
         },
     };
 };
 
-export default function Page({ partnerStatus, partnerCode }: Props) {
+export default function Page({ partnerStatus, partnerCode, payment }: Props) {
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('/partner');
-    const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
-    const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
+    const paymentPlan: PaymentPlan = payment === undefined ? 'Free' : payment.plan;
 
     const toast = useToast();
     const router = useRouter();
@@ -116,14 +128,21 @@ export default function Page({ partnerStatus, partnerCode }: Props) {
 
     const { colorMode } = useColorMode();
     const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
+    type FormData = {
+        email: string;
+        firstName: string;
+        lastName: string;
+        partnerCodeInput: string;
+        notes: string;
+    };
 
     const {
         register,
         handleSubmit,
         formState: { errors },
-    } = useForm();
+    } = useForm<FormData>();
 
-    const styles: BoxProps = useColorModeValue<BoxProps>(
+    const styles: BoxProps = useColorModeValue<BoxProps, BoxProps>(
         {
             border: '1px solid',
             borderColor: 'gray.300',
@@ -133,10 +152,25 @@ export default function Page({ partnerStatus, partnerCode }: Props) {
         }
     );
 
+    // order of the if statements matter
     const availableForAccount = (): boolean => {
-        if (paymentPlan === 'Free' || (paymentPlanResponse.partner && !(session?.role === 'admin'))) {
+
+        // let legacy partners apply
+        if (payment?.partner) {
+            return true;
+        }
+
+        // let admins apply
+        if (session?.role === 'admin') {
+            return true;
+        }
+
+        // don't let free users apply
+        if (paymentPlan === 'Free') {
             return false;
         }
+
+        // let paid users apply
         return true;
     };
 
@@ -144,13 +178,6 @@ export default function Page({ partnerStatus, partnerCode }: Props) {
         router.replace(router.asPath);
     };
 
-    type FormData = {
-        email: string;
-        firstName: string;
-        lastName: string;
-        partnerCodeInput: string;
-        notes: string;
-    };
 
     const onSubmit = async (formData: FormData) => {
         if (!ensureSignUp()) {

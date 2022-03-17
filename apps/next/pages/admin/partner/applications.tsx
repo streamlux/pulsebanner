@@ -68,6 +68,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             };
         }
     }
+    return {
+        props: {},
+    };
 };
 
 export default function Page({ pendingPartners, stripeBaseUrl }: PartnerProps) {
@@ -175,7 +178,9 @@ export default function Page({ pendingPartners, stripeBaseUrl }: PartnerProps) {
                                     }
                                 >
                                     <Td>
-                                        {partner.partnerInformation.userId && <IdTag id={partner.partnerInformation.user.name} copyValue={partner.partnerInformation.userId} />}
+                                        {partner.partnerInformation.userId && (
+                                            <IdTag id={partner.partnerInformation.user.name ?? ''} copyValue={partner.partnerInformation.userId} />
+                                        )}
                                     </Td>
                                     <Td>
                                         {partner.stripePartnerInfo ? (

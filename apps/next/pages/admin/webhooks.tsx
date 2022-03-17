@@ -95,7 +95,7 @@ export default function Page({ userId, subscriptions }: PageProps) {
         router.push(`?userId=${userIdInput}`);
     };
 
-    const refreshSubscriptions = async (userId) => {
+    const refreshSubscriptions = async (userId: string) => {
         await axios.post(`/api/admin/subscriptions/update?userId=${userId}`);
     };
 

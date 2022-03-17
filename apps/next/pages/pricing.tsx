@@ -64,7 +64,7 @@ const arrowAnimation = keyframes`
 const sortProductsByPrice = (products: Products, billingInterval: PriceInterval) =>
     products
         .filter((a: ProductType) => !a.name.includes('Gift'))
-        .sort((a, b) => a?.prices?.find((one) => one.interval === billingInterval)?.unitAmount - b?.prices?.find((one) => one.interval === billingInterval)?.unitAmount);
+        .sort((a, b) => (a?.prices?.find((one) => one.interval === billingInterval)?.unitAmount ?? 0) - (b?.prices?.find((one) => one.interval === billingInterval)?.unitAmount ?? 0));
 
 const Page: NextPage<Props> = ({ products, priceMap }) => {
     const [paymentPlan, paymentPlanResponse] = usePaymentPlan();
@@ -321,7 +321,7 @@ const Page: NextPage<Props> = ({ products, priceMap }) => {
                         </Center>
                     </Box>
 
-                    <Container w="full" maxW={[undefined, 'container.xl']} px="0">
+                    <Container w="full" maxW={['unset', 'container.xl']} px="0">
                         <GiftPricing priceMap={priceMap} />
                     </Container>
                 </Container>
@@ -377,7 +377,7 @@ export const getStaticProps: GetStaticProps<Props> = async (context) => {
     const priceMap: Record<string, typeof prices[0]> = prices.reduce((map, obj) => {
         map[obj.id] = obj;
         return map;
-    }, {});
+    }, {} as any);
 
     return {
         props: {

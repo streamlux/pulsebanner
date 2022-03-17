@@ -1,4 +1,5 @@
 import { Stripe } from 'stripe';
+import env from '../env';
 import { logger } from '../logger';
 import { SimpleResponse } from '../simpleResponse';
 import prisma from '../ssr/prisma';
@@ -6,7 +7,7 @@ import stripe from '../ssr/stripe';
 
 export const createNewPromoCode = async (partnerId: string, partnerCode: string): Promise<SimpleResponse> => {
     try {
-        const promotionCodeResponse = await stripe.promotionCodes.create({ coupon: process.env.STRIPE_AFFILIATE_COUPON, code: partnerCode });
+        const promotionCodeResponse = await stripe.promotionCodes.create({ coupon: env.STRIPE_AFFILIATE_COUPON, code: partnerCode });
         const promoId = promotionCodeResponse.id;
 
         await prisma.stripePartnerInfo.upsert({

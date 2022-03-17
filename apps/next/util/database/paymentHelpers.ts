@@ -6,8 +6,8 @@ export type PaymentPlan = 'Professional' | 'Personal' | 'Free';
 export type APIPaymentObject = {
     plan: PaymentPlan;
     partner: boolean;
-    priceId: string;
-    productId: string;
+    priceId?: string;
+    productId?: string;
 };
 
 const checkPartnerAccount = async (userId: string): Promise<boolean> => {
@@ -20,7 +20,7 @@ const checkPartnerAccount = async (userId: string): Promise<boolean> => {
         },
     });
 
-    return userInfo.partner ?? false;
+    return userInfo?.partner ?? false;
 };
 
 const checkPaymentPlan = async (userId: string, priceId?: string): Promise<PaymentPlan> => {

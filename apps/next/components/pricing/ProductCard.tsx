@@ -29,10 +29,10 @@ interface ProductProps {
 }
 
 export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, handlePricingClick, paymentPlan, paymentPlanResponse }) => {
-    const price: Price = product?.prices?.find((one: Price) => one.interval === billingInterval);
-    const monthlyPrice: Price = product?.prices.find((one: Price) => one.interval === 'month');
+    const price = product?.prices?.find((one: Price) => one.interval === billingInterval);
+    const monthlyPrice = product?.prices.find((one: Price) => one.interval === 'month');
 
-    if (!price || !monthlyPrice) {
+    if (!price || !monthlyPrice || !price.unitAmount || !monthlyPrice.unitAmount) {
         return null;
     }
 

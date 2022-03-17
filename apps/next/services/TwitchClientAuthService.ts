@@ -1,12 +1,13 @@
 import axios, { AxiosInstance } from "axios";
 import { AccessToken, ClientCredentialsAuthProvider, accessTokenIsExpired } from "@twurple/auth";
 import { logger } from "@app/util/logger";
+import env from "@app/util/env";
 
 export class TwitchClientAuthService {
     private static authProvider: ClientCredentialsAuthProvider | undefined;
 
     private static _getAuthProvider(): ClientCredentialsAuthProvider {
-        this.authProvider ||= new ClientCredentialsAuthProvider(process.env.TWITCH_CLIENT_ID, process.env.TWITCH_CLIENT_SECRET);
+        this.authProvider ||= new ClientCredentialsAuthProvider(env.TWITCH_CLIENT_ID, env.TWITCH_CLIENT_SECRET);
         return this.authProvider;
     }
 
@@ -23,9 +24,7 @@ export class TwitchClientAuthService {
                     Authorization: `Bearer ${accessToken.accessToken}`
                 }
             });
-            if (response.status === 200) {
-                return true;
-            }
+           return response.status === 200;
         } catch (e) {
             return false;
         }

@@ -1,11 +1,11 @@
 import { AppNextApiRequest } from '@app/middlewares/admin';
 import { localAxios } from '@app/util/axios';
 import { createS3 } from '@app/util/database/s3ClientHelper';
+import env from '@app/util/env';
 import { logger } from '@app/util/logger';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import prisma from '@app/util/ssr/prisma';
 import { NextApiResponse } from 'next';
-import { env } from 'process';
 
 const handler = createAuthApiHandler();
 

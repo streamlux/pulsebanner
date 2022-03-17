@@ -40,6 +40,7 @@ import { discordLink, promo, promoCode, twitterLink } from '@app/util/constants'
 import { HeaderMenuItem } from './header/HeaderMenuItem';
 import { MobileHeaderMenuItem } from './header/MobileHeaderMenuItem';
 import { Card } from './Card';
+import { CustomSession } from '@app/services/auth/CustomSession';
 
 const headerImages = {
     profile: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/assets/feature-nav/header_profile.svg',
@@ -217,10 +218,10 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                         </HStack>
                                     </LinkBox>
                                 </HStack>
-                                {!breakpointValue.mobile && <NavLinks />}
+                                {!breakpointValue?.mobile && <NavLinks />}
                                 <Spacer />
                                 <Flex experimental_spaceX="2" alignItems="center" justifySelf="flex-end">
-                                    {!breakpointValue.mobile && (
+                                    {!breakpointValue?.mobile && (
                                         <>
                                             <NextLink href={twitterLink} passHref>
                                                 <IconButton
@@ -278,7 +279,7 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                     )}
                                     {session && (
                                         <Menu>
-                                            <Avatar size="sm" as={MenuButton} name={session.user.name} src={session.user.image} />
+                                            <Avatar size="sm" as={MenuButton} name={(session as CustomSession).user.name ?? ''} src={(session as CustomSession).user.image ?? ''} />
                                             <Portal>
                                                 <MenuList zIndex={11} bg="gray.800">
                                                     <NextLink href="/account" passHref>
@@ -294,7 +295,7 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                             </Portal>
                                         </Menu>
                                     )}
-                                    {breakpointValue.mobile && (
+                                    {breakpointValue?.mobile && (
                                         <>
                                             {/* <IconButton
                                                 aria-label="Twitter"
@@ -329,7 +330,7 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                     </Center>
                 </Box>
             </header>
-            {breakpointValue.mobile && mobileNavIsOpen && (
+            {breakpointValue?.mobile && mobileNavIsOpen && (
                 <Box>
                     <Flex
                         direction={'column'}

@@ -1,7 +1,7 @@
+import env from '@app/util/env';
 import { download } from '@app/util/s3/download';
 import { uploadBase64 } from '@app/util/s3/upload';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
-import { env } from 'process';
 
 const handler = createAuthApiHandler();
 
@@ -14,9 +14,13 @@ handler.post(async (req, res) => {
     console.log('updating backup image');
     if (userId && typeof userId === 'string') {
         try {
-            const backup: string = await download(env.IMAGE_BUCKET_NAME, userId);
-            await uploadBase64(env.BANNER_BACKUP_BUCKET, userId, backup);
-            return res.status(200).end();
+            const backup: string | undefined = await download(env.IMAGE_BUCKET_NAME, userId);
+            if (backup) {
+                await uploadBase64(env.BANNER_BACKUP_BUCKET, userId, backup);
+                return res.status(200).end();
+            } else {
+                return res.status(500).end('S3 error');
+            }
         } catch (e) {
             return res.status(500).end('S3 error');
         }

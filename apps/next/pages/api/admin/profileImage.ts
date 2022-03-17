@@ -29,10 +29,10 @@ handler.get(async (req, res) => {
         }
 
         const templateObj: TemplateRequestBody = {
-            backgroundId: profilePicEntry.backgroundId ?? 'ColorBackground',
-            foregroundId: profilePicEntry.foregroundId ?? 'ProfilePic',
-            foregroundProps: { ...(profilePicEntry.foregroundProps as Prisma.JsonObject) } ?? {},
-            backgroundProps: { ...(profilePicEntry.backgroundProps as Prisma.JsonObject) } ?? {},
+            backgroundId: profilePicEntry?.backgroundId ?? 'ColorBackground',
+            foregroundId: profilePicEntry?.foregroundId ?? 'ProfilePic',
+            foregroundProps: { ...(profilePicEntry?.foregroundProps as Prisma.JsonObject) } ?? {},
+            backgroundProps: { ...(profilePicEntry?.backgroundProps as Prisma.JsonObject) } ?? {},
         };
 
         // pass in the bannerEntry info

@@ -6,7 +6,7 @@ import { Feature } from '../Feature';
 const nameStreamDown: Feature<string> = async (userId: string): Promise<string> => {
     const twitterInfo = await getTwitterInfo(userId);
 
-    const validatedTwitter = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    const validatedTwitter = twitterInfo && await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
     if (!validatedTwitter) {
         await flipFeatureEnabled(userId, 'name');
         logger.error('Unauthenticated Twitter. Disabling feature name and requiring re-auth.', { userId });

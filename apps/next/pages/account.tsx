@@ -82,7 +82,7 @@ const Page: NextPage = () => {
                                                 await handleCreatePortal();
                                             }}
                                         >
-                                            {paymentPlan === 'Free' || paymentPlanResponse.partner ? 'Become PulseBanner Member' : 'Change/Cancel PulseBanner Membership'}
+                                            {paymentPlan === 'Free' || paymentPlanResponse?.partner ? 'Become PulseBanner Member' : 'Change/Cancel PulseBanner Membership'}
                                         </Button>
                                     </Flex>
                                     {paymentPlanResponse?.partner && (
@@ -109,7 +109,7 @@ const Page: NextPage = () => {
                                         {({ isOpen, onClose }) => (
                                             <>
                                                 <PopoverTrigger>
-                                                    <Button colorScheme="red" disabled={paymentPlan !== 'Free' && paymentPlanResponse.partner !== true}>
+                                                    <Button colorScheme="red" disabled={paymentPlan !== 'Free' && paymentPlanResponse?.partner !== true}>
                                                         Delete account and erase all data
                                                     </Button>
                                                 </PopoverTrigger>

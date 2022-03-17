@@ -31,7 +31,7 @@ export const FaqSection: FC<FaqSectionProps> = ({ items }): ReactElement => {
                 <Divider />
                 <SimpleGrid columns={[1, 2]} spacing={[8]}>
                     {items.map((item) => (
-                        <FaqItemC key={item.answer.toString()} item={item} colorMode={colorMode} />
+                        <FaqItemC key={item.answer?.toString()} item={item} colorMode={colorMode} />
                     ))}
                 </SimpleGrid>
                 {router.asPath !== '/faq' && (

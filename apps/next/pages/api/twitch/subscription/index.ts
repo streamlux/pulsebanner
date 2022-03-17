@@ -7,6 +7,7 @@ import { twitchAxios } from '@app/util/axios';
 import { TwitchClientAuthService } from '@app/services/TwitchClientAuthService';
 import { listSubscriptions } from '@app/util/twitch/listSubscriptions';
 import { logger } from '@app/util/logger';
+import { CustomSession } from '@app/services/auth/CustomSession';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
@@ -19,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
     });
 
-    const session = await getSession({ req });
+    const session: CustomSession | null = await getSession({ req }) as CustomSession;
 
     if (session) {
         const accounts = await getAccounts(session);

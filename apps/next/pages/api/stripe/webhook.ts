@@ -8,7 +8,6 @@ import prisma from '../../../util/ssr/prisma';
 import { sendMessage } from '@app/util/discord/sendMessage';
 import { FeaturesService } from '@app/services/FeaturesService';
 import { download } from '@app/util/s3/download';
-import { env } from 'process';
 import { TwitterResponseCode, updateProfilePic } from '@app/util/twitter/twitterHelpers';
 import { flipFeatureEnabled, getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { defaultBannerSettings } from '@app/pages/banner';
@@ -19,6 +18,7 @@ import { getInvoiceInformation, updateInvoiceTables } from '@app/util/stripe/inv
 import { giftPricingLookupMap } from '@app/util/stripe/gift/constants';
 import { handleGiftPurchase } from '@app/util/stripe/handleGiftPurchase';
 import { sendGiftPurchaseEmail } from '@app/util/stripe/emailHelper';
+import env from '@app/util/env';
 
 // Stripe requires the raw body to construct the event.
 export const config = {
@@ -51,12 +51,13 @@ const handler = createApiHandler();
 
 handler.post(async (req, res) => {
     const buf = await buffer(req);
-    const sig = req.headers['stripe-signature'] as string;
+    const sig = req.headers['stripe-signature'] as string | string[] | Buffer;
     let event;
 
     try {
         event = stripe.webhooks.constructEvent(buf, sig, env.STRIPE_WEBHOOK_SECRET);
-    } catch (err) {
+    } catch (e) {
+        const err = e as any;
         logger.error(`❌ Error verifying webhook. Message: ${err?.message}`);
         logger.error('secret', env.STRIPE_WEBHOOK_SECRET);
         return res.status(400).send(`Webhook Error: ${err?.message}`);
@@ -297,20 +298,21 @@ handler.post(async (req, res) => {
                         });
 
                         if (userId) {
-                            const promises: (Promise<GiftPurchase>)[] = [];
+                            const promises: (Promise<GiftPurchase | undefined>)[] = [];
                             for await (const lineItem of lineItems.data) {
-                                for (let i = 0; i < lineItem.quantity; i++) {
+                                for (let i = 0; i < (lineItem?.quantity ?? 0); i++) {
                                     const promise = async () => {
-                                        const priceId: string = lineItem.price.id;
+                                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                                        const priceId = lineItem.price!.id;
                                         const amountTotal: number = lineItem.amount_total;
 
                                         // lookup the priceId to couponCode
                                         const giftCouponId: string | undefined = priceId ? giftPricingLookupMap[priceId] : undefined;
 
                                         if (giftCouponId) {
-                                            const giftPurchase: GiftPurchase | undefined = await handleGiftPurchase(giftCouponId, amountTotal, userId, customerEmail, priceId, data.id, i);
+                                            const giftPurchase: GiftPurchase | undefined = await handleGiftPurchase(giftCouponId, amountTotal, userId, customerEmail ?? '', priceId, data.id, i);
                                             // if we successfully generated a couponCode, we send the customer an email
-                                            logger.info('handled stripe promo code successfully', { giftPurchaseId: giftPurchase.id });
+                                            logger.info('handled stripe promo code successfully', { giftPurchaseId: giftPurchase?.id });
                                             return giftPurchase;
                                         }
                                     };
@@ -325,7 +327,7 @@ handler.post(async (req, res) => {
 
                                 if (customerEmail) {
                                     const notify = async () => {
-                                        sendGiftPurchaseEmail(customerEmail, giftPurchases);
+                                        sendGiftPurchaseEmail(customerEmail, giftPurchases.filter((giftPurchase) => giftPurchase !== undefined) as GiftPurchase[]);
                                     };
                                     void notify();
                                 } else {

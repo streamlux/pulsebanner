@@ -110,6 +110,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             };
         }
     }
+    return {
+        props: {},
+    };
 };
 
 export default function Page({ activePartnerList, pendingPartnerList, rejectedPartnerList, suspendedPartnerList, allPartnerList, stripeBaseUrl }: PartnerProps) {
@@ -129,7 +132,7 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
     const DropdownOption = (partner: Partner) => (
         <Select
             size="sm"
-            w='fit-content'
+            w="fit-content"
             onChange={(val) => {
                 setAffiliateStatuMap({ ...affiliateStatusMap, [partner.id]: val.target.value as AcceptanceStatus });
             }}
@@ -172,7 +175,7 @@ export default function Page({ activePartnerList, pendingPartnerList, rejectedPa
                                 >
                                     <Td>
                                         <IdTag
-                                            id={partner.partnerInformation.user.name}
+                                            id={partner.partnerInformation.user.name ?? ''}
                                             url={`/partner/dashboard?userId=${partner?.partnerInformation?.userId}`}
                                             copyValue={partner.id}
                                         />
