@@ -1,4 +1,5 @@
 import { sendMessage } from '@app/util/discord/sendMessage';
+import env from '@app/util/env';
 import { logger } from '@app/util/logger';
 import prisma from '@app/util/ssr/prisma';
 import stripe from '@app/util/ssr/stripe';
@@ -17,10 +18,13 @@ export async function handleSubscriptionCheckoutSessionComplete(checkoutSession:
     });
 
     // get the subscription info
-    const subscriptionInfo: Subscription = await upsertSubscriptionFromCheckoutSession(subscription, checkoutSession.client_reference_id);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const subscriptionInfo: Subscription = await upsertSubscriptionFromCheckoutSession(subscription, checkoutSession.client_reference_id!);
 
     const userId = subscriptionInfo === null ? null : subscriptionInfo.userId;
-    sendDiscordNotification(userId, subscriptionInfo);
+    if (userId) {
+        sendDiscordNotification(userId, subscriptionInfo);
+    }
 };
 
 // send webhook to discord saying someone subscribed
@@ -31,6 +35,7 @@ function sendDiscordNotification(userId: string, subscriptionInfo: Subscription)
                 where: {
                     id: userId,
                 },
+                rejectOnNotFound: true,
             });
 
             const priceId = subscriptionInfo.priceId;
@@ -63,12 +68,12 @@ function sendDiscordNotification(userId: string, subscriptionInfo: Subscription)
                         },
                     });
 
-                    sendMessage(`${msg} Total premium users: ${count}`, process.env.DISCORD_NEW_SUBSCRIBER_URL);
+                    sendMessage(`${msg} Total premium users: ${count}`, env.DISCORD_NEW_SUBSCRIBER_URL);
                 }
             } else {
                 logger.info(`User successfully signed up for a membership. User: ${userId}`, { userId: userId });
                 prisma.subscription.count().then((value) => {
-                    sendMessage(`"${userId}" signed up for a premium plan! Total premium users: ${value}`, process.env.DISCORD_NEW_SUBSCRIBER_URL);
+                    sendMessage(`"${userId}" signed up for a premium plan! Total premium users: ${value}`, env.DISCORD_NEW_SUBSCRIBER_URL);
                 });
             }
         };

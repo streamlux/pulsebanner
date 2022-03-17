@@ -1,9 +1,10 @@
 import { Center, LightMode, Tab, TabList, Tabs, Tag, VStack, Text } from '@chakra-ui/react';
-import React, { ReactElement, FC } from 'react';
+import React, { ReactElement, FC, ReactNode } from 'react';
 
 type ButtonSwitchProps = {
     onChange: (index: number) => void;
     defaultIndex?: number;
+    children: ReactNode[];
 };
 
 export const ButtonSwitch: FC<ButtonSwitchProps> = ({ onChange, defaultIndex, children }): ReactElement => {

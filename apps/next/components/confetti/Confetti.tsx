@@ -11,7 +11,7 @@ const canvasStyles: React.CSSProperties = {
 };
 
 export default function Confetti() {
-  const refAnimationInstance = useRef(null);
+  const refAnimationInstance = useRef(null as any);
 
   const getInstance = useCallback((instance) => {
     refAnimationInstance.current = instance;

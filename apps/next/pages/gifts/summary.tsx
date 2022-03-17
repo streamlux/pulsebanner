@@ -127,6 +127,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             include: {
                 product: true,
             },
+            rejectOnNotFound: true,
         });
 
         gifts.push({

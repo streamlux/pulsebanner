@@ -60,7 +60,7 @@ import { giftPriceIds } from '@app/util/stripe/gift/constants';
 import getStripe from '@app/util/getStripe';
 
 type Props = {
-    priceMap: Record<string, Price & { product: Product }>;
+    priceMap: Record<string, { unitAmount: number } & Price & { product: Product }>;
 };
 
 export const GiftPricing: React.FC<Props> = ({ priceMap }) => {
@@ -93,21 +93,6 @@ export const GiftPricing: React.FC<Props> = ({ priceMap }) => {
     }, [session, onOpen]);
 
     const [billingInterval, setBillingInterval] = useState<PriceInterval>('year');
-
-    const sortProductsByPrice = (
-        products: (Product & {
-            prices: Price[];
-        })[]
-    ) =>
-        products
-            .filter((a) => !a.name.includes('Gift'))
-            .sort((a, b) => a?.prices?.find((one) => one.interval === billingInterval)?.unitAmount - b?.prices?.find((one) => one.interval === billingInterval)?.unitAmount);
-
-    const giftingProducts = (
-        products: (Product & {
-            prices: Price[];
-        })[]
-    ) => products.filter((a) => a.name.includes('Gift'));
 
     const handlePricingClick = useCallback(
         async (priceId: string, isSubscription: boolean, quantity?: number) => {
@@ -154,7 +139,7 @@ export const GiftPricing: React.FC<Props> = ({ priceMap }) => {
         [router, paymentPlan, ensureSignUp]
     );
 
-    const refAnimationInstance = useRef(null);
+    const refAnimationInstance = useRef(null as any);
 
     const getInstance = useCallback((instance) => {
         refAnimationInstance.current = instance;
@@ -302,7 +287,7 @@ export const GiftPricing: React.FC<Props> = ({ priceMap }) => {
 
             <VStack w="full">
                 <Container maxW="container.xl" experimental_spaceY={24}>
-                    <Container w="full" maxW={[undefined, 'container.xl']} px="0">
+                    <Container w="full" maxW={['unset', 'container.xl']} px="0">
                         <Grid templateRows={['repeat(1, 1fr)', 'repeat(3, 1fr)']} templateColumns={['repeat(1, 1fr)', 'repeat(3, 1fr)']} gap={4} w="full">
                             <GridItem rowSpan={[1, 3]} colSpan={1} w="full">
                                 <Card props={{ color: 'white', p: '0', border: 'none', w: 'full', h: 'full', bgGradient: 'linear(to-tr, #9246FF, #2AA9E0)' }}>

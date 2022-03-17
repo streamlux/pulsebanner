@@ -64,7 +64,7 @@ import { GiftPricing } from '@app/modules/pricing/GiftPricing';
 
 type Props = {
     prices: (Price & { product: Product })[];
-    priceMap: Record<string, Price & { product: Product }>;
+    priceMap: Record<string, Price & { unitAmount: number } & { product: Product }>;
 };
 
 const Page: NextPage<Props> = ({ priceMap }) => {
@@ -127,12 +127,12 @@ export const getStaticProps: GetStaticProps<Props> = async (context) => {
         include: {
             product: true,
         },
-    });
+    }) as (Price & { unitAmount: number } & { product: Product })[];
 
     const priceMap: Record<string, typeof prices[0]> = prices.reduce((map, obj) => {
         map[obj.id] = obj;
         return map;
-    }, {});
+    }, {} as any);
 
     return {
         props: {

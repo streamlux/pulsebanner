@@ -1,6 +1,7 @@
 import { GiftPurchase } from '@prisma/client';
 import nodemailer from 'nodemailer';
 import mg from 'nodemailer-mailgun-transport';
+import env from '../env';
 import { logger } from '../logger';
 import prisma from '../ssr/prisma';
 import { getGiftRedemptionUrl } from './gift/getGiftRedemptionUrl';
@@ -15,8 +16,8 @@ import { getGiftRedemptionUrl } from './gift/getGiftRedemptionUrl';
 export const sendGiftPurchaseEmail = async (customerEmail: string, gifts: GiftPurchase[]) => {
     const auth = {
         auth: {
-            api_key: process.env.NODEMAILER_API_KEY,
-            domain: process.env.NODEMAILER_DOMAIN,
+            api_key: env.NODEMAILER_API_KEY,
+            domain: env.NODEMAILER_DOMAIN,
         },
     };
 
@@ -30,7 +31,8 @@ export const sendGiftPurchaseEmail = async (customerEmail: string, gifts: GiftPu
         },
         include: {
             product: true,
-        }
+        },
+        rejectOnNotFound: true,
     });
     const intro = `
         <!DOCTYPE html>
@@ -84,7 +86,7 @@ export const sendGiftPurchaseEmail = async (customerEmail: string, gifts: GiftPu
             //You can use "text:" to send plain-text content. It's oldschool!
             text: '',
         },
-        (err, _info) => {
+        (err: any, _info: any) => {
             if (err) {
                 logger.error('Error gift code email.', { error: err, checkoutSessionId: gifts[0].checkoutSessionId, customerEmail });
             } else {

@@ -39,6 +39,7 @@ const env = cleanEnv(process.env, {
     STRIPE_DASHBOARD_BASEURL: str(),
     NODEMAILER_API_KEY: str(),
     NODEMAILER_DOMAIN: str(),
+    DISCORD_GIFT_PURCHASED_URL: str(),
 });
 
 export default env;

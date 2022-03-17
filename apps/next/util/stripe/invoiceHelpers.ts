@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import Stripe from 'stripe';
 import prisma from '../ssr/prisma';
 import stripe from '../ssr/stripe';
@@ -5,12 +6,12 @@ import { InvoiceInformation } from './types';
 
 export const getInvoiceInformation = async (data: Stripe.Invoice): Promise<InvoiceInformation> => {
     const stripePromoCode = data.discount?.promotion_code?.toString() ?? undefined;
-    const paidAt = new Date(data.status_transitions.paid_at * 1000); // date object is in milliseconds and timestamp is in seconds
+    const paidAt = new Date(data.status_transitions.paid_at! * 1000); // date object is in milliseconds and timestamp is in seconds
 
     const productId = data.lines.data[0]?.plan?.id ?? undefined;
-    const priceId = data.lines.data[0]?.price.id ?? undefined;
+    const priceId = data.lines.data[0]?.price?.id ?? undefined;
 
-    const planBaseAmount = data.lines.data[0]?.price.unit_amount;
+    const planBaseAmount = data.lines.data[0]?.price!.unit_amount;
 
     const stripeProducts = await stripe.products.list();
     const giftProducts = stripeProducts.data.filter((product) => product.name.includes('Gift')).map((product) => product.id);
@@ -24,10 +25,10 @@ export const getInvoiceInformation = async (data: Stripe.Invoice): Promise<Invoi
         customerId: customerId,
         priceId: priceId,
         purchaseAmount: data.subtotal,
-        planBaseAmount: planBaseAmount,
+        planBaseAmount: planBaseAmount!,
         giftProducts: giftProducts,
         metadata: data.metadata,
-        status: data.status,
+        status: data.status!,
     };
 };
 
@@ -37,10 +38,10 @@ export const updateInvoiceTables = async (invoiceInfo: InvoiceInformation, partn
         data: {
             id: invoiceInfo.invoiceId,
             customerId: invoiceInfo.customerId,
-            promoCodeId: invoiceInfo.stripePromoCode,
-            productId: invoiceInfo.productId,
+            promoCodeId: invoiceInfo.stripePromoCode!,
+            productId: invoiceInfo.productId!,
             purchaseAmount: invoiceInfo.purchaseAmount,
-            priceId: invoiceInfo.priceId,
+            priceId: invoiceInfo.priceId!,
             paidAt: invoiceInfo.paidAt,
             metadata: invoiceInfo.metadata,
             status: invoiceInfo.status,

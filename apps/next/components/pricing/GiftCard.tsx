@@ -1,37 +1,11 @@
 import { formatUsd } from '@app/util/stringUtils';
 import { AddIcon, MinusIcon } from '@chakra-ui/icons';
-import {
-    Box,
-    Button,
-    ButtonGroup,
-    chakra,
-    Flex,
-    Heading,
-    HStack,
-    IconButton,
-    Popover,
-    PopoverArrow,
-    PopoverBody,
-    PopoverCloseButton,
-    PopoverContent,
-    PopoverHeader,
-    PopoverTrigger,
-    Spacer,
-    Tag,
-    Tooltip,
-    Text,
-    useBoolean,
-    useBreakpoint,
-    VStack,
-    Wrap,
-    WrapItem,
-    Center,
-} from '@chakra-ui/react';
+import { Box, Button, Flex, Heading, HStack, IconButton, Spacer, Tag, useBreakpoint, VStack, Center } from '@chakra-ui/react';
 import React, { ReactElement, FC, useState } from 'react';
 import { FaArrowRight } from 'react-icons/fa';
 import { FiGift } from 'react-icons/fi';
 import { Card } from '../Card';
-import { GiftCardPrice, ProductCardPrice, ProductCardPriceAmount, ProductCardPriceDiscount } from './ProductCardParts';
+import { GiftCardPrice, ProductCardPriceAmount, ProductCardPriceDiscount } from './ProductCardParts';
 
 type GiftCardProps = {
     duration: string;

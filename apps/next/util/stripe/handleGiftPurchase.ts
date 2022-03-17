@@ -2,6 +2,7 @@ import stripe from '@app/util/ssr/stripe';
 import { GiftPurchase } from '@prisma/client';
 import Stripe from 'stripe';
 import { sendMessage } from '../discord/sendMessage';
+import env from '../env';
 import { logger } from '../logger';
 import prisma from '../ssr/prisma';
 
@@ -30,15 +31,16 @@ export async function handleGiftPurchase(giftCouponId: string, amountTotal: numb
             where: {
                 id: userId,
             },
+            rejectOnNotFound: true,
         });
         const msg = `${user.name} purchased a gift of ${amountTotal * 0.01}.`;
         logger.info(msg, { userId: userId });
-        sendMessage(`${msg}`, process.env.DISCORD_GIFT_PURCHASED_URL);
+        sendMessage(`${msg}`, env.DISCORD_GIFT_PURCHASED_URL);
         return giftPurchase;
     } else {
         const msg = 'A gift was successfully purchased, but promoCode for gift was not created successfully.';
         logger.warn(msg, { giftCouponId: giftCouponId });
-        sendMessage(`${msg} Coupon id: ${giftCouponId}`, process.env.DISCORD_GIFT_PURCHASED_URL);
+        sendMessage(`${msg} Coupon id: ${giftCouponId}`, env.DISCORD_GIFT_PURCHASED_URL);
     }
 };
 

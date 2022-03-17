@@ -21,7 +21,7 @@ import {
 } from './ProductCardParts';
 
 interface ProductProps {
-    product: Product & { prices: Price[] };
+    product: Product & { prices: (Price & { unitAmount: number })[] };
     billingInterval: PriceInterval;
     handlePricingClick: (priceId: string) => void;
     paymentPlan: PaymentPlan;
@@ -29,8 +29,8 @@ interface ProductProps {
 }
 
 export const ProductCardDesktop: React.FC<ProductProps> = ({ product, billingInterval, handlePricingClick, paymentPlan, paymentPlanResponse }) => {
-    const price: Price = product?.prices?.find((one: Price) => one.interval === billingInterval);
-    const monthlyPrice: Price = product?.prices.find((one: Price) => one.interval === 'month');
+    const price = product?.prices?.find((one: Price) => one.interval === billingInterval);
+    const monthlyPrice = product?.prices.find((one: Price) => one.interval === 'month');
 
     if (!price || !monthlyPrice) {
         return null;

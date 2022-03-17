@@ -49,8 +49,8 @@ type ProductType = Product & { prices: Price[] };
 type Products = ProductType[];
 type Props = {
     products: Products;
-    prices: (Price & { product: Product })[];
-    priceMap: Record<string, Price & { product: Product }>;
+    prices: (Price & { unitAmount: number } & { product: Product })[];
+    priceMap: Record<string, Price & { unitAmount: number } & { product: Product }>;
 };
 
 const arrowAnimation = keyframes`
@@ -64,7 +64,9 @@ const arrowAnimation = keyframes`
 const sortProductsByPrice = (products: Products, billingInterval: PriceInterval) =>
     products
         .filter((a: ProductType) => !a.name.includes('Gift'))
-        .sort((a, b) => (a?.prices?.find((one) => one.interval === billingInterval)?.unitAmount ?? 0) - (b?.prices?.find((one) => one.interval === billingInterval)?.unitAmount ?? 0));
+        .sort(
+            (a, b) => (a?.prices?.find((one) => one.interval === billingInterval)?.unitAmount ?? 0) - (b?.prices?.find((one) => one.interval === billingInterval)?.unitAmount ?? 0)
+        );
 
 const Page: NextPage<Props> = ({ products, priceMap }) => {
     const [paymentPlan, paymentPlanResponse] = usePaymentPlan();
@@ -372,7 +374,7 @@ export const getStaticProps: GetStaticProps<Props> = async (context) => {
         include: {
             product: true,
         },
-    });
+    }) as (Price & { unitAmount: number } & { product: Product })[];
 
     const priceMap: Record<string, typeof prices[0]> = prices.reduce((map, obj) => {
         map[obj.id] = obj;

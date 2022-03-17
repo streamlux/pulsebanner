@@ -9,7 +9,7 @@ type MobileHeaderMenuItemProps = {
     description: string;
     colorMode: ColorMode;
     onNavigate?: () => void;
-    href?: string;
+    href: string;
 };
 
 export const MobileHeaderMenuItem: FC<MobileHeaderMenuItemProps> = ({ imageSrc, title, description, colorMode, href, onNavigate }): ReactElement => {
