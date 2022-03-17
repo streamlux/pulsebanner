@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+- Gifts page
+- Gift pricing on pricing page
+- Gift summary page
+- Gift summary emails
+
 ### Changed
 - Let users disconnect their Twitch account
 - Low effort UI improvement to account page

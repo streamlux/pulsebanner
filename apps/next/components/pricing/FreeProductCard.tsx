@@ -78,6 +78,7 @@ export const FreeProductCard: React.FC<Props> = ({ modal }) => {
                 <Center>
                     {!session && (
                         <Button
+                            mt='4'
                             fontWeight="bold"
                             colorScheme="green"
                             rightIcon={<FaArrowRight />}

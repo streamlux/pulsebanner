@@ -165,14 +165,16 @@ const Page: NextPage<Props> = ({ products, priceMap }) => {
     return (
         <>
             {PricingSEO}
-            <div style={{ position: 'absolute', left: '220px', top: '700px' }}>
-                <VStack>
-                    <Heading>🎁</Heading>
-                    <Box animation={`${arrowAnimation} alternate infinite 1.4s linear`}>
-                        <FaArrowDown fontSize={28} />
-                    </Box>
-                </VStack>
-            </div>
+            {breakpoint !== 'base' && (
+                <div style={{ position: 'absolute', left: '220px', top: '700px' }}>
+                    <VStack>
+                        <Heading>🎁</Heading>
+                        <Box animation={`${arrowAnimation} alternate infinite 1.4s linear`}>
+                            <FaArrowDown fontSize={28} />
+                        </Box>
+                    </VStack>
+                </div>
+            )}
             <Modal onClose={onClose} size={'xl'} isOpen={isOpen}>
                 <ModalOverlay />
                 <ModalContent>
@@ -362,7 +364,7 @@ export const getStaticProps: GetStaticProps<Props> = async (context) => {
         },
     });
 
-    const prices = await prisma.price.findMany({
+    const prices = (await prisma.price.findMany({
         where: {
             active: true,
             AND: {
@@ -374,7 +376,7 @@ export const getStaticProps: GetStaticProps<Props> = async (context) => {
         include: {
             product: true,
         },
-    }) as (Price & { unitAmount: number } & { product: Product })[];
+    })) as (Price & { unitAmount: number } & { product: Product })[];
 
     const priceMap: Record<string, typeof prices[0]> = prices.reduce((map, obj) => {
         map[obj.id] = obj;
