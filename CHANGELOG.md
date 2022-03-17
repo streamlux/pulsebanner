@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.10.6] - 2022-03-16
+
+### Fixed
+- Partner page bug
+
 ## [0.10.5] - 2022-03-15
 ### Fixed
 - Let legacy partners apply for partner program
