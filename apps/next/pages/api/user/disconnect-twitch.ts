@@ -27,10 +27,10 @@ handler.post(async (req: AppNextApiRequest, res: NextApiResponse): Promise<void>
                     provider: 'twitch'
                 }
             }
-        }
+        },
     });
 
-    const twitchAccountId = user.accounts[0]?.id;
+    const twitchAccountId = user?.accounts[0]?.id;
 
     if (!twitchAccountId) {
         return res.status(409).send('Account to delete not found.');

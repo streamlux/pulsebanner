@@ -26,7 +26,7 @@ export class BannerRefreshService {
                 this.logger.error('Error occured during banner refresh.', {
                     userId: customer.user.id,
                     error: {
-                        ...e
+                        error: e
                     }
                 });
             }

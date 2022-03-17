@@ -48,7 +48,7 @@ export function onLoad(): void {
     } catch (e) {
         // failed to load
         logger.error('Error occured within onLoad function.',
-            { ...e }
+            { error: e }
         );
     }
 }
