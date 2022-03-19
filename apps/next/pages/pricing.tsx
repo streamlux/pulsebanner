@@ -3,7 +3,7 @@ import type { GetStaticProps, NextPage } from 'next';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import { signIn, useSession } from 'next-auth/react';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
     Button,
     Heading,
@@ -33,7 +33,6 @@ import getStripe from '../util/getStripe';
 import prisma from '../util/ssr/prisma';
 import { FaTwitter, FaCheck, FaArrowDown } from 'react-icons/fa';
 import { ProductCard } from '@app/components/pricing/ProductCard';
-import { PaymentPlan } from '@app/util/database/paymentHelpers';
 import { NextSeo } from 'next-seo';
 import { generalFaqItems, pricingFaqItems } from '@app/modules/faq/data';
 import { FaqSection } from '@app/modules/faq/FaqSection';
@@ -42,7 +41,6 @@ import { FreeProductCard } from '@app/components/pricing/FreeProductCard';
 import { Card } from '@app/components/Card';
 import { ArrowRightIcon } from '@chakra-ui/icons';
 import { ButtonSwitch } from '@app/components/buttonSwitch/ButtonSwitch';
-import { giftPriceIds } from '@app/util/stripe/gift/constants';
 import { GiftPricing } from '@app/modules/pricing/GiftPricing';
 
 type ProductType = Product & { prices: Price[] };

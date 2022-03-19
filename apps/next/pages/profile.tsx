@@ -40,7 +40,7 @@ import { RemotionProfilePreview } from '@pulsebanner/remotion/preview';
 import { Composer } from '@pulsebanner/remotion/components';
 import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
 import { useState } from 'react';
-import { getTwitterInfo, PostgresTwitterInfo } from '@app/util/database/postgresHelpers';
+import { getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { getTwitterProfilePic, validateTwitterAuthentication } from '@app/util/twitter/twitterHelpers';
 import { FaqSection } from '@app/modules/faq/FaqSection';
 import { generalFaqItems, profileImageFaqItems } from '@app/modules/faq/data';
@@ -106,7 +106,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         });
 
         // https url of twitter profile picture
-        const twitterProfilePic: string = await getTwitterProfilePic(session.userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
+        const twitterProfilePic = await getTwitterProfilePic(session.userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
         if (profilePic) {
             try {
                 const response = await axios.get((profilePic.foregroundProps as any).imageUrl);

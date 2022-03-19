@@ -1,65 +1,10 @@
-import { Price, PriceInterval, Product } from '@prisma/client';
-import type { GetServerSideProps, GetStaticProps, NextPage } from 'next';
-import NextLink from 'next/link';
-import { useRouter } from 'next/router';
-import { signIn, useSession } from 'next-auth/react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import {
-    Button,
-    Heading,
-    Text,
-    Center,
-    chakra,
-    Container,
-    VStack,
-    SimpleGrid,
-    HStack,
-    useDisclosure,
-    Modal,
-    ModalBody,
-    ModalCloseButton,
-    ModalContent,
-    ModalHeader,
-    ModalOverlay,
-    Switch,
-    Tag,
-    Flex,
-    Link,
-    Box,
-    WrapItem,
-    Tab,
-    TabList,
-    TabPanel,
-    TabPanels,
-    Tabs,
-    Image,
-    useBreakpoint,
-    LightMode,
-    DarkMode,
-    Grid,
-    GridItem,
-    Tooltip,
-    Spacer,
-} from '@chakra-ui/react';
-
-import getStripe from '../util/getStripe';
+import { Price, Product } from '@prisma/client';
+import type { GetStaticProps, NextPage } from 'next';
+import React from 'react';
+import { Heading, Text, Container, VStack, Box } from '@chakra-ui/react';
 import prisma from '../util/ssr/prisma';
-import { FaTwitter, FaCheck, FaArrowRight, FaHeart } from 'react-icons/fa';
-import { ProductCard } from '@app/components/pricing/ProductCard';
-import { trackEvent } from '@app/util/umami/trackEvent';
-import { PaymentPlan } from '@app/util/database/paymentHelpers';
-import { NextSeo } from 'next-seo';
 import { generalFaqItems, pricingFaqItems } from '@app/modules/faq/data';
 import { FaqSection } from '@app/modules/faq/FaqSection';
-import { usePaymentPlan } from '@app/util/hooks/usePaymentPlan';
-import { FreeProductCard } from '@app/components/pricing/FreeProductCard';
-import { Card } from '@app/components/Card';
-import { landingPageAsset } from '.';
-import { ArrowRightIcon } from '@chakra-ui/icons';
-import { GiftCard } from '@app/components/pricing/GiftCard';
-import { ButtonSwitch } from '@app/components/buttonSwitch/ButtonSwitch';
-import ReactCanvasConfetti from 'react-canvas-confetti';
-import { giftPriceIds } from '@app/util/stripe/gift/constants';
 import { GiftPricing } from '@app/modules/pricing/GiftPricing';
 
 type Props = {
@@ -115,7 +60,7 @@ const Page: NextPage<Props> = ({ priceMap }) => {
 // aka this page is server-side rendered
 // This method is run on the server, then the return value is passed in as props to the component above
 export const getStaticProps: GetStaticProps<Props> = async (context) => {
-    const prices = await prisma.price.findMany({
+    const prices = (await prisma.price.findMany({
         where: {
             active: true,
             AND: {
@@ -127,7 +72,7 @@ export const getStaticProps: GetStaticProps<Props> = async (context) => {
         include: {
             product: true,
         },
-    }) as (Price & { unitAmount: number } & { product: Product })[];
+    })) as (Price & { unitAmount: number } & { product: Product })[];
 
     const priceMap: Record<string, typeof prices[0]> = prices.reduce((map, obj) => {
         map[obj.id] = obj;

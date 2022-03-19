@@ -32,11 +32,9 @@ import { signIn } from 'next-auth/react';
 import { FaTwitter, FaCheck, FaArrowRight } from 'react-icons/fa';
 import NextLink from 'next/link';
 import { Testimonial } from '@app/components/landing/Testimonial';
-import Head from 'next/head';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
 import { NextSeo } from 'next-seo';
 import { trackEvent } from '@app/util/umami/trackEvent';
-import { Card } from '@app/components/Card';
 
 interface StaticAsset {
     src: string;

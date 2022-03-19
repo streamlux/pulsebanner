@@ -47,7 +47,6 @@ import { PaymentModal } from '@app/components/pricing/PaymentModal';
 import { trackEvent } from '@app/util/umami/trackEvent';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
 import { discordLink, emggBannerBackground } from '@app/util/constants';
-import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
 import { DisableBannerModal } from '@app/components/banner/DisableBannerModal';
 import { getSession, useSession } from 'next-auth/react';
 import { GetServerSideProps } from 'next';
