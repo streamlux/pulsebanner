@@ -4,8 +4,9 @@ import React from 'react';
 export const Card: React.FC<{ props?: BoxProps }> = ({ children, props }) => {
     const styles = useColorModeValue<BoxProps>(
         {
-            border: '1px solid',
-            borderColor: 'gray.300',
+            // border: '1px solid',
+            background: 'blackAlpha.50',
+            // borderColor: 'gray.300',
         },
         {
             background: 'whiteAlpha.100',
@@ -13,7 +14,7 @@ export const Card: React.FC<{ props?: BoxProps }> = ({ children, props }) => {
     );
 
     return (
-        <Flex direction="column" rounded="md" p="4" experimental_spaceY="8" {...styles} {...(props ?? {})}>
+        <Flex direction="column" shadow={'md'} rounded="md" p="4" experimental_spaceY="8" {...styles} {...(props ?? {})}>
             {children}
         </Flex>
     );

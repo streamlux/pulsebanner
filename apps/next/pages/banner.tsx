@@ -47,7 +47,6 @@ import { PaymentModal } from '@app/components/pricing/PaymentModal';
 import { trackEvent } from '@app/util/umami/trackEvent';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
 import { discordLink, emggBannerBackground } from '@app/util/constants';
-import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
 import { DisableBannerModal } from '@app/components/banner/DisableBannerModal';
 import { getSession, useSession } from 'next-auth/react';
 import { GetServerSideProps } from 'next';
@@ -63,7 +62,6 @@ import { ReconnectTwitterModal } from '@app/modules/onboard/ReconnectTwitterModa
 import { bannerFaqItems, generalFaqItems } from '@app/modules/faq/data';
 import { FaqSection } from '@app/modules/faq/FaqSection';
 import { getAccountsById } from '@app/util/getAccountsById';
-import { env } from 'process';
 import { download } from '@app/util/s3/download';
 import { FileUploadModal } from '@pulsebanner/react-image-upload';
 import { InfoIcon } from '@chakra-ui/icons';
@@ -72,6 +70,7 @@ import { BannerPresetList } from '@app/modules/banner/BannerPresetList';
 import Layout from '@app/components/layout';
 import { ChangePresetModal } from '@app/modules/banner/ChangePresetModal';
 import { usePaymentPlan } from '@app/util/hooks/usePaymentPlan';
+import env from '@app/util/env';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof BannerForegrounds = 'ImLive';
@@ -184,7 +183,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             },
         });
 
-        let originalBanner: string;
+        let originalBanner: string | undefined;
 
         try {
             const userId = session.userId;
@@ -265,6 +264,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
 };
 
+const refreshSpeeds = {
+    0: 'never',
+    33: '60 minutes',
+    66: '30 minutes',
+    99: '10 minutes',
+};
+
 export default function Page({ banner, originalBanner }: Props) {
     const { data: sessionInfo } = useSession();
     const [paymentPlan, paymentPlanResponse] = usePaymentPlan();
@@ -280,21 +286,20 @@ export default function Page({ banner, originalBanner }: Props) {
 
     const router = useRouter();
 
-    const applyPreset = (preset: BannerPresetProps) => {
-        setFgId(preset.foreground.id);
-        setFgProps({ ...preset.foreground.props, ...((banner?.foregroundProps as any)?.username ? { username: (banner?.foregroundProps as any)?.username } : {}) });
-        setBgId(preset.background.id);
-        setBgProps(preset.background.props);
-    };
-
     const preset = router.query.preset === 'select' ? undefined : banner && !router.query.preset ? 'custom' : router.query.preset;
 
     useEffect(() => {
+        const applyPreset = (preset: BannerPresetProps) => {
+            setFgId(preset.foreground.id);
+            setFgProps({ ...preset.foreground.props, ...((banner?.foregroundProps as any)?.username ? { username: (banner?.foregroundProps as any)?.username } : {}) });
+            setBgId(preset.background.id);
+            setBgProps(preset.background.props);
+        };
         if (preset && preset !== 'custom') {
             setTabIndex(0);
             applyPreset(bannerPresets[preset as keyof typeof bannerPresets] ?? defaultBanner);
         }
-    }, [preset]);
+    }, [preset, banner?.foregroundProps]);
 
     const BackgroundTemplate = BackgroundTemplates[bgId];
     const ForegroundTemplate = BannerForegrounds[fgId];
@@ -308,7 +313,7 @@ export default function Page({ banner, originalBanner }: Props) {
 
     const [fileModal, setFileModal] = useState(false);
 
-    const styles: BoxProps = useColorModeValue<BoxProps>(
+    const styles: BoxProps = useColorModeValue<BoxProps, BoxProps>(
         {
             border: '1px solid',
             borderColor: 'gray.300',
@@ -459,13 +464,6 @@ export default function Page({ banner, originalBanner }: Props) {
         </Text>
     );
 
-    const refreshSpeeds = {
-        0: 'never',
-        33: '60 minutes',
-        66: '30 minutes',
-        99: '10 minutes',
-    };
-
     return (
         <>
             <NextSeo
@@ -585,7 +583,7 @@ export default function Page({ banner, originalBanner }: Props) {
                                                 </FormLabel>
 
                                                 {sliderValue !== 0 ? (
-                                                    <Text>Your banner will refresh every {refreshSpeeds[sliderValue]}.</Text>
+                                                    <Text>Your banner will refresh every {refreshSpeeds[sliderValue as keyof typeof refreshSpeeds]}.</Text>
                                                 ) : (
                                                     <HStack>
                                                         <Text>
@@ -641,41 +639,41 @@ export default function Page({ banner, originalBanner }: Props) {
                                         </VStack>
                                     </TabPanel>
                                     <TabPanel>
-                                    {!lockedBanners.includes(fgId) ? (
-                                        <>
-                                            <FormControl id="country">
-                                                <FormLabel>Background type</FormLabel>
-                                                <RadioGroup
-                                                    onChange={(e) => {
-                                                        setBgId(e as keyof typeof BackgroundTemplates);
-                                                    }}
-                                                    value={bgId}
-                                                >
-                                                    <Stack direction="column">
-                                                        {Object.entries(BackgroundTemplates).map(([key, value]) => (
-                                                            <Radio key={key} value={key} colorScheme="purple">
-                                                                <Text fontSize="md">{value.name}</Text>
-                                                                <Text fontSize="sm">{value.description}</Text>
-                                                            </Radio>
-                                                        ))}
-                                                    </Stack>
-                                                </RadioGroup>
-                                            </FormControl>
-                                            <Box py="4">
-                                                <Form
-                                                    setProps={(p) => {
-                                                        setBgProps({ ...BackgroundTemplates[bgId].defaultProps, ...p });
-                                                    }}
-                                                    props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }}
-                                                    showPricing={showPricing}
-                                                    accountLevel={paymentPlan}
-                                                />
-                                            </Box>
-                                        </>
-                                    ) : (
-                                        <Text pt='2'>You cannot customize the background of this banner template. Choose another template to customize the background.</Text>
-                                    )}
-                                        </TabPanel>
+                                        {!lockedBanners.includes(fgId) ? (
+                                            <>
+                                                <FormControl id="country">
+                                                    <FormLabel>Background type</FormLabel>
+                                                    <RadioGroup
+                                                        onChange={(e) => {
+                                                            setBgId(e as keyof typeof BackgroundTemplates);
+                                                        }}
+                                                        value={bgId}
+                                                    >
+                                                        <Stack direction="column">
+                                                            {Object.entries(BackgroundTemplates).map(([key, value]) => (
+                                                                <Radio key={key} value={key} colorScheme="purple">
+                                                                    <Text fontSize="md">{value.name}</Text>
+                                                                    <Text fontSize="sm">{value.description}</Text>
+                                                                </Radio>
+                                                            ))}
+                                                        </Stack>
+                                                    </RadioGroup>
+                                                </FormControl>
+                                                <Box py="4">
+                                                    <Form
+                                                        setProps={(p) => {
+                                                            setBgProps({ ...BackgroundTemplates[bgId].defaultProps, ...p });
+                                                        }}
+                                                        props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }}
+                                                        showPricing={showPricing}
+                                                        accountLevel={paymentPlan}
+                                                    />
+                                                </Box>
+                                            </>
+                                        ) : (
+                                            <Text pt="2">You cannot customize the background of this banner template. Choose another template to customize the background.</Text>
+                                        )}
+                                    </TabPanel>
                                 </TabPanels>
                             </Tabs>
 

@@ -35,7 +35,7 @@ async function getSubscriptionsRequest(accessToken: string, cursor?: string): Pr
     });
 }
 
-function getSubscriptionsFromResponse(response: AxiosResponse<GetSubscriptionsResponse>, twitchUserId: string): Subscription[] {
+function getSubscriptionsFromResponse(response: AxiosResponse<GetSubscriptionsResponse>, twitchUserId?: string): Subscription[] {
     const filterByUserId = (twitchUserId: string) => (subscription: Subscription) => subscription.condition.broadcaster_user_id === twitchUserId;
     return twitchUserId ? response.data.data.filter(filterByUserId(twitchUserId)) : response.data.data;
 }

@@ -1,5 +1,6 @@
 import { remotionAxios } from '@app/util/axios';
 import { flipFeatureEnabled, getProfilePicEntry, getProfilePicRendered, getTwitterInfo, updateProfilePicRenderedDB } from '@app/util/database/postgresHelpers';
+import env from '@app/util/env';
 import { logger } from '@app/util/logger';
 import { download } from '@app/util/s3/download';
 import { uploadBase64 } from '@app/util/s3/upload';
@@ -7,7 +8,6 @@ import { getTwitterProfilePic, TwitterResponseCode, updateProfilePic, validateTw
 import { RenderedProfileImage, Prisma } from '@prisma/client';
 import { AxiosResponse } from 'axios';
 import imageToBase64 from 'image-to-base64';
-import { env } from 'process';
 import { Feature } from '../Feature';
 
 export type TemplateRequestBody = {
@@ -22,7 +22,7 @@ const profileImageStreamUp: Feature<string> = async (userId: string): Promise<st
     const profilePicRendered: RenderedProfileImage | null = await getProfilePicRendered(userId); // compare to updatedAt time and only update if later
     const twitterInfo = await getTwitterInfo(userId, true);
 
-    const validatedTwitter = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    const validatedTwitter = twitterInfo && await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
     if (!validatedTwitter) {
         await flipFeatureEnabled(userId, 'profileImage');
         logger.error('Unauthenticated Twitter. Disabling feature profileImage and requiring re-auth.', { userId });

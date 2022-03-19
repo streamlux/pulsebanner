@@ -10,7 +10,7 @@ type FaqItemCProps = {
 
 export const FaqItemC: FC<FaqItemCProps> = ({ item, colorMode }): ReactElement => {
     return (
-        <VStack w="full" key={item.answer.toString()}>
+        <VStack w="full" key={item.answer?.toString()}>
             <Heading w="full" textAlign="left" fontSize="lg">
                 {item.question}
             </Heading>

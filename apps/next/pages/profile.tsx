@@ -40,7 +40,7 @@ import { RemotionProfilePreview } from '@pulsebanner/remotion/preview';
 import { Composer } from '@pulsebanner/remotion/components';
 import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
 import { useState } from 'react';
-import { getTwitterInfo, PostgresTwitterInfo } from '@app/util/database/postgresHelpers';
+import { getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { getTwitterProfilePic, validateTwitterAuthentication } from '@app/util/twitter/twitterHelpers';
 import { FaqSection } from '@app/modules/faq/FaqSection';
 import { generalFaqItems, profileImageFaqItems } from '@app/modules/faq/data';
@@ -78,8 +78,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     })) as any;
 
     if (session) {
-        const twitterInfo: PostgresTwitterInfo = await getTwitterInfo(session.userId, true);
-        const isTwitterAuthValid: boolean = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+        const twitterInfo = await getTwitterInfo(session.userId, true);
+        if (!twitterInfo) {
+            return {
+                props: {
+                    twitterPic: undefined,
+                    twitterProfile: {},
+                },
+            };
+        }
+            const isTwitterAuthValid: boolean = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
 
         // if Twitter auth is invalid
         if (!isTwitterAuthValid) {
@@ -91,14 +99,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             };
         }
 
-        const profilePic: ProfileImage = await prisma.profileImage.findUnique({
+        const profilePic = await prisma.profileImage.findUnique({
             where: {
                 userId: session.userId,
             },
         });
 
         // https url of twitter profile picture
-        const twitterProfilePic: string = await getTwitterProfilePic(session.userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
+        const twitterProfilePic = await getTwitterProfilePic(session.userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
         if (profilePic) {
             try {
                 const response = await axios.get((profilePic.foregroundProps as any).imageUrl);
@@ -146,7 +154,7 @@ export default function Page({ profilePic, twitterPic }: Props) {
         ...(twitterPic ? { imageUrl: twitterPic } : {}),
     });
 
-    const styles: BoxProps = useColorModeValue<BoxProps>(
+    const styles: BoxProps = useColorModeValue<BoxProps, BoxProps>(
         {
             border: '1px solid',
             borderColor: 'gray.300',

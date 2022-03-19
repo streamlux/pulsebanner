@@ -10,7 +10,7 @@ const nameStreamUp: Feature<string> = async (userId: string): Promise<string> =>
     const twitterInfo = await getTwitterInfo(userId);
 
     // if they are not authenticated with twitter, return 401 and turn off the feature
-    const validatedTwitter = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    const validatedTwitter = twitterInfo && await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
     if (!validatedTwitter) {
         await flipFeatureEnabled(userId, 'name');
         logger.error('Unauthenticated Twitter. Disabling feature name and requiring re-auth.');
@@ -21,8 +21,8 @@ const nameStreamUp: Feature<string> = async (userId: string): Promise<string> =>
     const currentTwitterName = await getCurrentTwitterName(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
 
     // get the twitter stream name specified in table
-    const twitterNameSettings: TwitterName = await getTwitterName(userId);
-    if (!twitterNameSettings.enabled) {
+    const twitterNameSettings = await getTwitterName(userId);
+    if (!twitterNameSettings?.enabled) {
         return 'Feature not enabled.';
     }
 

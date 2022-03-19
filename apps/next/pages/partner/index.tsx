@@ -82,6 +82,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     },
                 });
 
+                if (!partnerInfo) {
+                    return {
+                        props: {
+                            partnerStatus: AcceptanceStatus.None
+                        }
+                    }
+                }
+
                 return {
                     props: {
                         partnerStatus: partnerInfo.acceptanceStatus as AcceptanceStatus,
@@ -120,14 +128,21 @@ export default function Page({ partnerStatus, partnerCode, payment }: Props) {
 
     const { colorMode } = useColorMode();
     const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
+    type FormData = {
+        email: string;
+        firstName: string;
+        lastName: string;
+        partnerCodeInput: string;
+        notes: string;
+    };
 
     const {
         register,
         handleSubmit,
         formState: { errors },
-    } = useForm();
+    } = useForm<FormData>();
 
-    const styles: BoxProps = useColorModeValue<BoxProps>(
+    const styles: BoxProps = useColorModeValue<BoxProps, BoxProps>(
         {
             border: '1px solid',
             borderColor: 'gray.300',
@@ -163,13 +178,6 @@ export default function Page({ partnerStatus, partnerCode, payment }: Props) {
         router.replace(router.asPath);
     };
 
-    type FormData = {
-        email: string;
-        firstName: string;
-        lastName: string;
-        partnerCodeInput: string;
-        notes: string;
-    };
 
     const onSubmit = async (formData: FormData) => {
         if (!ensureSignUp()) {

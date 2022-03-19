@@ -13,7 +13,7 @@ type FileUploadModalProps = {
 };
 
 export const FileUploadModal: FC<FileUploadModalProps> = ({ title, isOpen, onClose, url, onUpload }): ReactElement => {
-    const [selectedFile, setSelectedFile] = useState();
+    const [selectedFile, setSelectedFile] = useState(undefined as any);
     const [preview, setPreview] = useState<string | undefined>();
     const toast = useToast();
     const router = useRouter();

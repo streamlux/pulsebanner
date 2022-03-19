@@ -5,10 +5,10 @@ import prisma from '../ssr/prisma';
 export type PostgresTwitterInfo = {
     oauth_token: string;
     oauth_token_secret: string;
-    providerAccountId?: string;
+    providerAccountId: string;
 };
 
-export const getBannerEntry = async (userId: string): Promise<Banner> => {
+export const getBannerEntry = async (userId: string): Promise<Banner | null> => {
     const banner = await prisma.banner?.findFirst({
         where: {
             userId: userId,
@@ -17,8 +17,8 @@ export const getBannerEntry = async (userId: string): Promise<Banner> => {
     return banner;
 };
 
-export const getTwitterInfo = async (userId: string, getProviderAccountId = false): Promise<PostgresTwitterInfo> => {
-    const twitterInfo: PostgresTwitterInfo = await prisma.account?.findFirst({
+export const getTwitterInfo = async (userId: string, getProviderAccountId = false): Promise<Required<PostgresTwitterInfo>> => {
+    const twitterInfo = await prisma.account.findFirst({
         where: {
             userId: userId,
             provider: 'twitter',
@@ -28,12 +28,13 @@ export const getTwitterInfo = async (userId: string, getProviderAccountId = fals
             oauth_token_secret: true,
             providerAccountId: getProviderAccountId,
         },
+        rejectOnNotFound: true
     });
 
-    return twitterInfo;
+    return twitterInfo as Required<PostgresTwitterInfo>;
 };
 
-export const getTweetInfo = async (userId: string): Promise<Tweet> => {
+export const getTweetInfo = async (userId: string): Promise<Tweet | null> => {
     const tweet = await prisma.tweet?.findFirst({
         where: {
             userId: userId,
@@ -43,7 +44,7 @@ export const getTweetInfo = async (userId: string): Promise<Tweet> => {
     return tweet;
 };
 
-export const getTwitterName = async (userId: string): Promise<TwitterName> => {
+export const getTwitterName = async (userId: string): Promise<TwitterName | null> => {
     const twitterName = await prisma.twitterName?.findFirst({
         where: {
             userId: userId,
@@ -53,7 +54,7 @@ export const getTwitterName = async (userId: string): Promise<TwitterName> => {
     return twitterName;
 };
 
-export const getOriginalTwitterName = async (userId: string): Promise<TwitterOriginalName> => {
+export const getOriginalTwitterName = async (userId: string): Promise<TwitterOriginalName | null> => {
     const originalTwitterName = await prisma.twitterOriginalName?.findFirst({
         where: {
             userId: userId,
@@ -78,7 +79,7 @@ export const updateOriginalTwitterNameDB = async (userId: string, name: string):
     });
 };
 
-export const getProfilePicEntry = async (userId: string): Promise<ProfileImage> => {
+export const getProfilePicEntry = async (userId: string): Promise<ProfileImage | null> => {
     const profilePic = await prisma.profileImage.findFirst({
         where: {
             userId: userId,
@@ -117,7 +118,7 @@ export const updateProfilePicRenderedDB = async (userId: string): Promise<void> 
         },
     });
 };
-export const getAccountInfo = async (userId: string): Promise<Partial<Account>> => {
+export const getAccountInfo = async (userId: string): Promise<Partial<Account> | null> => {
     const response = await prisma.account.findFirst({
         where: {
             userId: userId,

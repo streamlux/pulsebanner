@@ -2,12 +2,12 @@ import { createS3 } from '@app/util/database/s3ClientHelper';
 import { logger } from '@app/util/logger';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import multer from 'multer';
-import { env } from 'process';
 import multerS3 from 'multer-s3';
 import { Request } from 'express';
 import { uploadBase64 } from '@app/util/s3/upload';
 import imageToBase64 from 'image-to-base64';
 import { rm } from 'fs/promises';
+import env from '@app/util/env';
 
 export const config = {
     api: {
@@ -54,8 +54,7 @@ handler.post(async (req, res) => {
                 console.log(err);
                 return res.status(500).end();
             }
-            console.log(fileReq.file);
-            const base64 = await imageToBase64(fileReq.file.path);
+            const base64 = await imageToBase64(fileReq.file?.path ?? '');
             try {
                 await uploadBase64('pb-static', userId, base64);
             } catch (e) {
@@ -63,7 +62,9 @@ handler.post(async (req, res) => {
                 return res.status(500).end();
             }
             res.status(200).end();
-            await rm(fileReq.file.path);
+            if (fileReq.file) {
+                await rm(fileReq.file.path);
+            }
             return;
         });
 

@@ -2,9 +2,9 @@ import { createS3 } from '@app/util/database/s3ClientHelper';
 import { logger } from '@app/util/logger';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import multer from 'multer';
-import { env } from 'process';
 import multerS3 from 'multer-s3';
 import { Request } from 'express';
+import env from '@app/util/env';
 
 // Docs: https://www.npmjs.com/package/multer-s3
 const upload = multer({

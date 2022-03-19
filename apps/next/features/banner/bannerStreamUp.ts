@@ -4,11 +4,11 @@ import { uploadBase64 } from '@app/util/s3/upload';
 import { checkValidDownload } from '@app/util/s3/validateHelpers';
 import { validateTwitterAuthentication, getBanner, TwitterResponseCode, updateBanner } from '@app/util/twitter/twitterHelpers';
 import imageToBase64 from 'image-to-base64';
-import { env } from 'process';
 import { Feature } from '../Feature';
 import { logger } from '@app/util/logger';
 import { download } from '@app/util/s3/download';
 import { renderBanner } from './renderBanner';
+import env from '@app/util/env';
 
 export type TemplateRequestBody = {
     foregroundId: string;
@@ -70,7 +70,7 @@ const bannerStreamUp: Feature<string> = async (userId: string): Promise<string> 
                     // if we are invalid again, fail the request
                     logger.error('Corrupt base64 image. Uploading signup image');
                     const original = await download(env.BANNER_BACKUP_BUCKET, userId);
-                    if (!checkValidDownload(original)) {
+                    if (!original || !checkValidDownload(original)) {
                         logger.error('Corrupt signup image. Failing request');
                         return 'Corrupt signup image. Failing request';
                     } else {

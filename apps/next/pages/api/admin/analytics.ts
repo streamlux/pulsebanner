@@ -1,3 +1,4 @@
+import env from '@app/util/env';
 import { createAuthApiHandler } from '../../../util/ssr/createApiHandler';
 
 const handler = createAuthApiHandler();
@@ -7,13 +8,7 @@ handler.get(async (req, res) => {
         res.send(401);
     }
 
-    const envKey = 'ANALYTICS_URL';
-    const url = process.env[envKey];
-    if (!url) {
-        res.send({ error: { message: `Missing ${envKey} environment variable.` } });
-    }
-
-    return res.redirect(url);
+    return res.redirect(env.ANALYTICS_URL);
 });
 
 export default handler;

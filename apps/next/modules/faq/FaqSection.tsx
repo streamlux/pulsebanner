@@ -21,17 +21,17 @@ export const FaqSection: FC<FaqSectionProps> = ({ items }): ReactElement => {
                 <Stack w="full" direction={['column', 'row']}>
                     <Text>Have more questions? Ask us in our Discord!</Text>
                     <Center>
-                        <Link isExternal href="/discord" passHref>
-                            <Button as="a" variant="link" colorScheme={'twitter'}>
+                        <NextLink href="/discord" passHref>
+                            <Button as="a" variant="link" target={'_blank'} colorScheme={'twitter'}>
                                 Click here to join
                             </Button>
-                        </Link>
+                        </NextLink>
                     </Center>
                 </Stack>
                 <Divider />
                 <SimpleGrid columns={[1, 2]} spacing={[8]}>
                     {items.map((item) => (
-                        <FaqItemC key={item.answer.toString()} item={item} colorMode={colorMode} />
+                        <FaqItemC key={item.answer?.toString()} item={item} colorMode={colorMode} />
                     ))}
                 </SimpleGrid>
                 {router.asPath !== '/faq' && (

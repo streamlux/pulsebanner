@@ -65,7 +65,7 @@ async function getSubscriptionTypes(userId: string): Promise<string[]> {
     const subscriptionTypes: Record<string, boolean> = {};
     const enabledFeatures: string[] = await FeaturesService.listEnabled(userId);
     enabledFeatures.forEach((feature) => {
-        featureSubscriptionTypes[feature].forEach((type) => (subscriptionTypes[type] = true));
+        featureSubscriptionTypes[feature as keyof typeof featureSubscriptionTypes].forEach((type) => (subscriptionTypes[type] = true));
     });
 
     return Object.keys(subscriptionTypes);

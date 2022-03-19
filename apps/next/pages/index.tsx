@@ -32,7 +32,6 @@ import { signIn } from 'next-auth/react';
 import { FaTwitter, FaCheck, FaArrowRight } from 'react-icons/fa';
 import NextLink from 'next/link';
 import { Testimonial } from '@app/components/landing/Testimonial';
-import Head from 'next/head';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
 import { NextSeo } from 'next-seo';
 import { trackEvent } from '@app/util/umami/trackEvent';
@@ -55,10 +54,6 @@ const staticAssets: Record<string, StaticAsset> = {
         preload: true,
         src: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/showcase_light.webp',
     },
-    showcaseLightOffline: {
-        preload: true,
-        src: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/showcase_offline_light.webp',
-    },
     mayjaAvatar: {
         src: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/avatars/mayja.webp',
     },
@@ -72,7 +67,6 @@ const staticAssets: Record<string, StaticAsset> = {
 
 export const landingPageAsset = (name: string) => `https://pb-static.sfo3.cdn.digitaloceanspaces.com/landing-page/${name}.webp`;
 
-
 export default function Page() {
     const { colorMode } = useColorMode();
     const breakpoint = useBreakpoint('ssr');
@@ -83,7 +77,9 @@ export default function Page() {
 
     const SignUpButton = (
         <Box experimental_spaceY={2} pt={['6']} minW="12" color={colorMode === 'dark' ? 'gray.300' : 'gray.700'}>
-            <Heading textAlign="left">1 minute setup.</Heading>
+            <Heading textAlign="left" color="gray.200">
+                1 minute setup.
+            </Heading>
             <Text as="span" fontSize="sm" textAlign="left">
                 Use for <strong>free forever</strong>, or upgrade anytime for{' '}
             </Text>
@@ -105,6 +101,7 @@ export default function Page() {
             <Flex experimental_spaceX={4}>
                 <Button
                     size="lg"
+                    fontSize="lg"
                     colorScheme="twitter"
                     leftIcon={<FaTwitter />}
                     className={trackEvent('click', 'hero-signup')}
@@ -142,13 +139,6 @@ export default function Page() {
 
     return (
         <>
-            <Head>
-                {Object.values(staticAssets)
-                    .filter((asset) => asset.preload)
-                    .map((asset) => (
-                        <link key={asset.src} rel="preload" href={asset.src} as="image" />
-                    ))}
-            </Head>
             <NextSeo
                 title="Stand out on Twitter"
                 openGraph={{
@@ -174,7 +164,7 @@ export default function Page() {
             <VStack spacing="16">
                 <Box>
                     <VStack>
-                        <Box w={['90vw', '80vw', '80vw', '80vw', '90vw', '90vw', '60vw']} maxW={1300} experimental_spaceY="16">
+                        <Box w={['90vw', '80vw', '80vw', '80vw', '90vw', '90vw', '60vw']} maxW={1300} experimental_spaceY="16" position={'relative'}>
                             <Stack direction={['column', 'column', 'column', 'column', 'row']} spacing={[8, 16]}>
                                 <Center maxW={['100%', '100%', '100%', '100%', '47%']}>
                                     <Box experimental_spaceY={[4, 8]}>
@@ -185,7 +175,7 @@ export default function Page() {
                                             </Box>
                                         </Heading>
                                         <Text fontSize="2xl" textAlign="left" color={colorMode === 'dark' ? 'gray.200' : 'gray.600'}>
-                                            Sync your Twitter profile with your Twitch stream. Promote your stream like never before.
+                                            Automatically sync your Twitter profile with your Twitch stream. Promote your stream like never before.
                                         </Text>
 
                                         <SimpleGrid w="fit-content" columns={[1, 1, 2, 2, 2]} spacingY={2} spacingX={6}>
@@ -221,19 +211,14 @@ export default function Page() {
                                 <Stack direction={['column-reverse', 'column-reverse', 'column-reverse', 'column-reverse', 'column']}>
                                     <Center>
                                         <Box maxW="700px" p="2" rounded="lg" bg={offline ? 'gray.200' : undefined} className={!offline ? 'animated-gradient' : undefined}>
-                                            {!offline ? (
-                                                colorMode === 'dark' ? (
-                                                    <Image rounded="lg" alt="showcase" src={staticAssets.showcase.src} load />
-                                                ) : (
-                                                    <Image rounded="lg" alt="showcase" src={staticAssets.showcaseLight.src} />
-                                                )
-                                            ) : colorMode === 'dark' ? (
+                                            {offline ? (
                                                 <Image rounded="lg" alt="showcase" src={staticAssets.showcaseOffline.src} />
                                             ) : (
-                                                <Image rounded="lg" alt="showcase" src={staticAssets.showcaseLightOffline.src} />
+                                                <Image rounded="lg" alt="showcase" src={staticAssets.showcase.src} loading="eager" />
                                             )}
                                         </Box>
                                     </Center>
+
                                     <Center w="full" py="2">
                                         <Box>
                                             <FormControl display="flex" alignItems="center">
@@ -254,6 +239,16 @@ export default function Page() {
                                     </Center>
                                 </Stack>
                             </Stack>
+
+                            <div style={{ zIndex: -1, position: 'absolute', height: '30%', maxHeight: '400px', width: '100%', display: 'block' }}>
+                                <div className="contact-hero" style={{ position: 'relative', top: '-100px', left: '0px', height: '58%' }}>
+                                    <div className="bg-gradient-blur-wrapper contact-hero">
+                                        <div className="bg-gradient-blur-circle-3 pink top"></div>
+                                        <div className="bg-gradient-blur-circle-2 blue"></div>
+                                        <div className="bg-gradient-blur-circle-4 purple"></div>
+                                    </div>
+                                </div>
+                            </div>
 
                             {breakpoint === 'base' && SignUpButton}
 
@@ -322,11 +317,7 @@ export default function Page() {
 
                                         <Center py="8">
                                             <Box maxW="1000" minW={['95vw', 'unset']}>
-                                                {colorMode === 'dark' ? (
-                                                    <Image src={landingPageAsset('banner')} alt="Banner" />
-                                                ) : (
-                                                    <Image src={landingPageAsset('banner_light')} alt="Banner" />
-                                                )}
+                                                <Image src={landingPageAsset('banner')} alt="Banner" />
                                             </Box>
                                         </Center>
                                         <NextLink passHref href="/banner">
@@ -376,11 +367,7 @@ export default function Page() {
                                             </Text>
                                         </Box>
                                         <Center py="16">
-                                            {colorMode === 'dark' ? (
-                                                <Image src={landingPageAsset('namechanger')} alt="Banner" w="full" />
-                                            ) : (
-                                                <Image src={landingPageAsset('namechanger_light')} alt="Banner" w="full" />
-                                            )}
+                                            <Image src={landingPageAsset('namechanger')} alt="Banner" w="full" />
                                         </Center>
                                         <NextLink passHref href="/name">
                                             <Button as="a" size="lg" rightIcon={<FaArrowRight />} colorScheme="green" className={trackEvent('click', 'setup-name-changer')}>
@@ -390,7 +377,6 @@ export default function Page() {
                                     </Box>
                                 </Container>
                             </Center>
-
                             <Box>
                                 <Center>
                                     <Box experimental_spaceY={4}>
@@ -398,11 +384,18 @@ export default function Page() {
                                         <Center>
                                             <Text fontSize="xl" textAlign={'center'} maxW="3xl">
                                                 {
-                                                    'PulseBanner is the best way to get your stream noticed on Twitter. Created for creators by creators. We are loved by hundreds Twitch streamers. Get started now 👇'
+                                                    'PulseBanner is the best way to get your stream noticed on Twitter. Created for creators by creators. Loved by thousands of Twitch streamers.'
                                                 }
                                             </Text>
                                         </Center>
                                     </Box>
+                                </Center>
+                            </Box>
+                            <Box experimental_spaceY={2} pt="4">
+                                <Center>
+                                    <Text fontSize="xl" textAlign={'center'} maxW="3xl">
+                                        {'Get started now 👇'}
+                                    </Text>
                                 </Center>
                                 <Center mt="8">
                                     <Button
@@ -423,11 +416,7 @@ export default function Page() {
 
                             <Center py="4">
                                 <Box maxW="400px" w="60vw">
-                                    {colorMode === 'dark' ? (
-                                        <Image src={landingPageAsset('twitterxtwitch')} alt="Banner" />
-                                    ) : (
-                                        <Image src={landingPageAsset('twitterxtwitch_light')} alt="Banner" />
-                                    )}
+                                    <Image src={landingPageAsset('twitterxtwitch')} alt="Banner" />
                                 </Box>
                             </Center>
 

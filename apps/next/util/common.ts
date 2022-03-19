@@ -1,6 +1,6 @@
 export const isSSR = () => typeof window === 'undefined';
 
-export const timestampToDate = (t?: number) => {
+export const timestampToDate = (t?: number | null) => {
     if (!t) {
         return null;
     }

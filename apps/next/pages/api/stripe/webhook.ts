@@ -1,5 +1,5 @@
 /* eslint-disable no-case-declarations */
-import { PriceType, SubscriptionStatus } from '@prisma/client';
+import { GiftPurchase, PriceType } from '@prisma/client';
 import Stripe from 'stripe';
 import { timestampToDate } from '../../../util/common';
 import { createApiHandler } from '../../../util/ssr/createApiHandler';
@@ -8,12 +8,17 @@ import prisma from '../../../util/ssr/prisma';
 import { sendMessage } from '@app/util/discord/sendMessage';
 import { FeaturesService } from '@app/services/FeaturesService';
 import { download } from '@app/util/s3/download';
-import { env } from 'process';
 import { TwitterResponseCode, updateProfilePic } from '@app/util/twitter/twitterHelpers';
 import { flipFeatureEnabled, getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { defaultBannerSettings } from '@app/pages/banner';
 import { logger } from '@app/util/logger';
 import { commissionLookupMap } from '@app/util/partner/constants';
+import { handleSubscriptionCheckoutSessionComplete } from '@app/util/stripe/checkoutSessionCompleted/handleSubscriptionCheckoutSessionComplete';
+import { getInvoiceInformation, updateInvoiceTables } from '@app/util/stripe/invoiceHelpers';
+import { giftPricingLookupMap } from '@app/util/stripe/gift/constants';
+import { handleGiftPurchase } from '@app/util/stripe/handleGiftPurchase';
+import { sendGiftPurchaseEmail } from '@app/util/stripe/emailHelper';
+import env from '@app/util/env';
 
 // Stripe requires the raw body to construct the event.
 export const config = {
@@ -24,7 +29,7 @@ export const config = {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function buffer(readable: any) {
-    const chunks = [];
+    const chunks: any[] = [];
     for await (const chunk of readable) {
         chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
     }
@@ -46,14 +51,15 @@ const handler = createApiHandler();
 
 handler.post(async (req, res) => {
     const buf = await buffer(req);
-    const sig = req.headers['stripe-signature'];
+    const sig = req.headers['stripe-signature'] as string | string[] | Buffer;
     let event;
 
     try {
-        event = stripe.webhooks.constructEvent(buf, sig, process.env.STRIPE_WEBHOOK_SECRET);
-    } catch (err) {
+        event = stripe.webhooks.constructEvent(buf, sig, env.STRIPE_WEBHOOK_SECRET);
+    } catch (e) {
+        const err = e as any;
         logger.error(`❌ Error verifying webhook. Message: ${err?.message}`);
-        logger.error('secret', process.env.STRIPE_WEBHOOK_SECRET);
+        logger.error('secret', env.STRIPE_WEBHOOK_SECRET);
         return res.status(400).send(`Webhook Error: ${err?.message}`);
     }
 
@@ -97,6 +103,8 @@ handler.post(async (req, res) => {
                             interval: data.recurring?.interval,
                             interval_count: data.recurring?.interval_count,
                             trial_period_days: data.recurring?.trial_period_days,
+                            nickname: data.nickname,
+                            metadata: data.metadata
                         },
                         create: {
                             id: data.id,
@@ -112,6 +120,8 @@ handler.post(async (req, res) => {
                                     id: data.product as string,
                                 },
                             },
+                            nickname: data.nickname,
+                            metadata: data.metadata
                         },
                     });
                     break;
@@ -141,7 +151,7 @@ handler.post(async (req, res) => {
                      * 3. Reset name feature to be the default value. Again, handle if they are live gracefully by updating it right then to the default.
                      */
                     if (userId) {
-                        sendMessage(`"${userId}" unsubscribed from premium plan`, process.env.DISCORD_CANCELLED_SUBSCRIBER_URL);
+                        sendMessage(`"${userId}" unsubscribed from premium plan`, env.DISCORD_CANCELLED_SUBSCRIBER_URL);
 
                         // get the user's twitter info
                         const twitterInfo = await getTwitterInfo(userId);
@@ -266,136 +276,90 @@ handler.post(async (req, res) => {
                 case 'checkout.session.completed': {
                     const data = event.data.object as Stripe.Checkout.Session;
 
-                    const subscription = await stripe.subscriptions.retrieve(data.subscription as string, {
-                        expand: ['default_payment_method'],
-                    });
+                    // we get the mode it is in. If it's a subscription mode, we know it's for a indivdiual account
+                    // otherwise, it's a giveaway
+                    const mode: Stripe.Checkout.Session.Mode = data.mode;
 
-                    await prisma.subscription.upsert({
-                        where: {
-                            id: subscription.id,
-                        },
-                        create: {
-                            id: subscription.id,
-                            user: {
-                                connect: {
-                                    id: data.client_reference_id,
-                                },
-                            },
-                            price: {
-                                connect: {
-                                    id: subscription.items.data[0].price.id,
-                                },
-                            },
-                            status: subscription.status as SubscriptionStatus,
-                            metadata: subscription.metadata,
-                            cancel_at_period_end: subscription.cancel_at_period_end,
-                            canceled_at: timestampToDate(subscription.canceled_at),
-                            cancel_at: timestampToDate(subscription.cancel_at),
-                            start_date: timestampToDate(subscription.start_date),
-                            ended_at: timestampToDate(subscription.ended_at),
-                            trial_start: timestampToDate(subscription.trial_start),
-                            trial_end: timestampToDate(subscription.trial_end),
-                        },
-                        update: {
-                            status: subscription.status as SubscriptionStatus,
-                            metadata: subscription.metadata,
-                            price: {
-                                connect: {
-                                    id: subscription.items.data[0].price.id,
-                                },
-                            },
-                            cancel_at_period_end: subscription.cancel_at_period_end,
-                            canceled_at: timestampToDate(subscription.canceled_at),
-                            cancel_at: timestampToDate(subscription.cancel_at),
-                            start_date: timestampToDate(subscription.start_date),
-                            ended_at: timestampToDate(subscription.ended_at),
-                            trial_start: timestampToDate(subscription.trial_start),
-                            trial_end: timestampToDate(subscription.trial_end),
-                        },
-                    });
+                    // we need to handle the payment mode in a diffrent
+                    if (mode === 'subscription') {
+                        // if it's a subscription, we handle as we have in the past
+                        await handleSubscriptionCheckoutSessionComplete(data);
+                    } else if (mode === 'payment') {
+                        // this is one time payments. We need to generate a code for the specific price point and send email
+                        // get the userId for the customer
+                        const customerEmail = data.customer_details?.email;
 
-                    const subscriptionInfo = await prisma.subscription.findUnique({
-                        where: {
-                            id: subscription.id,
-                        },
-                    });
-                    const userId = subscriptionInfo === null ? null : subscriptionInfo.userId;
-                    // send webhook to discord saying someone subscribed
-                    if (userId) {
-                        const notify = async () => {
+                        // We use the `client_reference_id` on the checkout session to find the user.
+                        // We set the `client_reference_id` to the user ID when we create the checkout session in create-checkout-session.ts.
+                        const userId = data.client_reference_id;
 
-                            const user = await prisma.user.findUnique({
-                                where: {
-                                    id: userId
-                                },
-                            });
+                        const lineItems = await stripe.checkout.sessions.listLineItems(data.id, {
+                            limit: 100,
+                        });
 
-                            const priceId = subscriptionInfo.priceId;
-                            const priceInfo = await prisma.price.findUnique({
-                                where: {
-                                    id: priceId,
-                                },
-                            });
-                            if (priceInfo !== null) {
-                                const intervalId = priceInfo.interval;
-                                const productId = priceInfo.productId;
+                        if (userId) {
+                            const promises: (Promise<GiftPurchase | undefined>)[] = [];
+                            for await (const lineItem of lineItems.data) {
+                                for (let i = 0; i < (lineItem?.quantity ?? 0); i++) {
+                                    const promise = async () => {
+                                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                                        const priceId = lineItem.price!.id;
+                                        const amountTotal: number = lineItem.amount_total;
 
-                                const productInfo = await prisma.product.findUnique({
-                                    where: {
-                                        id: productId,
-                                    },
-                                    select: {
-                                        name: true,
-                                    },
-                                });
+                                        // lookup the priceId to couponCode
+                                        const giftCouponId: string | undefined = priceId ? giftPricingLookupMap[priceId] : undefined;
 
-                                if (productInfo !== null) {
-                                    const msg = `${user.name} upgraded to a ${intervalId}ly ${productInfo.name} subscription.`;
-                                    logger.info(msg, { userId: userId });
-                                    const count = await prisma.subscription.count({
-                                        where: {
-                                            status: {
-                                                in: ['active', 'past_due']
-                                            }
+                                        if (giftCouponId) {
+                                            const giftPurchase: GiftPurchase | undefined = await handleGiftPurchase(giftCouponId, amountTotal, userId, customerEmail ?? '', priceId, data.id, i);
+                                            // if we successfully generated a couponCode, we send the customer an email
+                                            logger.info('handled stripe promo code successfully', { giftPurchaseId: giftPurchase?.id });
+                                            return giftPurchase;
                                         }
-                                    });
-
-                                    sendMessage(`${msg} Total premium users: ${count}`, process.env.DISCORD_NEW_SUBSCRIBER_URL);
+                                    };
+                                    promises.push(promise());
                                 }
-                            } else {
-                                logger.info(`User successfully signed up for a membership. User: ${userId}`, { userId: userId });
-                                prisma.subscription.count().then((value) => {
-                                    sendMessage(`"${userId}" signed up for a premium plan! Total premium users: ${value}`, process.env.DISCORD_NEW_SUBSCRIBER_URL);
-                                });
                             }
+
+                            Promise.all(promises).then((giftPurchases) => {
+                                logger.info('Handle all line items.', { checkoutSessionId: data.id });
+
+                                // send an email containing all the gift info for all the gifts purchased
+
+                                if (customerEmail) {
+                                    const notify = async () => {
+                                        sendGiftPurchaseEmail(customerEmail, giftPurchases.filter((giftPurchase) => giftPurchase !== undefined) as GiftPurchase[]);
+                                    };
+                                    void notify();
+                                } else {
+                                    logger.error('Could not get either couponCode or customer email.', {
+                                        checkoutSessionId: data.id,
+                                        email: customerEmail,
+                                        userId: userId,
+                                    });
+                                }
+                            })
+                                .catch((reason: any) => {
+                                    logger.error('Failed to handle all line items', { error: reason, checkoutSessionId: data.id });
+                                });
                         }
 
-                        // don't await this async method, it will finish in the background
-                        void notify();
+                        logger.info('end of the checkout.session.complete webhook');
                     }
+
                     break;
                 }
                 case 'invoice.payment_succeeded': {
-                    // for handling when a webhook
                     const data = event.data.object as Stripe.Invoice;
-                    const invoiceId = data.id;
-                    // const couponId = data.discount?.coupon?.id ?? undefined;
-                    const stripePromoCode = data.discount?.promotion_code?.toString() ?? undefined;
-                    const paidAt = new Date(data.status_transitions.paid_at * 1000); // date object is in milliseconds and timestamp is in seconds
 
-                    const customerId = data.customer.toString();
-
-                    // we want the priceId so we can apply the correct discount
-                    const priceId = data.lines.data[0]?.price.id ?? undefined;
-                    const purchaseAmount = data.subtotal;
+                    const invoiceInfo = await getInvoiceInformation(data);
 
                     // we need a way to get the partner (if they exist)
                     // lookup the couponId associated with the person
-                    let partnerId = null;
-                    if (stripePromoCode) {
+                    let partnerId: string | undefined;
+                    if (invoiceInfo.stripePromoCode) {
                         const partnerInfo = await prisma.stripePartnerInfo.findUnique({
                             where: {
-                                stripePromoCode: stripePromoCode,
+                                stripePromoCode: invoiceInfo.stripePromoCode,
                             },
                         });
 
@@ -406,22 +370,12 @@ handler.post(async (req, res) => {
 
                     // please note to be in accordance with stripe, commission is stored as cents (100 = $1)
                     let commissionAmount = 0.0;
-                    if (priceId) {
-                        commissionAmount = commissionLookupMap[priceId] * 100 ?? 0.0;
+                    if (invoiceInfo.priceId) {
+                        commissionAmount = commissionLookupMap[invoiceInfo.priceId] * 100 ?? 0.0;
                     }
 
-                    // update the PartnerInvoices table
-                    await prisma.partnerInvoice.create({
-                        data: {
-                            id: invoiceId,
-                            customerId: customerId,
-                            paidAt: paidAt,
-                            partnerId: partnerId,
-                            commissionAmount: commissionAmount,
-                            commissionStatus: partnerId === null ? 'none' : 'waitPeriod',
-                            purchaseAmount: purchaseAmount,
-                        },
-                    });
+                    await updateInvoiceTables(invoiceInfo, partnerId, commissionAmount);
+
                     break;
                 }
                 default:

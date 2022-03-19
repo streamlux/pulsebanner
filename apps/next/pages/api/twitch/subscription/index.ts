@@ -7,6 +7,7 @@ import { twitchAxios } from '@app/util/axios';
 import { TwitchClientAuthService } from '@app/services/TwitchClientAuthService';
 import { listSubscriptions } from '@app/util/twitch/listSubscriptions';
 import { logger } from '@app/util/logger';
+import { CustomSession } from '@app/services/auth/CustomSession';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
@@ -19,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
     });
 
-    const session = await getSession({ req });
+    const session: CustomSession | null = await getSession({ req }) as CustomSession;
 
     if (session) {
         const accounts = await getAccounts(session);
@@ -42,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return;
             }
             const userSubscriptions = allSubscriptions.filter((subscription) => subscription.condition.broadcaster_user_id === twitchAccount.providerAccountId);
-            userSubscriptions.forEach(async (webhook) => {
+            const deleteRequests = userSubscriptions.map(async (webhook) => {
                 await twitchAxios.delete(`/helix/eventsub/subscriptions?id=${webhook.id}`, {
                     headers: {
                         'Client-ID': process.env.TWITCH_CLIENT_ID,
@@ -50,6 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     },
                 });
             });
+            Promise.all(deleteRequests);
             res.send(200);
         }
     } else {

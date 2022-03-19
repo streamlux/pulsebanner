@@ -1,4 +1,5 @@
 import axios, { AxiosError } from "axios";
+import env from "./env";
 import { logger } from "./logger";
 
 export const twitchAxios = axios.create({
@@ -18,8 +19,8 @@ twitchAxios.interceptors.response.use(function (response) {
 
     logger.error('Error occured during request (twich axios)', { method: error.config.method, url: error.config.url, message: error.message, config: error.config });
 
-    if (process.env.ENABLE_DISCORD_WEBHOOKS) {
-        axios.post(process.env.DISCORD_ERROR_WEBHOOK_URL, {
+    if (env.ENABLE_DISCORD_WEBHOOKS) {
+        axios.post(env.DISCORD_ERROR_WEBHOOK_URL, {
             content: errorLogs.join('\n'),
         });
     }
@@ -34,5 +35,5 @@ localAxios.interceptors.response.use(undefined, (error: AxiosError) => {
 })
 
 export const remotionAxios = axios.create({
-    baseURL: process.env.REMOTION_URL
+    baseURL: env.REMOTION_URL
 });

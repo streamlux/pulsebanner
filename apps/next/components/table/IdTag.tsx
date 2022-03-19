@@ -11,7 +11,7 @@ type IdTagProps = {
     copyValue?: string;
 };
 
-export const IdTag = ({ id, url, noCopy, urlTooltip, alias: pretty, copyValue }: IdTagProps): React.ReactElement => {
+export const IdTag = ({ id, url = '#', noCopy, urlTooltip, alias: pretty, copyValue }: IdTagProps): React.ReactElement => {
     copyValue ??= id;
 
     const clipboard = useClipboard(copyValue);

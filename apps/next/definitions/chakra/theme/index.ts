@@ -15,7 +15,7 @@ import components from './components';
  */
 
 const config: ThemeConfig = {
-    initialColorMode: 'light',
+    initialColorMode: 'dark',
     useSystemColorMode: false,
 };
 

@@ -1,7 +1,7 @@
 import { PartnerInvoice } from '@prisma/client';
 import prisma from '../ssr/prisma';
 
-export const getPartnerInvoice = async (invoiceId: string): Promise<PartnerInvoice> => {
+export const getPartnerInvoice = async (invoiceId: string): Promise<PartnerInvoice | undefined> => {
     const partnerInvoice = await prisma.partnerInvoice.findUnique({
         where: {
             id: invoiceId,

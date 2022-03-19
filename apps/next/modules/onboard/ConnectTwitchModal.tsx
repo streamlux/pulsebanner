@@ -1,4 +1,20 @@
-import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, VStack, Button, Center, Text, Link, Flex, Spacer } from '@chakra-ui/react';
+import {
+    Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalCloseButton,
+    ModalBody,
+    VStack,
+    Button,
+    Center,
+    Text,
+    Link,
+    Flex,
+    Spacer,
+    LightMode,
+    ModalFooter,
+} from '@chakra-ui/react';
 import { Account, Session } from '@prisma/client';
 import { signIn } from 'next-auth/react';
 import { FaTwitter, FaCheck, FaTwitch } from 'react-icons/fa';
@@ -12,34 +28,39 @@ interface ConnectTwitchModalProps {
 }
 
 export const ConnectTwitchModal: React.FC<ConnectTwitchModalProps> = ({ session, isOpen, onClose, callbackUrl = '/banner' }) => {
+    const hasTwitter = session?.accounts?.twitter;
     return (
         <Modal onClose={onClose} size={'xl'} isOpen={isOpen}>
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>
                     <Center>Almost there!</Center>
-                    <Center>Connect to all platforms to continue.</Center>
+                    <Center>{hasTwitter ? 'Connect your Twitch account to continue.' : 'Connect your Twitter account to continue.'}</Center>
                 </ModalHeader>
                 <ModalCloseButton />
                 <ModalCloseButton />
-                <ModalBody minH="32" h="32" pb="4">
+                <ModalBody minH="16">
                     <Flex h="full" direction="column" justifyContent="space-between">
                         <VStack>
-                            <Button
-                                onClick={
-                                    session?.accounts?.twitter
-                                        ? undefined
-                                        : () =>
-                                              signIn('twitter', {
-                                                  callbackUrl: `${callbackUrl}?modal=true`,
-                                              })
-                                }
-                                colorScheme="twitter"
-                                leftIcon={<FaTwitter />}
-                                rightIcon={session?.accounts?.twitter ? <FaCheck /> : undefined}
-                            >
-                                Connect to Twitter
-                            </Button>
+                            <Spacer />
+                            <LightMode>
+                                <Button
+                                    onClick={
+                                        hasTwitter
+                                            ? undefined
+                                            : () =>
+                                                  signIn('twitter', {
+                                                      callbackUrl: `${callbackUrl}?modal=true`,
+                                                  })
+                                    }
+                                    colorScheme="twitter"
+                                    leftIcon={<FaTwitter />}
+                                    rightIcon={hasTwitter ? <FaCheck /> : undefined}
+                                >
+                                    Connect to Twitter
+                                </Button>
+                            </LightMode>
+
                             {session && (
                                 <Button
                                     onClick={() =>
@@ -47,6 +68,7 @@ export const ConnectTwitchModal: React.FC<ConnectTwitchModalProps> = ({ session,
                                             callbackUrl,
                                         })
                                     }
+                                    color="white"
                                     colorScheme="twitch"
                                     leftIcon={<FaTwitch />}
                                     rightIcon={session?.accounts?.twitch ? <FaCheck /> : undefined}
@@ -55,20 +77,22 @@ export const ConnectTwitchModal: React.FC<ConnectTwitchModalProps> = ({ session,
                                 </Button>
                             )}
                         </VStack>
-                        <Center mt="4">
-                            <Text fontSize="sm">
-                                {'By signing up, you agree to our'}{' '}
-                                <Link as={NextLink} href="/terms" passHref>
-                                    Terms
-                                </Link>{' '}
-                                and{' '}
-                                <Link as={NextLink} href="/privacy" passHref>
-                                    Privacy Policy
-                                </Link>
-                            </Text>
-                        </Center>
                     </Flex>
                 </ModalBody>
+                <ModalFooter>
+                    <Center w="full">
+                        <Text fontSize="sm">
+                            {'By signing up, you agree to our'}{' '}
+                            <Link as={NextLink} href="/terms" passHref>
+                                Terms
+                            </Link>{' '}
+                            and{' '}
+                            <Link as={NextLink} href="/privacy" passHref>
+                                Privacy Policy
+                            </Link>
+                        </Text>
+                    </Center>
+                </ModalFooter>
             </ModalContent>
         </Modal>
     );

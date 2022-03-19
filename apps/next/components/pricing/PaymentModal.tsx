@@ -28,7 +28,9 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
         products: (Product & {
             prices: Price[];
         })[]
-    ) => products.sort((a, b) => a?.prices?.find((one) => one.interval === billingInterval)?.unitAmount - b?.prices?.find((one) => one.interval === billingInterval)?.unitAmount);
+    ) => products.sort((a, b) => {
+        return (a?.prices?.find((one) => one.interval === billingInterval)?.unitAmount ?? 0) - (b?.prices?.find((one) => one.interval === billingInterval)?.unitAmount ?? 0);
+    });
 
     const [paymentPlan, setPaymentPlan] = useState<PaymentPlan>();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -151,11 +153,11 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
                             <Center w="full">
                                 <SimpleGrid columns={[1, 3]} spacing="4" w="full">
                                     <WrapItem key="free" w="full" h="full">
-                                        <FreeProductCard />
+                                        <FreeProductCard modal />
                                     </WrapItem>
                                     {sortProductsByPrice(data).map((product) => (
                                         <Box key={product.id} w="full">
-                                            <ProductCard key={product.id} product={product} billingInterval={billingInterval} handlePricingClick={handlePricingClick} paymentPlan={paymentPlan} />
+                                            <ProductCard key={product.id} product={product} billingInterval={billingInterval} handlePricingClick={handlePricingClick} paymentPlan={paymentPlan ?? 'Free'} />
                                         </Box>
                                     ))}
                                 </SimpleGrid>

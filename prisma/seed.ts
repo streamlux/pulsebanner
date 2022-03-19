@@ -14,8 +14,6 @@ async function main() {
         limit: 100,
     });
 
-    console.log(prices);
-
     await Promise.all(
         products.data.map((each) =>
             prisma.product.upsert({
@@ -61,6 +59,8 @@ async function main() {
                             id: each.product as string,
                         },
                     },
+                    metadata: each.metadata,
+                    nickname: each.nickname,
                 },
                 update: {
                     currency: each.currency,
@@ -70,6 +70,8 @@ async function main() {
                     interval: each.recurring?.interval,
                     interval_count: each.recurring?.interval_count,
                     trial_period_days: each.recurring?.trial_period_days,
+                    metadata: each.metadata,
+                    nickname: each.nickname,
                 },
             })
         )
