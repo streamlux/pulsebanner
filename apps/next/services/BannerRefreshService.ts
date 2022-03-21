@@ -1,7 +1,8 @@
 import { bannerRefresh } from "@app/features/banner/bannerRefresh";
-import type { ProductName } from "@app/types/products";
 import type { PrismaClient } from "@prisma/client";
 import type { Logger } from "winston";
+
+type ProductName = 'Personal' | 'Professional';
 
 export class BannerRefreshService {
 

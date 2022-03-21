@@ -1,7 +1,6 @@
 import React, { ReactElement, FC } from 'react';
 import NextLink from 'next/link';
-import { MenuItem, Button, VStack, Box, Center, Heading, Spacer, HStack, ColorMode, Image, Text } from '@chakra-ui/react';
-import { FaArrowRight } from 'react-icons/fa';
+import { Button, VStack, Box, Center, Heading, Image } from '@chakra-ui/react';
 
 type MobileHeaderMenuItemProps = {
     imageSrc: string;

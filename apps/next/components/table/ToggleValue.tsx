@@ -1,4 +1,4 @@
-import { Box, useBoolean, useDisclosure } from '@chakra-ui/react';
+import { Box, useBoolean } from '@chakra-ui/react';
 import React, { ReactElement, FC } from 'react';
 
 type ToggleValueProps = {

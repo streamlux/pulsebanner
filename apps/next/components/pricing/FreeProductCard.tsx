@@ -1,5 +1,5 @@
 import { CloseIcon } from '@chakra-ui/icons';
-import { Heading, List, ListItem, ListIcon, Button, HStack, Box, Flex, Center, Stack, useBreakpoint } from '@chakra-ui/react';
+import { Heading, List, ListItem, ListIcon, Button, Box, Flex, Center, Stack, useBreakpoint } from '@chakra-ui/react';
 import { signIn, useSession } from 'next-auth/react';
 import { FaArrowRight } from 'react-icons/fa';
 import { Card } from '../Card';
@@ -10,11 +10,9 @@ import {
     ProductCardPricing,
     ProductCardPrice,
     ProductCardPriceAmount,
-    ProductCardBody,
     ProductCardFeaturesListHeading,
     ProductCardFeatureList,
     ProductCardFeatureListItem,
-    ProductCardFooter,
 } from './ProductCardParts';
 
 type Props = {

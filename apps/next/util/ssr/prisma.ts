@@ -1,8 +1,8 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { logger } from '../logger';
-import { onLoad } from './onLoad';
+import { StartupService } from './StartupService';
 
-onLoad();
+StartupService.onLoad();
 
 declare global {
     // eslint-disable-next-line no-var

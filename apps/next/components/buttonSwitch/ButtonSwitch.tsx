@@ -1,4 +1,4 @@
-import { Center, LightMode, Tab, TabList, Tabs, Tag, VStack, Text } from '@chakra-ui/react';
+import { Tab, TabList, Tabs } from '@chakra-ui/react';
 import React, { ReactElement, FC, ReactNode } from 'react';
 
 type ButtonSwitchProps = {
