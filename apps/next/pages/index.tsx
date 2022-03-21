@@ -116,9 +116,9 @@ export default function Page() {
                 <Center>
                     <Box w="128px">
                         {colorMode === 'dark' ? (
-                            <Image src={landingPageAsset('twitterxtwitch')} alt="Banner" />
+                            <Image htmlHeight={32} htmlWidth={128} src={landingPageAsset('twitterxtwitch')} alt="Banner" />
                         ) : (
-                            <Image src={landingPageAsset('twitterxtwitch_light')} alt="Banner" />
+                            <Image htmlHeight={32} htmlWidth={128} src={landingPageAsset('twitterxtwitch_light')} alt="Banner" />
                         )}
                     </Box>
                 </Center>
@@ -212,7 +212,7 @@ export default function Page() {
                                     <Center>
                                         <Box maxW="700px" p="2" rounded="lg" bg={offline ? 'gray.200' : undefined} className={!offline ? 'animated-gradient' : undefined}>
                                             {offline ? (
-                                                <Image rounded="lg" alt="showcase" src={staticAssets.showcaseOffline.src} />
+                                                <Image rounded="lg" alt="showcase" htmlWidth='684' htmlHeight='596' src={staticAssets.showcaseOffline.src} />
                                             ) : (
                                                 <Image rounded="lg" alt="showcase" src={staticAssets.showcase.src} htmlWidth='684' htmlHeight='596' loading="eager" />
                                             )}
@@ -317,7 +317,7 @@ export default function Page() {
 
                                         <Center py="8">
                                             <Box maxW="1000" minW={['95vw', 'unset']}>
-                                                <Image src={landingPageAsset('banner')} alt="Banner" />
+                                                <Image htmlWidth={805} htmlHeight={361} src={landingPageAsset('banner')} alt="Banner" />
                                             </Box>
                                         </Center>
                                         <NextLink passHref href="/banner">
@@ -342,7 +342,7 @@ export default function Page() {
                                             </Text>
                                         </Box>
                                         <Center py="8">
-                                            <Image src={landingPageAsset('profileimage')} alt="Banner" w="80vw" maxW="800px" py="10" />
+                                            <Image htmlWidth={800} htmlHeight={279} src={landingPageAsset('profileimage')} alt="Banner" w="80vw" maxW="800px" py="10" />
                                         </Center>
                                         <NextLink passHref href="/profile">
                                             <Button as="a" size="lg" rightIcon={<FaArrowRight />} colorScheme="green">
@@ -367,7 +367,7 @@ export default function Page() {
                                             </Text>
                                         </Box>
                                         <Center py="16">
-                                            <Image src={landingPageAsset('namechanger')} alt="Banner" w="full" />
+                                            <Image htmlWidth={992} htmlHeight={68} src={landingPageAsset('namechanger')} alt="Banner" w="full" />
                                         </Center>
                                         <NextLink passHref href="/name">
                                             <Button as="a" size="lg" rightIcon={<FaArrowRight />} colorScheme="green" className={trackEvent('click', 'setup-name-changer')}>
@@ -416,7 +416,7 @@ export default function Page() {
 
                             <Center py="4">
                                 <Box maxW="400px" w="60vw">
-                                    <Image src={landingPageAsset('twitterxtwitch')} alt="Banner" />
+                                    <Image htmlWidth={400} htmlHeight={114} src={landingPageAsset('twitterxtwitch')} alt="Banner" />
                                 </Box>
                             </Center>
 
@@ -424,11 +424,11 @@ export default function Page() {
                                 <ShareToTwitter
                                     tweetPreview={
                                         <Text>
-                                            Stand out on Twitter with <Link color="twitter.400">@PulseBanner</Link>! <br />
-                                            Magically ✨ sync your Twitter profile with <Link color="twitter.400">#Twitch</Link>. Get it for free today at{' '}
-                                            <Link color="twitter.500">pulsebanner.com</Link>!
+                                            Stand out on Twitter with <Link color="twitter.400" as='span'>@PulseBanner</Link>! <br />
+                                            Magically ✨ sync your Twitter profile with <Link as='span' color="twitter.400">#Twitch</Link>. Get it for free today at{' '}
+                                            <Link href='https://pulsebanner.com' color="twitter.500">pulsebanner.com</Link>!
                                             <br />
-                                            <Link color="twitter.500">#PulseBanner</Link>
+                                            <Link as='span' color="twitter.500">#PulseBanner</Link>
                                         </Text>
                                     }
                                     tweetText={tweetText}

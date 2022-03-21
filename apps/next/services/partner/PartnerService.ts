@@ -6,27 +6,6 @@ import stripe from "@app/util/ssr/stripe";
 import { PartnerInvoice } from "@prisma/client";
 import Stripe from "stripe";
 
-export type PartnerCreateType = {
-    email: string;
-    firstName: string;
-    lastName?: string;
-    partnerCode: string;
-    notes?: string;
-};
-
-export enum AcceptanceStatus {
-    Active = 'active',
-    Pending = 'pending',
-    Suspended = 'suspended',
-    Rejected = 'rejected',
-    None = 'none',
-}
-
-export type PartnerInfoType = PartnerCreateType & {
-    partnerId: string;
-    acceptanceStatus: AcceptanceStatus;
-};
-
 export class PartnerService {
 
     public static async createNewPromoCode(partnerId: string, partnerCode: string): Promise<SimpleResponse> {

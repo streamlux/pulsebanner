@@ -28,13 +28,14 @@ import NextLink from 'next/link';
 import { getSession } from 'next-auth/react';
 import { NextSeo } from 'next-seo';
 import React from 'react';
-import { AcceptanceStatus, PartnerService } from '@app/services/partner/PartnerService';
+import { PartnerService } from '@app/services/partner/PartnerService';
 import { CommissionStatus, PartnerInvoice } from '@prisma/client';
 import { logger } from '@app/util/logger';
 import { InfoIcon } from '@chakra-ui/icons';
 import stripe from '@app/util/ssr/stripe';
 import Stripe from 'stripe';
 import { formatUsd } from '@app/util/stringUtils';
+import { AcceptanceStatus } from '@app/services/partner/types';
 
 interface Props {
     balance: number;

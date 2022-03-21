@@ -1,6 +1,6 @@
 import { NextSeo } from 'next-seo';
 import { FaqSection } from '@app/modules/faq/FaqSection';
-import { allFaqItems } from '@app/modules/faq/data';
+import { allFaqItems } from '@app/modules/faq/faqData';
 import { Container } from '@chakra-ui/react';
 
 export default function Page() {

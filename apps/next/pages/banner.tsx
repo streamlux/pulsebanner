@@ -59,7 +59,7 @@ import { Composer } from '@pulsebanner/remotion/components';
 import { NextSeo } from 'next-seo';
 import NextLink from 'next/link';
 import { ReconnectTwitterModal } from '@app/modules/onboard/ReconnectTwitterModal';
-import { bannerFaqItems, generalFaqItems } from '@app/modules/faq/data';
+import { bannerFaqItems, generalFaqItems } from '@app/modules/faq/faqData';
 import { FaqSection } from '@app/modules/faq/FaqSection';
 import { FileUploadModal } from '@pulsebanner/react-image-upload';
 import { InfoIcon } from '@chakra-ui/icons';

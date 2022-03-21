@@ -19,8 +19,8 @@ export const MobileHeaderMenuItem: FC<MobileHeaderMenuItemProps> = ({ imageSrc, 
                 variant={'ghost'}
                 bg="gray.700"
                 as="a"
-                h={['auto', '56']}
-                w={['full', '56']}
+                h={['auto', 'auto', '56']}
+                w={['full', '80vw']}
                 p="4"
                 _hover={{ bg: 'gray.600' }}
                 _active={{ bg: 'gray.600' }}
@@ -29,9 +29,9 @@ export const MobileHeaderMenuItem: FC<MobileHeaderMenuItemProps> = ({ imageSrc, 
                     <Heading w="full" textAlign={'left'} fontSize="lg">
                         {title}
                     </Heading>
-                    <Box w={['full', 'full']} h={['auto', '24']} px='4'>
-                        <Center h="full">
-                            <Image src={imageSrc} alt={title} />
+                    <Box w={['full', 'full']} h={['auto', 'auto']} px='4'>
+                        <Center h={['full', "32"]} my={[0, '8']}>
+                            <Image w='80%' src={imageSrc} alt={title} />
                         </Center>
                     </Box>
                 </VStack>

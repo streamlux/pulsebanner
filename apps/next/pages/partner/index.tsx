@@ -50,7 +50,7 @@ import useSWR from 'swr';
 import { discordLink } from '@app/util/constants';
 import { logger } from '@app/util/logger';
 import { useForm } from 'react-hook-form';
-import { AcceptanceStatus, PartnerCreateType } from '@app/services/partner/PartnerService';
+import { AcceptanceStatus, PartnerCreateType } from '@app/services/partner/types';
 
 interface Props {
     partnerStatus: AcceptanceStatus;

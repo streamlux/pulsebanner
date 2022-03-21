@@ -1,5 +1,4 @@
 import { useAdmin } from '@app/util/hooks/useAdmin';
-import { AcceptanceStatus } from '@app/services/partner/PartnerService';
 import prisma from '@app/util/ssr/prisma';
 import {
     Box,
@@ -30,6 +29,7 @@ import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { IdTag } from '@app/components/table/IdTag';
 import { AdminPartnerNav } from '@app/modules/admin/partner/AdminPartnerNav';
+import { AcceptanceStatus } from '@app/services/partner/types';
 
 type PartnerList = (Partner & {
     partnerInformation: PartnerInformation & {

@@ -98,9 +98,9 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                     </MenuButton>
                     <Portal containerRef={headerPortalRef}>
                         <MenuList flexDirection={'row'} h="auto" mx="8" maxW="90vw" bg="gray.800">
-                            <SimpleGrid columns={[1, 2, 3]} spacing={[0, 4]} p="4">
+                            <SimpleGrid columns={[1, 2, 3]} spacing={[0, 4]} p="4" w='full'>
                                 <NextLink href={'/profile'} passHref>
-                                    <MenuItem as="a" rounded="md" p="0" _hover={{ bg: 'whiteAlpha.100' }} _focus={{ bg: 'whiteAlpha.100' }}>
+                                    <MenuItem rounded="md" p="0" _hover={{ bg: 'whiteAlpha.100' }} _focus={{ bg: 'whiteAlpha.100' }} w='full'>
                                         <HeaderMenuItem
                                             href="/profile"
                                             description="Update your Twitter profile picture when you go live."
@@ -110,7 +110,7 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                     </MenuItem>
                                 </NextLink>
                                 <NextLink href={'/banner'} passHref>
-                                    <MenuItem as="a" rounded="md" p="0" _hover={{ bg: 'whiteAlpha.100' }} _focus={{ bg: 'whiteAlpha.100' }}>
+                                    <MenuItem rounded="md" p="0" _hover={{ bg: 'whiteAlpha.100' }} _focus={{ bg: 'whiteAlpha.100' }}>
                                         <HeaderMenuItem
                                             href="/banner"
                                             description="Update your Twitter profile picture when you go live."
@@ -120,7 +120,7 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                     </MenuItem>
                                 </NextLink>
                                 <NextLink href={'/name'} passHref>
-                                    <MenuItem as="a" rounded="md" p="0" _hover={{ bg: 'whiteAlpha.100' }} _focus={{ bg: 'whiteAlpha.100' }}>
+                                    <MenuItem rounded="md" p="0" _hover={{ bg: 'whiteAlpha.100' }} _focus={{ bg: 'whiteAlpha.100' }}>
                                         <HeaderMenuItem
                                             href="/name"
                                             description="Update your Twitter profile picture when you go live."

@@ -42,7 +42,7 @@ import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/
 import { useState } from 'react';
 import { getTwitterProfilePic, validateTwitterAuthentication } from '@app/services/twitter/twitterHelpers';
 import { FaqSection } from '@app/modules/faq/FaqSection';
-import { generalFaqItems, profileImageFaqItems } from '@app/modules/faq/data';
+import { generalFaqItems, profileImageFaqItems } from '@app/modules/faq/faqData';
 import { AccountsService } from '@app/services/AccountsService';
 
 interface Props {

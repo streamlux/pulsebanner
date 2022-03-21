@@ -3,7 +3,7 @@ import type { GetStaticProps, NextPage } from 'next';
 import React from 'react';
 import { Heading, Text, Container, VStack, Box } from '@chakra-ui/react';
 import prisma from '../util/ssr/prisma';
-import { generalFaqItems, pricingFaqItems } from '@app/modules/faq/data';
+import { generalFaqItems, giftFaqItems, pricingFaqItems } from '@app/modules/faq/faqData';
 import { FaqSection } from '@app/modules/faq/FaqSection';
 import { GiftPricing } from '@app/modules/pricing/GiftPricing';
 
@@ -49,7 +49,7 @@ const Page: NextPage<Props> = ({ priceMap }) => {
                     Help empower creators by supporting us ♥️
                 </Text>
                 <Box pt="32">
-                    <FaqSection items={pricingFaqItems.concat(generalFaqItems)} />
+                    <FaqSection items={giftFaqItems.concat(generalFaqItems)} />
                 </Box>
             </Container>
         </VStack>

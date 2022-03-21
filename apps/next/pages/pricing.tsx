@@ -34,7 +34,7 @@ import prisma from '../util/ssr/prisma';
 import { FaTwitter, FaCheck, FaArrowDown } from 'react-icons/fa';
 import { ProductCard } from '@app/components/pricing/ProductCard';
 import { NextSeo } from 'next-seo';
-import { generalFaqItems, pricingFaqItems } from '@app/modules/faq/data';
+import { generalFaqItems, giftFaqItems, pricingFaqItems } from '@app/modules/faq/faqData';
 import { FaqSection } from '@app/modules/faq/FaqSection';
 import { usePaymentPlan } from '@app/util/hooks/usePaymentPlan';
 import { FreeProductCard } from '@app/components/pricing/FreeProductCard';
@@ -338,7 +338,7 @@ const Page: NextPage<Props> = ({ products, priceMap }) => {
                         Help empower creators by supporting us ♥️
                     </Text>
                     <Box pt="32">
-                        <FaqSection items={pricingFaqItems.concat(generalFaqItems)} />
+                        <FaqSection items={pricingFaqItems.concat(generalFaqItems).concat(giftFaqItems)} />
                     </Box>
                 </Container>
             </VStack>
