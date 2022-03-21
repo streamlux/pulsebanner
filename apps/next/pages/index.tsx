@@ -214,7 +214,7 @@ export default function Page() {
                                             {offline ? (
                                                 <Image rounded="lg" alt="showcase" src={staticAssets.showcaseOffline.src} />
                                             ) : (
-                                                <Image rounded="lg" alt="showcase" src={staticAssets.showcase.src} loading="eager" />
+                                                <Image rounded="lg" alt="showcase" src={staticAssets.showcase.src} htmlWidth='684' htmlHeight='596' loading="eager" />
                                             )}
                                         </Box>
                                     </Center>
