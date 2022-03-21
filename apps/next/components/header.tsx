@@ -12,7 +12,6 @@ import {
     MenuItem,
     MenuList,
     Portal,
-    useColorMode,
     IconButton,
     Heading,
     Image,
@@ -21,26 +20,25 @@ import {
     useBreakpoint,
     Text,
     Spacer,
-    Tag,
-    Stack,
     SimpleGrid,
     useDisclosure,
-    keyframes,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
-import { signIn, signOut, useSession } from 'next-auth/react';
+import { signIn, signOut } from 'next-auth/react';
 import styles from './header.module.css';
-import React, { useCallback } from 'react';
+import React from 'react';
 import { ArrowRightIcon, ChevronDownIcon, CloseIcon, HamburgerIcon } from '@chakra-ui/icons';
 import { useAdmin } from '../util/hooks/useAdmin';
 import favicon from '@app/public/logo.webp';
-import { FaArrowRight, FaDiscord, FaTwitter } from 'react-icons/fa';
+import { FaDiscord, FaTwitter } from 'react-icons/fa';
 import { trackEvent } from '@app/util/umami/trackEvent';
-import { discordLink, promo, promoCode, twitterLink } from '@app/util/constants';
+import { discordLink, twitterLink } from '@app/util/constants';
 import { HeaderMenuItem } from './header/HeaderMenuItem';
 import { MobileHeaderMenuItem } from './header/MobileHeaderMenuItem';
 import { Card } from './Card';
 import { CustomSession } from '@app/services/auth/CustomSession';
+import { useSession } from '@app/util/hooks/useSession';
+import { Promotion } from './header/Promotion';
 
 const headerImages = {
     profile: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/assets/feature-nav/header_profile.svg',
@@ -56,12 +54,10 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
     const { data: session, status } = useSession({ required: false });
     const loading = status === 'loading';
     const [isAdmin] = useAdmin({ required: false });
-    const { colorMode, toggleColorMode } = useColorMode();
     const breakpoint = useBreakpoint();
 
     const { isOpen: mobileNavIsOpen, onToggle: mobileNavOnToggle, onClose: mobileNavOnClose } = useDisclosure();
 
-    const nameChangerLogo = colorMode === 'dark' ? headerImages.nameChangerDark : headerImages.nameChangerLight;
     const breakpointValue = useBreakpointValue(
         {
             base: {
@@ -91,6 +87,8 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
         'base'
     );
 
+    const showMobileNav = mobileNavIsOpen && breakpointValue?.mobile;
+
     const NavLinks = () => (
         <Center id="nav-links" fontSize="lg">
             <Wrap spacing={['2', '4', '6', '6']}>
@@ -105,7 +103,6 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                     <MenuItem as="a" rounded="md" p="0" _hover={{ bg: 'whiteAlpha.100' }} _focus={{ bg: 'whiteAlpha.100' }}>
                                         <HeaderMenuItem
                                             href="/profile"
-                                            colorMode={colorMode}
                                             description="Update your Twitter profile picture when you go live."
                                             imageSrc={headerImages.profile}
                                             title="Profile Picture"
@@ -116,7 +113,6 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                     <MenuItem as="a" rounded="md" p="0" _hover={{ bg: 'whiteAlpha.100' }} _focus={{ bg: 'whiteAlpha.100' }}>
                                         <HeaderMenuItem
                                             href="/banner"
-                                            colorMode={colorMode}
                                             description="Update your Twitter profile picture when you go live."
                                             imageSrc={headerImages.banner}
                                             title="Live Banner"
@@ -127,9 +123,8 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                     <MenuItem as="a" rounded="md" p="0" _hover={{ bg: 'whiteAlpha.100' }} _focus={{ bg: 'whiteAlpha.100' }}>
                                         <HeaderMenuItem
                                             href="/name"
-                                            colorMode={colorMode}
                                             description="Update your Twitter profile picture when you go live."
-                                            imageSrc={nameChangerLogo}
+                                            imageSrc={headerImages.nameChangerDark}
                                             title="Name Changer"
                                         />
                                     </MenuItem>
@@ -249,16 +244,6 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                             </NextLink>
                                         </>
                                     )}
-                                    {/*
-                                    <IconButton
-                                        size={'sm'}
-                                        aria-label="Toggle theme"
-                                        icon={colorMode === 'dark' ? <SunIcon /> : <MoonIcon />}
-                                        onClick={toggleColorMode}
-                                        className={trackEvent('click', 'color-theme-button')}
-                                    >
-                                        Toggle {colorMode === 'light' ? 'Dark' : 'Light'}
-                                    </IconButton> */}
 
                                     {!session && (
                                         <NextLink href="/api/auth/signin" passHref>
@@ -277,6 +262,7 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                             </Button>
                                         </NextLink>
                                     )}
+
                                     {session && (
                                         <Menu>
                                             <Avatar size="sm" as={MenuButton} name={(session as CustomSession).user.name ?? ''} src={(session as CustomSession).user.image ?? ''} />
@@ -295,34 +281,16 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                             </Portal>
                                         </Menu>
                                     )}
+
                                     {breakpointValue?.mobile && (
-                                        <>
-                                            {/* <IconButton
-                                                aria-label="Twitter"
-                                                variant={'ghost'}
-                                                size="sm"
-                                                onClick={() => window.open('https://twitter.com/pulsebanner', '_blank')}
-                                                icon={<FaTwitter />}
-                                                className={trackEvent('click', 'discord-button')}
-                                            />
-                                            <IconButton
-                                                size="sm"
-                                                onClick={() => window.open('/discord', '_blank')}
-                                                aria-label="Discord"
-                                                title="Discord"
-                                                variant="ghost"
-                                                icon={<FaDiscord />}
-                                                className={trackEvent('click', 'discord-button')}
-                                            /> */}
-                                            <IconButton
-                                                size="md"
-                                                onClick={mobileNavOnToggle}
-                                                aria-label="Navigation Menu"
-                                                title="Navigation Menu"
-                                                variant="ghost"
-                                                icon={mobileNavIsOpen ? <CloseIcon /> : <HamburgerIcon />}
-                                            />
-                                        </>
+                                        <IconButton
+                                            size="md"
+                                            onClick={mobileNavOnToggle}
+                                            aria-label="Navigation Menu"
+                                            title="Navigation Menu"
+                                            variant="ghost"
+                                            icon={mobileNavIsOpen ? <CloseIcon /> : <HamburgerIcon />}
+                                        />
                                     )}
                                 </Flex>
                             </Flex>
@@ -330,7 +298,7 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                     </Center>
                 </Box>
             </header>
-            {breakpointValue?.mobile && mobileNavIsOpen && (
+            {showMobileNav && (
                 <Box>
                     <Flex
                         direction={'column'}
@@ -348,7 +316,6 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                         <MobileHeaderMenuItem
                             onNavigate={mobileNavOnClose}
                             href="/profile"
-                            colorMode={colorMode}
                             description="Update your Twitter profile picture when you go live."
                             imageSrc={headerImages.profile}
                             title="Profile Picture"
@@ -358,7 +325,6 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                             <MobileHeaderMenuItem
                                 onNavigate={mobileNavOnClose}
                                 href="/banner"
-                                colorMode={colorMode}
                                 description="Update your Twitter profile picture when you go live."
                                 imageSrc={headerImages.banner}
                                 title="Live Banner"
@@ -368,9 +334,8 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                             <MobileHeaderMenuItem
                                 onNavigate={mobileNavOnClose}
                                 href="/name"
-                                colorMode={colorMode}
                                 description="Update your Twitter profile picture when you go live."
-                                imageSrc={nameChangerLogo}
+                                imageSrc={headerImages.nameChangerDark}
                                 title="Name Changer"
                             />
                         </Box>
@@ -398,28 +363,7 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                     </Flex>
                 </Box>
             )}
-            {promo && (
-                <Center pt={['4', '2']}>
-                    <Box px="4" py="2" mx="4" color={colorMode === 'dark' ? 'black' : 'black'} w={['fit-content']} bg="green.200" rounded="lg">
-                        <Center h="full">
-                            <Stack direction={['column', 'column', 'row']}>
-                                <Text textAlign="center" pt="1" fontSize={['sm', 'md']}>
-                                    {'Sale! Use code'}{' '}
-                                    <Tag color="black" fontWeight="bold" colorScheme="green" bg={colorMode === 'dark' ? 'green.100' : undefined}>
-                                        {promoCode}
-                                    </Tag>{' '}
-                                    {'at checkout to save 10% on your first month!'}
-                                </Text>
-                                <NextLink href="/pricing" passHref>
-                                    <Button rightIcon={<FaArrowRight />} colorScheme="whiteAlpha" bg="green.100" size="sm" color="black">
-                                        View pricing
-                                    </Button>
-                                </NextLink>
-                            </Stack>
-                        </Center>
-                    </Box>
-                </Center>
-            )}
+            <Promotion />
         </>
     );
 }

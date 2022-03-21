@@ -1,7 +1,7 @@
-import { TwitchClientAuthService } from "@app/services/TwitchClientAuthService";
+import { TwitchClientAuthService } from "@app/services/twitch/TwitchClientAuthService";
 import { GetStreamsResponse, Stream } from "@app/types/twitch";
 import { remotionAxios, twitchAxios } from "@app/util/axios";
-import { getBannerEntry } from "@app/util/database/postgresHelpers";
+import { getBannerEntry } from "@app/services/postgresHelpers";
 import { logger } from "@app/util/logger";
 import type { Prisma } from "@prisma/client";
 import type { AxiosResponse } from "axios";

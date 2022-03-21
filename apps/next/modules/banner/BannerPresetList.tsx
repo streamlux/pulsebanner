@@ -5,7 +5,7 @@ import { Composer } from '../../../../libs/remotion/components/src';
 import { RemotionPreview } from '../../../../libs/remotion/preview/src';
 import { bannerPresets } from '@app/modules/banner/bannerPresets';
 import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
-import { PaymentPlan } from '@app/util/database/paymentHelpers';
+import { PaymentPlan } from '@app/services/payment/paymentHelpers';
 import { MdLock } from 'react-icons/md';
 import { landingPageAsset } from '@app/pages';
 import { FaArrowRight } from 'react-icons/fa';

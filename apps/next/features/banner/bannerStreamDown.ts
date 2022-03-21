@@ -1,15 +1,15 @@
-import { getBannerEntry, getTwitterInfo, flipFeatureEnabled } from '@app/util/database/postgresHelpers';
-import { download } from '@app/util/s3/download';
-import { validateTwitterAuthentication, TwitterResponseCode, updateBanner } from '@app/util/twitter/twitterHelpers';
+import { getBannerEntry, flipFeatureEnabled } from '@app/services/postgresHelpers';
+import { validateTwitterAuthentication, TwitterResponseCode, updateBanner } from '@app/services/twitter/twitterHelpers';
 import { Feature } from '../Feature';
 import { logger } from '@app/util/logger';
-import { checkValidDownload } from '@app/util/s3/validateHelpers';
 import env from '@app/util/env';
+import { S3Service } from '@app/services/S3Service';
+import { AccountsService } from '@app/services/AccountsService';
 
 const bannerStreamDown: Feature<string> = async (userId: string): Promise<string> => {
     const bannerEntry = await getBannerEntry(userId);
 
-    const twitterInfo = await getTwitterInfo(userId);
+    const twitterInfo = await AccountsService.getTwitterInfo(userId);
 
     const validatedTwitter = twitterInfo && await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
     if (!validatedTwitter) {
@@ -23,12 +23,12 @@ const bannerStreamDown: Feature<string> = async (userId: string): Promise<string
     }
 
     // Download original image from S3.
-    let imageBase64 = await download(env.IMAGE_BUCKET_NAME, userId);
+    let imageBase64 = await S3Service.download(env.IMAGE_BUCKET_NAME, userId);
     if (imageBase64) {
         logger.info('Successfully downloaded original image from S3.', { userId });
     } else {
         // retry to download one more time, then fail otherwise
-        imageBase64 = await download(env.IMAGE_BUCKET_NAME, userId);
+        imageBase64 = await S3Service.download(env.IMAGE_BUCKET_NAME, userId);
         if (imageBase64) {
             logger.info('Successfully downloaded original image from S3.', { userId });
         } else {
@@ -38,10 +38,10 @@ const bannerStreamDown: Feature<string> = async (userId: string): Promise<string
     }
 
     // validate the image is proper base64. If not, upload the signup image
-    if (!checkValidDownload(imageBase64)) {
+    if (!S3Service.checkValidDownload(imageBase64)) {
         logger.error('Invalid base64 in do. Uploading signup image', { userId });
-        const original = await download(env.BANNER_BACKUP_BUCKET, userId);
-        if (!checkValidDownload(original ?? '')) {
+        const original = await S3Service.download(env.BANNER_BACKUP_BUCKET, userId);
+        if (!S3Service.checkValidDownload(original ?? '')) {
             logger.error('Failing streamdown. Invalid original image as well as signup image.', { userId });
             return 'Failing streamdown. Invalid original image as well as signup image.';
         } else {

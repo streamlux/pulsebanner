@@ -2,7 +2,7 @@ import { Price, PriceInterval, Product } from '@prisma/client';
 import type { GetStaticProps, NextPage } from 'next';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
-import { signIn, useSession } from 'next-auth/react';
+import { signIn } from 'next-auth/react';
 import React, { useCallback, useState } from 'react';
 import {
     Button,
@@ -42,6 +42,7 @@ import { Card } from '@app/components/Card';
 import { ArrowRightIcon } from '@chakra-ui/icons';
 import { ButtonSwitch } from '@app/components/buttonSwitch/ButtonSwitch';
 import { GiftPricing } from '@app/modules/pricing/GiftPricing';
+import { useSession } from '@app/util/hooks/useSession';
 
 type ProductType = Product & { prices: Price[] };
 type Products = ProductType[];
@@ -68,7 +69,7 @@ const sortProductsByPrice = (products: Products, billingInterval: PriceInterval)
 
 const Page: NextPage<Props> = ({ products, priceMap }) => {
     const [paymentPlan, paymentPlanResponse] = usePaymentPlan();
-    const { data: session } = useSession({ required: false }) as any;
+    const { data: session } = useSession({ required: false });
 
     const router = useRouter();
     const breakpoint = useBreakpoint('sm');

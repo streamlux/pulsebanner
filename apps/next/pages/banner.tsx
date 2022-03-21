@@ -61,8 +61,6 @@ import NextLink from 'next/link';
 import { ReconnectTwitterModal } from '@app/modules/onboard/ReconnectTwitterModal';
 import { bannerFaqItems, generalFaqItems } from '@app/modules/faq/data';
 import { FaqSection } from '@app/modules/faq/FaqSection';
-import { getAccountsById } from '@app/util/getAccountsById';
-import { download } from '@app/util/s3/download';
 import { FileUploadModal } from '@pulsebanner/react-image-upload';
 import { InfoIcon } from '@chakra-ui/icons';
 import { bannerPresets } from '@app/modules/banner/bannerPresets';
@@ -71,6 +69,8 @@ import Layout from '@app/components/layout';
 import { ChangePresetModal } from '@app/modules/banner/ChangePresetModal';
 import { usePaymentPlan } from '@app/util/hooks/usePaymentPlan';
 import env from '@app/util/env';
+import { AccountsService } from '@app/services/AccountsService';
+import { S3Service } from '@app/services/S3Service';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof BannerForegrounds = 'ImLive';
@@ -187,9 +187,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
         try {
             const userId = session.userId;
-            const accounts = await getAccountsById(userId);
+            const accounts = await AccountsService.getAccountsById(userId);
             const twitchUserId = accounts['twitch'].providerAccountId;
-            originalBanner = await download(env.IMAGE_BUCKET_NAME, userId);
+            originalBanner = await S3Service.download(env.IMAGE_BUCKET_NAME, userId);
         } catch (e) {
             //
         }
@@ -272,7 +272,6 @@ const refreshSpeeds = {
 };
 
 export default function Page({ banner, originalBanner }: Props) {
-    const { data: sessionInfo } = useSession();
     const [paymentPlan, paymentPlanResponse] = usePaymentPlan();
 
     const { data: streamingState } = useSWR('streamState', async () => await (await fetch(`/api/twitch/streaming/${session?.user['id']}`)).json());

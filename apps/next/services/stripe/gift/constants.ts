@@ -1,4 +1,4 @@
-import { PaymentPlan } from "@app/util/database/paymentHelpers";
+import { PaymentPlan } from "@app/services/payment/paymentHelpers";
 
 // for gifting. Price id to coupon id
 export const giftPricingLookupMap: Record<string, string> = {

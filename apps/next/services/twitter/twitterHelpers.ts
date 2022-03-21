@@ -1,8 +1,8 @@
 import { TwitterClient, UsersLookup } from 'twitter-api-client';
-import { flipFeatureEnabled } from '../database/postgresHelpers';
-import { sendError } from '../discord/sendError';
-import env from '../env';
-import { logger } from '../logger';
+import { flipFeatureEnabled } from '../postgresHelpers';
+import { sendError } from '../../util/discord/sendError';
+import env from '../../util/env';
+import { logger } from '../../util/logger';
 
 export type TwitterResponseCode = 200 | 400;
 

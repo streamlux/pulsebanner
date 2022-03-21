@@ -4,10 +4,10 @@ import crypto from 'crypto';
 import bodyParser from 'body-parser';
 import { FeaturesService } from '@app/services/FeaturesService';
 import prisma from '@app/util/ssr/prisma';
-import { getLiveUserInfo, liveUserOffline, liveUserOnline } from '@app/util/twitch/liveStreamHelpers';
 import { logger } from '@app/util/logger';
 import { executeStreamDown, executeStreamUp } from '@app/features/executeFeatures';
 import env from '@app/util/env';
+import { LiveStreamService } from '@app/services/LiveStreamService';
 
 type VerificationBody = {
     challenge: string;
@@ -92,7 +92,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         logger.info(`Received ${streamStatus} notification for user ${userId}`, { status: streamStatus, userId, enabledFeatures: features });
 
         if (features.length !== 0) {
-            const userInfo = await getLiveUserInfo(userId);
+            const userInfo = await LiveStreamService.getLiveUserInfo(userId);
 
             const liveUser = await prisma.liveStreams.findUnique({
                 where: {
@@ -147,10 +147,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             if (userInfo !== undefined) {
                 if (streamStatus === 'stream.online') {
-                    await liveUserOnline(userId, userInfo);
+                    await LiveStreamService.liveUserOnline(userId, userInfo);
                 }
                 if (streamStatus === 'stream.offline') {
-                    await liveUserOffline(userId, userInfo);
+                    await LiveStreamService.liveUserOffline(userId, userInfo);
                 }
             }
         }

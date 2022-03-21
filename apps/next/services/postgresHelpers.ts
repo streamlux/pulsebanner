@@ -1,6 +1,6 @@
-import { Account, Banner, ProfileImage, RenderedProfileImage, Tweet, TwitterName, TwitterOriginalName } from '@prisma/client';
+import { Banner, Tweet, TwitterName, TwitterOriginalName } from '@prisma/client';
 import { updateTwitchSubscriptions } from '@app/services/updateTwitchSubscriptions';
-import prisma from '../ssr/prisma';
+import prisma from '../util/ssr/prisma';
 
 export type PostgresTwitterInfo = {
     oauth_token: string;
@@ -77,59 +77,6 @@ export const updateOriginalTwitterNameDB = async (userId: string, name: string):
             originalName: name,
         },
     });
-};
-
-export const getProfilePicEntry = async (userId: string): Promise<ProfileImage | null> => {
-    const profilePic = await prisma.profileImage.findFirst({
-        where: {
-            userId: userId,
-        },
-    });
-
-    return profilePic;
-};
-
-/**
- *
- * @param userId
- * @returns null if it doesn't exist
- */
-export const getProfilePicRendered = async (userId: string): Promise<RenderedProfileImage | null> => {
-    const profilePicRendered = await prisma.renderedProfileImage.findFirst({
-        where: {
-            userId: userId,
-        },
-    });
-
-    return profilePicRendered;
-};
-
-export const updateProfilePicRenderedDB = async (userId: string): Promise<void> => {
-    await prisma.renderedProfileImage.upsert({
-        where: {
-            userId: userId,
-        },
-        create: {
-            userId: userId,
-            lastRendered: new Date(),
-        },
-        update: {
-            lastRendered: new Date(),
-        },
-    });
-};
-export const getAccountInfo = async (userId: string): Promise<Partial<Account> | null> => {
-    const response = await prisma.account.findFirst({
-        where: {
-            userId: userId,
-            provider: 'twitter',
-        },
-        select: {
-            oauth_token: true,
-            oauth_token_secret: true,
-        },
-    });
-    return response;
 };
 
 export const flipFeatureEnabled = async (userId: string, feature: string, forceDisable?: boolean): Promise<void> => {

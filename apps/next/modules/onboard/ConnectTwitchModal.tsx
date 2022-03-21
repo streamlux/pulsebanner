@@ -19,11 +19,12 @@ import { Account, Session } from '@prisma/client';
 import { signIn } from 'next-auth/react';
 import { FaTwitter, FaCheck, FaTwitch } from 'react-icons/fa';
 import NextLink from 'next/link';
+import { CustomSession } from '@app/services/auth/CustomSession';
 
 interface ConnectTwitchModalProps {
     onClose: () => void;
     isOpen: boolean;
-    session: Session & { accounts?: { [key: string]: Account } };
+    session: CustomSession | null;
     callbackUrl?: string;
 }
 

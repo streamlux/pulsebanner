@@ -1,4 +1,4 @@
-import { APIPaymentObject, productPlan } from '@app/util/database/paymentHelpers';
+import { APIPaymentObject, productPlan } from '@app/services/payment/paymentHelpers';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 
 const handler = createAuthApiHandler();

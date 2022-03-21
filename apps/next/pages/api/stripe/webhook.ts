@@ -7,18 +7,19 @@ import stripe from '../../../util/ssr/stripe';
 import prisma from '../../../util/ssr/prisma';
 import { sendMessage } from '@app/util/discord/sendMessage';
 import { FeaturesService } from '@app/services/FeaturesService';
-import { download } from '@app/util/s3/download';
-import { TwitterResponseCode, updateProfilePic } from '@app/util/twitter/twitterHelpers';
-import { flipFeatureEnabled, getTwitterInfo } from '@app/util/database/postgresHelpers';
+import { TwitterResponseCode, updateProfilePic } from '@app/services/twitter/twitterHelpers';
+import { flipFeatureEnabled, getTwitterInfo } from '@app/services/postgresHelpers';
 import { defaultBannerSettings } from '@app/pages/banner';
 import { logger } from '@app/util/logger';
-import { commissionLookupMap } from '@app/util/partner/constants';
-import { handleSubscriptionCheckoutSessionComplete } from '@app/util/stripe/checkoutSessionCompleted/handleSubscriptionCheckoutSessionComplete';
-import { getInvoiceInformation, updateInvoiceTables } from '@app/util/stripe/invoiceHelpers';
-import { giftPricingLookupMap } from '@app/util/stripe/gift/constants';
-import { handleGiftPurchase } from '@app/util/stripe/handleGiftPurchase';
-import { sendGiftPurchaseEmail } from '@app/util/stripe/emailHelper';
+import { commissionLookupMap } from '@app/services/partner/constants';
+import { handleSubscriptionCheckoutSessionComplete } from '@app/services/stripe/checkoutSessionCompleted/handleSubscriptionCheckoutSessionComplete';
 import env from '@app/util/env';
+import { sendGiftPurchaseEmail } from '@app/services/stripe/emailHelper';
+import { giftPricingLookupMap } from '@app/services/stripe/gift/constants';
+import { handleGiftPurchase } from '@app/services/stripe/handleGiftPurchase';
+import { getInvoiceInformation, updateInvoiceTables } from '@app/services/stripe/invoiceHelpers';
+import { S3Service } from '@app/services/S3Service';
+import { AccountsService } from '@app/services/AccountsService';
 
 // Stripe requires the raw body to construct the event.
 export const config = {
@@ -154,14 +155,14 @@ handler.post(async (req, res) => {
                         sendMessage(`"${userId}" unsubscribed from premium plan`, env.DISCORD_CANCELLED_SUBSCRIBER_URL);
 
                         // get the user's twitter info
-                        const twitterInfo = await getTwitterInfo(userId);
+                        const twitterInfo = await AccountsService.getTwitterInfo(userId);
 
                         if (twitterInfo) {
                             const enabledFeatures = await FeaturesService.listEnabled(userId);
 
                             // disable the profile picture if it is enabled
                             if (enabledFeatures.includes('profileImage')) {
-                                const base64Image: string | undefined = await download(env.PROFILE_PIC_BUCKET_NAME, userId);
+                                const base64Image: string | undefined = await S3Service.download(env.PROFILE_PIC_BUCKET_NAME, userId);
                                 if (base64Image) {
                                     const profilePicStatus: TwitterResponseCode = await updateProfilePic(
                                         userId,

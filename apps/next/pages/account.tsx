@@ -27,7 +27,7 @@ import {
 import type { GetServerSideProps, NextPage } from 'next';
 import { getSession, signOut } from 'next-auth/react';
 import axios from 'axios';
-import { APIPaymentObject, PaymentPlan, productPlan } from '@app/util/database/paymentHelpers';
+import { APIPaymentObject, PaymentPlan, productPlan } from '@app/services/payment/paymentHelpers';
 import { Card } from '@app/components/Card';
 import { NextSeo } from 'next-seo';
 import { FeaturesService } from '@app/services/FeaturesService';

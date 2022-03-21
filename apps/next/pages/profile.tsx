@@ -1,6 +1,6 @@
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 import { discordLink } from '@app/util/constants';
-import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
+import { APIPaymentObject, PaymentPlan } from '@app/services/payment/paymentHelpers';
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import prisma from '@app/util/ssr/prisma';
 import { trackEvent } from '@app/util/umami/trackEvent';
@@ -40,10 +40,10 @@ import { RemotionProfilePreview } from '@pulsebanner/remotion/preview';
 import { Composer } from '@pulsebanner/remotion/components';
 import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
 import { useState } from 'react';
-import { getTwitterInfo } from '@app/util/database/postgresHelpers';
-import { getTwitterProfilePic, validateTwitterAuthentication } from '@app/util/twitter/twitterHelpers';
+import { getTwitterProfilePic, validateTwitterAuthentication } from '@app/services/twitter/twitterHelpers';
 import { FaqSection } from '@app/modules/faq/FaqSection';
 import { generalFaqItems, profileImageFaqItems } from '@app/modules/faq/data';
+import { AccountsService } from '@app/services/AccountsService';
 
 interface Props {
     profilePic: ProfileImage;
@@ -78,7 +78,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     })) as any;
 
     if (session) {
-        const twitterInfo = await getTwitterInfo(session.userId, true);
+        const twitterInfo = await AccountsService.getTwitterInfo(session.userId, true);
         if (!twitterInfo) {
             return {
                 props: {

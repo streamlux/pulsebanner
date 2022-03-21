@@ -1,33 +1,24 @@
 import { TwitchSubscriptionStatus } from '@app/types/twitch';
-import { getAccountsById } from '@app/util/getAccountsById';
-import { listSubscriptions } from '@app/util/twitch/listSubscriptions';
 import { Account } from '@prisma/client';
+import { AccountsService } from './AccountsService';
 import { Features, FeaturesService } from './FeaturesService';
-import { TwitchSubscriptionService } from './TwitchSubscriptionService';
-
-const streamUpAndDown = ['stream.online', 'stream.offline'];
-
-// map each feature to a list of what subscription types it depends on
-const featureSubscriptionTypes: Record<Features, string[]> = {
-    banner: streamUpAndDown,
-    tweet: streamUpAndDown,
-    twitterName: streamUpAndDown,
-    profileImage: streamUpAndDown,
-};
+import { TwitchSubscriptionService } from './twitch/TwitchSubscriptionService';
 
 /**
  * Create/deletes Twitch EventSub subscriptions based on what features the user has enabled
  * @param userId
  */
 export async function updateTwitchSubscriptions(userId: string): Promise<void> {
-    const accounts = await getAccountsById(userId);
+    const accounts = await AccountsService.getAccountsById(userId);
     const twitchAccount: Account = accounts['twitch'];
 
     // get a list of what EventSub subscription types are needed to have based on what features user has enabled
     const neededSubscriptionTypes = await getSubscriptionTypes(userId);
 
+    const subscriptionService = new TwitchSubscriptionService();
+
     // get a list of all currently created Twitch EventSub subcriptions
-    const userSubscriptions = await listSubscriptions(twitchAccount.providerAccountId);
+    const userSubscriptions = await subscriptionService.getSubscriptions(twitchAccount.providerAccountId);
 
     const subscriptionTypesToCreate: string[] = [];
     const subscriptionIdsToKeep: string[] = [];
@@ -49,13 +40,22 @@ export async function updateTwitchSubscriptions(userId: string): Promise<void> {
     // get a list of subscriptions we need to delete by taking all existing subscriptions and excluding the ones we want to keep
     const subsToDelete = userSubscriptions.filter((sub) => !subscriptionIdsToKeep.includes(sub.id));
 
-    const subscriptionService = new TwitchSubscriptionService();
     await subscriptionService.deleteMany(subsToDelete); // delete the ones we don't need anymore
 
     // create the new ones we need
     const createRequests = subscriptionTypesToCreate.map((type) => subscriptionService.createOne(userId, type, twitchAccount.providerAccountId));
     await Promise.all(createRequests);
 }
+
+const streamUpAndDown = ['stream.online', 'stream.offline'];
+
+// map each feature to a list of what subscription types it depends on
+const featureSubscriptionTypes: Record<Features, string[]> = {
+    banner: streamUpAndDown,
+    tweet: streamUpAndDown,
+    twitterName: streamUpAndDown,
+    profileImage: streamUpAndDown,
+};
 
 /**
  * @param userId

@@ -1,6 +1,6 @@
 import { PaymentModal } from '@app/components/pricing/PaymentModal';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
-import { APIPaymentObject, PaymentPlan, productPlan } from '@app/util/database/paymentHelpers';
+import { APIPaymentObject, PaymentPlan, productPlan } from '@app/services/payment/paymentHelpers';
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import prisma from '@app/util/ssr/prisma';
 import {
@@ -48,9 +48,9 @@ import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
 import useSWR from 'swr';
 import { discordLink } from '@app/util/constants';
-import { AcceptanceStatus, PartnerCreateType } from '@app/util/partner/types';
 import { logger } from '@app/util/logger';
 import { useForm } from 'react-hook-form';
+import { AcceptanceStatus, PartnerCreateType } from '@app/services/partner/PartnerService';
 
 interface Props {
     partnerStatus: AcceptanceStatus;

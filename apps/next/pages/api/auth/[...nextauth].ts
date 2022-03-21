@@ -5,16 +5,16 @@ import TwitterProvider from 'next-auth/providers/twitter';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import prisma from '@app/util/ssr/prisma';
 import { nanoid } from 'nanoid';
-import { getBanner } from '@app/util/twitter/twitterHelpers';
+import { getBanner } from '@app/services/twitter/twitterHelpers';
 import { sendMessage } from '@app/util/discord/sendMessage';
 import { sendError } from '@app/util/discord/sendError';
-import { uploadBase64 } from '@app/util/s3/upload';
 import imageToBase64 from 'image-to-base64';
-import { getAccountInfo } from '@app/util/database/postgresHelpers';
 import { localAxios } from '@app/util/axios';
 import { logger } from '@app/util/logger';
 import { buildSession } from '@app/services/auth/buildSession';
 import env from '@app/util/env';
+import { S3Service } from '@app/services/S3Service';
+import { AccountsService } from '@app/services/AccountsService';
 
 // File contains options and hooks for next-auth, the authentication package
 // we are using to handle signup, signin, etc.
@@ -144,7 +144,7 @@ export default NextAuth({
                 const twitterProvider = message.account as any;
                 getBanner(message.user.id, twitterProvider.oauth_token, twitterProvider.oauth_token_secret, twitterProvider.providerAccountId).then((bannerUrl) => {
                     if (bannerUrl === 'empty') {
-                        uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, 'empty')
+                        S3Service.uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, 'empty')
                             .then(() => {
                                 logger.info('Uploaded empty banner on new user signup.', { userId: message.user.id });
                             })
@@ -154,7 +154,7 @@ export default NextAuth({
                             });
                     } else {
                         imageToBase64(bannerUrl).then((base64: string) => {
-                            uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, base64)
+                            S3Service.uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, base64)
                                 .then(() => {
                                     logger.info('Uploaded Twitter banner on new user signup.', { userId: message.user.id });
                                 })
@@ -178,7 +178,7 @@ export default NextAuth({
                 }
                 // we need to update the account info if twitter oauth isn't matching
             } else if (message.isNewUser === false && message.account.provider === 'twitter') {
-                getAccountInfo(message.user.id)
+                AccountsService.getTwitterInfo(message.user.id)
                     .then((response) => {
                         // if we are able to find it, we need to check if the oauth matches and update the account table if it doesn't
                         if (response && (response?.oauth_token !== message.account.oauth_token || response?.oauth_token_secret !== message.account.oauth_token_secret)) {

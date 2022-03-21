@@ -1,9 +1,8 @@
-import { getTwitterInfo } from '@app/util/database/postgresHelpers';
-import { createS3 } from '@app/util/database/s3ClientHelper';
-import env from '@app/util/env';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
-import { getBanner } from '@app/util/twitter/twitterHelpers';
+import { getBanner } from '@app/services/twitter/twitterHelpers';
 import axios from 'axios';
+import { S3Service } from '@app/services/S3Service';
+import { AccountsService } from '@app/services/AccountsService';
 
 const handler = createAuthApiHandler();
 
@@ -16,14 +15,14 @@ handler.post(async (req, res) => {
     const userId = req.session.userId;
 
     try {
-        const twitterInfo = await getTwitterInfo(userId, true);
+        const twitterInfo = await AccountsService.getTwitterInfo(userId, true);
         if (!twitterInfo) {
             return res.send(400);
         }
         const twitterBanner = await getBanner(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
         const { data } = await axios.get(twitterBanner, { responseType: "stream" });
 
-        const s3 = createS3(env.DO_SPACE_ENDPOINT, env.DO_ACCESS_KEY, env.DO_SECRET);
+        const s3 = S3Service.createS3()
         const upload = await s3.upload({
             Bucket: 'pb-static',
             ACL: 'public-read',

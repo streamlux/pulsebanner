@@ -1,4 +1,3 @@
-import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
 import prisma from '@app/util/ssr/prisma';
 import {
     Box,
@@ -29,13 +28,12 @@ import NextLink from 'next/link';
 import { getSession } from 'next-auth/react';
 import { NextSeo } from 'next-seo';
 import React from 'react';
-import { AcceptanceStatus } from '@app/util/partner/types';
+import { AcceptanceStatus, PartnerService } from '@app/services/partner/PartnerService';
 import { CommissionStatus, PartnerInvoice } from '@prisma/client';
 import { logger } from '@app/util/logger';
 import { InfoIcon } from '@chakra-ui/icons';
 import stripe from '@app/util/ssr/stripe';
 import Stripe from 'stripe';
-import { getPartnerCustomerInfo } from '@app/util/partner/payoutHelpers';
 import { formatUsd } from '@app/util/stringUtils';
 
 interface Props {
@@ -108,7 +106,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     },
                 });
 
-                const customerId = await getPartnerCustomerInfo(userId);
+                const customerId = await PartnerService.getPartnerCustomerInfo(userId);
                 if (!customerId) {
                     return {
                         redirect: {

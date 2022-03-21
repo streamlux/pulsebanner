@@ -1,4 +1,4 @@
-import prisma from '../ssr/prisma';
+import prisma from '../../util/ssr/prisma';
 
 // add any other payment logic to this file in the future
 export type PaymentPlan = 'Professional' | 'Personal' | 'Free';

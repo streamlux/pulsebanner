@@ -1,7 +1,7 @@
 import { PaymentModal } from '@app/components/pricing/PaymentModal';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 import { discordLink } from '@app/util/constants';
-import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
+import { APIPaymentObject, PaymentPlan } from '@app/services/payment/paymentHelpers';
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import prisma from '@app/util/ssr/prisma';
 import { trackEvent } from '@app/util/umami/trackEvent';
@@ -47,12 +47,12 @@ import useSWR from 'swr';
 import FakeTweet from 'fake-tweet';
 import 'fake-tweet/build/index.css';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
-import { createTwitterClient, validateTwitterAuthentication } from '@app/util/twitter/twitterHelpers';
-import { getTwitterInfo } from '@app/util/database/postgresHelpers';
+import { createTwitterClient, validateTwitterAuthentication } from '@app/services/twitter/twitterHelpers';
 import { format } from 'date-fns';
 import { NextSeo } from 'next-seo';
 import NextLink from 'next/link';
 import { ReconnectTwitterModal } from '@app/modules/onboard/ReconnectTwitterModal';
+import { AccountsService } from '@app/services/AccountsService';
 
 const nameEndpoint = '/api/features/twitterName';
 const maxNameLength = 50;
@@ -75,7 +75,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             },
         });
 
-        const twitterInfo = await getTwitterInfo(session.userId, true);
+        const twitterInfo = await AccountsService.getTwitterInfo(session.userId, true);
 
         if (!twitterInfo) {
             return {

@@ -1,4 +1,4 @@
-import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
+import { APIPaymentObject, PaymentPlan } from '@app/services/payment/paymentHelpers';
 import { WrapItem, Button, Tag} from '@chakra-ui/react';
 import type { Price, PriceInterval, Product } from '@prisma/client';
 import React from 'react';

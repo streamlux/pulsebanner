@@ -1,15 +1,15 @@
-import { createS3 } from '@app/util/database/s3ClientHelper';
 import { logger } from '@app/util/logger';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import multer from 'multer';
 import multerS3 from 'multer-s3';
 import { Request } from 'express';
 import env from '@app/util/env';
+import { S3Service } from '@app/services/S3Service';
 
 // Docs: https://www.npmjs.com/package/multer-s3
 const upload = multer({
     storage: multerS3({
-        s3: createS3(env.DO_SPACE_ENDPOINT, env.DO_ACCESS_KEY, env.DO_SECRET),
+        s3: S3Service.createS3(),
         bucket: env.IMAGE_BUCKET_NAME,
         acl: 'public-read',
         metadata: function (req, file, cb) {

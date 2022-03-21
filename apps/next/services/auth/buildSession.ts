@@ -3,7 +3,7 @@ import { sendError } from "@app/util/discord/sendError";
 import env from "@app/util/env";
 import { logger } from "@app/util/logger";
 import prisma from "@app/util/ssr/prisma";
-import { createTwitterClient } from "@app/util/twitter/twitterHelpers";
+import { createTwitterClient } from "@app/services/twitter/twitterHelpers";
 import { Account, Role } from "@prisma/client";
 import { AccessToken, accessTokenIsExpired, refreshUserToken, StaticAuthProvider } from "@twurple/auth";
 import axios from "axios";

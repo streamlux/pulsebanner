@@ -30,12 +30,12 @@ import {
 } from '@chakra-ui/react';
 import { getSession } from 'next-auth/react';
 import { GetServerSideProps } from 'next';
-import { getAccountsById } from '@app/util/getAccountsById';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { User } from '@prisma/client';
-import { TwitchSubscriptionService } from '@app/services/TwitchSubscriptionService';
+import { TwitchSubscriptionService } from '@app/services/twitch/TwitchSubscriptionService';
 import { Subscription } from '@app/types/twitch';
+import { AccountsService } from '@app/services/AccountsService';
 
 type PageProps = {
     userId?: string;
@@ -53,7 +53,7 @@ export const getServerSideProps: GetServerSideProps<PageProps | any> = async (co
 
     if (typeof userId === 'string' && userId !== '') {
         try {
-            const accounts = await getAccountsById(userId);
+            const accounts = await AccountsService.getAccountsById(userId);
             const twitchUserId = accounts['twitch'].providerAccountId;
 
             const twitchSub = new TwitchSubscriptionService();

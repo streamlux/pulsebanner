@@ -1,4 +1,4 @@
-import { createNewPromoCode, updatePromoCodeStatus } from '@app/util/partner/partnerHelpers';
+import { PartnerService } from '@app/services/partner/PartnerService';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import prisma from '@app/util/ssr/prisma';
 import { AcceptanceStatus } from '@prisma/client';
@@ -46,7 +46,7 @@ handler.post(async (req, res) => {
             if (affiliateStatusUpdate[partnerId] === 'active') {
                 // If the user is not in the table and the code doesn't exist, create a promo code and add them to the table
                 if (codeExists === null && partnerInfo && partnerInfo.partnerCode) {
-                    const response = await createNewPromoCode(partnerId, partnerInfo.partnerCode);
+                    const response = await PartnerService.createNewPromoCode(partnerId, partnerInfo.partnerCode);
                     if (response.status !== 200) {
                         return res.status(400).send(response.message);
                     } else {
@@ -56,7 +56,7 @@ handler.post(async (req, res) => {
                 }
 
                 // If the user does exist in the table, we need to just update the status of the promotion code, not the code itself
-                const response = await updatePromoCodeStatus(partnerId, true);
+                const response = await PartnerService.updatePromoCodeStatus(partnerId, true);
                 if (response === 200) {
                     await updatePartner();
                     return res.status(200).send('Success updating promo code');
@@ -66,7 +66,7 @@ handler.post(async (req, res) => {
             } else {
                 // If they are not in the active state but exist in our table, we need to deactivate the code. Otherwise it's a no-op
                 if (codeExists !== null) {
-                    const response = await updatePromoCodeStatus(partnerId, false);
+                    const response = await PartnerService.updatePromoCodeStatus(partnerId, false);
                     if (response === 200) {
                         await updatePartner();
                         return res.status(200).send('Success updating promo code');

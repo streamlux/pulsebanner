@@ -1,9 +1,9 @@
+import env from '@app/util/env';
+import { logger } from '@app/util/logger';
+import prisma from '@app/util/ssr/prisma';
 import { GiftPurchase } from '@prisma/client';
 import nodemailer from 'nodemailer';
 import mg from 'nodemailer-mailgun-transport';
-import env from '../env';
-import { logger } from '../logger';
-import prisma from '../ssr/prisma';
 import { getGiftRedemptionUrl } from './gift/getGiftRedemptionUrl';
 
 /**

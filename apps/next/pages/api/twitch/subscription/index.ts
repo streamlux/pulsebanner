@@ -1,13 +1,13 @@
-import { getAccounts } from '../../../../util/getAccounts';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSession } from 'next-auth/react';
 import NextCors from 'nextjs-cors';
 import { Account } from '@prisma/client';
 import { twitchAxios } from '@app/util/axios';
-import { TwitchClientAuthService } from '@app/services/TwitchClientAuthService';
-import { listSubscriptions } from '@app/util/twitch/listSubscriptions';
+import { TwitchClientAuthService } from '@app/services/twitch/TwitchClientAuthService';
 import { logger } from '@app/util/logger';
 import { CustomSession } from '@app/services/auth/CustomSession';
+import { TwitchSubscriptionService } from '@app/services/twitch/TwitchSubscriptionService';
+import { AccountsService } from '@app/services/AccountsService';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
@@ -23,12 +23,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const session: CustomSession | null = await getSession({ req }) as CustomSession;
 
     if (session) {
-        const accounts = await getAccounts(session);
+        const accounts = await AccountsService.getAccounts(session);
         const twitchAccount: Account = accounts['twitch'];
 
         const token = await TwitchClientAuthService.getAccessToken();
+        const subscriptionService = new TwitchSubscriptionService();
 
-        const allSubscriptions = await listSubscriptions();
+        const allSubscriptions = await subscriptionService.getSubscriptions();
         if (req.method === 'GET') {
             if (session.user['role'] === 'admin') {
                 res.status(200).json({ subscriptions: allSubscriptions });

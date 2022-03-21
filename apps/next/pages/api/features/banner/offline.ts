@@ -2,10 +2,10 @@ import { logger } from '@app/util/logger';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import multer from 'multer';
 import { Request } from 'express';
-import { uploadBase64 } from '@app/util/s3/upload';
 import imageToBase64 from 'image-to-base64';
 import { rm } from 'fs/promises';
 import env from '@app/util/env';
+import { S3Service } from '@app/services/S3Service';
 
 // disk storage only used temporarily, then we convert it to base64 and upload to s3
 // we could probably make this better later on
@@ -33,7 +33,7 @@ handler.post(async (req, res) => {
             console.log(fileReq.file);
             const base64 = await imageToBase64(fileReq.file?.path ?? '');
             try {
-                await uploadBase64(env.IMAGE_BUCKET_NAME, userId, base64);
+                await S3Service.uploadBase64(env.IMAGE_BUCKET_NAME, userId, base64);
             } catch (e) {
                 logger.error('Error uplading banner to S3', { userId, error: e });
                 return res.status(500).end();

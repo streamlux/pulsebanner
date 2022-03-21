@@ -7,12 +7,11 @@ type MobileHeaderMenuItemProps = {
     imageSrc: string;
     title: string;
     description: string;
-    colorMode: ColorMode;
     onNavigate?: () => void;
     href: string;
 };
 
-export const MobileHeaderMenuItem: FC<MobileHeaderMenuItemProps> = ({ imageSrc, title, description, colorMode, href, onNavigate }): ReactElement => {
+export const MobileHeaderMenuItem: FC<MobileHeaderMenuItemProps> = ({ imageSrc, title, description, href, onNavigate }): ReactElement => {
     console.log('href', href);
     return (
         <NextLink href={href} passHref>

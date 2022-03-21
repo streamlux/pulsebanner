@@ -1,16 +1,18 @@
-import { flipFeatureEnabled, getProfilePicEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
+import { flipFeatureEnabled } from '@app/services/postgresHelpers';
 import env from '@app/util/env';
 import { logger } from '@app/util/logger';
-import { download } from '@app/util/s3/download';
-import { TwitterResponseCode, updateProfilePic, validateTwitterAuthentication } from '@app/util/twitter/twitterHelpers';
+import { TwitterResponseCode, updateProfilePic, validateTwitterAuthentication } from '@app/services/twitter/twitterHelpers';
 import { Feature } from '../Feature';
+import { S3Service } from '@app/services/S3Service';
+import { AccountsService } from '@app/services/AccountsService';
+import { ProfilePicService } from '@app/services/ProfilePicService';
 
 const profileImageStreamDown: Feature<string> = async (userId: string): Promise<string> => {
     const bucketName: string = env.PROFILE_PIC_BUCKET_NAME;
 
-    const profilePicInfo = await getProfilePicEntry(userId);
+    const profilePicInfo = await ProfilePicService.getProfilePicEntry(userId);
 
-    const twitterInfo = await getTwitterInfo(userId);
+    const twitterInfo = await AccountsService.getTwitterInfo(userId);
 
     const validatedTwitter = twitterInfo && await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
     if (!validatedTwitter) {
@@ -26,7 +28,7 @@ const profileImageStreamDown: Feature<string> = async (userId: string): Promise<
 
     // get the original image from the
     // const response = await localAxios.get(`/api/storage/download/${userId}`);
-    const base64Image: string | undefined = await download(bucketName, userId);
+    const base64Image: string | undefined = await S3Service.download(bucketName, userId);
 
     if (base64Image === undefined) {
         logger.error('Unable to find user in database for profile picture on streamdown. This can be caused by the user enabling the feature while currently live.', { userId });

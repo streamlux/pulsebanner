@@ -1,14 +1,12 @@
-import { getTwitterInfo, flipFeatureEnabled, getBannerEntry } from '@app/util/database/postgresHelpers';
-import { getAccountsById } from '@app/util/getAccountsById';
-import { uploadBase64 } from '@app/util/s3/upload';
-import { checkValidDownload } from '@app/util/s3/validateHelpers';
-import { validateTwitterAuthentication, getBanner, TwitterResponseCode, updateBanner } from '@app/util/twitter/twitterHelpers';
+import { flipFeatureEnabled, getBannerEntry } from '@app/services/postgresHelpers';
+import { validateTwitterAuthentication, getBanner, TwitterResponseCode, updateBanner } from '@app/services/twitter/twitterHelpers';
 import imageToBase64 from 'image-to-base64';
 import { Feature } from '../Feature';
 import { logger } from '@app/util/logger';
-import { download } from '@app/util/s3/download';
 import { renderBanner } from './renderBanner';
 import env from '@app/util/env';
+import { AccountsService } from '@app/services/AccountsService';
+import { S3Service } from '@app/services/S3Service';
 
 export type TemplateRequestBody = {
     foregroundId: string;
@@ -18,14 +16,14 @@ export type TemplateRequestBody = {
 };
 
 const bannerStreamUp: Feature<string> = async (userId: string): Promise<string> => {
-    const accounts = await getAccountsById(userId);
+    const accounts = await AccountsService.getAccountsById(userId);
     const twitchUserId = accounts['twitch'].providerAccountId;
 
     if (!twitchUserId) {
         return 'Missing twitchUserId';
     }
 
-    const twitterInfo = await getTwitterInfo(userId, true);
+    const twitterInfo = await AccountsService.getTwitterInfo(userId, true);
 
     // if they are not authenticated with twitter, return 401 and turn off the feature
     const validatedTwitter = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
@@ -44,7 +42,7 @@ const bannerStreamUp: Feature<string> = async (userId: string): Promise<string> 
     // if they don't have an original banner, then upload their current twitter banner as the original banner
     try {
         const bucketName = env.IMAGE_BUCKET_NAME;
-        const originalBanner: string | undefined = await download(bucketName, userId);
+        const originalBanner: string | undefined = await S3Service.download(bucketName, userId);
         if (!originalBanner) {
             logger.info('Fetching and uploading Twitter banner for user.', { userId });
             // call twitter api to get imageUrl and convert to base64
@@ -57,7 +55,7 @@ const bannerStreamUp: Feature<string> = async (userId: string): Promise<string> 
             // store the current banner in s3
             let dataToUpload: string = bannerUrl === 'empty' ? 'empty' : await imageToBase64(bannerUrl);
 
-            const validDownload = checkValidDownload(dataToUpload);
+            const validDownload = S3Service.checkValidDownload(dataToUpload);
 
             logger.info('validation - dataToUpload correct on streamup: ', { valid: validDownload });
             if (!validDownload) {
@@ -66,11 +64,11 @@ const bannerStreamUp: Feature<string> = async (userId: string): Promise<string> 
                 // attempt to re-fetch
                 const refetch = await imageToBase64(bannerUrl);
                 // check valid download once more
-                if (!checkValidDownload(refetch)) {
+                if (!S3Service.checkValidDownload(refetch)) {
                     // if we are invalid again, fail the request
                     logger.error('Corrupt base64 image. Uploading signup image');
-                    const original = await download(env.BANNER_BACKUP_BUCKET, userId);
-                    if (!original || !checkValidDownload(original)) {
+                    const original = await S3Service.download(env.BANNER_BACKUP_BUCKET, userId);
+                    if (!original || !S3Service.checkValidDownload(original)) {
                         logger.error('Corrupt signup image. Failing request');
                         return 'Corrupt signup image. Failing request';
                     } else {
@@ -81,7 +79,7 @@ const bannerStreamUp: Feature<string> = async (userId: string): Promise<string> 
                 }
             }
 
-            await uploadBase64(bucketName, userId, dataToUpload);
+            await S3Service.uploadBase64(bucketName, userId, dataToUpload);
         }
     } catch (e) {
         logger.error('Error uploading original banner to S3', { userId });

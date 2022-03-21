@@ -7,12 +7,11 @@ type HeaderMenuItemProps = {
     imageSrc: string;
     title: string;
     description: string;
-    colorMode: ColorMode;
     href: string;
     onNavigate?: () => void;
 };
 
-export const HeaderMenuItem: FC<HeaderMenuItemProps> = ({ imageSrc, title, description, colorMode, href, onNavigate }): ReactElement => {
+export const HeaderMenuItem: FC<HeaderMenuItemProps> = ({ imageSrc, title, description, href, onNavigate }): ReactElement => {
     return (
         <NextLink href={href} passHref>
             <Button
@@ -39,7 +38,7 @@ export const HeaderMenuItem: FC<HeaderMenuItemProps> = ({ imageSrc, title, descr
                         </Center>
                     </Box>
                     <Box w="full">
-                        <HStack w="min" p="0" m="0" color={colorMode === 'dark' ? 'blue.200' : 'blue.300'}>
+                        <HStack w="min" p="0" m="0" color={'blue.200'}>
                             <Text textAlign={'left'} w="full" variant={'link'} rightIcon={<FaArrowRight />}>
                                 Learn more
                             </Text>

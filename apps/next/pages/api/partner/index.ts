@@ -1,6 +1,6 @@
 import { sendErrorInternal } from '@app/util/discord/sendError';
 import { logger } from '@app/util/logger';
-import { AcceptanceStatus, PartnerCreateType } from '@app/util/partner/types';
+import { AcceptanceStatus, PartnerCreateType } from '@app/services/partner/PartnerService';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import prisma from '@app/util/ssr/prisma';
 

@@ -1,13 +1,11 @@
-import { createS3 } from '@app/util/database/s3ClientHelper';
 import { logger } from '@app/util/logger';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import multer from 'multer';
 import multerS3 from 'multer-s3';
 import { Request } from 'express';
-import { uploadBase64 } from '@app/util/s3/upload';
 import imageToBase64 from 'image-to-base64';
 import { rm } from 'fs/promises';
-import env from '@app/util/env';
+import { S3Service } from '@app/services/S3Service';
 
 export const config = {
     api: {
@@ -17,7 +15,7 @@ export const config = {
 
 const handler = createAuthApiHandler();
 
-const s3 = createS3(env.DO_SPACE_ENDPOINT, env.DO_ACCESS_KEY, env.DO_SECRET);
+const s3 = S3Service.createS3()
 
 const uploadDisk = multer.diskStorage({
     filename: (req, file, cb) => {
@@ -56,7 +54,7 @@ handler.post(async (req, res) => {
             }
             const base64 = await imageToBase64(fileReq.file?.path ?? '');
             try {
-                await uploadBase64('pb-static', userId, base64);
+                await S3Service.uploadBase64('pb-static', userId, base64);
             } catch (e) {
                 logger.error('Error uplading banner to S3', { userId, error: e });
                 return res.status(500).end();

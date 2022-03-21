@@ -1,18 +1,15 @@
 import { Price, PriceInterval, Product } from '@prisma/client';
-import type { GetServerSideProps, GetStaticProps, NextPage } from 'next';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import { signIn, useSession } from 'next-auth/react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
     Button,
     Heading,
     Text,
     Center,
-    chakra,
     Container,
     VStack,
-    SimpleGrid,
     HStack,
     useDisclosure,
     Modal,
@@ -21,43 +18,28 @@ import {
     ModalContent,
     ModalHeader,
     ModalOverlay,
-    Switch,
     Tag,
     Flex,
     Link,
     Box,
-    WrapItem,
-    Tab,
-    TabList,
-    TabPanel,
-    TabPanels,
-    Tabs,
-    Image,
     useBreakpoint,
     LightMode,
-    DarkMode,
     Grid,
     GridItem,
     Tooltip,
-    Spacer,
 } from '@chakra-ui/react';
 
 import { FaTwitter, FaCheck } from 'react-icons/fa';
-import { ProductCard } from '@app/components/pricing/ProductCard';
-import { trackEvent } from '@app/util/umami/trackEvent';
-import { PaymentPlan } from '@app/util/database/paymentHelpers';
+import { PaymentPlan } from '@app/services/payment/paymentHelpers';
 import { NextSeo } from 'next-seo';
-import { generalFaqItems, pricingFaqItems } from '@app/modules/faq/data';
-import { FaqSection } from '@app/modules/faq/FaqSection';
 import { usePaymentPlan } from '@app/util/hooks/usePaymentPlan';
-import { FreeProductCard } from '@app/components/pricing/FreeProductCard';
 import { Card } from '@app/components/Card';
 import { ArrowRightIcon } from '@chakra-ui/icons';
 import { GiftCard } from '@app/components/pricing/GiftCard';
 import { ButtonSwitch } from '@app/components/buttonSwitch/ButtonSwitch';
 import ReactCanvasConfetti from 'react-canvas-confetti';
-import { giftPriceIds } from '@app/util/stripe/gift/constants';
 import getStripe from '@app/util/getStripe';
+import { giftPriceIds } from '@app/services/stripe/gift/constants';
 
 type Props = {
     priceMap: Record<string, { unitAmount: number } & Price & { product: Product }>;

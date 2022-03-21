@@ -1,10 +1,10 @@
+import { sendMessage } from '@app/util/discord/sendMessage';
+import env from '@app/util/env';
+import { logger } from '@app/util/logger';
+import prisma from '@app/util/ssr/prisma';
 import stripe from '@app/util/ssr/stripe';
 import { GiftPurchase } from '@prisma/client';
 import Stripe from 'stripe';
-import { sendMessage } from '../discord/sendMessage';
-import env from '../env';
-import { logger } from '../logger';
-import prisma from '../ssr/prisma';
 
 /**
  * @param giftCouponId ID of coupon associated with the gift purchased

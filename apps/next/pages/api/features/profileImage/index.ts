@@ -1,7 +1,7 @@
 import { updateTwitchSubscriptions } from '@app/services/updateTwitchSubscriptions';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import prisma from '@app/util/ssr/prisma';
-import { productPlan } from '@app/util/database/paymentHelpers';
+import { productPlan } from '@app/services/payment/paymentHelpers';
 
 const handler = createAuthApiHandler();
 

@@ -1,13 +1,13 @@
-import { productPlan } from '@app/util/database/paymentHelpers';
-import { getTwitterInfo, flipFeatureEnabled, getTwitterName, updateOriginalTwitterNameDB } from '@app/util/database/postgresHelpers';
+import { productPlan } from '@app/services/payment/paymentHelpers';
+import { flipFeatureEnabled, getTwitterName, updateOriginalTwitterNameDB } from '@app/services/postgresHelpers';
 import { logger } from '@app/util/logger';
 import prisma from '@app/util/ssr/prisma';
-import { validateTwitterAuthentication, getCurrentTwitterName, updateTwitterName } from '@app/util/twitter/twitterHelpers';
-import { TwitterName } from '@prisma/client';
+import { validateTwitterAuthentication, getCurrentTwitterName, updateTwitterName } from '@app/services/twitter/twitterHelpers';
 import { Feature } from '../Feature';
+import { AccountsService } from '@app/services/AccountsService';
 
 const nameStreamUp: Feature<string> = async (userId: string): Promise<string> => {
-    const twitterInfo = await getTwitterInfo(userId);
+    const twitterInfo = await AccountsService.getTwitterInfo(userId);
 
     // if they are not authenticated with twitter, return 401 and turn off the feature
     const validatedTwitter = twitterInfo && await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);

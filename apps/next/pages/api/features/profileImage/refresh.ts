@@ -1,8 +1,8 @@
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import prisma from '@app/util/ssr/prisma';
-import {  getTwitterInfo } from '@app/util/database/postgresHelpers';
-import { getTwitterProfilePic } from '@app/util/twitter/twitterHelpers';
+import { getTwitterProfilePic } from '@app/services/twitter/twitterHelpers';
 import { logger } from '@app/util/logger';
+import { AccountsService } from '@app/services/AccountsService';
 
 const handler = createAuthApiHandler();
 
@@ -20,7 +20,7 @@ handler.put(async (req, res): Promise<void> => {
 
     if (profileImage) {
         logger.info('Got current profile image');
-        const twitterInfo = await getTwitterInfo(userId, true);
+        const twitterInfo = await AccountsService.getTwitterInfo(userId, true);
         if (!twitterInfo) {
             return res.send(400);
         }

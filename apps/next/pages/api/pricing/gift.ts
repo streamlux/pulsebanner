@@ -1,6 +1,6 @@
+import { sendGiftPurchaseEmail } from '@app/services/stripe/emailHelper';
 import { createApiHandler } from '@app/util/ssr/createApiHandler';
 import prisma from '@app/util/ssr/prisma';
-import { sendGiftPurchaseEmail } from '@app/util/stripe/emailHelper';
 
 /**
  * We redirect requests to /redeem&giftId=<ID> to this API endpoint. The redirect is setup in next.config.js.

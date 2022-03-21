@@ -1,5 +1,5 @@
 import { useAdmin } from '@app/util/hooks/useAdmin';
-import { AcceptanceStatus } from '@app/util/partner/types';
+import { AcceptanceStatus } from '@app/services/partner/PartnerService';
 import prisma from '@app/util/ssr/prisma';
 import {
     Box,

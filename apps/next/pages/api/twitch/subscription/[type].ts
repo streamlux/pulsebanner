@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 import { Account } from '@prisma/client';
-import { getAccountsById } from '@app/util/getAccountsById';
-import { TwitchSubscriptionService } from '@app/services/TwitchSubscriptionService';
+import { TwitchSubscriptionService } from '@app/services/twitch/TwitchSubscriptionService';
+import { AccountsService } from '@app/services/AccountsService';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
@@ -22,7 +22,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
             const userId: string = req.query.userId as string;
             // Twitch EventSub subscription type see: https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types
             const type: string = req.query.type as string;
-            const accounts = await getAccountsById(userId);
+            const accounts = await AccountsService.getAccountsById(userId);
             const twitchAccount: Account = accounts['twitch'];
             const twitchUserId = twitchAccount.providerAccountId;
 

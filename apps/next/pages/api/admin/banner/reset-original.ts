@@ -1,6 +1,5 @@
+import { S3Service } from '@app/services/S3Service';
 import env from '@app/util/env';
-import { download } from '@app/util/s3/download';
-import { uploadBase64 } from '@app/util/s3/upload';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 
 const handler = createAuthApiHandler();
@@ -14,9 +13,9 @@ handler.post(async (req, res) => {
     console.log('resetting original image');
     if (userId && typeof userId === 'string') {
         try {
-            const backup = await download(env.BANNER_BACKUP_BUCKET, userId);
+            const backup = await S3Service.download(env.BANNER_BACKUP_BUCKET, userId);
             if (backup) {
-                await uploadBase64(env.IMAGE_BUCKET_NAME, userId, backup);
+                await S3Service.uploadBase64(env.IMAGE_BUCKET_NAME, userId, backup);
                 return res.status(200).end();
             } else {
                 return res.status(500).end('No banner found');

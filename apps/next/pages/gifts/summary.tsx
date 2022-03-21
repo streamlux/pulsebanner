@@ -26,11 +26,11 @@ import Confetti from '@app/components/confetti/Confetti';
 import { getSession } from 'next-auth/react';
 import prisma from '@app/util/ssr/prisma';
 import { GiftPurchase, Price, Product } from '@prisma/client';
-import { getGiftRedemptionUrl } from '@app/util/stripe/gift/getGiftRedemptionUrl';
 import { Card } from '@app/components/Card';
 import Stripe from 'stripe';
-import { getPromoCodeById, isPromoCodeRedeemed } from '@app/util/stripe/gift/redeemHelpers';
 import { CopyIcon } from '@chakra-ui/icons';
+import { getPromoCodeById, isPromoCodeRedeemed } from '@app/services/stripe/gift/redeemHelpers';
+import { getGiftRedemptionUrl } from '@app/services/stripe/gift/getGiftRedemptionUrl';
 
 /**
  * Gift Purchase Summary page

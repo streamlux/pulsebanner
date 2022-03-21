@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import prisma from '@app/util/ssr/prisma';
+import stripe from '@app/util/ssr/stripe';
 import Stripe from 'stripe';
-import prisma from '../ssr/prisma';
-import stripe from '../ssr/stripe';
 import { InvoiceInformation } from './types';
 
 export const getInvoiceInformation = async (data: Stripe.Invoice): Promise<InvoiceInformation> => {
