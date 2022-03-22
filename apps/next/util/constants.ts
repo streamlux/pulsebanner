@@ -16,4 +16,6 @@ export const emggLogoSrc = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/as
 
 export const swayBannerBackground = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/banner-backgrounds/sway.png';
 
+export const preGamingBannerBackground = 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/banner-backgrounds/preGaming_final.png';
+
 export const giftSummaryPath = '/gifts/summary';
