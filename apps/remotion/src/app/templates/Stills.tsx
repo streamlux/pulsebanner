@@ -40,3 +40,22 @@ export const RemotionProfilePicture: React.FC = () => {
         </>
     );
 };
+
+export const RemotionPartnerMediaKit: React.FC = () => {
+    return (
+        <>
+            <Still
+                id="partnerMediaKit"
+                component={Composer}
+                defaultProps={{
+                    backgroundId: 'ImageBackground',
+                    backgroundProps: {},
+                    foregroundId: 'BasicPartnerImageWithCode',
+                    foregroundProps: {},
+                }}
+                height={1256}
+                width={2400}
+            />
+        </>
+    );
+};

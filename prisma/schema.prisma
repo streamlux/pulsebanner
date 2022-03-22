@@ -311,9 +311,10 @@ model Partner {
     partnerInformation PartnerInformation?
     stripePartnerInfo  StripePartnerInfo?
     partnerInvoices    PartnerInvoice[] // list of all invoices associated withthe partner
+    partnerMediaKit    PartnerMediaKit?
 
     createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @default(now()) @map("updated_at") @updatedAt
+    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
     @@map("partner")
 }
@@ -351,4 +352,16 @@ model PartnerInvoice {
     commissionStatus     CommissionStatus
 
     @@map("partner_invoice")
+}
+
+model PartnerMediaKit {
+    id                   String   @id @default(cuid())
+    partnerId            String   @unique
+    partner              Partner? @relation(fields: [partnerId], references: [id])
+    failedImageRendering String[] // list of media kit images that failed to render so we only rerender what is necessary
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+    @@map("partner_media_kit")
 }

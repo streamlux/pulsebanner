@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAdmin } from '../../util/hooks/useAdmin';
-import { Box, Center, Heading, SimpleGrid } from '@chakra-ui/react';
+import { Box, Button, Center, Heading, Img, SimpleGrid } from '@chakra-ui/react';
 import { Database } from '../../modules/admin/Database';
 import { Session } from '../../modules/admin/Session';
 import { Banner } from '../../modules/admin/Banner';

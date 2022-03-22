@@ -1,4 +1,4 @@
-import { createNewPromoCode, updatePromoCodeStatus } from '@app/util/partner/partnerHelpers';
+import { createNewPromoCode, mediaKitGenerationHelper, updatePromoCodeStatus } from '@app/util/partner/partnerHelpers';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import prisma from '@app/util/ssr/prisma';
 import { AcceptanceStatus } from '@prisma/client';
@@ -21,7 +21,7 @@ handler.post(async (req, res) => {
             const partnerInfo = await prisma.partner.findUnique({
                 where: {
                     id: partnerId,
-                }
+                },
             });
 
             const updatePartner = async () => {
@@ -33,7 +33,7 @@ handler.post(async (req, res) => {
                         acceptanceStatus: affiliateStatusUpdate[partnerId],
                     },
                 });
-            }
+            };
 
             // check if the user already has a promotion code.
             const codeExists = await prisma.stripePartnerInfo.findUnique({
@@ -51,6 +51,8 @@ handler.post(async (req, res) => {
                         return res.status(400).send(response.message);
                     } else {
                         await updatePartner();
+                        // generate the media kit for the user
+                        await mediaKitGenerationHelper(partnerId, partnerInfo.partnerCode);
                         return res.status(200).send('Success creating new promo code');
                     }
                 }
