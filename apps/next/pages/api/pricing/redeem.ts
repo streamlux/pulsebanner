@@ -28,6 +28,18 @@ handler.get(async (req, res) => {
         return res.redirect(`/gifts/redeem/signin?redirect=/redeem?${giftRedemptionLinkQueryParamName}=` + giftPurchaseId);
     }
 
+    const subscription = await prisma.subscription.findFirst({
+        where: {
+            userId: session.userId,
+        }
+    });
+
+    // if the user already has a subscription, don't let them redeem a gift
+    if (subscription) {
+        logger.info('User already has a subscription. Redirecting to the home page.');
+        return res.redirect('/');
+    }
+
     if (giftPurchaseId === undefined || typeof giftPurchaseId !== 'string') {
         logger.info('Query param giftId is undefined or not a string. Redirecting to the home page.');
         return res.redirect('/');
