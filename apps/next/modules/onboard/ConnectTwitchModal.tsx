@@ -15,7 +15,6 @@ import {
     LightMode,
     ModalFooter,
 } from '@chakra-ui/react';
-import { Account, Session } from '@prisma/client';
 import { signIn } from 'next-auth/react';
 import { FaTwitter, FaCheck, FaTwitch } from 'react-icons/fa';
 import NextLink from 'next/link';
