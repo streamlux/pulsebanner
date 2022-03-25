@@ -58,6 +58,13 @@ jobs:
             - name: Lint Next.js app
               run: npx nx run next:lint
 
+            - name: Setup DigitalOcean firewall
+              uses: earthpyy/setup-digitalocean-firewall@v1
+              with:
+                  access-token: ${{ secrets.DO_ACCESS_TOKEN }}
+                  firewall-id: ${{ secrets.DO_FIREWALL_ID }}
+                  ports: ${{ secrets.DATABASE_PORT }}
+
             - name: 'nx run next:make:ci'
               run: npx nx run next:make:ci
               env:
@@ -79,13 +86,6 @@ jobs:
                   # generate Docker tags based on the following events/attributes
                   tags: |
                       type=semver,priority=900,pattern={{version}},prefix=prod-
-
-            - name: Setup DigitalOcean firewall
-              uses: earthpyy/setup-digitalocean-firewall@v1
-              with:
-                  access-token: ${{ secrets.DO_ACCESS_TOKEN }}
-                  firewall-id: ${{ secrets.DO_FIREWALL_ID }}
-                  ports: ${{ secrets.DATABASE_PORT }}
 
             - name: 'Build and push NextJS image'
               uses: docker/build-push-action@v2
