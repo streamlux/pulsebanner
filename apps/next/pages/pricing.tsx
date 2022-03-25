@@ -28,6 +28,7 @@ import {
     useBreakpoint,
     LightMode,
     keyframes,
+    ModalFooter,
 } from '@chakra-ui/react';
 import getStripe from '../util/getStripe';
 import prisma from '../util/ssr/prisma';
@@ -182,43 +183,43 @@ const Page: NextPage<Props> = ({ products, priceMap }) => {
                         <Center>Connect to Twitter to continue.</Center>
                     </ModalHeader>
                     <ModalCloseButton />
-                    <ModalBody minH="32" h="32" pb="4">
-                        <Flex h="full" direction="column" justifyContent="space-between">
-                            <VStack grow={1}>
-                                <Button
-                                    onClick={() => {
-                                        if (session?.accounts?.twitter) {
-                                            return;
-                                        }
+                    <ModalBody>
+                        <Center h='full'>
+                            <Button
+                                onClick={() => {
+                                    if (session?.accounts?.twitter) {
+                                        return;
+                                    }
 
-                                        const url = new window.URL(window.location.href);
-                                        url.searchParams.append('modal', 'true');
+                                    const url = new window.URL(window.location.href);
+                                    url.searchParams.append('modal', 'true');
 
-                                        signIn('twitter', {
-                                            callbackUrl: url.pathname + url.search,
-                                        });
-                                    }}
-                                    colorScheme="twitter"
-                                    leftIcon={<FaTwitter />}
-                                    rightIcon={session?.accounts?.twitter ? <FaCheck /> : undefined}
-                                >
-                                    Connect to Twitter
-                                </Button>
-                            </VStack>
-                            <Center>
-                                <Text fontSize="sm">
-                                    {'By signing up, you agree to our'}{' '}
-                                    <Link as={NextLink} href="/terms" passHref>
-                                        Terms
-                                    </Link>{' '}
-                                    and{' '}
-                                    <Link as={NextLink} href="/privacy" passHref>
-                                        Privacy Policy
-                                    </Link>
-                                </Text>
-                            </Center>
-                        </Flex>
+                                    signIn('twitter', {
+                                        callbackUrl: url.pathname + url.search,
+                                    });
+                                }}
+                                colorScheme="twitter"
+                                leftIcon={<FaTwitter />}
+                                rightIcon={session?.accounts?.twitter ? <FaCheck /> : undefined}
+                            >
+                                Connect to Twitter
+                            </Button>
+                        </Center>
                     </ModalBody>
+                    <ModalFooter w="full">
+                        <Center w="full">
+                            <Text fontSize="sm">
+                                {'By signing up, you agree to our'}{' '}
+                                <Link as={NextLink} href="/terms" passHref>
+                                    Terms
+                                </Link>{' '}
+                                and{' '}
+                                <Link as={NextLink} href="/privacy" passHref>
+                                    Privacy Policy
+                                </Link>
+                            </Text>
+                        </Center>
+                    </ModalFooter>
                 </ModalContent>
             </Modal>
 

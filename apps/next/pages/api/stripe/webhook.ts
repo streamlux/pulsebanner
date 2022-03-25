@@ -8,7 +8,7 @@ import prisma from '../../../util/ssr/prisma';
 import { sendMessage } from '@app/util/discord/sendMessage';
 import { FeaturesService } from '@app/services/FeaturesService';
 import { TwitterResponseCode, updateProfilePic } from '@app/services/twitter/twitterHelpers';
-import { flipFeatureEnabled, getTwitterInfo } from '@app/services/postgresHelpers';
+import { flipFeatureEnabled } from '@app/services/postgresHelpers';
 import { defaultBannerSettings } from '@app/pages/banner';
 import { logger } from '@app/util/logger';
 import { commissionLookupMap } from '@app/services/partner/constants';
