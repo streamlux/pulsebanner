@@ -35,10 +35,16 @@ import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 import { useRouter } from 'next/router';
 import { FaTwitch } from 'react-icons/fa';
+import prisma from '@app/util/ssr/prisma';
+import { GiftSummary } from '@app/components/gifts/GiftSummary';
 
 interface Props {
     enabledFeatures: Awaited<ReturnType<typeof FeaturesService.listEnabled>>;
     plan: APIPaymentObject;
+    allGiftPurchases: {
+        createdAt: Date;
+        checkoutSessionId: string;
+    }[]
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -57,15 +63,30 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     const plan: APIPaymentObject = await productPlan(userId);
 
+    const allGiftPurchases = await prisma.giftPurchase.findMany({
+        where: {
+            purchaserUserId: session.user.id,
+        },
+        orderBy: {
+            createdAt: 'desc',
+        },
+        select: {
+            checkoutSessionId: true,
+            createdAt: true,
+        },
+        distinct: ['checkoutSessionId'],
+    });
+
     return {
         props: {
             enabledFeatures,
             plan,
+            allGiftPurchases,
         },
     };
 };
 
-const Page: NextPage<Props> = ({ enabledFeatures, plan }) => {
+const Page: NextPage<Props> = ({ enabledFeatures, plan, allGiftPurchases }) => {
     const router = useRouter();
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('/account');
     const paymentPlan: PaymentPlan = plan === undefined ? 'Free' : plan.plan;
@@ -166,6 +187,10 @@ const Page: NextPage<Props> = ({ enabledFeatures, plan }) => {
                                     )}
                                 </Flex>
                             </Card>
+                        </Box>
+
+                        <Box>
+                            <GiftSummary allGiftPurchases={allGiftPurchases} />
                         </Box>
 
                         <Box w="full">

@@ -1,26 +1,8 @@
 import React from 'react';
-import {
-    Box,
-    Center,
-    Text,
-    Container,
-    Heading,
-    Button,
-    ButtonGroup,
-    useClipboard,
-    Flex,
-    Alert,
-    AlertDescription,
-    AlertIcon,
-    AlertTitle,
-    VStack,
-    Tooltip,
-    Tag,
-    Divider,
-} from '@chakra-ui/react';
+import { Box, Center, Text, Container, Heading, Button, ButtonGroup, Alert, AlertDescription, AlertIcon, AlertTitle, VStack } from '@chakra-ui/react';
 import type { GetServerSideProps, GetServerSidePropsResult, NextPage } from 'next';
 import NextLink from 'next/link';
-import { discordLink, giftSummaryPath, twitterLink } from '@app/util/constants';
+import { discordLink, twitterLink } from '@app/util/constants';
 import { FaDiscord, FaTwitter } from 'react-icons/fa';
 import Confetti from '@app/components/confetti/Confetti';
 import { getSession } from 'next-auth/react';
@@ -28,9 +10,11 @@ import prisma from '@app/util/ssr/prisma';
 import { GiftPurchase, Price, Product } from '@prisma/client';
 import { Card } from '@app/components/Card';
 import Stripe from 'stripe';
-import { CopyIcon } from '@chakra-ui/icons';
 import { getPromoCodeById, isPromoCodeRedeemed } from '@app/services/stripe/gift/redeemHelpers';
 import { getGiftRedemptionUrl } from '@app/services/stripe/gift/getGiftRedemptionUrl';
+import { GiftSummary } from '@app/components/gifts/GiftSummary';
+import { Gift } from '@app/components/gifts/Gift';
+import { GiftInfo } from '@app/components/gifts/types';
 
 /**
  * Gift Purchase Summary page
@@ -41,8 +25,6 @@ import { getGiftRedemptionUrl } from '@app/services/stripe/gift/getGiftRedemptio
  * 2. Page we link to in gift purchase summary emails. We use the `cs` query parameter to pass the
  *    checkout session ID to the page. The page then displays the gift purchase summary for that checkout session.
  */
-
-type GiftInfo = { gift: GiftPurchase; redemptionUrl: string; redeemed: boolean; price: Price & { product: Product } };
 
 type Props = {
     gifts: GiftInfo[];
@@ -146,47 +128,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
 };
 
-const Gift: React.FC<GiftInfo> = ({ redemptionUrl, redeemed }) => {
-    const { onCopy, hasCopied } = useClipboard(redemptionUrl);
-    return (
-        <Flex
-            maxW="full"
-            w="full"
-            justifyContent={'space-between'}
-            direction={['row', 'row']}
-            experimental_spaceX={2}
-            rounded="md"
-            bg="whiteAlpha.200"
-            p="2"
-            px="3"
-            alignItems="center"
-        >
-            {redeemed ? (
-                <Text fontWeight={'semibold'} colorScheme={redeemed ? undefined : 'blue'} variant={'link'} size="md" wordBreak={'break-all'} whiteSpace={'pre-wrap'}>
-                    {redemptionUrl}
-                </Text>
-            ) : (
-                <NextLink href={redemptionUrl} passHref>
-                    <Button colorScheme={redeemed ? undefined : 'blue'} as="a" variant={'link'} size="md" wordBreak={'break-all'} whiteSpace={'pre-wrap'}>
-                        {redemptionUrl}
-                    </Button>
-                </NextLink>
-            )}
-            <Box flexGrow={0} flexShrink={0}>
-                {redeemed ? (
-                    <Tooltip label="Gift has been redeemed." placement="top">
-                        <Tag size="lg">Redeemed</Tag>
-                    </Tooltip>
-                ) : (
-                    <Button colorScheme={'blue'} leftIcon={<CopyIcon />} aria-label="Copy redemption URL" onClick={() => onCopy()} icon={<CopyIcon />} size="sm">
-                        {hasCopied ? 'Copied!' : 'Copy'}
-                    </Button>
-                )}
-            </Box>
-        </Flex>
-    );
-};
-
 const Page: NextPage<Props> = ({ gifts, allGiftPurchases }) => {
     return (
         <Container maxW={['container.lg']}>
@@ -277,48 +218,7 @@ const Page: NextPage<Props> = ({ gifts, allGiftPurchases }) => {
                         </VStack>
                     </VStack>
                 </Center>
-
-                <Center w="full">
-                    <Card props={{ maxW: 'full' }}>
-                        <VStack spacing={8} maxW={['auto', '2xl']} p="1">
-                            <Box experimental_spaceY={4} w="full">
-                                <VStack>
-                                    <Heading size="lg" textAlign={'left'} w="full">
-                                        All Gift Purchases
-                                    </Heading>
-                                    <Text size={'sm'} maxW="full">
-                                        List of all your past gift purchases. Click View Summary to view the details of each purchase.
-                                    </Text>
-                                </VStack>
-                                <VStack w="full" rounded="md" p="2" px="3">
-                                    {allGiftPurchases.map((purchase) => (
-                                        <Flex alignItems={'center'} w="full" py="1" justifyContent={'space-between'} key={purchase.checkoutSessionId}>
-                                            <Box>
-                                                <Heading size="sm" whiteSpace={'nowrap'}>
-                                                    {purchase.createdAt.toLocaleDateString()}
-                                                </Heading>
-                                            </Box>
-                                            <Divider w="full" mx="2" variant={'dashed'} />
-                                            <Box>
-                                                {gifts[0].gift.checkoutSessionId !== purchase.checkoutSessionId ? (
-                                                    <NextLink passHref href={`${giftSummaryPath}?cs=${purchase.checkoutSessionId}`}>
-                                                        <Button size="sm" as="a">
-                                                            View Summary
-                                                        </Button>
-                                                    </NextLink>
-                                                ) : (
-                                                    <Button size="sm" disabled>
-                                                        Viewing
-                                                    </Button>
-                                                )}
-                                            </Box>
-                                        </Flex>
-                                    ))}
-                                </VStack>
-                            </Box>
-                        </VStack>
-                    </Card>
-                </Center>
+                <GiftSummary gifts={gifts} allGiftPurchases={allGiftPurchases} />
                 <div style={{ zIndex: -1, position: 'absolute', height: '50%', maxHeight: '700px', width: '100%', display: 'block' }}>
                     <div className="contact-hero" style={{ position: 'relative', top: '-800px', right: '-100px', height: '38%' }}>
                         <div className="bg-gradient-blur-wrapper contact-hero">
