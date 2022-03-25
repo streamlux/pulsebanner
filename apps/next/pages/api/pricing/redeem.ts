@@ -1,10 +1,12 @@
+import { CustomSession } from '@app/services/auth/CustomSession';
 import { giftRedemptionLinkQueryParamName, giftPromoCodeLookupMap } from '@app/services/stripe/gift/constants';
 import { getPromoCodeById, isPromoCodeRedeemed } from '@app/services/stripe/gift/redeemHelpers';
 import { logger } from '@app/util/logger';
-import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
+import { createApiHandler } from '@app/util/ssr/createApiHandler';
 import prisma from '@app/util/ssr/prisma';
 import stripe, { getCustomerId } from '@app/util/ssr/stripe';
 import { GiftPurchase } from '@prisma/client';
+import { getSession } from 'next-auth/react';
 import Stripe from 'stripe';
 
 const alreadyRedeemedUrl = '/gifts/redeem/fail';
@@ -14,12 +16,18 @@ const purchaseSuccessUrl = '/gifts/redeem/success';
  * We redirect requests to /redeem&giftId=<ID> to this API endpoint. The redirect is setup in next.config.js.
  */
 
-const handler = createAuthApiHandler();
+const handler = createApiHandler();
 
 handler.get(async (req, res) => {
 
     // get the query param
     const giftPurchaseId: string = req.query[giftRedemptionLinkQueryParamName] as string;
+
+    const session: CustomSession | null = await getSession({req}) as CustomSession | null;
+    if (!session) {
+        return res.redirect(`/gifts/redeem/signin?redirect=/redeem?${giftRedemptionLinkQueryParamName}=` + giftPurchaseId);
+    }
+
     if (giftPurchaseId === undefined || typeof giftPurchaseId !== 'string') {
         logger.info('Query param giftId is undefined or not a string. Redirecting to the home page.');
         return res.redirect('/');
@@ -52,7 +60,7 @@ handler.get(async (req, res) => {
 
     const couponId: string = promoCode.coupon.id;
     const priceId: string = giftPromoCodeLookupMap[couponId];
-    const userId: string = req.session.userId;
+    const userId: string = session.userId;
     const customerId: string = await getCustomerId(userId);
 
     // create a Stripe checkout session
