@@ -21,7 +21,7 @@ const Page: NextPage<Props> = ({ priceMap }) => {
                 </Heading>
             </Container>
 
-            <GiftPricing priceMap={priceMap} />
+            <GiftPricing priceMap={priceMap} cancel_path={'/gifts'} />
             <div style={{ zIndex: -1, position: 'absolute', height: '50%', maxHeight: '700px', width: '100%', display: 'block' }}>
                 <div className="contact-hero" style={{ position: 'relative', top: '500px', left: '0px', height: '58%' }}>
                     <div className="bg-gradient-blur-wrapper contact-hero">
