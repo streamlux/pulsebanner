@@ -1,4 +1,3 @@
-import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
 import prisma from '@app/util/ssr/prisma';
 import {
     Box,
@@ -29,14 +28,14 @@ import NextLink from 'next/link';
 import { getSession } from 'next-auth/react';
 import { NextSeo } from 'next-seo';
 import React from 'react';
-import { AcceptanceStatus } from '@app/util/partner/types';
+import { PartnerService } from '@app/services/partner/PartnerService';
 import { CommissionStatus, PartnerInvoice } from '@prisma/client';
 import { logger } from '@app/util/logger';
 import { InfoIcon } from '@chakra-ui/icons';
 import stripe from '@app/util/ssr/stripe';
 import Stripe from 'stripe';
-import { getPartnerCustomerInfo } from '@app/util/partner/payoutHelpers';
 import { formatUsd } from '@app/util/stringUtils';
+import { AcceptanceStatus } from '@app/services/partner/types';
 
 interface Props {
     balance: number;
@@ -88,7 +87,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     },
                 });
 
-                if (partner.acceptanceStatus !== 'active') {
+                if (partner?.acceptanceStatus !== 'active') {
                     return {
                         redirect: {
                             destination: '/partner',
@@ -108,7 +107,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     },
                 });
 
-                const customerId = await getPartnerCustomerInfo(userId);
+                const customerId = await PartnerService.getPartnerCustomerInfo(userId);
+                if (!customerId) {
+                    return {
+                        redirect: {
+                            destination: '/partner',
+                            permanent: false,
+                        },
+                    };
+                }
                 const customer = (await stripe.customers.retrieve(customerId)) as Stripe.Customer;
 
                 const unix60DaysAgo = Math.floor(Date.now() / 1000) - 60 * 60 * 24 * 60;
@@ -154,7 +161,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     },
                 });
 
-                const completedPayoutAmount = invoiceInfoPaid?.map((a) => a.commissionAmount)
+                const completedPayoutAmount = invoiceInfoPaid
+                    ?.map((a) => a.commissionAmount)
                     .reduce((a, b) => {
                         return a + b;
                     }, 0);
@@ -163,8 +171,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     props: {
                         nets,
                         balance: customer.balance,
-                        partnerStatus: partner.acceptanceStatus as AcceptanceStatus,
-                        partnerCode: partner.partnerCode,
+                        partnerStatus: partner?.acceptanceStatus as AcceptanceStatus,
+                        partnerCode: partner?.partnerCode,
                         completedPayouts: invoiceInfoPaid?.length ?? 0,
                         completedPayoutAmount: completedPayoutAmount ?? 0,
                         pendingInvoices: invoiceInfoPending ?? [],
@@ -173,7 +181,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     },
                 };
             } catch (e) {
-                logger.error('Error in partner/dashboard getServerSideProps. ', { error: e.toString() });
+                logger.error('Error in partner/dashboard getServerSideProps. ', { error: (e as any).toString() });
             }
         } else {
             return {
@@ -197,7 +205,7 @@ export default function Page({
     partnerStatus,
     partnerCode,
     completedPayouts,
-    completedPayoutAmount,
+    completedPayoutAmount = 0,
     pendingInvoices,
     balance,
     nets,
@@ -349,7 +357,7 @@ export default function Page({
                         <VStack py="12" spacing={16} w="full">
                             <Box overflow={'scroll'} w="full" experimental_spaceY={4}>
                                 <Heading size="md">Pending Referrals</Heading>
-                                <Text maxW={[undefined, '66%']}>
+                                <Text maxW={['unset', '66%']}>
                                     Referrals are pending until they pass our refund period (7 days). Once 7 days pass, the refund period is over and we will apply the credit to
                                     your account.
                                 </Text>
@@ -477,11 +485,10 @@ export default function Page({
                                         </Thead>
                                         <Tbody>
                                             {completedInvoices?.map((invoice) => {
-                                                const bt = balanceTransactions[invoice.balanceTransactionId];
-
+                                                const bt = invoice.balanceTransactionId ? balanceTransactions[invoice.balanceTransactionId] : undefined;
                                                 return (
                                                     <Tr key="key">
-                                                        <Td>{new Date(bt.created * 1000).toLocaleString()}</Td>
+                                                        <Td>{new Date((bt?.created ?? 0) * 1000).toLocaleString()}</Td>
                                                         <Td align="left">{invoice.balanceTransactionId}</Td>
                                                         <Td isNumeric>{formatUsd(invoice.commissionAmount)}</Td>
                                                         <Td align="left">{invoice.id}</Td>
@@ -500,7 +507,7 @@ export default function Page({
                             </Box>
                             <Box w="full" experimental_spaceY={4}>
                                 <Heading size="md">Account Balance History</Heading>
-                                <Text maxW={[undefined, '66%']}>Shows the last 60 days of account balance history. Including credit payouts, and subscription payments.</Text>
+                                <Text maxW={['unset', '66%']}>Shows the last 60 days of account balance history. Including credit payouts, and subscription payments.</Text>
                                 <Box overflow={'scroll'}>
                                     <Table variant="simple" w="full" size="sm">
                                         <Thead>
@@ -518,8 +525,8 @@ export default function Page({
                                                 const i = net as Stripe.Invoice;
                                                 return (
                                                     <Tr key={net.id}>
-                                                        <Td>{new Date((i.created ?? bt.created) * 1000).toLocaleString()}</Td>
-                                                        {net.object !== 'invoice' ? (
+                                                        <Td>{new Date((i.created ?? bt?.created) * 1000).toLocaleString()}</Td>
+                                                        {net.object !== 'invoice' && bt ? (
                                                             <>
                                                                 <Td>Credit ({p.id})</Td>
                                                                 <Td isNumeric>${(bt.ending_balance / -100).toFixed(2)}</Td>

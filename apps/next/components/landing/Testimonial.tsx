@@ -23,7 +23,7 @@ export const Testimonial: FC<TestimonialProps> = ({ name, link, avatarSrc, text,
                 </Center>
                 <Center>
                     <HStack>
-                        <Avatar src={avatarSrc} />
+                        <Avatar src={avatarSrc} h='12' w='12' name={name} />
                         <VStack alignContent="left" w="full" my="4" spacing={0}>
                             <Text fontWeight="bold" w="full" textAlign="left">
                                 {name}

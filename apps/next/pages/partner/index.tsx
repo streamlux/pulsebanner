@@ -1,6 +1,6 @@
 import { PaymentModal } from '@app/components/pricing/PaymentModal';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
-import { APIPaymentObject, PaymentPlan, productPlan } from '@app/util/database/paymentHelpers';
+import { APIPaymentObject, PaymentPlan, productPlan } from '@app/services/payment/paymentHelpers';
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import prisma from '@app/util/ssr/prisma';
 import {
@@ -48,9 +48,9 @@ import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
 import useSWR from 'swr';
 import { discordLink } from '@app/util/constants';
-import { AcceptanceStatus, PartnerCreateType } from '@app/util/partner/types';
 import { logger } from '@app/util/logger';
 import { useForm } from 'react-hook-form';
+import { AcceptanceStatus, PartnerCreateType } from '@app/services/partner/types';
 
 interface Props {
     partnerStatus: AcceptanceStatus;
@@ -81,6 +81,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                         id: partnerId,
                     },
                 });
+
+                if (!partnerInfo) {
+                    return {
+                        props: {
+                            partnerStatus: AcceptanceStatus.None
+                        }
+                    }
+                }
 
                 return {
                     props: {
@@ -120,14 +128,21 @@ export default function Page({ partnerStatus, partnerCode, payment }: Props) {
 
     const { colorMode } = useColorMode();
     const { isOpen: pricingIsOpen, onOpen: pricingOnOpen, onClose: pricingClose, onToggle: pricingToggle } = useDisclosure();
+    type FormData = {
+        email: string;
+        firstName: string;
+        lastName: string;
+        partnerCodeInput: string;
+        notes: string;
+    };
 
     const {
         register,
         handleSubmit,
         formState: { errors },
-    } = useForm();
+    } = useForm<FormData>();
 
-    const styles: BoxProps = useColorModeValue<BoxProps>(
+    const styles: BoxProps = useColorModeValue<BoxProps, BoxProps>(
         {
             border: '1px solid',
             borderColor: 'gray.300',
@@ -163,13 +178,6 @@ export default function Page({ partnerStatus, partnerCode, payment }: Props) {
         router.replace(router.asPath);
     };
 
-    type FormData = {
-        email: string;
-        firstName: string;
-        lastName: string;
-        partnerCodeInput: string;
-        notes: string;
-    };
 
     const onSubmit = async (formData: FormData) => {
         if (!ensureSignUp()) {

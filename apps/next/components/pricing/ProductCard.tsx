@@ -1,4 +1,4 @@
-import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
+import { APIPaymentObject, PaymentPlan } from '@app/services/payment/paymentHelpers';
 import { WrapItem, Button, Tag} from '@chakra-ui/react';
 import type { Price, PriceInterval, Product } from '@prisma/client';
 import React from 'react';
@@ -29,10 +29,10 @@ interface ProductProps {
 }
 
 export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, handlePricingClick, paymentPlan, paymentPlanResponse }) => {
-    const price: Price = product?.prices?.find((one: Price) => one.interval === billingInterval);
-    const monthlyPrice: Price = product?.prices.find((one: Price) => one.interval === 'month');
+    const price = product?.prices?.find((one: Price) => one.interval === billingInterval);
+    const monthlyPrice = product?.prices.find((one: Price) => one.interval === 'month');
 
-    if (!price || !monthlyPrice) {
+    if (!price || !monthlyPrice || !price.unitAmount || !monthlyPrice.unitAmount) {
         return null;
     }
 
@@ -54,7 +54,7 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
         if (paymentPlan && paymentPlan !== 'Free') {
             return 'Change Subscription';
         }
-        return `Buy ${product.name}`;
+        return `Choose ${product.name}`;
     };
 
     const yearly = billingInterval === 'year';
@@ -85,12 +85,16 @@ export const ProductCard: React.FC<ProductProps> = ({ product, billingInterval, 
 
                 <ProductCardFooter>
                     {isCurrentPlan ? (
-                        <Tag colorScheme={'green'} px="4" py="2" fontSize="lg" fontWeight={'bold'}>
+                        <Tag colorScheme={'green'} px="4" fontSize="lg" size='lg' h='40px' fontWeight={'bold'}>
                             Current Subscription
                         </Tag>
                     ) : (
                         <Button
                             fontWeight="bold"
+                            // _hover={{
+                            //     bgGradient: "linear(to-r, #2AA9ff, #9246FF)"
+                            // }}
+                            // bgGradient="linear(to-r, #2AA9ff, #9246FF)"
                             disabled={isCurrentPlan}
                             onClick={() => handlePricingClick(price.id)}
                             colorScheme="green"

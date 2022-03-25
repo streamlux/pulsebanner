@@ -1,7 +1,7 @@
 import { updateTwitchSubscriptions } from '@app/services/updateTwitchSubscriptions';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import prisma from '@app/util/ssr/prisma';
-import { validateTwitterAuthentication } from '@app/util/twitter/twitterHelpers';
+import { validateTwitterAuthentication } from '@app/services/twitter/twitterHelpers';
 
 const handler = createAuthApiHandler();
 

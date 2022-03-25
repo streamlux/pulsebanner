@@ -4,9 +4,10 @@ import crypto from 'crypto';
 import bodyParser from 'body-parser';
 import { FeaturesService } from '@app/services/FeaturesService';
 import prisma from '@app/util/ssr/prisma';
-import { getLiveUserInfo, liveUserOffline, liveUserOnline } from '@app/util/twitch/liveStreamHelpers';
 import { logger } from '@app/util/logger';
 import { executeStreamDown, executeStreamUp } from '@app/features/executeFeatures';
+import env from '@app/util/env';
+import { LiveStreamService } from '@app/services/LiveStreamService';
 
 type VerificationBody = {
     challenge: string;
@@ -42,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             verify: (req, res, buf) => {
                 // Small modification to the JSON bodyParser to expose the raw body in the request object
                 // The raw body is required at signature verification
-                req['rawBody'] = buf;
+                (req as any)['rawBody'] = buf;
             },
         })
     );
@@ -65,7 +66,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         userId,
     });
 
-    if (!verifySignature(messageSignature, messageId, messageTimestamp, req['rawBody'])) {
+    if (!verifySignature(messageSignature, messageId, messageTimestamp, (req as any)['rawBody'])) {
         logger.error('Request verification failed.', { userId });
         res.status(403).send('Forbidden'); // Reject requests with invalid signatures
         res.end();
@@ -91,7 +92,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         logger.info(`Received ${streamStatus} notification for user ${userId}`, { status: streamStatus, userId, enabledFeatures: features });
 
         if (features.length !== 0) {
-            const userInfo = await getLiveUserInfo(userId);
+            const userInfo = await LiveStreamService.getLiveUserInfo(userId);
 
             const liveUser = await prisma.liveStreams.findUnique({
                 where: {
@@ -146,10 +147,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             if (userInfo !== undefined) {
                 if (streamStatus === 'stream.online') {
-                    await liveUserOnline(userId, userInfo);
+                    await LiveStreamService.liveUserOnline(userId, userInfo);
                 }
                 if (streamStatus === 'stream.offline') {
-                    await liveUserOffline(userId, userInfo);
+                    await LiveStreamService.liveUserOffline(userId, userInfo);
                 }
             }
         }
@@ -169,14 +170,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 function verifySignature(messageSignature: string, id: string, timestamp: string, body: unknown): boolean {
     logger.info('Verifying signature...');
     const message = id + timestamp + body;
-    const signature = crypto.createHmac('sha256', process.env.EVENTSUB_SECRET).update(message);
+    const signature = crypto.createHmac('sha256', env.EVENTSUB_SECRET).update(message);
     const expectedSignatureHeader = 'sha256=' + signature.digest('hex');
     return expectedSignatureHeader === messageSignature;
 }
 
-function runMiddleware(req, res, fn) {
+function runMiddleware(req: any, res: any, fn: any) {
     return new Promise((resolve, reject) => {
-        fn(req, res, (result) => {
+        fn(req, res, (result: any) => {
             if (result instanceof Error) {
                 return reject(result);
             }

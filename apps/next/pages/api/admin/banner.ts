@@ -1,7 +1,7 @@
-import { TwitchClientAuthService } from '@app/services/TwitchClientAuthService';
+import { AccountsService } from '@app/services/AccountsService';
+import { TwitchClientAuthService } from '@app/services/twitch/TwitchClientAuthService';
 import { remotionAxios, twitchAxios } from '@app/util/axios';
-import { getBannerEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
-import { getAccountsById } from '@app/util/getAccountsById';
+import { getBannerEntry, getTwitterInfo } from '@app/services/postgresHelpers';
 import { Prisma } from '@prisma/client';
 import { AxiosResponse } from 'axios';
 import { createAuthApiHandler } from '../../../util/ssr/createApiHandler';
@@ -22,10 +22,10 @@ handler.get(async (req, res) => {
 
     const userId = req.query.userId as string ?? req.session.userId;
 
-    const accounts = await getAccountsById(userId);
+    const accounts = await AccountsService.getAccountsById(userId);
     const twitchUserId = accounts['twitch'].providerAccountId;
 
-    const twitterInfo = await getTwitterInfo(userId, true);
+    const twitterInfo = await AccountsService.getTwitterInfo(userId, true);
 
     const bannerEntry = await getBannerEntry(userId);
     if (bannerEntry === null || twitterInfo === null) {

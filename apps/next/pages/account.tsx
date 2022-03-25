@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
     Button,
     ButtonGroup,
@@ -11,7 +11,6 @@ import {
     PopoverTrigger,
     VStack,
     Text,
-    Center,
     Box,
     HStack,
     Heading,
@@ -19,16 +18,81 @@ import {
     Flex,
     Spacer,
     Tag,
+    Alert,
+    AlertDescription,
+    AlertIcon,
+    AlertTitle,
+    Stack,
 } from '@chakra-ui/react';
-import type { NextPage } from 'next';
+import type { GetServerSideProps, NextPage } from 'next';
 import { getSession, signOut } from 'next-auth/react';
 import axios from 'axios';
-import useSWR from 'swr';
-import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
+import { APIPaymentObject, PaymentPlan, productPlan } from '@app/services/payment/paymentHelpers';
 import { Card } from '@app/components/Card';
 import { NextSeo } from 'next-seo';
+import { FeaturesService } from '@app/services/FeaturesService';
+import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
+import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
+import { useRouter } from 'next/router';
+import { FaTwitch } from 'react-icons/fa';
+import prisma from '@app/util/ssr/prisma';
+import { GiftSummary } from '@app/components/gifts/GiftSummary';
 
-const Page: NextPage = () => {
+interface Props {
+    enabledFeatures: Awaited<ReturnType<typeof FeaturesService.listEnabled>>;
+    plan: APIPaymentObject;
+    allGiftPurchases: {
+        createdAt: Date;
+        checkoutSessionId: string;
+    }[]
+}
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+    const session = (await getSession(context)) as any;
+    if (!session) {
+        return {
+            redirect: {
+                destination: '/',
+                permanent: false,
+            },
+        };
+    }
+
+    const userId = session.userId;
+    const enabledFeatures = await FeaturesService.listEnabled(userId);
+
+    const plan: APIPaymentObject = await productPlan(userId);
+
+    const allGiftPurchases = await prisma.giftPurchase.findMany({
+        where: {
+            purchaserUserId: session.user.id,
+        },
+        orderBy: {
+            createdAt: 'desc',
+        },
+        select: {
+            checkoutSessionId: true,
+            createdAt: true,
+        },
+        distinct: ['checkoutSessionId'],
+    });
+
+    return {
+        props: {
+            enabledFeatures,
+            plan,
+            allGiftPurchases,
+        },
+    };
+};
+
+const Page: NextPage<Props> = ({ enabledFeatures, plan, allGiftPurchases }) => {
+    const router = useRouter();
+    const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('/account');
+    const paymentPlan: PaymentPlan = plan === undefined ? 'Free' : plan.plan;
+
+    const hasTwitch = session?.accounts['twitch'];
+
     const handleCreatePortal = async () => {
         const res = await fetch('/api/stripe/create-portal', {
             method: 'POST',
@@ -41,27 +105,30 @@ const Page: NextPage = () => {
         window.location.assign(data.url);
     };
 
-    const { data: paymentPlanResponse } = useSWR<APIPaymentObject>('payment', async () => (await fetch('/api/user/subscription')).json());
-    const paymentPlan: PaymentPlan = paymentPlanResponse === undefined ? 'Free' : paymentPlanResponse.plan;
+    // delete the account
+    const disconnectTwitch = useCallback(async () => {
+        if (enabledFeatures.length === 0) {
+            await axios.post(`/api/user/disconnect-twitch`);
+            router.reload();
+        }
+    }, [enabledFeatures, router]);
 
     // delete the account
-    const deleteAccount = async () => {
-        const sessionInfo = await getSession();
-        if ((sessionInfo?.user as any)?.id) {
-            // call api endpoint here to delete user and erase all data
-            await axios.delete(`/api/user`);
-
+    const deleteAccount = useCallback(async () => {
+        // call api endpoint here to delete user and erase all data
+        axios.delete(`/api/user`).then(() => {
             // sign user out and redirect to home page
             signOut({
                 callbackUrl: '/',
             });
-        }
-    };
+        });
+    }, []);
 
     return (
         <>
             <NextSeo title="Account" nofollow noindex />
-            <Container maxW="container.lg">
+            <ConnectTwitchModal session={session} isOpen={isOpen} onClose={onClose} callbackUrl="/account" />
+            <Container maxW="container.md">
                 <VStack>
                     <Heading mb="8">PulseBanner Account</Heading>
 
@@ -71,37 +138,71 @@ const Page: NextPage = () => {
                                 PulseBanner Membership
                             </Heading>
                             <Card props={{ w: 'full' }}>
-                                <Box>
-                                    <Flex justifyContent="space-between">
-                                        <HStack>
-                                            <Text>Current PulseBanner Membership status: </Text>
-                                            <Text>{paymentPlan === 'Free' ? 'None' : paymentPlan}</Text>
+                                <VStack w="full" align={'left'}>
+                                    <Stack justifyContent="space-between" direction={['column', 'row']} spacing={4}>
+                                        <HStack justifyContent={'space-between'}>
+                                            <Text fontWeight={'bold'}>Membership status</Text>
+                                            <Box>
+                                                <Tag colorScheme={paymentPlan === 'Free' ? 'gray' : 'blue'}>{paymentPlan === 'Free' ? 'None' : paymentPlan}</Tag>
+                                            </Box>
                                         </HStack>
                                         <Button
                                             onClick={async () => {
                                                 await handleCreatePortal();
                                             }}
+                                            colorScheme={paymentPlan === 'Free' || plan.partner ? 'green' : undefined}
                                         >
-                                            {paymentPlan === 'Free' || paymentPlanResponse.partner ? 'Become PulseBanner Member' : 'Change/Cancel PulseBanner Membership'}
+                                            {paymentPlan === 'Free' || plan.partner ? 'Become PulseBanner Member' : 'Change/Cancel PulseBanner Membership'}
                                         </Button>
-                                    </Flex>
-                                    {paymentPlanResponse?.partner && (
-                                        <Tag variant="solid" colorScheme="teal">
-                                            PulseBanner Partner
-                                        </Tag>
-                                    )}
-                                </Box>
+                                    </Stack>
+                                </VStack>
                             </Card>
                         </Box>
+
+                        <Box w="full">
+                            <Heading as="p" fontSize="xl" mb="2">
+                                Accounts
+                            </Heading>
+                            <Card>
+                                <Flex w="full">
+                                    <Spacer />
+                                    {hasTwitch ? (
+                                        <Box experimental_spaceY={2}>
+                                            {enabledFeatures.length !== 0 && (
+                                                <Alert status="error">
+                                                    <AlertIcon />
+                                                    <AlertTitle mr={2}>You have features enabled</AlertTitle>
+                                                    <AlertDescription>All features must be disabled to disconnect Twitch.</AlertDescription>
+                                                </Alert>
+                                            )}
+                                            <Text>Connect to the wrong Twitch account? Just click Disconnect Twitch Account and then reconnect to the correct account.</Text>
+                                            <Button onClick={disconnectTwitch} disabled={enabledFeatures.length !== 0}>
+                                                Disconnect Twitch Account
+                                            </Button>
+                                        </Box>
+                                    ) : (
+                                        <Button leftIcon={<FaTwitch />} color="white" colorScheme={'twitch'} onClick={ensureSignUp}>
+                                            Connect Twitch Account
+                                        </Button>
+                                    )}
+                                </Flex>
+                            </Card>
+                        </Box>
+
+                        <Box w='full'>
+                            <GiftSummary allGiftPurchases={allGiftPurchases} />
+                        </Box>
+
                         <Box w="full">
                             <Heading as="p" fontSize="xl" mb="2">
                                 Danger Area
                             </Heading>
                             <Card props={{ w: 'full' }}>
-                                {paymentPlan !== 'Free' && (
-                                    <Text fontSize="2xl" fontWeight="bold">
-                                        <Center>If you are a paid user, you must cancel your subscription before deleting your account</Center>
-                                    </Text>
+                                {paymentPlan !== 'Free' && !plan.partner && (
+                                    <Alert status="error">
+                                        <AlertIcon />
+                                        <AlertDescription>You must cancel your subscription before deleting your account.</AlertDescription>
+                                    </Alert>
                                 )}
                                 <Flex justifyContent="space-between">
                                     <Spacer />
@@ -109,7 +210,7 @@ const Page: NextPage = () => {
                                         {({ isOpen, onClose }) => (
                                             <>
                                                 <PopoverTrigger>
-                                                    <Button colorScheme="red" disabled={paymentPlan !== 'Free' && paymentPlanResponse.partner !== true}>
+                                                    <Button colorScheme="red" disabled={paymentPlan !== 'Free' && plan.partner !== true}>
                                                         Delete account and erase all data
                                                     </Button>
                                                 </PopoverTrigger>

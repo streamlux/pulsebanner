@@ -1,7 +1,7 @@
 import { PaymentModal } from '@app/components/pricing/PaymentModal';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 import { discordLink } from '@app/util/constants';
-import { APIPaymentObject, PaymentPlan } from '@app/util/database/paymentHelpers';
+import { APIPaymentObject, PaymentPlan } from '@app/services/payment/paymentHelpers';
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import prisma from '@app/util/ssr/prisma';
 import { trackEvent } from '@app/util/umami/trackEvent';
@@ -42,15 +42,17 @@ import router from 'next/router';
 import { useState } from 'react';
 import { FaDiscord, FaPlay, FaStop } from 'react-icons/fa';
 import useSWR from 'swr';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import FakeTweet from 'fake-tweet';
 import 'fake-tweet/build/index.css';
 import { ShareToTwitter } from '@app/modules/social/ShareToTwitter';
-import { createTwitterClient, validateTwitterAuthentication } from '@app/util/twitter/twitterHelpers';
-import { getTwitterInfo } from '@app/util/database/postgresHelpers';
-import { format, max } from 'date-fns';
+import { createTwitterClient, validateTwitterAuthentication } from '@app/services/twitter/twitterHelpers';
+import { format } from 'date-fns';
 import { NextSeo } from 'next-seo';
 import NextLink from 'next/link';
 import { ReconnectTwitterModal } from '@app/modules/onboard/ReconnectTwitterModal';
+import { AccountsService } from '@app/services/AccountsService';
 
 const nameEndpoint = '/api/features/twitterName';
 const maxNameLength = 50;
@@ -73,7 +75,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             },
         });
 
-        const twitterInfo = await getTwitterInfo(session.userId, true);
+        const twitterInfo = await AccountsService.getTwitterInfo(session.userId, true);
+
+        if (!twitterInfo) {
+            return {
+                props: {
+                    twitterName: {},
+                    twitterProfile: {},
+                },
+            };
+        }
 
         const client = createTwitterClient(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
 
@@ -89,7 +100,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
         const twitterProfile = (
             await client.accountsAndUsers.usersLookup({
-                user_id: twitterInfo.providerAccountId,
+                user_id: twitterInfo?.providerAccountId,
             })
         )?.[0];
 
@@ -131,7 +142,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 export default function Page({ twitterName, twitterProfile }: Props) {
     const { ensureSignUp, isOpen, onClose, session } = useConnectToTwitch('/name');
-    const styles: BoxProps = useColorModeValue<BoxProps>(
+    const styles: BoxProps = useColorModeValue<BoxProps, BoxProps>(
         {
             border: '1px solid',
             borderColor: 'gray.300',

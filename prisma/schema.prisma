@@ -40,27 +40,28 @@ model Session {
 }
 
 model User {
-    id                  String                @id @default(cuid())
-    name                String?
-    email               String?               @unique
-    emailVerified       DateTime?
-    image               String?
-    createdAt           DateTime              @default(now()) @map("created_at")
-    role                Role                  @default(user)
-    accounts            Account[]
-    sessions            Session[]
-    customer            Customer?
-    subscription        Subscription?
-    banner              Banner?
-    tweet               Tweet?
-    twitterName         TwitterName?
-    twitterOriginalName TwitterOriginalName?
-    profileImage        ProfileImage?
-    renderedProfilePic  RenderedProfileImage?
-    liveStreams         LiveStreams?
-    pastStreams         PastStreams[]
-    partnerInformation  PartnerInformation?
-    partner             Boolean               @default(false)
+    id                     String                @id @default(cuid())
+    name                   String?
+    email                  String?               @unique
+    emailVerified          DateTime?
+    image                  String?
+    createdAt              DateTime              @default(now()) @map("created_at")
+    role                   Role                  @default(user)
+    accounts               Account[]
+    sessions               Session[]
+    customer               Customer?
+    subscription           Subscription?
+    banner                 Banner?
+    tweet                  Tweet?
+    twitterName            TwitterName?
+    twitterOriginalName    TwitterOriginalName?
+    profileImage           ProfileImage?
+    renderedProfilePic     RenderedProfileImage?
+    liveStreams            LiveStreams?
+    pastStreams            PastStreams[]
+    partnerInformation     PartnerInformation?
+    partner                Boolean               @default(false)
+    purchaserGiftPurchases GiftPurchase[]
 
     @@map("users")
 }
@@ -209,6 +210,7 @@ model Customer {
     updatedAt      DateTime         @default(now()) @map("updated_at")
     user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
     PartnerInvoice PartnerInvoice[]
+    Invoice        Invoice[]
 
     @@map("customers")
 }
@@ -237,11 +239,14 @@ model Price {
     interval_count    Int?
     trial_period_days Int?
     type              PriceType?
+    metadata          Json?
+    nickname          String?
     createdAt         DateTime       @default(now()) @map("created_at")
     updatedAt         DateTime       @default(now()) @map("updated_at")
     product           Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
     subscriptions     Subscription[]
 
+    GiftPurchase GiftPurchase[]
     @@map("prices")
 }
 
@@ -313,7 +318,7 @@ model Partner {
     partnerInvoices    PartnerInvoice[] // list of all invoices associated withthe partner
 
     createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @default(now()) @map("updated_at") @updatedAt
+    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
     @@map("partner")
 }
@@ -338,6 +343,21 @@ enum CommissionStatus {
     none // We specify none when there is no coupon associded with the request
 }
 
+model Invoice {
+    id             String   @id @unique
+    customerId     String
+    promoCodeId    String
+    productId      String
+    priceId        String
+    paidAt         DateTime
+    purchaseAmount Float
+    metadata       Json?
+    status         String
+    customer       Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+    @@map("invoice")
+}
+
 model PartnerInvoice {
     id                   String           @id @unique // This is the invoice via stripe.
     customerId           String // this is the customer id on the invoice. We should link this to our customers table
@@ -351,4 +371,25 @@ model PartnerInvoice {
     commissionStatus     CommissionStatus
 
     @@map("partner_invoice")
+}
+
+model GiftPurchase {
+    id            String @id @default(cuid())
+    promoCodeId   String @unique // ID of created Stripe promo code
+    promoCodeCode String // the Stripe promotion code code created that will be used for the giveaway
+
+    priceId String
+    price   Price  @relation(fields: [priceId], references: [id])
+
+    checkoutSessionId String // ID of the checkout session
+    index            Int // local to a single checkout session, ex if someone buys 3 gifts in a session, the gifts will be 0, 1, 2
+
+    purchaserUserId String
+    purchaserUser   User   @relation(fields: [purchaserUserId], references: [id])
+    purchaserEmail  String // Email we sent the gift code and redemption link to
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+    @@map("gift_purchase")
 }

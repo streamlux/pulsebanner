@@ -13,6 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
     });
 
+    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate');
     const umami = await axios.get('https://u.pulsebanner.com/umami.js');
     res.send(umami.data);
 }

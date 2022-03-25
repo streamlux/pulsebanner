@@ -1,5 +1,5 @@
+import { PartnerService } from '@app/services/partner/PartnerService';
 import { logger } from '@app/util/logger';
-import { getPartnerCustomerInfo, getPartnerInfo, getPartnerInvoice, updateRejectedPayoutStatus, setBalanceTransactionId } from '@app/util/partner/payoutHelpers';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import stripe from '@app/util/ssr/stripe';
 import { CommissionStatus } from '@prisma/client';
@@ -27,26 +27,26 @@ handler.post(async (req, res) => {
              */
             if (payoutStatusUpdate[invoiceId] === 'pendingCompletion' || payoutStatusUpdate[invoiceId] === 'pending') {
                 // get the invoiceId associated with the partner
-                const partnerInvoice = await getPartnerInvoice(invoiceId);
+                const partnerInvoice = await PartnerService.getPartnerInvoice(invoiceId);
 
-                if (partnerInvoice === undefined) {
-                    console.log('No partner or commission amount associated with invoice: ', invoiceId);
+                if (!partnerInvoice || !partnerInvoice.partnerId) {
+                    logger.info('No partner or commission amount associated with invoice: ', invoiceId);
                     return res.status(400).send(`No partner or commission amount associated with invoice: ${invoiceId}`);
                 }
 
-                const partnerUserId = await getPartnerInfo(partnerInvoice.partnerId);
+                const partnerUserId = await PartnerService.getPartnerInfo(partnerInvoice.partnerId);
 
                 if (partnerUserId === undefined) {
-                    console.log('Could not find the partner info.');
+                    logger.info('Could not find the partner info.');
                     return res.status(400).send(`No partner info found for partnerId: ${partnerInvoice.partnerId}`);
                 }
 
                 const userId = partnerUserId;
 
-                const customerId = await getPartnerCustomerInfo(userId);
+                const customerId = await PartnerService.getPartnerCustomerInfo(userId);
 
-                if (customerId === null) {
-                    console.log('Could not find the partners stripe customer info.');
+                if (!customerId) {
+                    logger.info('Could not find the partners stripe customer info.');
                     return res.status(400).send(`Could not find the partners stripe customer info. UserId: ${userId}`);
                 }
 
@@ -67,14 +67,14 @@ handler.post(async (req, res) => {
                     currency: 'usd',
                 });
 
-                await stripe.customers.update(customerId, { balance: newCustomerBalance,  });
+                await stripe.customers.update(customerId, { balance: newCustomerBalance, });
 
-                await setBalanceTransactionId(invoiceId, balanceTransaction.id);
+                await PartnerService.setBalanceTransactionId(invoiceId, balanceTransaction.id);
             } else if (payoutStatusUpdate[invoiceId] === 'pendingRejection') {
-                await updateRejectedPayoutStatus(invoiceId);
+                await PartnerService.updateRejectedPayoutStatus(invoiceId);
             }
         } catch (e) {
-            console.log('error updating payout status: ', e);
+            logger.error('error updating payout status: ', e);
             return res.status(400).send(`Error updating payout status: ${e}`);
         }
     });

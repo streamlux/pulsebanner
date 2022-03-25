@@ -1,10 +1,10 @@
 import prisma from "@app/util/ssr/prisma";
 import { Feature } from "@app/features/Feature";
-import { flipFeatureEnabled, getTwitterInfo } from "@app/util/database/postgresHelpers";
-import { getAccountsById } from "@app/util/getAccountsById";
+import { flipFeatureEnabled } from "@app/services/postgresHelpers";
 import { logger } from "@app/util/logger";
-import { TwitterResponseCode, updateBanner, validateTwitterAuthentication } from "@app/util/twitter/twitterHelpers";
+import { TwitterResponseCode, updateBanner, validateTwitterAuthentication } from "@app/services/twitter/twitterHelpers";
 import { renderBanner } from "./renderBanner";
+import { AccountsService } from "@app/services/AccountsService";
 
 export const bannerRefresh: Feature<string> = async (userId: string): Promise<string> => {
     /**
@@ -13,7 +13,7 @@ export const bannerRefresh: Feature<string> = async (userId: string): Promise<st
      * 3. Update twitter banner
      */
 
-    const accounts = await getAccountsById(userId);
+    const accounts = await AccountsService.getAccountsById(userId);
     const twitchUserId = accounts['twitch'].providerAccountId;
 
     logger.info('Refreshing banner', { userId });
@@ -22,7 +22,7 @@ export const bannerRefresh: Feature<string> = async (userId: string): Promise<st
         return 'Missing twitchUserId';
     }
 
-    const twitterInfo = await getTwitterInfo(userId, true);
+    const twitterInfo = await AccountsService.getTwitterInfo(userId, true);
 
     // if they are not authenticated with twitter, return 401 and turn off the feature
     const validatedTwitter = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
@@ -54,6 +54,7 @@ export const bannerRefresh: Feature<string> = async (userId: string): Promise<st
         return bannerStatus === 200 ? 'Set banner to given template' : 'Unable to set banner';
     } else {
         logger.warn('Stream ended while rendering banner for refresh.', { userId });
+        return 'Stream ended while rendering banner for refresh.';
     }
 
 }

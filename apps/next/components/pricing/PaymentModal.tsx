@@ -1,15 +1,15 @@
 import { Price, PriceInterval, Product } from '.prisma/client';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 import { holidayDecor, promoCode } from '@app/util/constants';
-import { PaymentPlan, APIPaymentObject } from '@app/util/database/paymentHelpers';
 import getStripe from '@app/util/getStripe';
+import { usePaymentPlan } from '@app/util/hooks/usePaymentPlan';
+import { useSession } from '@app/util/hooks/useSession';
 import { trackEvent } from '@app/util/umami/trackEvent';
 import { HStack, SimpleGrid, Stack, VStack } from '@chakra-ui/layout';
 import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay } from '@chakra-ui/modal';
-import { Box, Center, chakra, Switch, Tag, Text, useColorMode, useDisclosure, WrapItem } from '@chakra-ui/react';
-import { useSession } from 'next-auth/react';
+import { Box, Center, chakra, Switch, Tag, Text, useDisclosure, WrapItem } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import useSWR from 'swr';
 import { FreeProductCard } from './FreeProductCard';
 import { ProductCard } from './ProductCard';
@@ -21,36 +21,22 @@ type Props = {
 
 export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
     const { data } = useSWR<any>('pricing', async () => (await fetch('/api/pricing/plans')).json());
+    const [paymentPlan] = usePaymentPlan();
+    const { data: session } = useSession({ required: false });
+
     const [billingInterval, setBillingInterval] = useState<PriceInterval>('year');
-    const { colorMode } = useColorMode();
+    const { isOpen: connectTwitchIsOpen, onOpen: onOpenConnectToTwitch, onClose: onCloseConnectToTwitch } = useDisclosure();
+    const router = useRouter();
 
     const sortProductsByPrice = (
         products: (Product & {
             prices: Price[];
         })[]
-    ) => products.sort((a, b) => a?.prices?.find((one) => one.interval === billingInterval)?.unitAmount - b?.prices?.find((one) => one.interval === billingInterval)?.unitAmount);
-
-    const [paymentPlan, setPaymentPlan] = useState<PaymentPlan>();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { status, data: session } = useSession({ required: false }) as any;
-
-    const router = useRouter();
-
-    useEffect(() => {
-        (async () => {
-            if (status === 'authenticated') {
-                const res = await fetch('/api/user/subscription');
-
-                const data: APIPaymentObject = await res.json();
-
-                if (data) {
-                    setPaymentPlan(data.plan);
-                }
-            }
-        })();
-    }, [status]);
-
-    const { isOpen: connectTwitchIsOpen, onOpen: onOpenConnectToTwitch, onClose: onCloseConnectToTwitch } = useDisclosure();
+    ) => products
+    .filter((a) => !a.name.includes('Gift'))
+    .sort((a, b) => {
+        return (a?.prices?.find((one) => one.interval === billingInterval)?.unitAmount ?? 0) - (b?.prices?.find((one) => one.interval === billingInterval)?.unitAmount ?? 0);
+    });
 
     const handlePricingClick = useCallback(
         async (priceId: string) => {
@@ -126,12 +112,12 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
                         <VStack spacing={4} w="full">
                             {holidayDecor && (
                                 <Center pt={['4', '2']}>
-                                    <Box px="4" py="2" mx="4" color={colorMode === 'dark' ? 'black' : 'black'} w={['fit-content']} bg="green.200" rounded="lg">
+                                    <Box px="4" py="2" mx="4" color={'black'} w={['fit-content']} bg="green.200" rounded="lg">
                                         <Center h="full">
                                             <Stack direction={['column', 'row']}>
                                                 <Text textAlign="center" fontSize={['sm', 'md']}>
                                                     {'Holiday sale! Use code'}{' '}
-                                                    <Tag color="black" fontWeight="bold" colorScheme="green" bg={colorMode === 'dark' ? 'green.100' : undefined}>
+                                                    <Tag color="black" fontWeight="bold" colorScheme="green" bg={'green.100'}>
                                                         {promoCode}
                                                     </Tag>{' '}
                                                     {'at checkout to save 25% on your first 3 months!'}
@@ -151,11 +137,11 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
                             <Center w="full">
                                 <SimpleGrid columns={[1, 3]} spacing="4" w="full">
                                     <WrapItem key="free" w="full" h="full">
-                                        <FreeProductCard />
+                                        <FreeProductCard modal />
                                     </WrapItem>
                                     {sortProductsByPrice(data).map((product) => (
                                         <Box key={product.id} w="full">
-                                            <ProductCard key={product.id} product={product} billingInterval={billingInterval} handlePricingClick={handlePricingClick} paymentPlan={paymentPlan} />
+                                            <ProductCard key={product.id} product={product} billingInterval={billingInterval} handlePricingClick={handlePricingClick} paymentPlan={paymentPlan ?? 'Free'} />
                                         </Box>
                                     ))}
                                 </SimpleGrid>
