@@ -107,6 +107,9 @@ const Page: NextPage<Props> = ({ products, priceMap }) => {
                         headers: {
                             'content-type': 'application/json',
                         },
+                        body: JSON.stringify({
+                            return_url: '/pricing'
+                        })
                     });
 
                     const data = await res.json();

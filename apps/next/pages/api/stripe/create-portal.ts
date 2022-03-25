@@ -1,5 +1,5 @@
 import prisma from '@app/util/ssr/prisma';
-import { Prisma, Subscription } from '@prisma/client';
+import { Subscription } from '@prisma/client';
 import { createAuthApiHandler } from '../../../util/ssr/createApiHandler';
 import stripe from '../../../util/ssr/stripe';
 import { getCustomerId } from '../../../util/ssr/stripe';
@@ -41,7 +41,7 @@ handler.post(async (req, res) => {
 
     const { url } = await stripe.billingPortal.sessions.create({
         customer: customerId,
-        return_url: `${process.env.NEXTAUTH_URL}/account`
+        return_url: `${process.env.NEXTAUTH_URL}${req.body.return_url ?? '/account'}`
     });
 
     const body: any = { url };
