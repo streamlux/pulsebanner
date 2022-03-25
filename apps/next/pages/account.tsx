@@ -189,7 +189,7 @@ const Page: NextPage<Props> = ({ enabledFeatures, plan, allGiftPurchases }) => {
                             </Card>
                         </Box>
 
-                        <Box>
+                        <Box w='full'>
                             <GiftSummary allGiftPurchases={allGiftPurchases} />
                         </Box>
 

@@ -43,9 +43,10 @@ import { giftPriceIds } from '@app/services/stripe/gift/constants';
 
 type Props = {
     priceMap: Record<string, { unitAmount: number } & Price & { product: Product }>;
+    cancel_path?: string;
 };
 
-export const GiftPricing: React.FC<Props> = ({ priceMap }) => {
+export const GiftPricing: React.FC<Props> = ({ priceMap, cancel_path }) => {
     const [paymentPlan, paymentPlanResponse] = usePaymentPlan();
     const { data: session } = useSession({ required: false }) as any;
 
@@ -109,6 +110,7 @@ export const GiftPricing: React.FC<Props> = ({ priceMap }) => {
                         price: priceId,
                         isSubscription,
                         quantity: quantity ?? 1,
+                        cancel_path: cancel_path ?? '/pricing',
                     }),
                 });
 
@@ -118,7 +120,7 @@ export const GiftPricing: React.FC<Props> = ({ priceMap }) => {
                 stripe?.redirectToCheckout({ sessionId: data.sessionId });
             }
         },
-        [router, paymentPlan, ensureSignUp]
+        [router, paymentPlan, ensureSignUp, cancel_path]
     );
 
     const refAnimationInstance = useRef(null as any);
