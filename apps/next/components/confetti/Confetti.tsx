@@ -61,7 +61,7 @@ export default function Confetti() {
 
   return (
     <>
-      <button onClick={fire}>Fire</button>
+      {/* <button onClick={fire}>Fire</button> */}
       <ReactCanvasConfetti refConfetti={getInstance} style={canvasStyles} />
     </>
   );
