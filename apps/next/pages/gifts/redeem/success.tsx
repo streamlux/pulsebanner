@@ -14,23 +14,8 @@ const Page: NextPage = () => {
             <Center>
                 <Box experimental_spaceY={4}>
                     <Heading as="p" textAlign={'center'}>
-                        Successfully redeemed a gift!
+                        You successfully redeemed a gift! 🎉
                     </Heading>
-
-                    <Center>
-                        <ButtonGroup>
-                            <NextLink passHref href={discordLink}>
-                                <Button as="a" size="sm" colorScheme="gray" rightIcon={<FaDiscord />}>
-                                    Join our Discord
-                                </Button>
-                            </NextLink>
-                            <NextLink passHref href={twitterLink}>
-                                <Button as="a" size="sm" colorScheme="twitter" rightIcon={<FaTwitter />}>
-                                    Twitter
-                                </Button>
-                            </NextLink>
-                        </ButtonGroup>
-                    </Center>
                 </Box>
             </Center>
         </Container>
