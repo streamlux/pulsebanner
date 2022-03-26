@@ -174,7 +174,7 @@ const Page: NextPage<Props> = ({ gifts, allGiftPurchases }) => {
                                     </VStack>
                                 </Box>
 
-                                {/* <Box experimental_spaceY={4} w="full">
+                                <Box experimental_spaceY={4} w="full">
                                     <Heading size={'md'}>Check your email!</Heading>
                                     <Text>
                                         {"We've sent an email to "}
@@ -185,7 +185,8 @@ const Page: NextPage<Props> = ({ gifts, allGiftPurchases }) => {
                                         <AlertIcon />
                                         <AlertDescription>The email may go to your junk folder.</AlertDescription>
                                     </Alert>
-                                </Box> */}
+                                </Box>
+
                                 <Box experimental_spaceY={4} w="full">
                                     <Heading size="md">Redemption Instructions</Heading>
                                     <Text maxW="xl">
@@ -195,9 +196,7 @@ const Page: NextPage<Props> = ({ gifts, allGiftPurchases }) => {
                                     <Text maxW="xl">
                                         Payment details are required in order to continue the Membership after the duration of the gift has passed. Redeemer can cancel at any time.
                                     </Text>
-                                    <Text maxW="xl">
-                                        In the future, you can access your gift purchase summaries from your account page.
-                                    </Text>
+                                    <Text maxW="xl">In the future, you can access your gift purchase summaries from your account page.</Text>
                                 </Box>
                             </VStack>
                         </Card>
