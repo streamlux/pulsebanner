@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.11.2] - 2022-03-25
+
+### Fixed
+
+ - Added BUILD_TARGET environment variable so that we can properly generate static pages
+
 ## [0.11.1] - 2022-03-25
 
 ### Fixed
