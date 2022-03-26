@@ -3,16 +3,19 @@ import type { GetStaticProps, NextPage } from 'next';
 import React from 'react';
 import { Heading, Text, Container, VStack, Box } from '@chakra-ui/react';
 import prisma from '../util/ssr/prisma';
-import { generalFaqItems, giftFaqItems, pricingFaqItems } from '@app/modules/faq/faqData';
+import { generalFaqItems, giftFaqItems } from '@app/modules/faq/faqData';
 import { FaqSection } from '@app/modules/faq/FaqSection';
 import { GiftPricing } from '@app/modules/pricing/GiftPricing';
+import { getGiftMap, GiftPriceMap } from '@app/services/stripe/gift/constants';
+import { env } from 'process';
 
 type Props = {
     prices: (Price & { product: Product })[];
     priceMap: Record<string, Price & { unitAmount: number } & { product: Product }>;
+    giftPriceIds: GiftPriceMap;
 };
 
-const Page: NextPage<Props> = ({ priceMap }) => {
+const Page: NextPage<Props> = ({ priceMap, giftPriceIds }) => {
     return (
         <VStack spacing={16} pos={'relative'}>
             <Container maxW="container.lg" experimental_spaceY="6" pb="8" mt="-8">
@@ -21,7 +24,7 @@ const Page: NextPage<Props> = ({ priceMap }) => {
                 </Heading>
             </Container>
 
-            <GiftPricing priceMap={priceMap} cancel_path={'/gifts'} />
+            <GiftPricing giftPriceIds={giftPriceIds} priceMap={priceMap} cancel_path={'/gifts'} />
             <div style={{ zIndex: -1, position: 'absolute', height: '50%', maxHeight: '700px', width: '100%', display: 'block' }}>
                 <div className="contact-hero" style={{ position: 'relative', top: '500px', left: '0px', height: '58%' }}>
                     <div className="bg-gradient-blur-wrapper contact-hero">
@@ -60,6 +63,11 @@ const Page: NextPage<Props> = ({ priceMap }) => {
 // aka this page is server-side rendered
 // This method is run on the server, then the return value is passed in as props to the component above
 export const getStaticProps: GetStaticProps<Props> = async (context) => {
+
+    if (!env.BUILD_TARGET) {
+        throw new Error('BUILD_TARGET is not defined. This should only be set at build time, and not at runtime.');
+    }
+
     const prices = (await prisma.price.findMany({
         where: {
             active: true,
@@ -79,10 +87,15 @@ export const getStaticProps: GetStaticProps<Props> = async (context) => {
         return map;
     }, {} as any);
 
+
+
+    const giftMap = getGiftMap(env.BUILD_TARGET);
+
     return {
         props: {
             prices,
             priceMap,
+            giftPriceIds: giftMap
         },
     };
 };

@@ -1,5 +1,4 @@
 import { PaymentPlan } from '@app/services/payment/paymentHelpers';
-import { env } from 'process';
 
 // for gifting. Price id to coupon id
 export const giftPricingLookupMap: Record<string, string> = {
@@ -90,7 +89,12 @@ const professionalGiftPriceIdsProd: Record<GiftDurations, string> = {
     oneYear: 'price_1Kh6aRJzF2VT0EeK3HxxxPWb',
 };
 
-export const giftPriceIds: Record<Exclude<PaymentPlan, 'Free'>, typeof professionalGiftPriceIds> = {
-    Personal: env.NODE_ENV === 'production' ? personalGiftPriceIdsProd : personalGiftPriceIds,
-    Professional: env.NODE_ENV === 'production' ? professionalGiftPriceIdsProd : professionalGiftPriceIds,
-};
+export type GiftPriceMap = Record<Exclude<PaymentPlan, 'Free'>, typeof professionalGiftPriceIdsProd>;
+
+// should only be called at BUILD time
+export function getGiftMap(target: "staging" | "production" | "local"): GiftPriceMap {
+    return ({
+        Personal: target === 'production' ? personalGiftPriceIdsProd : personalGiftPriceIds,
+        Professional: target === 'production' ? professionalGiftPriceIdsProd : professionalGiftPriceIds,
+    });
+}

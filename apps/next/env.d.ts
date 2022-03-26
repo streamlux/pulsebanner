@@ -48,6 +48,7 @@ declare global {
             NODEMAILER_API_KEY: string;
             NODEMAILER_DOMAIN: string;
             DISCORD_GIFT_PURCHASED_URL: string;
+            BUILD_TARGET?: 'staging' | 'production' | 'local';
         }
     }
 }

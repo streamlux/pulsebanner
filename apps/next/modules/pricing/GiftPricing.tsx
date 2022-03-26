@@ -39,14 +39,15 @@ import { GiftCard } from '@app/components/pricing/GiftCard';
 import { ButtonSwitch } from '@app/components/buttonSwitch/ButtonSwitch';
 import ReactCanvasConfetti from 'react-canvas-confetti';
 import getStripe from '@app/util/getStripe';
-import { giftPriceIds } from '@app/services/stripe/gift/constants';
+import { GiftPriceMap } from '@app/services/stripe/gift/constants';
 
 type Props = {
     priceMap: Record<string, { unitAmount: number } & Price & { product: Product }>;
     cancel_path?: string;
+    giftPriceIds: GiftPriceMap;
 };
 
-export const GiftPricing: React.FC<Props> = ({ priceMap, cancel_path }) => {
+export const GiftPricing: React.FC<Props> = ({ priceMap, cancel_path, giftPriceIds }) => {
     const [paymentPlan, paymentPlanResponse] = usePaymentPlan();
     const { data: session } = useSession({ required: false }) as any;
 
@@ -217,7 +218,18 @@ export const GiftPricing: React.FC<Props> = ({ priceMap, cancel_path }) => {
     );
 
     const giftIds = giftPriceIds[giftProduct];
-    const gift = (duration: keyof typeof giftIds) => priceMap[giftIds[duration]];
+    const gift = (duration: keyof typeof giftIds) => {
+        if (!priceMap[giftIds[duration]]) {
+            console.log('Error getting gift for duration: ', duration, giftIds[duration], priceMap[giftIds[duration]]);
+            return undefined as unknown as ({
+                unitAmount: number;
+            } & Price & {
+                product: Product;
+            });
+        } else {
+            return priceMap[giftIds[duration]];
+        }
+    };
     return (
         <>
             <NextSeo title="Pricing" />

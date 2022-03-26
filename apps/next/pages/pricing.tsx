@@ -44,6 +44,8 @@ import { ArrowRightIcon } from '@chakra-ui/icons';
 import { ButtonSwitch } from '@app/components/buttonSwitch/ButtonSwitch';
 import { GiftPricing } from '@app/modules/pricing/GiftPricing';
 import { useSession } from '@app/util/hooks/useSession';
+import { getGiftMap, GiftPriceMap } from '@app/services/stripe/gift/constants';
+import { env } from 'process';
 
 type ProductType = Product & { prices: Price[] };
 type Products = ProductType[];
@@ -51,6 +53,7 @@ type Props = {
     products: Products;
     prices: (Price & { unitAmount: number } & { product: Product })[];
     priceMap: Record<string, Price & { unitAmount: number } & { product: Product }>;
+    giftPriceIds: GiftPriceMap;
 };
 
 const arrowAnimation = keyframes`
@@ -68,7 +71,7 @@ const sortProductsByPrice = (products: Products, billingInterval: PriceInterval)
             (a, b) => (a?.prices?.find((one) => one.interval === billingInterval)?.unitAmount ?? 0) - (b?.prices?.find((one) => one.interval === billingInterval)?.unitAmount ?? 0)
         );
 
-const Page: NextPage<Props> = ({ products, priceMap }) => {
+const Page: NextPage<Props> = ({ products, priceMap, giftPriceIds }) => {
     const [paymentPlan, paymentPlanResponse] = usePaymentPlan();
     const { data: session } = useSession({ required: false });
 
@@ -329,7 +332,7 @@ const Page: NextPage<Props> = ({ products, priceMap }) => {
                     </Box>
 
                     <Container w="full" maxW={['unset', 'container.xl']} px="0">
-                        <GiftPricing priceMap={priceMap} />
+                        <GiftPricing giftPriceIds={giftPriceIds} priceMap={priceMap} />
                     </Container>
                 </Container>
 
@@ -354,6 +357,11 @@ const Page: NextPage<Props> = ({ products, priceMap }) => {
 // aka this page is server-side rendered
 // This method is run on the server, then the return value is passed in as props to the component above
 export const getStaticProps: GetStaticProps<Props> = async (context) => {
+
+    if (!env.BUILD_TARGET) {
+        throw new Error('BUILD_TARGET is not defined. This should only be set at build time, and not at runtime.');
+    }
+
     const products = await prisma.product.findMany({
         where: {
             active: true,
@@ -386,8 +394,12 @@ export const getStaticProps: GetStaticProps<Props> = async (context) => {
         return map;
     }, {} as any);
 
+    console.log('Generating pricing page', env.BUILD_TARGET);
+    const giftMap = getGiftMap(env.BUILD_TARGET);
+
     return {
         props: {
+            giftPriceIds: giftMap,
             products,
             prices,
             priceMap,
