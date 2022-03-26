@@ -30,6 +30,7 @@ handler.post(async (req, res) => {
             {
                 price: price,
                 quantity,
+                // only set this if it's a subscription
                 adjustable_quantity: isSubscription ? undefined : {
                     enabled: true,
                     minimum: 1,
