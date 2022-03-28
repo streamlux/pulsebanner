@@ -1,10 +1,10 @@
 import { CheckIcon } from '@chakra-ui/icons';
-import { Box, Flex, VStack, Heading, Text, Center, List, ListIcon, ListItem, Stack, chakra, ScaleFade } from '@chakra-ui/react';
+import { Box, Flex, VStack, Heading, Text, Center, List, ListIcon, ListItem, Stack, chakra, ScaleFade, HStack, TextProps } from '@chakra-ui/react';
 import React from 'react';
 
 export const ProductCardHeading: React.FC = ({ children }) => {
     return (
-        <Box w="full" experimental_spaceY={4}>
+        <Box experimental_spaceY={4}>
             <Flex direction="row" justify="space-between" alignItems="center">
                 <VStack alignItems="start" spacing={0}>
                     {children}
@@ -77,9 +77,17 @@ export const ProductCardPrice: React.FC = ({ children }) => {
     );
 };
 
-export const ProductCardPriceAmount: React.FC = ({ children }) => {
+export const GiftCardPrice: React.FC = ({ children }) => {
     return (
-        <Text fontSize="2xl" fontWeight="extrabold" lineHeight="tight" as={chakra.span} bg="green.200" px="1" py="0.5" rounded="md" color="black">
+        <Stack direction={['column', 'row']} alignItems={['center', 'center']} w="full" spacing={2}>
+            {children}
+        </Stack>
+    );
+};
+
+export const ProductCardPriceAmount: React.FC<TextProps> = ({ children, ...props }) => {
+    return (
+        <Text fontSize="2xl" fontWeight="extrabold" lineHeight="tight" as={chakra.span} bg="green.200" px="1" py="0.5" rounded="md" color="black" {...props}>
             {children}
         </Text>
     );

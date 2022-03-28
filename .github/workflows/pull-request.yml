@@ -52,6 +52,9 @@ jobs:
               run: npx nx run next:lint
 
             - name: Build Next.js app
+              env:
+                  NODE_ENV: production
+                  BUILD_TARGET: staging
               run: npx nx run next:build:production
 
     build_remotion:

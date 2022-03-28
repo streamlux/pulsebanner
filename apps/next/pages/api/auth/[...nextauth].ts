@@ -1,20 +1,20 @@
-import NextAuth, { User } from 'next-auth';
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import NextAuth, { Account, User } from 'next-auth';
 import TwitchProvider from 'next-auth/providers/twitch';
 import TwitterProvider from 'next-auth/providers/twitter';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import prisma from '@app/util/ssr/prisma';
 import { nanoid } from 'nanoid';
-import { createTwitterClient, getBanner } from '@app/util/twitter/twitterHelpers';
-import { AccessToken, accessTokenIsExpired, refreshUserToken, StaticAuthProvider } from '@twurple/auth';
+import { getBanner } from '@app/services/twitter/twitterHelpers';
 import { sendMessage } from '@app/util/discord/sendMessage';
 import { sendError } from '@app/util/discord/sendError';
-import { env } from 'process';
-import { uploadBase64 } from '@app/util/s3/upload';
 import imageToBase64 from 'image-to-base64';
-import { getAccountInfo } from '@app/util/database/postgresHelpers';
 import { localAxios } from '@app/util/axios';
 import { logger } from '@app/util/logger';
-import axios from 'axios';
+import { buildSession } from '@app/services/auth/buildSession';
+import env from '@app/util/env';
+import { S3Service } from '@app/services/S3Service';
+import { AccountsService } from '@app/services/AccountsService';
 
 // File contains options and hooks for next-auth, the authentication package
 // we are using to handle signup, signin, etc.
@@ -126,73 +126,7 @@ export default NextAuth({
         // async jwt({ token, user, account, profile, isNewUser }) { return token },
         // Use this session callback to add custom information to the session. Ex: role
         async session({ session, token, user }) {
-            const accounts = await prisma.account.findMany({
-                where: {
-                    userId: user.id,
-                },
-            });
-
-            session.user['role'] = user.role;
-            session.userId = user.id;
-            session.user['id'] = user.id;
-            session.role = user.role;
-            session.accounts = {};
-            accounts.forEach(async (account) => {
-                // Boolean specifying if the user has connected this account or not
-                session.accounts[account.provider] = true;
-
-                if (account.provider === 'twitch') {
-                    const authProvider: StaticAuthProvider = new StaticAuthProvider(process.env.TWITCH_CLIENT_ID, account.access_token, undefined, 'user');
-                    const token: AccessToken = await authProvider.getAccessToken();
-
-                    // Check if twitch access token is expired
-                    if (accessTokenIsExpired(token)) {
-                        logger.info(`Twitch user access token is expired for user: '${user.name}'. Refreshing token...`);
-                        try {
-                            const newToken: AccessToken = await refreshUserToken(process.env.TWITCH_CLIENT_ID, process.env.TWITCH_CLIENT_SECRET, token.refreshToken);
-                            // update the access token and other token details in the database
-                            await prisma.account.update({
-                                where: {
-                                    id: account.id,
-                                },
-                                data: {
-                                    access_token: newToken.accessToken,
-                                    refresh_token: newToken.refreshToken,
-                                    expires_at: newToken.obtainmentTimestamp + 1000 * newToken.expiresIn,
-                                    token_type: account.token_type,
-                                    scope: newToken.scope.join(' '),
-                                },
-                            });
-                            logger.info(`Twitch user access token is expired for user: '${user.name}'. Refreshing token...`);
-                        } catch (e) {
-                            const msgs = [`Failed to refresh Twitch user access token for user: '${user.name}'.`];
-                            const msg = msgs.join('\n');
-                            logger.error(msg, e, { userId: user.id });
-                            sendError(e, msg);
-                        }
-                    }
-                } else if (account.provider === 'twitter') {
-                    // update the profile picture url we have stored for them if it has baen changed (aka 404)
-                    try {
-                        await axios.get(user.image);
-                    } catch (e) {
-                        const client = createTwitterClient(account.oauth_token, account.oauth_token_secret);
-                        const twitterUser = await client.accountsAndUsers.usersShow({
-                            user_id: account.providerAccountId
-                        });
-                        const avatar_url = twitterUser.profile_image_url_https;
-                        await prisma.user.update({
-                            where: {
-                                id: user.id
-                            },
-                            data: {
-                                image: avatar_url
-                            }
-                        });
-                    }
-                }
-            });
-            return session;
+            return await buildSession(session, user);
         },
     },
 
@@ -201,16 +135,16 @@ export default NextAuth({
     events: {
         createUser: (message: { user: User }) => {
             prisma.user.count().then((value) => {
-                sendMessage(`"${message.user.name}" signed up for PulseBanner! Total users: ${value}`, process.env.DISCORD_WEBHOOK_URL);
+                sendMessage(`"${message.user.name}" signed up for PulseBanner! Total users: ${value}`, env.DISCORD_WEBHOOK_URL);
             });
         },
-        signIn: (message: { user: User; account: any; isNewUser: boolean }) => {
+        signIn: (message: { user: User; account: Account; isNewUser?: boolean }) => {
             // we automatically upload the user's banner to s3 storage on first sign in
             if (message.isNewUser === true && message.account.provider === 'twitter') {
-                const twitterProvider = message.account;
+                const twitterProvider = message.account as any;
                 getBanner(message.user.id, twitterProvider.oauth_token, twitterProvider.oauth_token_secret, twitterProvider.providerAccountId).then((bannerUrl) => {
                     if (bannerUrl === 'empty') {
-                        uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, 'empty')
+                        S3Service.uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, 'empty')
                             .then(() => {
                                 logger.info('Uploaded empty banner on new user signup.', { userId: message.user.id });
                             })
@@ -220,7 +154,7 @@ export default NextAuth({
                             });
                     } else {
                         imageToBase64(bannerUrl).then((base64: string) => {
-                            uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, base64)
+                            S3Service.uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, base64)
                                 .then(() => {
                                     logger.info('Uploaded Twitter banner on new user signup.', { userId: message.user.id });
                                 })
@@ -244,7 +178,7 @@ export default NextAuth({
                 }
                 // we need to update the account info if twitter oauth isn't matching
             } else if (message.isNewUser === false && message.account.provider === 'twitter') {
-                getAccountInfo(message.user.id)
+                AccountsService.getTwitterInfo(message.user.id)
                     .then((response) => {
                         // if we are able to find it, we need to check if the oauth matches and update the account table if it doesn't
                         if (response && (response?.oauth_token !== message.account.oauth_token || response?.oauth_token_secret !== message.account.oauth_token_secret)) {
@@ -256,8 +190,8 @@ export default NextAuth({
                                         provider: 'twitter',
                                     },
                                     data: {
-                                        oauth_token: message.account.oauth_token,
-                                        oauth_token_secret: message.account.oauth_token_secret,
+                                        oauth_token: message.account.oauth_token! as string,
+                                        oauth_token_secret: message.account.oauth_token_secret! as string,
                                     },
                                 })
                                 .then((response) => {

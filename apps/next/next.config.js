@@ -26,6 +26,18 @@ const nextConfig = {
                 destination: 'https://discord.gg/JU4McuJQt4',
                 permanent: false,
                 statusCode: 307
+            },
+            {
+                source: '/redeem',
+                destination: '/api/pricing/redeem',
+                permanent: false,
+                statusCode: 307,
+                has: [
+                    {
+                      type: 'query',
+                      key: 'giftId'
+                    }
+                ]
             }
         ]
     },

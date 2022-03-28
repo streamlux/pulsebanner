@@ -6,7 +6,7 @@ import { SimpleResponse } from '../simpleResponse';
 import prisma from '../ssr/prisma';
 import stripe from '../ssr/stripe';
 import { PartnerMediaKit } from './mediaKit';
-import { MediaKitImage } from './types';
+import { MediaKitImage } from '@app/services/partner/types';
 
 export const createNewPromoCode = async (partnerId: string, partnerCode: string): Promise<SimpleResponse> => {
     try {

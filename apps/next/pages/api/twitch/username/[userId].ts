@@ -1,6 +1,6 @@
-import { TwitchClientAuthService } from '@app/services/TwitchClientAuthService';
+import { AccountsService } from '@app/services/AccountsService';
+import { TwitchClientAuthService } from '@app/services/twitch/TwitchClientAuthService';
 import { twitchAxios } from '@app/util/axios';
-import { getAccountsById } from '@app/util/getAccountsById';
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 
@@ -17,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const userId: string = req.query.userId as string;
 
-    const accounts = await getAccountsById(userId);
+    const accounts = await AccountsService.getAccountsById(userId);
     if (accounts['twitch'] === undefined) {
         return res.status(401).send('Unauthenticated');
     }

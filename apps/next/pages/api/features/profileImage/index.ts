@@ -1,8 +1,7 @@
 import { updateTwitchSubscriptions } from '@app/services/updateTwitchSubscriptions';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import prisma from '@app/util/ssr/prisma';
-import { ProfileImage } from '@prisma/client';
-import { productPlan } from '@app/util/database/paymentHelpers';
+import { productPlan } from '@app/services/payment/paymentHelpers';
 
 const handler = createAuthApiHandler();
 
@@ -65,7 +64,7 @@ handler.put(async (req, res) => {
     const userId: string = req.session.userId;
 
     // get the users profile pic
-    const profileImage: ProfileImage = await prisma.profileImage.findFirst({
+    const profileImage = await prisma.profileImage.findFirst({
         where: {
             userId,
         },

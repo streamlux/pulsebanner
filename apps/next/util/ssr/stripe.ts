@@ -1,14 +1,15 @@
 import { Customer } from '@prisma/client';
 import Stripe from 'stripe';
+import env from '../env';
 
 import prisma from './prisma';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
     apiVersion: '2020-08-27',
 });
 
 export const getCustomerId = async (userId: string) => {
-    const customer: Customer = await prisma.customer.findFirst({
+    const customer: Customer | null = await prisma.customer.findFirst({
         where: {
             userId: userId,
         },

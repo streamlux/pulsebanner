@@ -1,6 +1,6 @@
-import { TwitchClientAuthService } from '@app/services/TwitchClientAuthService';
+import { AccountsService } from '@app/services/AccountsService';
+import { TwitchClientAuthService } from '@app/services/twitch/TwitchClientAuthService';
 import { twitchAxios } from '@app/util/axios';
-import { getAccountsById } from '@app/util/getAccountsById';
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 
@@ -18,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const userId: string = req.query.userId as string;
 
     if (userId) {
-        const accounts = await getAccountsById(userId);
+        const accounts = await AccountsService.getAccountsById(userId);
         let isStreaming = false;
         if (accounts['twitch']) {
             const twitchUserId = accounts['twitch'].providerAccountId;

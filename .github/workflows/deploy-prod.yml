@@ -58,9 +58,17 @@ jobs:
             - name: Lint Next.js app
               run: npx nx run next:lint
 
+            - name: Setup DigitalOcean firewall
+              uses: earthpyy/setup-digitalocean-firewall@v1
+              with:
+                  access-token: ${{ secrets.DO_ACCESS_TOKEN }}
+                  firewall-id: ${{ secrets.DO_FIREWALL_ID }}
+                  ports: ${{ secrets.DATABASE_PORT }}
+
             - name: 'nx run next:make:ci'
               run: npx nx run next:make:ci
               env:
+                  BUILD_TARGET: production
                   INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
                   NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${{ secrets.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}
@@ -89,13 +97,6 @@ jobs:
                   push: true
                   tags: ${{ steps.next-meta.outputs.tags }}
                   labels: ${{ steps.next-meta.outputs.labels }}
-
-            - name: Setup DigitalOcean firewall
-              uses: earthpyy/setup-digitalocean-firewall@v1
-              with:
-                  access-token: ${{ secrets.DO_ACCESS_TOKEN }}
-                  firewall-id: ${{ secrets.DO_FIREWALL_ID }}
-                  ports: ${{ secrets.DATABASE_PORT }}
 
             - name: 'prisma migrate deploy'
               run: npx prisma migrate deploy

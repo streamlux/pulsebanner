@@ -1,7 +1,7 @@
 import { Box, VStack, Heading, Divider, SimpleGrid, Text, useColorMode, Link, Button, Stack, Center } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import React, { ReactElement, FC } from 'react';
-import { FaqItem } from './data';
+import { FaqItem } from './faqData';
 import { FaqItemC } from './FaqItem';
 import NextLink from 'next/link';
 
@@ -10,7 +10,6 @@ type FaqSectionProps = {
 };
 
 export const FaqSection: FC<FaqSectionProps> = ({ items }): ReactElement => {
-    const { colorMode } = useColorMode();
     const router = useRouter();
     return (
         <Box name="faq">
@@ -21,17 +20,17 @@ export const FaqSection: FC<FaqSectionProps> = ({ items }): ReactElement => {
                 <Stack w="full" direction={['column', 'row']}>
                     <Text>Have more questions? Ask us in our Discord!</Text>
                     <Center>
-                        <Link isExternal href="/discord" passHref>
-                            <Button as="a" variant="link" colorScheme={'twitter'}>
+                        <NextLink href="/discord" passHref>
+                            <Button as="a" variant="link" target={'_blank'} colorScheme={'twitter'}>
                                 Click here to join
                             </Button>
-                        </Link>
+                        </NextLink>
                     </Center>
                 </Stack>
                 <Divider />
                 <SimpleGrid columns={[1, 2]} spacing={[8]}>
-                    {items.map((item) => (
-                        <FaqItemC key={item.answer.toString()} item={item} colorMode={colorMode} />
+                    {items.map((item: FaqItem) => (
+                        <FaqItemC key={item.id} item={item}/>
                     ))}
                 </SimpleGrid>
                 {router.asPath !== '/faq' && (

@@ -1,5 +1,5 @@
-import { CheckIcon, CopyIcon, ExternalLinkIcon } from '@chakra-ui/icons';
-import { useClipboard, Tag, HStack, Link, Tooltip, Text, Button, IconButton } from '@chakra-ui/react';
+import { CheckIcon, CopyIcon } from '@chakra-ui/icons';
+import { useClipboard, Tag, HStack, Tooltip, Text, Button } from '@chakra-ui/react';
 import NextLink from 'next/link';
 
 type IdTagProps = {
@@ -11,7 +11,7 @@ type IdTagProps = {
     copyValue?: string;
 };
 
-export const IdTag = ({ id, url, noCopy, urlTooltip, alias: pretty, copyValue }: IdTagProps): React.ReactElement => {
+export const IdTag = ({ id, url = '#', noCopy, urlTooltip, alias: pretty, copyValue }: IdTagProps): React.ReactElement => {
     copyValue ??= id;
 
     const clipboard = useClipboard(copyValue);

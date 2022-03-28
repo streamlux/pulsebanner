@@ -7,6 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.11.2] - 2022-03-25
+
+### Fixed
+
+ - Added BUILD_TARGET environment variable so that we can properly generate static pages
+
+## [0.11.1] - 2022-03-25
+
+### Fixed
+
+ - Updated deployment order so firewall opens before building nextjs image
+
+## [0.11.0] - 2022-03-25
+
+### Added
+- Gifts page
+- Gift pricing on pricing page
+- Gift summary page
+- Gift summary emails
+
+### Changed
+- Let users disconnect their Twitch account
+- Low effort UI improvement to account page
+- New mobile header
+
+### Engineering
+- Organized code into services
+- Turn on TS strict mode
+- Upgrade to TypeScript ^4.6.0 to get access to the `Awaited` utility type.
+- 
+### Fixed
+- Improved Google lighthouse score
+
+## [0.10.7] - 2022-03-16
+
+### Fixed
+- Another partner page bug
+
+## [0.10.6] - 2022-03-16
+
+### Fixed
+- Partner page bug
+
+## [0.10.5] - 2022-03-15
+### Fixed
+- Let legacy partners apply for partner program
+
+## [0.10.4] - 2022-03-14
+
 ### Fixed
 - Handle Twitter names that are too long properly
 

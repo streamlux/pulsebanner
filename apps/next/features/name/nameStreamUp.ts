@@ -1,16 +1,16 @@
-import { productPlan } from '@app/util/database/paymentHelpers';
-import { getTwitterInfo, flipFeatureEnabled, getTwitterName, updateOriginalTwitterNameDB } from '@app/util/database/postgresHelpers';
+import { productPlan } from '@app/services/payment/paymentHelpers';
+import { flipFeatureEnabled, getTwitterName, updateOriginalTwitterNameDB } from '@app/services/postgresHelpers';
 import { logger } from '@app/util/logger';
 import prisma from '@app/util/ssr/prisma';
-import { validateTwitterAuthentication, getCurrentTwitterName, updateTwitterName } from '@app/util/twitter/twitterHelpers';
-import { TwitterName } from '@prisma/client';
+import { validateTwitterAuthentication, getCurrentTwitterName, updateTwitterName } from '@app/services/twitter/twitterHelpers';
 import { Feature } from '../Feature';
+import { AccountsService } from '@app/services/AccountsService';
 
 const nameStreamUp: Feature<string> = async (userId: string): Promise<string> => {
-    const twitterInfo = await getTwitterInfo(userId);
+    const twitterInfo = await AccountsService.getTwitterInfo(userId);
 
     // if they are not authenticated with twitter, return 401 and turn off the feature
-    const validatedTwitter = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    const validatedTwitter = twitterInfo && await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
     if (!validatedTwitter) {
         await flipFeatureEnabled(userId, 'name');
         logger.error('Unauthenticated Twitter. Disabling feature name and requiring re-auth.');
@@ -21,8 +21,8 @@ const nameStreamUp: Feature<string> = async (userId: string): Promise<string> =>
     const currentTwitterName = await getCurrentTwitterName(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
 
     // get the twitter stream name specified in table
-    const twitterNameSettings: TwitterName = await getTwitterName(userId);
-    if (!twitterNameSettings.enabled) {
+    const twitterNameSettings = await getTwitterName(userId);
+    if (!twitterNameSettings?.enabled) {
         return 'Feature not enabled.';
     }
 

@@ -1,8 +1,9 @@
 import { remotionAxios } from '@app/util/axios';
-import { getProfilePicEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { Prisma } from '@prisma/client';
 import { AxiosResponse } from 'axios';
 import { createAuthApiHandler } from '../../../util/ssr/createApiHandler';
+import { AccountsService } from '@app/services/AccountsService';
+import { ProfilePicService } from '@app/services/ProfilePicService';
 
 type TemplateRequestBody = {
     foregroundId: string;
@@ -21,18 +22,18 @@ handler.get(async (req, res) => {
     const userId = (req.query.userId as string) ?? req.session.userId;
 
     if (userId) {
-        const profilePicEntry = await getProfilePicEntry(userId);
-        const twitterInfo = await getTwitterInfo(userId, true);
+        const profilePicEntry = await ProfilePicService.getProfilePicEntry(userId);
+        const twitterInfo = await AccountsService.getTwitterInfo(userId, true);
 
         if (profilePicEntry === null || twitterInfo === null) {
             res.status(400).send('Unable to get profilePicEntry or twitterInfo for user on streamup');
         }
 
         const templateObj: TemplateRequestBody = {
-            backgroundId: profilePicEntry.backgroundId ?? 'ColorBackground',
-            foregroundId: profilePicEntry.foregroundId ?? 'ProfilePic',
-            foregroundProps: { ...(profilePicEntry.foregroundProps as Prisma.JsonObject) } ?? {},
-            backgroundProps: { ...(profilePicEntry.backgroundProps as Prisma.JsonObject) } ?? {},
+            backgroundId: profilePicEntry?.backgroundId ?? 'ColorBackground',
+            foregroundId: profilePicEntry?.foregroundId ?? 'ProfilePic',
+            foregroundProps: { ...(profilePicEntry?.foregroundProps as Prisma.JsonObject) } ?? {},
+            backgroundProps: { ...(profilePicEntry?.backgroundProps as Prisma.JsonObject) } ?? {},
         };
 
         // pass in the bannerEntry info

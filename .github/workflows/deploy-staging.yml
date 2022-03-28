@@ -77,6 +77,7 @@ jobs:
             - name: 'nx run next:make:ci'
               run: npx nx run next:make:ci
               env:
+                  BUILD_TARGET: staging
                   INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
                   NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${{ secrets.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}

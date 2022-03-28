@@ -125,7 +125,7 @@ function imgPreset(src: string, font?: string): BannerPresetProps {
             id: 'ImLive',
             props: {
                 ...defaultBanner.foreground.props,
-                fontStyle: font,
+                ...(font ? { fontStyle: font } : {}),
             }
         },
         background: {

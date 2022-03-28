@@ -1,5 +1,6 @@
-import { getTweetInfo, getTwitterInfo } from '@app/util/database/postgresHelpers';
-import { tweetStreamStatusLive, TwitterResponseCode } from '@app/util/twitter/twitterHelpers';
+import { AccountsService } from '@app/services/AccountsService';
+import { getTweetInfo } from '@app/services/postgresHelpers';
+import { tweetStreamStatusLive, TwitterResponseCode } from '@app/services/twitter/twitterHelpers';
 import { NextApiRequest, NextApiResponse } from 'next';
 import NextCors from 'nextjs-cors';
 
@@ -19,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // use this when they upload their stream link, string they want to use, etc.
     const tweetInfo = await getTweetInfo(userId);
 
-    const twitterInfo = await getTwitterInfo(userId);
+    const twitterInfo = await AccountsService.getTwitterInfo(userId);
 
     // add tweetEntry check once frontend enable is added for testing
     if (tweetInfo === null || twitterInfo === null) {

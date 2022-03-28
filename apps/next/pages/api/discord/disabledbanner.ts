@@ -1,3 +1,5 @@
+import { CustomSession } from '@app/services/auth/CustomSession';
+import env from '@app/util/env';
 import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getSession } from 'next-auth/react';
@@ -14,15 +16,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
     });
 
-    const session = getSession({ req });
-    if (session === null || (await session).user === null) {
+    const session: CustomSession | null = await getSession({ req }) as CustomSession;
+    if (session === null || session.user === null) {
         return res.status(401).send('Unauthenticated');
     }
 
     const body = req.body;
 
     if (process.env.ENABLE_DISCORD_WEBHOOKS === 'true') {
-        const response = await axios.post(process.env.DISCORD_BANNER_DISABLED_WEBHOOK_URL, {
+        const response = await axios.post(env.DISCORD_BANNER_DISABLED_WEBHOOK_URL, {
             content: `Reason for disabled: ${body.radioValue}.\nComment: ${body.inputValue}\n`,
         });
 

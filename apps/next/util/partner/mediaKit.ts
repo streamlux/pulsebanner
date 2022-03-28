@@ -1,11 +1,10 @@
 import S3 from 'aws-sdk/clients/s3';
-import { env } from 'process';
 import { remotionAxios } from '../axios';
-import { createS3 } from '../database/s3ClientHelper';
+import { S3Service } from '@app/services/S3Service';
 import { logger } from '../logger';
-import { basicPartnerCodeBackground, partnerCodeWithMembershipBackground } from './constants';
+import { basicPartnerCodeBackground, partnerCodeWithMembershipBackground } from '@app/services/partner/constants';
 import { upsertMediaKitEntry } from './partnerHelpers';
-import { BackgroundImageId, MediaKitImage, PartnerRemotionRequestBody, StandardBackgroundProps, StandardForegroundProps } from './types';
+import { BackgroundImageId, MediaKitImage, PartnerRemotionRequestBody, StandardBackgroundProps, StandardForegroundProps } from '@app/services/partner/types';
 
 export class PartnerMediaKit {
     userId: string;
@@ -27,7 +26,7 @@ export class PartnerMediaKit {
             twitchUsername: this.twitchUsername,
             twitterUsername: this.twitterUsername,
         };
-        this.s3 = createS3(env.DO_SPACE_ENDPOINT, env.DO_ACCESS_KEY, env.DO_SECRET);
+        this.s3 = S3Service.createS3();
         this.mediaKitMap = {
             BasicPartnerImageWithCode: this.generateTwitterCardBasicPartnerImageWithCode(),
             PartnerCodeWithMembershipImage: this.generateTwitterCardPartnerCodeWithMembershipBackground(),
@@ -111,11 +110,12 @@ export class PartnerMediaKit {
             mediaKitImageList.forEach(async (image: MediaKitImage) => {
                 await this.mediaKitMap[image];
             });
-        } else {
-            Object.keys(this.mediaKitMap).forEach(async (image: MediaKitImage) => {
-                await this.mediaKitMap[image];
-            });
         }
+        //  else {
+        //     Object.keys(this.mediaKitMap).forEach(async (image: MediaKitImage) => {
+        //         await this.mediaKitMap[image];
+        //     });
+        // }
 
         // update/insert into the partnerMediaKit table
         // we only make this method call when necessary, and it is required that we check/update the partnerMediaKit table

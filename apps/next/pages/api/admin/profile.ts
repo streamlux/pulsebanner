@@ -1,8 +1,9 @@
 import { remotionAxios } from '@app/util/axios';
-import { getProfilePicEntry, getTwitterInfo } from '@app/util/database/postgresHelpers';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import { Prisma } from '@prisma/client';
 import { AxiosResponse } from 'axios';
+import { AccountsService } from '@app/services/AccountsService';
+import { ProfilePicService } from '@app/services/ProfilePicService';
 
 type TemplateRequestBody = {
     foregroundId: string;
@@ -20,9 +21,9 @@ handler.get(async (req, res) => {
 
     const userId = (req.query.userId as string) ?? req.session.userId;
 
-    const twitterInfo = await getTwitterInfo(userId, true);
+    const twitterInfo = await AccountsService.getTwitterInfo(userId, true);
 
-    const profilePicEntry = await getProfilePicEntry(userId);
+    const profilePicEntry = await ProfilePicService.getProfilePicEntry(userId);
 
     if (twitterInfo === null || profilePicEntry === null) {
         return res.status(400).send('Could not find profile entry or twitter info for user');

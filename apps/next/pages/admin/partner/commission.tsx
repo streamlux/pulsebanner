@@ -82,29 +82,31 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
             const balanceTransactions = await stripe.balanceTransactions.list();
 
-            const allPartnerInvoices = (await prisma.partnerInvoice.findMany({
-                include: {
-                    partner: {
-                        include: {
-                            partnerInformation: {
-                                include: {
-                                    user: true,
+            const allPartnerInvoices = (
+                await prisma.partnerInvoice.findMany({
+                    include: {
+                        partner: {
+                            include: {
+                                partnerInformation: {
+                                    include: {
+                                        user: true,
+                                    },
+                                },
+                            },
+                        },
+                        customer: {
+                            include: {
+                                user: {
+                                    select: {
+                                        name: true,
+                                        id: true,
+                                    },
                                 },
                             },
                         },
                     },
-                    customer: {
-                        include: {
-                            user: {
-                                select: {
-                                    name: true,
-                                    id: true,
-                                },
-                            },
-                        },
-                    },
-                },
-            })).sort((a, b) => b.paidAt.valueOf() - a.paidAt.valueOf());
+                })
+            ).sort((a, b) => b.paidAt.valueOf() - a.paidAt.valueOf());
 
             // requery the waiting list because it could have been adjusted
             const waitPeriodPartnerInvoices = allPartnerInvoices.filter((invoice) => invoice.commissionStatus === 'waitPeriod');
@@ -133,6 +135,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             };
         }
     }
+    return {
+        props: {},
+    };
 };
 
 export default function Page({
@@ -194,14 +199,21 @@ export default function Page({
                             {invoiceList.map((invoice) => (
                                 <Tr key={invoice.id}>
                                     <Td>
-                                        <IdTag copyValue={invoice.id} id='View on Stripe' url={`${stripeBaseUrl}invoices/${invoice.id}`} urlTooltip="View on Stripe" />
+                                        <IdTag copyValue={invoice.id} id="View on Stripe" url={`${stripeBaseUrl}invoices/${invoice.id}`} urlTooltip="View on Stripe" />
                                     </Td>
                                     <Td isNumeric>{formatUsd(invoice.purchaseAmount)}</Td>
                                     <Td>{invoice.paidAt.toLocaleString()}</Td>
-                                    <Td>{invoice.partnerId && <IdTag id={invoice.partner?.partnerInformation.user.name} copyValue={invoice.partnerId} />}</Td>
+                                    <Td>{invoice.partnerId && <IdTag id={invoice.partner?.partnerInformation.user.name ?? ''} copyValue={invoice.partnerId} />}</Td>
                                     <Td>{invoice.customer?.user.name}</Td>
                                     <Td isNumeric>{formatUsd(invoice.commissionAmount)}</Td>
-                                    <Td> {invoice.balanceTransactionId ? new Date(balanceTransactions.data.find((bt) => bt.id === invoice.balanceTransactionId)?.created * 1000).toLocaleString() : ''}</Td>
+                                    <Td>
+                                        {' '}
+                                        {invoice.balanceTransactionId
+                                            ? new Date(
+                                                  (balanceTransactions.data.find((bt) => bt.id === (invoice.balanceTransactionId ?? ''))?.created ?? 0) * 1000
+                                              ).toLocaleString()
+                                            : ''}
+                                    </Td>
                                     {pendingAction ? <Td>{DropdownPayoutOption(invoice)}</Td> : <Td>{invoice.commissionStatus}</Td>}
                                 </Tr>
                             ))}

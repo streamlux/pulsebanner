@@ -1,8 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { logger } from '../logger';
-import { onLoad } from './onLoad';
+import { StartupService } from './StartupService';
 
-onLoad();
+StartupService.onLoad();
 
 declare global {
     // eslint-disable-next-line no-var
@@ -13,7 +13,7 @@ let numClients = 0;
 
 const createPrismaClient = () => {
     if (process.env.GITHUB_ACTIONS) {
-        return;
+        return new PrismaClient();
     }
     console.log(process.env);
     logger.info('Creating new Prisma client...');
@@ -23,7 +23,7 @@ const createPrismaClient = () => {
 };
 
 // https://www.prisma.io/docs/support/help-articles/nextjs-prisma-client-dev-practices
-const prisma = global._prisma || createPrismaClient();
+const prisma = global._prisma || createPrismaClient() as PrismaClient<Prisma.PrismaClientOptions, never, Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined>;
 
 if (process.env.NODE_ENV !== 'production') global._prisma = prisma;
 

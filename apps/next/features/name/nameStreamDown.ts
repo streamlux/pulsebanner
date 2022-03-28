@@ -1,12 +1,13 @@
-import { getTwitterInfo, flipFeatureEnabled, getOriginalTwitterName } from '@app/util/database/postgresHelpers';
+import { flipFeatureEnabled, getOriginalTwitterName } from '@app/services/postgresHelpers';
 import { logger } from '@app/util/logger';
-import { validateTwitterAuthentication, getCurrentTwitterName, updateTwitterName } from '@app/util/twitter/twitterHelpers';
+import { validateTwitterAuthentication, getCurrentTwitterName, updateTwitterName } from '@app/services/twitter/twitterHelpers';
 import { Feature } from '../Feature';
+import { AccountsService } from '@app/services/AccountsService';
 
 const nameStreamDown: Feature<string> = async (userId: string): Promise<string> => {
-    const twitterInfo = await getTwitterInfo(userId);
+    const twitterInfo = await AccountsService.getTwitterInfo(userId);
 
-    const validatedTwitter = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    const validatedTwitter = twitterInfo && await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
     if (!validatedTwitter) {
         await flipFeatureEnabled(userId, 'name');
         logger.error('Unauthenticated Twitter. Disabling feature name and requiring re-auth.', { userId });
