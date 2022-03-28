@@ -4,3 +4,5 @@ export * from './ImLive';
 export * from './ProfilePic';
 export * from './Emgg';
 export * from './Sway';
+export * from './BasicPartnerImageWithCode';
+export * from './PartnerCodeWithMembershipImage';

@@ -50,6 +50,7 @@ import useSWR from 'swr';
 import { discordLink } from '@app/util/constants';
 import { logger } from '@app/util/logger';
 import { useForm } from 'react-hook-form';
+import { mediaKitGenerationHelper } from '@app/util/partner/partnerHelpers';
 import { AcceptanceStatus, PartnerCreateType } from '@app/services/partner/types';
 
 interface Props {
@@ -62,7 +63,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const session = (await getSession({
         ctx: context,
     })) as any;
-
 
     if (session) {
         const payment = await productPlan(session.userId);
@@ -82,21 +82,41 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     },
                 });
 
-                if (!partnerInfo) {
-                    return {
-                        props: {
-                            partnerStatus: AcceptanceStatus.None
+                const partnerMediaKitInfo = await prisma.partnerMediaKit.findUnique({
+                    where: {
+                        partnerId: partnerId,
+                    },
+                    select: {
+                        failedImageRendering: true,
+                    },
+                });
+
+                // only generate the images if one of the two scenarios
+                // 1. We do not have an entry yet in the db. Then, we must generate all the images
+                // 2. We have an entry but there were failures rendering it previously. Only re-render these images
+                if (partnerInfo !== null) {
+                    if (partnerMediaKitInfo === null) {
+                        await mediaKitGenerationHelper(partnerId, partnerInfo.partnerCode);
+                    } else {
+                        if (partnerMediaKitInfo.failedImageRendering.length !== 0) {
+                            await mediaKitGenerationHelper(partnerId, partnerInfo.partnerCode, partnerMediaKitInfo.failedImageRendering);
                         }
                     }
+                    return {
+                        props: {
+                            partnerStatus: partnerInfo.acceptanceStatus as AcceptanceStatus,
+                            partnerCode: partnerInfo.partnerCode,
+                            payment,
+                        },
+                    };
                 }
-
-                return {
-                    props: {
-                        partnerStatus: partnerInfo.acceptanceStatus as AcceptanceStatus,
-                        partnerCode: partnerInfo.partnerCode,
-                        payment,
-                    },
-                };
+                if (partnerInfo === null) {
+                    return {
+                        props: {
+                            partnerStatus: AcceptanceStatus.None,
+                        },
+                    };
+                }
             } catch (e) {
                 logger.error('Error in partner page for getServerSideProps. ', { error: e });
             }
@@ -154,7 +174,6 @@ export default function Page({ partnerStatus, partnerCode, payment }: Props) {
 
     // order of the if statements matter
     const availableForAccount = (): boolean => {
-
         // let legacy partners apply
         if (payment?.partner) {
             return true;
@@ -177,7 +196,6 @@ export default function Page({ partnerStatus, partnerCode, payment }: Props) {
     const refreshData = () => {
         router.replace(router.asPath);
     };
-
 
     const onSubmit = async (formData: FormData) => {
         if (!ensureSignUp()) {
@@ -580,9 +598,8 @@ export default function Page({ partnerStatus, partnerCode, payment }: Props) {
                         </Center>
                         <Center w="full" textAlign={'center'}>
                             <Text>
-                                The PulseBanner Partner Program is currently in closed beta.{' '}
-                                <strong>We are not accepting applications during the beta.</strong>{' '}
-                                Applications will open up to PulseBanner Members once the beta concludes.
+                                The PulseBanner Partner Program is currently in closed beta. <strong>We are not accepting applications during the beta.</strong> Applications will
+                                open up to PulseBanner Members once the beta concludes.
                             </Text>
                         </Center>
                     </Box>

@@ -13,6 +13,7 @@ import { getMimeType } from './image-types';
 import { getImageHash } from './make-hash';
 import { Browser } from 'puppeteer-core';
 import { logger } from './logger';
+import { sendFile } from './send-file';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const queue = require('express-queue');
@@ -91,8 +92,6 @@ app.post(
     '/getTemplate',
     queueMw,
     handler(async (req, res) => {
-
-
         const startMs = Date.now();
         const requestBody = req.body;
         logger.info('Rendering banner', requestBody);
@@ -143,7 +142,7 @@ app.post(
         const endMs = Date.now();
 
         logger.info(`Done rendering.`, {
-            duration: endMs - startMs
+            duration: endMs - startMs,
         });
 
         res.send(imageBase64);
@@ -156,11 +155,10 @@ app.post(
  * TemplateId, Thumbnail URL, Twitch info
  */
 // api call (POST) to here sending the required information
-app.post('/getProfilePic',
+app.post(
+    '/getProfilePic',
     queueMw,
     handler(async (req, res) => {
-
-
         const startMs = Date.now();
         const requestBody = req.body;
         logger.info('Rendering profile picture', requestBody);
@@ -211,10 +209,70 @@ app.post('/getProfilePic',
         const endMs = Date.now();
 
         logger.info(`Done rendering.`, {
-            duration: endMs - startMs
+            duration: endMs - startMs,
         });
 
         res.send(imageBase64);
+    })
+);
+
+app.get(
+    '/partnerMediaKit',
+    queueMw,
+    handler(async (req, res) => {
+        const startMs = Date.now();
+        const requestBody = req.body; // this should contain their code, username, and twitter pfp image
+        logger.info('Rendering new partner banner image', requestBody);
+        logger.info(`request queue length: ${queueMw.queue.getLength()}`);
+
+        // hard coded info as we only use one composition composer and generate different templates from there by passing the different props
+        const imageFormat = 'png';
+        const compName = 'partnerMediaKit';
+        const inputProps = req.body;
+
+        res.set('content-type', getMimeType(imageFormat));
+
+        // Calculate a unique identifier for our image,
+        // if it exists, return it from cache
+        const hash = getImageHash(
+            JSON.stringify({
+                compName,
+                imageFormat,
+                inputProps,
+            })
+        );
+
+        const output = path.join(await tmpDir, hash);
+
+        const webpackBundle = await webpackBundling;
+        const puppeteerInstance = await getBrowser();
+        const composition = await getComp(compName, inputProps);
+        await new Promise<void>((resolve, reject) => {
+            renderStill({
+                puppeteerInstance,
+                composition,
+                webpackBundle,
+                output,
+                inputProps,
+                imageFormat,
+                onError: (err) => {
+                    reject(err);
+                },
+                envVariables: {},
+            })
+                .then((res) => resolve(res))
+                .catch((err) => reject(err));
+        });
+
+        logger.info(output);
+
+        const endMs = Date.now();
+
+        logger.info(`Done rendering.`, {
+            duration: endMs - startMs,
+        });
+
+        await sendFile(res, fs.createReadStream(output));
     })
 );
 

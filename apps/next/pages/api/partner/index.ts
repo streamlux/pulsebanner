@@ -34,10 +34,10 @@ handler.post(async (req, res) => {
     const subscriber = subscriptionUser !== null;
 
     // if they aren't a partner or subscriber, we should not have shown them the page and we should not apply
-    if (!validPartner && !subscriber) {
-        // logger.error('User is not partner or subscriber. Not handling request. ', { userId });
-        return res.status(401).send('User is not partner or subscriber.');
-    }
+    // if (!validPartner && !subscriber) {
+    //     // logger.error('User is not partner or subscriber. Not handling request. ', { userId });
+    //     return res.status(401).send('User is not partner or subscriber.');
+    // }
 
     try {
         // create partner object
