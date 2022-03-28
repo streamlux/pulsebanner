@@ -111,11 +111,11 @@ export class PartnerMediaKit {
                 await this.mediaKitMap[image];
             });
         }
-        //  else {
-        //     Object.keys(this.mediaKitMap).forEach(async (image: MediaKitImage) => {
-        //         await this.mediaKitMap[image];
-        //     });
-        // }
+         else {
+            Object.keys(this.mediaKitMap).forEach(async (image: string) => {
+                await this.mediaKitMap[image as MediaKitImage];
+            })
+        }
 
         // update/insert into the partnerMediaKit table
         // we only make this method call when necessary, and it is required that we check/update the partnerMediaKit table
