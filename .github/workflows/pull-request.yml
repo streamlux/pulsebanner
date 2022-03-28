@@ -55,6 +55,7 @@ jobs:
               env:
                   NODE_ENV: production
                   BUILD_TARGET: staging
+                  DATABASE_URL: ${{ secrets.DATABASE_URL }}
               run: npx nx run next:build:production
 
     build_remotion:
