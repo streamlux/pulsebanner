@@ -64,7 +64,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         ctx: context,
     })) as any;
 
-
     if (session) {
         const payment = await productPlan(session.userId);
         const partnerStatus = await prisma.partnerInformation.findUnique({
@@ -95,28 +94,29 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 // only generate the images if one of the two scenarios
                 // 1. We do not have an entry yet in the db. Then, we must generate all the images
                 // 2. We have an entry but there were failures rendering it previously. Only re-render these images
-                if (partnerMediaKitInfo === null) {
-                    await mediaKitGenerationHelper(partnerId, partnerInfo.partnerCode);
-                } else {
-                    if (partnerMediaKitInfo.failedImageRendering.length !== 0) {
-                        await mediaKitGenerationHelper(partnerId, partnerInfo.partnerCode, partnerMediaKitInfo.failedImageRendering);
-                    }
-                }
-                if (!partnerInfo) {
-                    return {
-                        props: {
-                            partnerStatus: AcceptanceStatus.None
+                if (partnerInfo !== null) {
+                    if (partnerMediaKitInfo === null) {
+                        await mediaKitGenerationHelper(partnerId, partnerInfo.partnerCode);
+                    } else {
+                        if (partnerMediaKitInfo.failedImageRendering.length !== 0) {
+                            await mediaKitGenerationHelper(partnerId, partnerInfo.partnerCode, partnerMediaKitInfo.failedImageRendering);
                         }
                     }
+                    return {
+                        props: {
+                            partnerStatus: partnerInfo.acceptanceStatus as AcceptanceStatus,
+                            partnerCode: partnerInfo.partnerCode,
+                            payment,
+                        },
+                    };
                 }
-
-                return {
-                    props: {
-                        partnerStatus: partnerInfo.acceptanceStatus as AcceptanceStatus,
-                        partnerCode: partnerInfo.partnerCode,
-                        payment,
-                    },
-                };
+                if (partnerInfo === null) {
+                    return {
+                        props: {
+                            partnerStatus: AcceptanceStatus.None,
+                        },
+                    };
+                }
             } catch (e) {
                 logger.error('Error in partner page for getServerSideProps. ', { error: e });
             }
@@ -174,7 +174,6 @@ export default function Page({ partnerStatus, partnerCode, payment }: Props) {
 
     // order of the if statements matter
     const availableForAccount = (): boolean => {
-
         // let legacy partners apply
         if (payment?.partner) {
             return true;
@@ -197,7 +196,6 @@ export default function Page({ partnerStatus, partnerCode, payment }: Props) {
     const refreshData = () => {
         router.replace(router.asPath);
     };
-
 
     const onSubmit = async (formData: FormData) => {
         if (!ensureSignUp()) {

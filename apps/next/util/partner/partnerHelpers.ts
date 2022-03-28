@@ -1,4 +1,4 @@
-import { TwitchClientAuthService } from '@app/services/TwitchClientAuthService';
+import { TwitchClientAuthService } from '@app/services/twitch/TwitchClientAuthService';
 import { Stripe } from 'stripe';
 import { twitchAxios } from '../axios';
 import { logger } from '../logger';
@@ -101,7 +101,7 @@ export const mediaKitGenerationHelper = async (partnerId: string, partnerCode: s
         const authedTwitchAxios = await TwitchClientAuthService.authAxios(twitchAxios);
         const userResponse = await authedTwitchAxios.get(`/helix/users?id=${twitchId}`);
         const twitchUsername = userResponse.data?.data?.[0].login;
-        if (twitchUsername) {
+        if (twitchUsername !== null && twitterUsername !== null && partnerUserId !== null) {
             const partnerMediaKit: PartnerMediaKit = new PartnerMediaKit(partnerUserId.userId, partnerCode, twitchUsername, twitterUsername);
             await partnerMediaKit.generateMediaKit(partnerId, mediaKitImageList as MediaKitImage[]);
             console.log('success generating media kit');
