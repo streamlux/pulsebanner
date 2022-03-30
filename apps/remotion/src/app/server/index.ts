@@ -73,8 +73,10 @@ app.set('trust proxy', 1);
 // Not more than 20 requests per minute per user
 app.use(
     rateLimit({
-        windowMs: 1 * 60 * 1000,
+        windowMs: 1 * 60 * 1000, // 1 minute
         max: 20,
+        // rate limit based on userId, fallback to IP address
+        keyGenerator: (req) => req.body.userId ?? req.ip,
         onLimitReached: () => {
             logger.warn('Rate limit reached');
         },
@@ -101,7 +103,7 @@ app.post(
         // hard coded info as we only use one composition composer and generate different templates from there by passing the different props
         const imageFormat = 'png';
         const compName = 'pulsebanner';
-        const inputProps = req.body;
+        const inputProps = req.body.props;
 
         res.set('content-type', getMimeType(imageFormat));
 
