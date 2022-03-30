@@ -1,24 +1,25 @@
 import { productPlan } from '@app/services/payment/paymentHelpers';
 import { flipFeatureEnabled, getTwitterName, updateOriginalTwitterNameDB } from '@app/services/postgresHelpers';
-import { logger } from '@app/util/logger';
 import prisma from '@app/util/ssr/prisma';
 import { validateTwitterAuthentication, getCurrentTwitterName, updateTwitterName } from '@app/services/twitter/twitterHelpers';
 import { Feature } from '../Feature';
 import { AccountsService } from '@app/services/AccountsService';
+import { Context } from '@app/services/Context';
 
-const nameStreamUp: Feature<string> = async (userId: string): Promise<string> => {
+const nameStreamUp: Feature<string> = async (context: Context): Promise<string> => {
+    const { userId } = context;
     const twitterInfo = await AccountsService.getTwitterInfo(userId);
 
     // if they are not authenticated with twitter, return 401 and turn off the feature
-    const validatedTwitter = twitterInfo && await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    const validatedTwitter = twitterInfo && await validateTwitterAuthentication(context, twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
     if (!validatedTwitter) {
-        await flipFeatureEnabled(userId, 'name');
-        logger.error('Unauthenticated Twitter. Disabling feature name and requiring re-auth.');
+        await flipFeatureEnabled(context, 'name');
+        context.logger.error('Unauthenticated Twitter. Disabling feature name and requiring re-auth.');
         return 'Unauthenticated Twitter. Disabling feature name and requiring re-auth.';
     }
 
     // get the current twitter name
-    const currentTwitterName = await getCurrentTwitterName(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    const currentTwitterName = await getCurrentTwitterName(context, twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
 
     // get the twitter stream name specified in table
     const twitterNameSettings = await getTwitterName(userId);
@@ -36,8 +37,7 @@ const nameStreamUp: Feature<string> = async (userId: string): Promise<string> =>
         // check if the user is on the free plan
         if (!plan.partner && plan.plan === 'Free') {
             liveTwitterName = `🔴 Live now | ${currentTwitterName}`;
-            logger.info(`User changed their Twitter username. Updating live name from '${twitterNameSettings.streamName}' to '${liveTwitterName}'.`, {
-                userId,
+            context.logger.info(`User changed their Twitter username. Updating live name from '${twitterNameSettings.streamName}' to '${liveTwitterName}'.`, {
                 originalName: currentTwitterName,
                 oldName: twitterNameSettings.streamName,
                 newName: liveTwitterName,
@@ -58,8 +58,7 @@ const nameStreamUp: Feature<string> = async (userId: string): Promise<string> =>
     // twitter limits usernames to 50 characters
     const truncatedLiveTwitterName = liveTwitterName.substring(0, 49);
 
-    logger.info(`Changing Twitter name from '${currentTwitterName}' to '${liveTwitterName}'.`, {
-        userId,
+    context.logger.info(`Changing Twitter name from '${currentTwitterName}' to '${liveTwitterName}'.`, {
         originalName: currentTwitterName,
         liveName: liveTwitterName,
         truncatedLiveTwitterName
@@ -67,11 +66,11 @@ const nameStreamUp: Feature<string> = async (userId: string): Promise<string> =>
 
     // If it is not found return immediately and do not update normal twitwyter name
     if (twitterNameSettings && currentTwitterName !== '') {
-        const response = await updateTwitterName(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, truncatedLiveTwitterName);
+        const response = await updateTwitterName(context, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, truncatedLiveTwitterName);
 
         if (response === 200) {
             await updateOriginalTwitterNameDB(userId, currentTwitterName);
-            logger.info('Successfully updated Twitter name on streamup.', { userId });
+            context.logger.info('Successfully updated Twitter name on streamup.');
             return 'success';
         }
     }

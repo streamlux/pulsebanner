@@ -1,4 +1,5 @@
 import { executeStreamDown } from '@app/features/executeFeatures';
+import { Context } from '@app/services/Context';
 import { Features } from '@app/services/FeaturesService';
 import { logger } from '@app/util/logger';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
@@ -12,9 +13,15 @@ handler.post(async (req, res) => {
     }
 
     const userId = req.query.userId as string;
+
     if (userId) {
-        logger.info('Admin query for streamdown.', { query: req.query });
-        await executeStreamDown(userId, (typeof req.query.features === 'string' ? [req.query.features] : req.query.features ?? undefined) as Features[]);
+        const context = new Context(userId, {
+            action: 'Stream down (admin)',
+            admin: true,
+        });
+
+        context.logger.info('Admin query for streamdown.', { query: req.query });
+        await executeStreamDown(context, (typeof req.query.features === 'string' ? [req.query.features] : req.query.features ?? undefined) as Features[]);
     } else {
         logger.error('Admin streamdown is missing userId');
         return res.status(400).send('Missing userId');

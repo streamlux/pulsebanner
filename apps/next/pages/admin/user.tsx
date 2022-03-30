@@ -34,6 +34,7 @@ import { CustomSession } from '@app/services/auth/CustomSession';
 import env from '@app/util/env';
 import { AccountsService } from '@app/services/AccountsService';
 import { S3Service } from '@app/services/S3Service';
+import { Context } from '@app/services/Context';
 
 type PageProps = {
     userId: string;
@@ -51,12 +52,12 @@ type PageProps = {
     twitterUserInfo: UsersLookup;
 };
 
-export const getServerSideProps: GetServerSideProps<PageProps | any> = async (context) => {
+export const getServerSideProps: GetServerSideProps<PageProps | any> = async (ctx) => {
     const session = (await getSession({
-        ctx: context,
+        ctx,
     })) as CustomSession;
 
-    const userId = context.query.userId;
+    const userId = ctx.query.userId as string;
 
     if (typeof userId !== 'string' || userId === '') {
         return {
@@ -64,11 +65,16 @@ export const getServerSideProps: GetServerSideProps<PageProps | any> = async (co
         };
     }
 
+    const context = new Context(userId, {
+        action: 'User management page',
+        admin: true,
+    });
+
     try {
         const accounts = await AccountsService.getAccountsById(userId);
         const twitchUserId = accounts['twitch'].providerAccountId;
-        const imageBase64 = await S3Service.download(env.IMAGE_BUCKET_NAME, userId);
-        const backupBase64 = await S3Service.download(env.BANNER_BACKUP_BUCKET, userId);
+        const imageBase64 = await S3Service.download(context, env.IMAGE_BUCKET_NAME, userId);
+        const backupBase64 = await S3Service.download(context, env.BANNER_BACKUP_BUCKET, userId);
         const twitterInfo = await AccountsService.getTwitterInfo(userId, true);
 
         if (!twitterInfo) {
@@ -83,12 +89,12 @@ export const getServerSideProps: GetServerSideProps<PageProps | any> = async (co
             },
         });
 
-        const authedTwitchAxios = await TwitchClientAuthService.authAxios(twitchAxios);
+        const authedTwitchAxios = await TwitchClientAuthService.authAxios(context, twitchAxios);
 
         // get twitch stream info for user
         // https://dev.twitch.tv/docs/api/reference#get-streams
         const streamResponse = await authedTwitchAxios.get(`/helix/streams?user_id=${twitchUserId}`);
-        const bannerUrl: string = await getBanner(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
+        const bannerUrl: string = await getBanner(context, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
 
         const userResponse = await authedTwitchAxios.get(`/helix/users?id=${twitchUserId}`);
         const twitchUserInfo = userResponse.data.data[0];

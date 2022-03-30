@@ -20,6 +20,7 @@ import { handleGiftPurchase } from '@app/services/stripe/handleGiftPurchase';
 import { getInvoiceInformation, updateInvoiceTables } from '@app/services/stripe/invoiceHelpers';
 import { S3Service } from '@app/services/S3Service';
 import { AccountsService } from '@app/services/AccountsService';
+import { Context } from '@app/services/Context';
 
 // Stripe requires the raw body to construct the event.
 export const config = {
@@ -152,34 +153,38 @@ handler.post(async (req, res) => {
                      * 3. Reset name feature to be the default value. Again, handle if they are live gracefully by updating it right then to the default.
                      */
                     if (userId) {
+                        const context = new Context(userId, {
+                            action: 'Handling Stripe subscription deleted webhook',
+                        });
+
                         sendMessage(`"${userId}" unsubscribed from premium plan`, env.DISCORD_CANCELLED_SUBSCRIBER_URL);
 
                         // get the user's twitter info
                         const twitterInfo = await AccountsService.getTwitterInfo(userId);
 
                         if (twitterInfo) {
-                            const enabledFeatures = await FeaturesService.listEnabled(userId);
+                            const enabledFeatures = await FeaturesService.listEnabled(context);
 
                             // disable the profile picture if it is enabled
                             if (enabledFeatures.includes('profileImage')) {
-                                const base64Image: string | undefined = await S3Service.download(env.PROFILE_PIC_BUCKET_NAME, userId);
+                                const base64Image: string | undefined = await S3Service.download(context, env.PROFILE_PIC_BUCKET_NAME, userId);
                                 if (base64Image) {
                                     const profilePicStatus: TwitterResponseCode = await updateProfilePic(
-                                        userId,
+                                        context,
                                         twitterInfo.oauth_token,
                                         twitterInfo.oauth_token_secret,
                                         base64Image
                                     );
                                     if (profilePicStatus === 200) {
-                                        logger.info('Successfully reset profile picture on subscription deleted.', { userId: userId });
+                                        context.logger.info('Successfully reset profile picture on subscription deleted.', { userId: userId });
                                     } else {
-                                        logger.error('Error resetting profile picture on subscription deleted.', { userId: userId });
+                                        context.logger.error('Error resetting profile picture on subscription deleted.', { userId: userId });
                                     }
                                 } else {
-                                    logger.error('could not find a base64 original profile picture image.', { userId: userId });
+                                    context.logger.error('could not find a base64 original profile picture image.', { userId: userId });
                                 }
-                                await flipFeatureEnabled(userId, 'profileImage');
-                                logger.info('Profile image disabled on subscription cancelled.', { userId: userId });
+                                await flipFeatureEnabled(context, 'profileImage');
+                                context.logger.info('Profile image disabled on subscription cancelled.', { userId: userId });
                             }
 
                             // update the banner to default properties. It is too difficualt to tell what is default and what isn't individually.
@@ -198,9 +203,9 @@ handler.post(async (req, res) => {
                             });
 
                             if (bannerUpdate) {
-                                logger.info(`Banner reset back to default values on subscription cancelled for user: ${userId}`, { userId: userId });
+                                context.logger.info(`Banner reset back to default values on subscription cancelled for user: ${userId}`, { userId: userId });
                             } else {
-                                logger.error(`No banner found on user subscription cancelled. User: ${userId}`, { userId: userId });
+                                context.logger.error(`No banner found on user subscription cancelled. User: ${userId}`, { userId: userId });
                             }
 
                             // reset name feature to default value. Get their original name and then append to the front of that
@@ -242,7 +247,7 @@ handler.post(async (req, res) => {
                                 // }
                             }
 
-                            logger.info('Successfully reset name if needed. All features handled on subscription cancelled.', { userId: userId });
+                            context.logger.info('Successfully reset name if needed. All features handled on subscription cancelled.', { userId: userId });
                         }
                     }
 

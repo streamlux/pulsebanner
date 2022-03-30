@@ -1,4 +1,5 @@
 import { AccountsService } from '@app/services/AccountsService';
+import { Context } from '@app/services/Context';
 import { TwitchClientAuthService } from '@app/services/twitch/TwitchClientAuthService';
 import { twitchAxios } from '@app/util/axios';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -18,11 +19,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const userId: string = req.query.userId as string;
 
     if (userId) {
+        const context = new Context(userId, {
+            action: 'Checking if user is streaming on Twitch'
+        });
+
         const accounts = await AccountsService.getAccountsById(userId);
         let isStreaming = false;
         if (accounts['twitch']) {
             const twitchUserId = accounts['twitch'].providerAccountId;
-            const authedTwitchAxios = await TwitchClientAuthService.authAxios(twitchAxios);
+            const authedTwitchAxios = await TwitchClientAuthService.authAxios(context, twitchAxios);
             const getIsStreaming = await authedTwitchAxios.get(`/helix/streams?user_id=${twitchUserId}`);
             isStreaming = getIsStreaming.data.data.length !== 0;
 

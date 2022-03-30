@@ -1,21 +1,24 @@
 import { TwitchSubscriptionStatus } from '@app/types/twitch';
 import { Account } from '@prisma/client';
 import { AccountsService } from './AccountsService';
+import { Context } from './Context';
 import { Features, FeaturesService } from './FeaturesService';
 import { TwitchSubscriptionService } from './twitch/TwitchSubscriptionService';
 
 /**
  * Create/deletes Twitch EventSub subscriptions based on what features the user has enabled
- * @param userId
+ * @param context
  */
-export async function updateTwitchSubscriptions(userId: string): Promise<void> {
+export async function updateTwitchSubscriptions(context: Context): Promise<void> {
+
+    const { userId } = context;
     const accounts = await AccountsService.getAccountsById(userId);
     const twitchAccount: Account = accounts['twitch'];
 
     // get a list of what EventSub subscription types are needed to have based on what features user has enabled
-    const neededSubscriptionTypes = await getSubscriptionTypes(userId);
+    const neededSubscriptionTypes = await getSubscriptionTypes(context);
 
-    const subscriptionService = new TwitchSubscriptionService();
+    const subscriptionService = new TwitchSubscriptionService(context);
 
     // get a list of all currently created Twitch EventSub subcriptions
     const userSubscriptions = await subscriptionService.getSubscriptions(twitchAccount.providerAccountId);
@@ -43,7 +46,7 @@ export async function updateTwitchSubscriptions(userId: string): Promise<void> {
     await subscriptionService.deleteMany(subsToDelete); // delete the ones we don't need anymore
 
     // create the new ones we need
-    const createRequests = subscriptionTypesToCreate.map((type) => subscriptionService.createOne(userId, type, twitchAccount.providerAccountId));
+    const createRequests = subscriptionTypesToCreate.map((type) => subscriptionService.createOne(type, twitchAccount.providerAccountId));
     await Promise.all(createRequests);
 }
 
@@ -61,9 +64,9 @@ const featureSubscriptionTypes: Record<Features, string[]> = {
  * @param userId
  * @returns Array of Twitch EventSub subcription types that are needed for the users enabled features
  */
-async function getSubscriptionTypes(userId: string): Promise<string[]> {
+async function getSubscriptionTypes(context: Context): Promise<string[]> {
     const subscriptionTypes: Record<string, boolean> = {};
-    const enabledFeatures: string[] = await FeaturesService.listEnabled(userId);
+    const enabledFeatures: string[] = await FeaturesService.listEnabled(context);
     enabledFeatures.forEach((feature) => {
         featureSubscriptionTypes[feature as keyof typeof featureSubscriptionTypes].forEach((type) => (subscriptionTypes[type] = true));
     });

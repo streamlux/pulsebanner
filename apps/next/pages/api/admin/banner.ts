@@ -1,10 +1,11 @@
 import { AccountsService } from '@app/services/AccountsService';
 import { TwitchClientAuthService } from '@app/services/twitch/TwitchClientAuthService';
 import { remotionAxios, twitchAxios } from '@app/util/axios';
-import { getBannerEntry, getTwitterInfo } from '@app/services/postgresHelpers';
+import { getBannerEntry } from '@app/services/postgresHelpers';
 import { Prisma } from '@prisma/client';
 import { AxiosResponse } from 'axios';
 import { createAuthApiHandler } from '../../../util/ssr/createApiHandler';
+import { Context } from '@app/services/Context';
 
 type TemplateRequestBody = {
     foregroundId: string;
@@ -22,6 +23,11 @@ handler.get(async (req, res) => {
 
     const userId = req.query.userId as string ?? req.session.userId;
 
+    const context = new Context(userId, {
+        action: 'Render banner (admin)',
+        admin: true,
+    });
+
     const accounts = await AccountsService.getAccountsById(userId);
     const twitchUserId = accounts['twitch'].providerAccountId;
 
@@ -32,7 +38,7 @@ handler.get(async (req, res) => {
         return res.status(400).send('Could not find banner entry or twitter info for user');
     }
 
-    const authedTwitchAxios = await TwitchClientAuthService.authAxios(twitchAxios);
+    const authedTwitchAxios = await TwitchClientAuthService.authAxios(context, twitchAxios);
 
     // get twitch stream info for user
     // https://dev.twitch.tv/docs/api/reference#get-streams

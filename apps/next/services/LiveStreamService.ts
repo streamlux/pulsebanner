@@ -1,9 +1,9 @@
 import { TwitchClientAuthService } from '@app/services/twitch/TwitchClientAuthService';
 import { twitchAxios } from '../util/axios';
-import { logger } from '../util/logger';
 import prisma from '../util/ssr/prisma';
 import { getTwitterUserLink } from './twitter/twitterHelpers';
 import { AccountsService } from './AccountsService';
+import { Context } from './Context';
 
 export type LiveUserInfo = {
     twitterLink: string | null;
@@ -14,21 +14,23 @@ export type LiveUserInfo = {
 
 export class LiveStreamService {
 
-    public static async getLiveUserInfo(userId: string): Promise<LiveUserInfo | undefined> {
+    public static async getLiveUserInfo(context: Context): Promise<LiveUserInfo | undefined> {
+        const userId = context.userId;
+
         // first call twitter and try and get their twitter username. Handle all error codes gracefully and return null if any come
         const twitterInfo = await AccountsService.getTwitterInfo(userId);
         let twitterLink = null;
         if (twitterInfo && twitterInfo.oauth_token && twitterInfo.oauth_token_secret) {
-            twitterLink = await getTwitterUserLink(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+            twitterLink = await getTwitterUserLink(context, twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
         }
         // get the twitch username/stream link
         const accounts = await AccountsService.getAccountsById(userId);
         if (accounts === null) {
-            logger.error('Could not find any accounts for this user. ', { userId: userId });
+            context.logger.error('Could not find any accounts for this user. ', { userId: userId });
         }
         const twitchUserId = accounts['twitch'].providerAccountId;
         if (twitchUserId === null) {
-            logger.error('Could not find twitch account information.', { userId: userId });
+            context.logger.error('Could not find twitch account information.', { userId: userId });
             return undefined;
         }
 
@@ -36,7 +38,7 @@ export class LiveStreamService {
         let streamLink = null;
 
         try {
-            const authedTwitchAxios = await TwitchClientAuthService.authAxios(twitchAxios);
+            const authedTwitchAxios = await TwitchClientAuthService.authAxios(context, twitchAxios);
             const streamResponse = await authedTwitchAxios.get(`/helix/streams?user_id=${twitchUserId}`);
 
             streamId = streamResponse.data?.data?.[0]?.id; // this will always be null on streamdown.
@@ -44,7 +46,7 @@ export class LiveStreamService {
                 streamLink = streamResponse.data?.data?.[0].user_login ? `https://www.twitch.tv/${streamResponse.data?.data?.[0].user_login}` : null;
             }
         } catch (e) {
-            logger.error(`Error communicated with twitch: ${e}`, { userId: userId, error: e });
+            context.logger.error(`Error communicated with twitch: ${e}`, { userId: userId, error: e });
             return undefined;
         }
 
@@ -56,7 +58,9 @@ export class LiveStreamService {
         };
     }
 
-    public static async liveUserOnline(userId: string, userInfo: LiveUserInfo): Promise<void> {
+    public static async liveUserOnline(context: Context, userInfo: LiveUserInfo): Promise<void> {
+        const userId = context.userId;
+
         await prisma.liveStreams.upsert({
             where: {
                 userId: userId,
@@ -71,10 +75,13 @@ export class LiveStreamService {
             },
             update: {},
         });
-        logger.info(`Completed update to live users table for user: ${userId}`, { userId: userId });
+
+        context.logger.info(`Completed update to live users table for user: ${userId}`);
     }
 
-    public static async liveUserOffline(userId: string, userInfo: LiveUserInfo): Promise<void> {
+    public static async liveUserOffline(context: Context, userInfo: LiveUserInfo): Promise<void> {
+        const userId = context.userId;
+
         const liveUser = await prisma.liveStreams.findFirst({
             where: {
                 userId: userId,
@@ -104,6 +111,7 @@ export class LiveStreamService {
                 userId: userId,
             },
         });
-        logger.info(`Completed update to user offline table for user: ${userId}`, { userId: userId });
+
+        context.logger.info(`Completed update to user offline table for user: ${userId}`, { userId: userId });
     }
 }

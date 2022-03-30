@@ -2,9 +2,9 @@ import { TwitchClientAuthService } from "@app/services/twitch/TwitchClientAuthSe
 import { GetStreamsResponse, Stream } from "@app/types/twitch";
 import { remotionAxios, twitchAxios } from "@app/util/axios";
 import { getBannerEntry } from "@app/services/postgresHelpers";
-import { logger } from "@app/util/logger";
 import type { Prisma } from "@prisma/client";
 import type { AxiosResponse } from "axios";
+import { Context } from "@app/services/Context";
 
 export type TemplateRequestBody = {
     foregroundId: string;
@@ -18,14 +18,17 @@ export type TemplateRequestBody = {
  * @param twitchUserId
  * @returns base64 of rendered banner
  */
-export const renderBanner = async (userId: string, twitchUserId: string): Promise<string> => {
+export const renderBanner = async (context: Context, twitchUserId: string): Promise<string> => {
+
+    const { userId } = context;
+
     // get the banner info saved in Banner table
     const bannerEntry = await getBannerEntry(userId);
     if (bannerEntry === null) {
         throw new Error('Could not find banner entry for user');
     }
 
-    const authedTwitchAxios = await TwitchClientAuthService.authAxios(twitchAxios);
+    const authedTwitchAxios = await TwitchClientAuthService.authAxios(context, twitchAxios);
 
     // get twitch user
     // https://dev.twitch.tv/docs/api/reference#get-users
@@ -37,7 +40,7 @@ export const renderBanner = async (userId: string, twitchUserId: string): Promis
     const streamResponse: AxiosResponse<GetStreamsResponse> = await authedTwitchAxios.get(`/helix/streams?user_id=${twitchUserId}`);
     const stream: Stream | undefined = streamResponse.data?.data?.[0];
     if (!stream) {
-        logger.warn('No stream found trying to render banner', { userId, data: streamResponse.data });
+        context.logger.warn('No stream found trying to render banner', { userId, data: streamResponse.data });
     }
 
     // get twitch thumbnail, defaulting to the url given by the api, but falling back to a manually constructed one

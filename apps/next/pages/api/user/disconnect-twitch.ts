@@ -1,4 +1,5 @@
 import { AppNextApiRequest } from '@app/middlewares/admin';
+import { Context } from '@app/services/Context';
 import { FeaturesService } from '@app/services/FeaturesService';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import prisma from '@app/util/ssr/prisma';
@@ -8,8 +9,9 @@ const handler = createAuthApiHandler();
 
 handler.post(async (req: AppNextApiRequest, res: NextApiResponse): Promise<void> => {
     const userId = req.session.userId;
+    const context = new Context(userId);
 
-    const features = await FeaturesService.listEnabled(userId);
+    const features = await FeaturesService.listEnabled(context);
     if (features.length !== 0) {
         return res.status(400).send('User has features enabled');
     }

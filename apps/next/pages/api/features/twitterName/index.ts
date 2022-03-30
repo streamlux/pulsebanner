@@ -2,6 +2,7 @@ import { updateTwitchSubscriptions } from '@app/services/updateTwitchSubscriptio
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import prisma from '@app/util/ssr/prisma';
 import { validateTwitterAuthentication } from '@app/services/twitter/twitterHelpers';
+import { Context } from '@app/services/Context';
 
 const handler = createAuthApiHandler();
 
@@ -13,6 +14,8 @@ handler.post(async (req, res) => {
     if (!userId) {
         return res.send(404);
     }
+
+    const context = new Context(userId);
 
     // validate twitter here before saving
     const userInfo = await prisma.account.findFirst({
@@ -27,7 +30,7 @@ handler.post(async (req, res) => {
     });
 
     if (userInfo && userInfo.oauth_token && userInfo.oauth_token_secret) {
-        const valid = await validateTwitterAuthentication(userInfo.oauth_token, userInfo.oauth_token_secret);
+        const valid = await validateTwitterAuthentication(context, userInfo.oauth_token, userInfo.oauth_token_secret);
         if (!valid) {
             // send 401 if not authenticated
             return res.send(401);
@@ -92,6 +95,10 @@ handler.put(async (req, res) => {
         return res.send(404);
     }
 
+    const context = new Context(userId, {
+        action: 'Toggle Name Changer',
+    });
+
     // validate twitter here before saving
     const userInfo = await prisma.account.findFirst({
         where: {
@@ -105,7 +112,7 @@ handler.put(async (req, res) => {
     });
 
     if (userInfo && userInfo.oauth_token && userInfo.oauth_token_secret) {
-        const valid = await validateTwitterAuthentication(userInfo.oauth_token, userInfo.oauth_token_secret);
+        const valid = await validateTwitterAuthentication(context, userInfo.oauth_token, userInfo.oauth_token_secret);
         if (!valid) {
             // send 401 if not authenticated
             return res.send(401);
@@ -133,7 +140,7 @@ handler.put(async (req, res) => {
         // Update twitch subscriptions since we might
         // need to delete subscriptions if they disabled the banner
         // or create subscriptions if they enabled the banner
-        await updateTwitchSubscriptions(userId);
+        await updateTwitchSubscriptions(context);
 
         res.send(200);
     } else {

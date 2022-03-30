@@ -71,6 +71,8 @@ import { usePaymentPlan } from '@app/util/hooks/usePaymentPlan';
 import env from '@app/util/env';
 import { AccountsService } from '@app/services/AccountsService';
 import { S3Service } from '@app/services/S3Service';
+import { CustomSession } from '@app/services/auth/CustomSession';
+import { Context } from '@app/services/Context';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof BannerForegrounds = 'ImLive';
@@ -171,12 +173,14 @@ interface Props {
     originalBanner?: string;
 }
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
     const session = (await getSession({
-        ctx: context,
-    })) as any;
+        ctx,
+    })) as CustomSession;
 
-    if (session) {
+    if (session && session.userId) {
+        const { userId } = session;
+        const context = new Context(userId);
         const banner = await prisma.banner.findUnique({
             where: {
                 userId: session.userId,
@@ -189,14 +193,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             const userId = session.userId;
             const accounts = await AccountsService.getAccountsById(userId);
             const twitchUserId = accounts['twitch'].providerAccountId;
-            originalBanner = await S3Service.download(env.IMAGE_BUCKET_NAME, userId);
+            originalBanner = await S3Service.download(context, env.IMAGE_BUCKET_NAME, userId);
         } catch (e) {
             //
         }
 
         if (banner) {
             if ((banner.foregroundProps as any).username === 'Username Here!') {
-                const usernameInfo = await localAxios.get(`/api/twitch/username/${session.userId as string}`);
+                const usernameInfo = await localAxios.get(`/api/twitch/username/${userId}`);
                 const username = usernameInfo.data.displayName;
                 await prisma.banner.update({
                     where: {
@@ -232,7 +236,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             // if they have their twitch account connected, but dont have a banner yet
             if (session.accounts['twitch']) {
                 // fetch twitch username, and save a banner for them (this code should run only once for every user after they sign up)
-                const usernameInfo = await localAxios.get(`/api/twitch/username/${session.userId as string}`);
+                const usernameInfo = await localAxios.get(`/api/twitch/username/${userId}`);
                 const username = usernameInfo.data.displayName;
                 return {
                     props: {

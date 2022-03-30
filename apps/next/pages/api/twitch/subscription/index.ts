@@ -8,6 +8,7 @@ import { logger } from '@app/util/logger';
 import { CustomSession } from '@app/services/auth/CustomSession';
 import { TwitchSubscriptionService } from '@app/services/twitch/TwitchSubscriptionService';
 import { AccountsService } from '@app/services/AccountsService';
+import { Context } from '@app/services/Context';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Run the cors middleware
@@ -22,12 +23,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const session: CustomSession | null = await getSession({ req }) as CustomSession;
 
-    if (session) {
+    if (session && session.userId) {
+        const context = new Context(session.userId, {
+            action: 'Delete Twitch subscriptions'
+        });
         const accounts = await AccountsService.getAccounts(session);
         const twitchAccount: Account = accounts['twitch'];
 
-        const token = await TwitchClientAuthService.getAccessToken();
-        const subscriptionService = new TwitchSubscriptionService();
+        const token = await TwitchClientAuthService.getAccessToken(context);
+        const subscriptionService = new TwitchSubscriptionService(context);
 
         const allSubscriptions = await subscriptionService.getSubscriptions();
         if (req.method === 'GET') {
@@ -56,7 +60,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             res.send(200);
         }
     } else {
-        logger.error('this failed. Unable to get session for twitch subscriptions.');
+        logger.error('Unable to get session for twitch subscriptions.');
         res.send(401);
     }
 }

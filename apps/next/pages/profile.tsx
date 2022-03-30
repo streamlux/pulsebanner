@@ -44,6 +44,7 @@ import { getTwitterProfilePic, validateTwitterAuthentication } from '@app/servic
 import { FaqSection } from '@app/modules/faq/FaqSection';
 import { generalFaqItems, profileImageFaqItems } from '@app/modules/faq/faqData';
 import { AccountsService } from '@app/services/AccountsService';
+import { Context } from '@app/services/Context';
 
 interface Props {
     profilePic: ProfileImage;
@@ -72,13 +73,17 @@ const defaultProfilePicSettings: ProfilePicSettings = {
     backgroundProps: BackgroundTemplates[defaultBackground].defaultProps,
 };
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
     const session = (await getSession({
-        ctx: context,
+        ctx,
     })) as any;
 
-    if (session) {
-        const twitterInfo = await AccountsService.getTwitterInfo(session.userId, true);
+
+    if (session && session.userId) {
+        const { userId } = session;
+        const context = new Context(session.userId);
+
+        const twitterInfo = await AccountsService.getTwitterInfo(userId, true);
         if (!twitterInfo) {
             return {
                 props: {
@@ -87,7 +92,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 },
             };
         }
-            const isTwitterAuthValid: boolean = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+            const isTwitterAuthValid: boolean = await validateTwitterAuthentication(context, twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
 
         // if Twitter auth is invalid
         if (!isTwitterAuthValid) {
@@ -106,7 +111,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         });
 
         // https url of twitter profile picture
-        const twitterProfilePic = await getTwitterProfilePic(session.userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
+        const twitterProfilePic = await getTwitterProfilePic(context, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
         if (profilePic) {
             try {
                 const response = await axios.get((profilePic.foregroundProps as any).imageUrl);

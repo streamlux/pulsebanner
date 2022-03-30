@@ -1,31 +1,31 @@
 import { bannerRefresh } from "@app/features/banner/bannerRefresh";
 import type { PrismaClient } from "@prisma/client";
-import type { Logger } from "winston";
+import { Context, RequestContext } from "./Context";
 
 type ProductName = 'Personal' | 'Professional';
 
 export class BannerRefreshService {
 
-    constructor(private readonly prisma: PrismaClient, private readonly logger: Logger) { }
+    constructor(private readonly prisma: PrismaClient, private readonly context: RequestContext) { }
 
 
     public async refreshBanners(product: ProductName): Promise<void> {
 
         const liveCustomers = await this.getLiveCustomers(product);
 
-        this.logger.info(`Refreshing ${liveCustomers.length} banners for ${product} users.`, {
+        this.context.logger.info(`Refreshing ${liveCustomers.length} banners for ${product} users.`, {
             count: liveCustomers.length
         });
 
         const startMs = Date.now();
 
         for await (const customer of liveCustomers) {
+            const context = new Context(customer.user.id, { parentId: this.context.id });
             try {
-                await bannerRefresh(customer.user.id);
+                await bannerRefresh(context);
             } catch (e) {
                 // error refreshing banner
-                this.logger.error('Error occured during banner refresh.', {
-                    userId: customer.user.id,
+                context.logger.error('Error occured during banner refresh.', {
                     error: {
                         error: e
                     }
@@ -36,7 +36,7 @@ export class BannerRefreshService {
         const endMs = Date.now();
         const duration = endMs - startMs;
 
-        this.logger.info(`Done refreshing ${liveCustomers.length} banners for ${product} users in ${duration}ms.`, {
+        this.context.logger.info(`Done refreshing ${liveCustomers.length} banners for ${product} users in ${duration}ms.`, {
             count: liveCustomers.length,
             duration: endMs - startMs
         });

@@ -1,5 +1,6 @@
 import { AppNextApiRequest } from '@app/middlewares/admin';
 import { AccountsService } from '@app/services/AccountsService';
+import { Context } from '@app/services/Context';
 import { S3Service } from '@app/services/S3Service';
 import { TwitchSubscriptionService } from '@app/services/twitch/TwitchSubscriptionService';
 import env from '@app/util/env';
@@ -14,9 +15,10 @@ const handler = createAuthApiHandler();
 handler.delete(async (req: AppNextApiRequest, res: NextApiResponse): Promise<void> => {
     try {
         const userId = req.session.userId;
+        const context = new Context(userId);
 
         // delete all webhooks
-        await deleteTwitchSubscriptions(userId);
+        await deleteTwitchSubscriptions(context);
 
         // delete objects from s3
         const s3 = S3Service.createS3();
@@ -45,14 +47,15 @@ handler.delete(async (req: AppNextApiRequest, res: NextApiResponse): Promise<voi
 /**
  * Deletes all Twitch EventSub webhooks for a user
  */
-async function deleteTwitchSubscriptions(userId: string) {
+async function deleteTwitchSubscriptions(context: Context) {
+    const { userId } = context;
     const accounts = await AccountsService.getAccountsById(userId);
     const twitchAccount: Account = accounts['twitch'];
     if (!twitchAccount) {
         return;
     }
 
-    const subscriptionService = new TwitchSubscriptionService();
+    const subscriptionService = new TwitchSubscriptionService(context);
     const subscriptions = await subscriptionService.getSubscriptions(twitchAccount.providerAccountId);
     await subscriptionService.deleteMany(subscriptions);
 }

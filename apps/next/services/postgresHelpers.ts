@@ -1,6 +1,7 @@
 import { Banner, Tweet, TwitterName, TwitterOriginalName } from '@prisma/client';
 import { updateTwitchSubscriptions } from '@app/services/updateTwitchSubscriptions';
 import prisma from '../util/ssr/prisma';
+import { Context } from './Context';
 
 export type PostgresTwitterInfo = {
     oauth_token: string;
@@ -79,7 +80,8 @@ export const updateOriginalTwitterNameDB = async (userId: string, name: string):
     });
 };
 
-export const flipFeatureEnabled = async (userId: string, feature: string, forceDisable?: boolean): Promise<void> => {
+export const flipFeatureEnabled = async (context: Context, feature: string, forceDisable?: boolean): Promise<void> => {
+    const { userId } = context;
     if (feature === 'banner') {
         const banner = await prisma.banner.findFirst({
             where: {
@@ -100,7 +102,7 @@ export const flipFeatureEnabled = async (userId: string, feature: string, forceD
             // Update twitch subscriptions since we might
             // need to delete subscriptions if they disabled the banner
             // or create subscriptions if they enabled the banner
-            await updateTwitchSubscriptions(userId);
+            await updateTwitchSubscriptions(context);
         }
     } else if (feature === 'name') {
         const twitterName = await prisma.twitterName.findFirst({
@@ -122,7 +124,7 @@ export const flipFeatureEnabled = async (userId: string, feature: string, forceD
             // Update twitch subscriptions since we might
             // need to delete subscriptions if they disabled the banner
             // or create subscriptions if they enabled the banner
-            await updateTwitchSubscriptions(userId);
+            await updateTwitchSubscriptions(context);
         }
     } else if (feature === 'profileImage') {
         const profileImage = await prisma.profileImage.findFirst({
