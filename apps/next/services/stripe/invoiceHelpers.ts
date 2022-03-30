@@ -38,7 +38,7 @@ export const updateInvoiceTables = async (invoiceInfo: InvoiceInformation, partn
         data: {
             id: invoiceInfo.invoiceId,
             customerId: invoiceInfo.customerId,
-            promoCodeId: invoiceInfo.stripePromoCode!,
+            promoCodeId: invoiceInfo.stripePromoCode,
             productId: invoiceInfo.productId!,
             purchaseAmount: invoiceInfo.purchaseAmount,
             priceId: invoiceInfo.priceId!,
@@ -56,7 +56,7 @@ export const updateInvoiceTables = async (invoiceInfo: InvoiceInformation, partn
             paidAt: invoiceInfo.paidAt,
             partnerId: partnerId,
             commissionAmount: commissionAmount,
-            commissionStatus: partnerId === null ? 'none' : 'waitPeriod',
+            commissionStatus: partnerId ? 'waitPeriod' : 'none',
             purchaseAmount: invoiceInfo.purchaseAmount,
         },
     });

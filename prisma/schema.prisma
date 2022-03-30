@@ -346,7 +346,7 @@ enum CommissionStatus {
 model Invoice {
     id             String   @id @unique
     customerId     String
-    promoCodeId    String
+    promoCodeId    String?
     productId      String
     priceId        String
     paidAt         DateTime
