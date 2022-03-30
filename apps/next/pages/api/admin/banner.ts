@@ -64,7 +64,7 @@ handler.get(async (req, res) => {
     };
 
     // pass in the bannerEntry info
-    const response: AxiosResponse<string> = await remotionAxios.post('/getTemplate', templateObj);
+    const response: AxiosResponse<string> = await remotionAxios.post('/getTemplate', { props: templateObj });
     const img = Buffer.from(response.data, 'base64');
 
     res.writeHead(200, {
