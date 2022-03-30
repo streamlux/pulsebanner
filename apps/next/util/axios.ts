@@ -37,3 +37,10 @@ localAxios.interceptors.response.use(undefined, (error: AxiosError) => {
 export const remotionAxios = axios.create({
     baseURL: env.REMOTION_URL
 });
+
+remotionAxios.interceptors.response.use((response) => {
+    // Do something with response data
+    return response;
+}, (error: AxiosError) => {
+    logger.error('Error occured during request (remotion)', { method: error.config.method, url: error.config.url, message: error.message });
+});

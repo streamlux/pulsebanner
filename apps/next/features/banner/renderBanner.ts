@@ -55,7 +55,12 @@ export const renderBanner = async (userId: string, twitchUserId: string): Promis
     };
 
     // pass in the bannerEntry info
-    const response: AxiosResponse<string> = await remotionAxios.post('/getTemplate', templateObj);
+    const response: AxiosResponse<string> = await remotionAxios.post('/getTemplate',
+        {
+            userId,
+            props: templateObj
+        }
+    );
     const base64Image: string = response.data;
 
     return base64Image;
