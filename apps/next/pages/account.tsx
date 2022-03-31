@@ -24,7 +24,7 @@ import {
     AlertTitle,
     Stack,
 } from '@chakra-ui/react';
-import type { GetServerSideProps, NextPage } from 'next';
+import type { GetServerSideProps, GetServerSidePropsContext, GetServerSidePropsResult, NextPage } from 'next';
 import { getSession, signOut } from 'next-auth/react';
 import axios from 'axios';
 import { APIPaymentObject, PaymentPlan, productPlan } from '@app/services/payment/paymentHelpers';
@@ -37,6 +37,8 @@ import { useRouter } from 'next/router';
 import { FaTwitch } from 'react-icons/fa';
 import prisma from '@app/util/ssr/prisma';
 import { GiftSummary } from '@app/components/gifts/GiftSummary';
+import { CustomSession } from '@app/services/auth/CustomSession';
+import { callWithContext, Context } from '@app/services/Context';
 
 interface Props {
     enabledFeatures: Awaited<ReturnType<typeof FeaturesService.listEnabled>>;
@@ -44,46 +46,52 @@ interface Props {
     allGiftPurchases: {
         createdAt: Date;
         checkoutSessionId: string;
-    }[]
+    }[];
 }
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-    const session = (await getSession(context)) as any;
-    if (!session) {
-        return {
+export const getServerSideProps: GetServerSideProps = async (ctx: GetServerSidePropsContext) => {
+    return await callWithContext<Props>(ctx, {
+        hasSession: async (context: Context) => {
+            const { userId } = context;
+            const enabledFeatures = await FeaturesService.listEnabled(context);
+
+            const plan: APIPaymentObject = await productPlan(userId);
+
+            const allGiftPurchases = await prisma.giftPurchase.findMany({
+                where: {
+                    purchaserUserId: userId,
+                },
+                orderBy: {
+                    createdAt: 'desc',
+                },
+                select: {
+                    checkoutSessionId: true,
+                    createdAt: true,
+                },
+                distinct: ['checkoutSessionId'],
+            });
+
+            return {
+                props: {
+                    enabledFeatures,
+                    plan,
+                    allGiftPurchases,
+                },
+            };
+        },
+        noSession: () => ({
+            redirect: {
+                destination: '/',
+                permanent: false,
+            }
+        }),
+        error: (error) => ({
             redirect: {
                 destination: '/',
                 permanent: false,
             },
-        };
-    }
-
-    const userId = session.userId;
-    const enabledFeatures = await FeaturesService.listEnabled(userId);
-
-    const plan: APIPaymentObject = await productPlan(userId);
-
-    const allGiftPurchases = await prisma.giftPurchase.findMany({
-        where: {
-            purchaserUserId: session.user.id,
-        },
-        orderBy: {
-            createdAt: 'desc',
-        },
-        select: {
-            checkoutSessionId: true,
-            createdAt: true,
-        },
-        distinct: ['checkoutSessionId'],
+        })
     });
-
-    return {
-        props: {
-            enabledFeatures,
-            plan,
-            allGiftPurchases,
-        },
-    };
 };
 
 const Page: NextPage<Props> = ({ enabledFeatures, plan, allGiftPurchases }) => {
@@ -189,7 +197,7 @@ const Page: NextPage<Props> = ({ enabledFeatures, plan, allGiftPurchases }) => {
                             </Card>
                         </Box>
 
-                        <Box w='full'>
+                        <Box w="full">
                             <GiftSummary allGiftPurchases={allGiftPurchases} />
                         </Box>
 

@@ -10,6 +10,9 @@
       "jest"
     ],
     "strict": true,
+    "allowUnreachableCode": false,
+    "alwaysStrict": true,
+    "strictFunctionTypes": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "resolveJsonModule": true,

@@ -1,5 +1,5 @@
 import { BannerRefreshService } from '@app/services/BannerRefreshService';
-import { ActionContext, Context } from '@app/services/Context';
+import { ActionContext } from '@app/services/Context';
 import { ToadScheduler, SimpleIntervalJob, AsyncTask } from 'toad-scheduler';
 import { logger } from '../logger';
 import prisma from './prisma';
