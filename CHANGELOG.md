@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.11.3] - 2022-03-30
+
 ### Fixed
 - Apply remotion rate limit on a per-user basis
 - Fix payment modal
