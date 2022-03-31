@@ -24,9 +24,9 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
     const [paymentPlan] = usePaymentPlan();
     const { data: session } = useSession({ required: false });
 
+    const router = useRouter();
     const [billingInterval, setBillingInterval] = useState<PriceInterval>('year');
     const { isOpen: connectTwitchIsOpen, onOpen: onOpenConnectToTwitch, onClose: onCloseConnectToTwitch } = useDisclosure();
-    const router = useRouter();
 
     const sortProductsByPrice = (
         products: (Product & {
@@ -56,6 +56,7 @@ export const PaymentModal: React.FC<Props> = ({ isOpen, onClose }) => {
                         'content-type': 'application/json',
                     },
                     body: JSON.stringify({
+                        isSubscription: true,
                         price: priceId,
                         cancel_path: router.asPath,
                     }),
