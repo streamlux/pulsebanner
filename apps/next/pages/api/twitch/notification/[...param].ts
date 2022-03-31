@@ -166,7 +166,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 function verifySignature(context: Context, messageSignature: string, id: string, timestamp: string, body: unknown): boolean {
-    context.logger.info('Verifying signature...');
+    context.logger.verbose('Verifying signature...');
     const message = id + timestamp + body;
     const signature = crypto.createHmac('sha256', env.EVENTSUB_SECRET).update(message);
     const expectedSignatureHeader = 'sha256=' + signature.digest('hex');
