@@ -20,7 +20,7 @@ export const PreGaming: React.FC<ImLiveProps> = ({
     return (
         <>
             <AbsoluteFill>
-                <div style={{ position: 'absolute', left: '891px', top: '35px', overflow: 'hidden', fontFamily: 'Inter' }}>
+                <div style={{ position: 'absolute', left: '889px', top: '34px', overflow: 'hidden', fontFamily: 'Inter' }}>
                     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
                         <div style={{ display: 'flex', width: '100%', height: 'min', alignItems: 'bottom', justifyContent: 'flex-end' }}>
                             <div
