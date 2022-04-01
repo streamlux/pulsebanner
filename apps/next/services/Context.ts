@@ -46,6 +46,12 @@ export class Context implements RequestContext {
             }
         });
     }
+
+    public addMetadata(metadata: Record<string, any>): void {
+        Object.entries(metadata).forEach(([key, value]) => {
+            this.metadata[key] = value;
+        });
+    }
 }
 
 export class ActionContext implements RequestContext {

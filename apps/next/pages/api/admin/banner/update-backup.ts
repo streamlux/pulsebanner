@@ -1,15 +1,11 @@
 import { Context } from '@app/services/Context';
 import { S3Service } from '@app/services/S3Service';
 import env from '@app/util/env';
-import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
+import { createAdminApiHandler, createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 
-const handler = createAuthApiHandler();
+const handler = createAdminApiHandler();
 
 handler.post(async (req, res) => {
-    if (req.session.role !== 'admin') {
-        res.send(401);
-    }
-
     const userId = req.query.userId as string;
 
     const context = new Context(userId, {

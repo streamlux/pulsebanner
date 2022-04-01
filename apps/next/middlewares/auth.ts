@@ -1,15 +1,15 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getSession } from 'next-auth/react';
 import { Middleware } from 'next-connect';
-import { Session } from 'next-auth';
-import type { Role } from '@prisma/client';
+import { Context } from '@app/services/Context';
+import { CustomSession } from '@app/services/auth/CustomSession';
 
-export interface AppNextApiRequest extends NextApiRequest {
-    session: Session & {
-        userId: string;
-        role: Role;
-    };
+interface AuthReq {
+    session: CustomSession;
+    context: Context;
 }
+
+export type AppNextApiRequest = AuthReq & NextApiRequest;
 
 const auth: Middleware<AppNextApiRequest, NextApiResponse> = async (req, res, next) => {
     const session = await getSession({ req });
@@ -26,7 +26,13 @@ const auth: Middleware<AppNextApiRequest, NextApiResponse> = async (req, res, ne
         return res.status(403).end('Missing role in session');
     }
 
-    req.session = session as AppNextApiRequest['session'];
+    const authReq: AuthReq = {
+        session: session as AppNextApiRequest['session'],
+        context: new Context(session.userId)
+    }
+
+    req.session = authReq.session;
+    req.context = authReq.context;
 
     return next();
 };

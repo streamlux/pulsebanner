@@ -62,11 +62,10 @@ handler.delete(async (req, res) => {
 // Toggle enabled/disabled
 // then update twitch subscriptions
 handler.put(async (req, res) => {
-    const userId: string = req.session.userId;
-
-    const context = new Context(userId, {
+    req.context.addMetadata({
         action: 'Toggle Profile Image feature',
     });
+    const { userId } = req.context;
 
     // get the users profile pic
     const profileImage = await prisma.profileImage.findFirst({
@@ -74,7 +73,6 @@ handler.put(async (req, res) => {
             userId,
         },
     });
-
 
     if (profileImage) {
         if (!profileImage.enabled) {
@@ -97,7 +95,7 @@ handler.put(async (req, res) => {
         // Update twitch subscriptions since we might
         // need to delete subscriptions if they disabled the banner
         // or create subscriptions if they enabled the banner
-        await updateTwitchSubscriptions(context);
+        await updateTwitchSubscriptions(req.context);
 
         res.send(200);
     } else {

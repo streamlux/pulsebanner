@@ -12,6 +12,10 @@ handler.post(async (req, res) => {
 
     const userId = req.query.userId as string;
 
+    req.context.addMetadata({
+        action: 'Reset original banner image'
+    });
+
     const context = new Context(userId, {
         action: 'Reset original banner image',
         admin: true,
