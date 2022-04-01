@@ -1,5 +1,5 @@
-import { emggBannerBackground, swayBannerBackground } from "@app/util/constants";
-import { BackgroundTemplates, ForegroundTemplates } from "@pulsebanner/remotion/templates";
+import { emggBannerBackground, preGamingBannerBackground, swayBannerBackground } from '@app/util/constants';
+import { BackgroundTemplates, ForegroundTemplates } from '@pulsebanner/remotion/templates';
 
 const defaultForeground: keyof typeof BannerForegrounds = 'ImLive';
 const defaultBackground: keyof typeof BackgroundTemplates = 'GradientBackground';
@@ -69,13 +69,12 @@ const defaultBanner2: BannerPresetProps = {
         props: {
             ...ForegroundTemplates[defaultForeground].defaultProps,
             arrow: true,
-            text: 'Come join my stream!'
+            text: 'Come join my stream!',
         },
     },
     background: {
         id: defaultBackground,
-        props:
-        {
+        props: {
             ...BackgroundTemplates[defaultBackground].defaultProps,
             leftColor: '#eb7734',
         },
@@ -93,28 +92,26 @@ const defaultBanner3: BannerPresetProps = {
     },
     background: {
         id: defaultBackground,
-        props:
-        {
+        props: {
             ...BackgroundTemplates[defaultBackground].defaultProps,
             leftColor: '#b149ff',
-            rightColor: '#cf44aa'
+            rightColor: '#cf44aa',
         },
     },
 };
-
 
 const camo: BannerPresetProps = {
     foreground: {
         id: 'ImLive',
         props: {
             ...ForegroundTemplates['ImLive'].defaultProps,
-            thumbnailBorderColor: 'green'
+            thumbnailBorderColor: 'green',
         },
     },
     background: {
         id: 'ImageBackground',
         props: {
-            src: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/banner-backgrounds/camo.png'
+            src: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/banner-backgrounds/camo.png',
         },
     },
 };
@@ -131,10 +128,10 @@ function imgPreset(src: string, font?: string): BannerPresetProps {
         background: {
             id: 'ImageBackground',
             props: {
-                src
-            }
-        }
-    }
+                src,
+            },
+        },
+    };
 }
 
 const emggBanner: BannerPresetProps = {
@@ -145,7 +142,7 @@ const emggBanner: BannerPresetProps = {
     background: {
         id: 'ImageBackground',
         props: {
-            src: emggBannerBackground
+            src: emggBannerBackground,
         },
     },
 };
@@ -158,11 +155,23 @@ const swayBanner: BannerPresetProps = {
     background: {
         id: 'ImageBackground',
         props: {
-            src: swayBannerBackground
+            src: swayBannerBackground,
         },
     },
 };
 
+const preGamingBanner: BannerPresetProps = {
+    foreground: {
+        id: 'PreGaming',
+        props: ForegroundTemplates['PreGaming'].defaultProps,
+    },
+    background: {
+        id: 'ImageBackground',
+        props: {
+            src: preGamingBannerBackground,
+        },
+    },
+};
 
 function convertToProps(preset: BannerPresetProps): BannerProps {
     return {
@@ -179,7 +188,7 @@ export const bannerPresets: Record<string, BannerPreset> = {
         displayName: 'Classic',
         category: 'Default',
         free: true,
-        ...defaultBanner
+        ...defaultBanner,
     },
     emgg: {
         name: 'emgg',
@@ -187,7 +196,7 @@ export const bannerPresets: Record<string, BannerPreset> = {
         category: 'Special Edition',
         free: true,
         locked: true,
-        ...emggBanner
+        ...emggBanner,
     },
     sway: {
         name: 'sway',
@@ -195,48 +204,56 @@ export const bannerPresets: Record<string, BannerPreset> = {
         category: 'Special Edition',
         free: true,
         locked: true,
-        ...swayBanner
+        ...swayBanner,
+    },
+    preGaming: {
+        name: 'preGaming',
+        displayName: 'PreGaming Special Edition',
+        category: 'Special Edition',
+        free: true,
+        locked: true,
+        ...preGamingBanner,
     },
     noArrow: {
         name: 'customtext',
         displayName: 'Custom text',
         category: 'Default',
         free: true,
-        ...defaultBanner2
+        ...defaultBanner2,
     },
     customGradient: {
         name: 'noarrow',
         displayName: 'Minimal',
         category: 'Default',
         free: true,
-        ...defaultBanner3
+        ...defaultBanner3,
     },
     image2: {
         name: 'image2',
         displayName: 'Space',
         category: 'Default',
         free: false,
-        ...imgPreset('https://pb-static.sfo3.cdn.digitaloceanspaces.com/banner-backgrounds/space.jpeg', 'Lacquer')
+        ...imgPreset('https://pb-static.sfo3.cdn.digitaloceanspaces.com/banner-backgrounds/space.jpeg', 'Lacquer'),
     },
     camo: {
         name: 'camo',
         displayName: 'Camo',
         category: 'Default',
         free: false,
-        ...camo
+        ...camo,
     },
     setup: {
         name: 'setup',
         displayName: 'Vaporwave',
         category: 'Default',
         free: false,
-        ...imgPreset('https://pb-static.sfo3.cdn.digitaloceanspaces.com/banner-backgrounds/vaporwave.jpeg', 'Iceland')
+        ...imgPreset('https://pb-static.sfo3.cdn.digitaloceanspaces.com/banner-backgrounds/vaporwave.jpeg', 'Iceland'),
     },
     cool: {
         name: 'setup',
         displayName: 'Abstract',
         category: 'Default',
         free: false,
-        ...imgPreset('https://pb-static.sfo3.cdn.digitaloceanspaces.com/banner-backgrounds/purple.jpeg')
+        ...imgPreset('https://pb-static.sfo3.cdn.digitaloceanspaces.com/banner-backgrounds/purple.jpeg'),
     },
-}
+};

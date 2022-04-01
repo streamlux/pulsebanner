@@ -163,7 +163,7 @@ const bannerTypes = {
     },
 };
 
-const lockedBanners = ['Emgg', 'Sway'];
+const lockedBanners = ['Emgg', 'Sway', 'PreGaming'];
 
 interface Props {
     banner: Banner;

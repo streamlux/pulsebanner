@@ -8,5 +8,10 @@
 
 @font-face {
     font-family: RoadRage;
-    src: url("../../assets/Road_Rage.otf") format("opentype");
+    src: url('../../assets/Road_Rage.otf') format('opentype');
+}
+
+@font-face {
+    font-family: Lustra;
+    src: url('../../assets//Lustra.otf') format('opentype');
 }
