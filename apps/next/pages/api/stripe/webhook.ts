@@ -256,6 +256,15 @@ handler.post(async (req, res) => {
                 case 'customer.subscription.updated': {
                     const data = event.data.object as Stripe.Subscription;
 
+                    // We don't insert the subscription into the db if it is not active.
+                    // so we don't handle customer.subscription.update events for 'incomplete' and 'incomplete' expired subscriptions
+                    // Read more: https://stripe.com/docs/api/subscriptions/object#subscription_object-status
+                    if (data.collection_method === 'charge_automatically') {
+                        if (data.status === 'incomplete' || data.status === 'incomplete_expired') {
+                            break;
+                        }
+                    }
+
                     await prisma.subscription.update({
                         where: {
                             id: data.id,
@@ -357,6 +366,13 @@ handler.post(async (req, res) => {
                 case 'invoice.payment_succeeded': {
                     const data = event.data.object as Stripe.Invoice;
 
+                    // For now, don't process events for invoices that are just a recurring payment.
+                    // (aka not the first invoice for a subscription)
+                    // More info: https://stripe.com/docs/api/invoices/object#invoice_object-billing_reason
+                    if (data.billing_reason === 'subscription_cycle') {
+                        break;
+                    }
+
                     const invoiceInfo = await getInvoiceInformation(data);
 
                     // we need a way to get the partner (if they exist)
@@ -388,7 +404,17 @@ handler.post(async (req, res) => {
                     throw new Error(`Unhandled relevant event! ${event.type}`);
             }
         } catch (error) {
-            logger.error('Stripe webhook error', error);
+
+            logger.error(`Failed handling Stripe ${event.type} webhook`, {
+                error,
+                event: {
+                    id: event.id,
+                    type: event.type,
+                    created: event.created
+                }
+            });
+
+            // tell stripe that we failed to handle the webhook, stripe will retry it later
             return res.status(400).send('Webhook error: "Webhook handler failed. View logs."');
         }
     }
