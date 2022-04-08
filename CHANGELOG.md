@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.11.5]
+
+### Added
+ - Added merch release link
+
+## [0.11.4] - 2022-04-01
+
+### Added
+ - Added PreGaming banner for partnership
+
 ## [0.11.3] - 2022-03-30
 
 ### Fixed
