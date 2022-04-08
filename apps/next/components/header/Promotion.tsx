@@ -1,5 +1,5 @@
-import { promo, promoCode } from '@app/util/constants';
-import { Box, Button, Center, Stack, Tag, Text } from '@chakra-ui/react';
+import { merchLink, promo, promoCode } from '@app/util/constants';
+import { Box, Button, Center, Link, Stack, Tag, Text } from '@chakra-ui/react';
 import React, { ReactElement, FC } from 'react';
 import { FaArrowRight } from 'react-icons/fa';
 import NextLink from 'next/link';
@@ -14,17 +14,22 @@ export const Promotion: FC = (): ReactElement | null => {
                 <Center h="full">
                     <Stack direction={['column', 'column', 'row']}>
                         <Text textAlign="center" pt="1" fontSize={['sm', 'md']}>
-                            {'Sale! Use code'}{' '}
-                            <Tag color="black" fontWeight="bold" colorScheme="green" bg={'green.100'}>
+                            {'Merch is here! Click to purchase and wear PulseBanner!'}{' '}
+                            {/* <Tag color="black" fontWeight="bold" colorScheme="green" bg={'green.100'}>
                                 {promoCode}
                             </Tag>{' '}
-                            {'at checkout to save 10% on your first month!'}
+                            {'at checkout to save 10% on your first month!'} */}
                         </Text>
-                        <NextLink href="/pricing" passHref>
+                        {/* <NextLink href="/pricing" passHref>
                             <Button rightIcon={<FaArrowRight />} colorScheme="whiteAlpha" bg="green.100" size="sm" color="black">
                                 View pricing
                             </Button>
-                        </NextLink>
+                        </NextLink> */}
+                        <Link isExternal href={merchLink}>
+                            <Button rightIcon={<FaArrowRight />} colorScheme="whiteAlpha" bg="green.100" size="sm" color="black">
+                                View Merch!
+                            </Button>
+                        </Link>
                     </Stack>
                 </Center>
             </Box>

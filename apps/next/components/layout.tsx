@@ -49,7 +49,7 @@ export default function Layout({ children }: any) {
                     {children}
                 </Box>
             </Flex>
-            {showPromo && (
+            {showPromo && false && (
                 <Portal>
                     <Box
                         zIndex={1}
