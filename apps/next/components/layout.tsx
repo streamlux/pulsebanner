@@ -6,6 +6,7 @@ import { FaArrowRight } from 'react-icons/fa';
 import NextLink from 'next/link';
 import { emggLogoSrc, promo, promoCode } from '@app/util/constants';
 import { useRouter } from 'next/router';
+import { Promotion } from './header/Promotion';
 
 export default function Layout({ children }: any) {
     const { colorMode, setColorMode } = useColorMode();
@@ -45,6 +46,7 @@ export default function Layout({ children }: any) {
                 />
             )}
             <Flex zIndex={1} as={chakra.main} flex="1" px={['2', '8', '16', '36']} flexDirection="column" pt="64px">
+                <Promotion />
                 <Box w="full" pt={['10', '20']}>
                     {children}
                 </Box>
