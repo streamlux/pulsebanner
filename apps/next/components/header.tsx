@@ -363,7 +363,7 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                     </Flex>
                 </Box>
             )}
-            <Promotion />
+            {/* <Promotion /> */}
         </>
     );
 }
