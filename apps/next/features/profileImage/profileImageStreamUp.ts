@@ -1,28 +1,21 @@
-import { remotionAxios } from '@app/util/axios';
 import { flipFeatureEnabled } from '@app/services/postgresHelpers';
 import env from '@app/util/env';
 import { getTwitterProfilePic, TwitterResponseCode, updateProfilePic, validateTwitterAuthentication } from '@app/services/twitter/twitterHelpers';
-import { RenderedProfileImage, Prisma } from '@prisma/client';
-import { AxiosResponse } from 'axios';
+import { RenderedProfileImage } from '@prisma/client';
 import imageToBase64 from 'image-to-base64';
 import { Feature } from '../Feature';
 import { S3Service } from '@app/services/S3Service';
 import { AccountsService } from '@app/services/AccountsService';
 import { ProfilePicService } from '@app/services/ProfilePicService';
 import { Context } from '@app/services/Context';
-
-export type TemplateRequestBody = {
-    foregroundId: string;
-    backgroundId: string;
-    foregroundProps: Record<string, unknown>;
-    backgroundProps: Record<string, unknown>;
-};
+import { RenderProfilePicRequest, RenderResponse } from '@app/services/remotion/RemotionClient';
+import { getProfileImageProps } from '@app/services/profileImage/getProfileImageProps';
+import { RenderProps } from '@pulsebanner/remotion/types';
 
 const profileImageStreamUp: Feature<string> = async (context: Context): Promise<string> => {
     const { userId } = context;
 
-    const profilePicEntry = await ProfilePicService.getProfilePicEntry(userId);
-    const profilePicRendered: RenderedProfileImage | null = await  ProfilePicService.getProfilePicRendered(userId); // compare to updatedAt time and only update if later
+    const profilePicRendered: RenderedProfileImage | null = await ProfilePicService.getProfilePicRendered(userId); // compare to updatedAt time and only update if later
     const twitterInfo = await AccountsService.getTwitterInfo(userId, true);
 
     const validatedTwitter = twitterInfo && await validateTwitterAuthentication(context, twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
@@ -32,9 +25,9 @@ const profileImageStreamUp: Feature<string> = async (context: Context): Promise<
         return 'Unauthenticated Twitter. Disabling feature profileImage and requiring re-auth.';
     }
 
-    if (profilePicEntry === null || twitterInfo === null) {
-        context.logger.error('Unable to get profilePicEntry or twitterInfo for user on streamup', { userId });
-        return 'Unable to get profilePicEntry or twitterInfo for user on streamup';
+    if (twitterInfo === null) {
+        context.logger.error('Unable to get twitterInfo for user on streamup', { userId });
+        return 'Unable to get twitterInfo for user on streamup';
     }
 
     // profile pic bucket name
@@ -53,6 +46,12 @@ const profileImageStreamUp: Feature<string> = async (context: Context): Promise<
         return 'Error uploading original banner to S3.';
     }
 
+    const profilePicEntry = await ProfilePicService.getProfilePicEntry(userId);
+    if (!profilePicEntry) {
+        context.logger.error('Unable to get profilePicEntry for user on streamup', { userId });
+        return 'Unable to get profilePicEntry for user on streamup';
+    }
+
     // check here if we have previously rendered the profile picture. Update if they have saved more recent than what we have saved in the render time
 
     // if we do not have the image in s3, we also need to remove it
@@ -66,17 +65,11 @@ const profileImageStreamUp: Feature<string> = async (context: Context): Promise<
             context.logger.info('Cache miss: Rendering profile picture cached image has been invalidated.', { userId });
         }
 
-        const profilePicUrl: string = await getTwitterProfilePic(context, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, twitterInfo.providerAccountId);
+        const renderProps: RenderProps = await getProfileImageProps(context, { userId, twitterInfo })
+        const renderRequest: RenderProfilePicRequest = new RenderProfilePicRequest(context, renderProps);
 
-        const templateObj: TemplateRequestBody = {
-            backgroundId: profilePicEntry.backgroundId ?? 'CSSBackground',
-            foregroundId: profilePicEntry.foregroundId ?? 'ProfilePic',
-            foregroundProps: { ...(profilePicEntry.foregroundProps as Prisma.JsonObject), imageUrl: profilePicUrl } ?? {},
-            backgroundProps: (profilePicEntry.backgroundProps as Prisma.JsonObject) ?? {},
-        };
-
-        const response: AxiosResponse<string> = await remotionAxios.post('/getProfilePic', templateObj);
-        const base64Image: string = response.data;
+        const renderResponse: RenderResponse = await renderRequest.send();
+        const base64Image: string = renderResponse.data;
 
         const profilePictureStatus: TwitterResponseCode = await updateProfilePic(context, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, base64Image);
         // update the last render time table and upload this image to s3

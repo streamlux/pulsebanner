@@ -8,13 +8,6 @@ import { AccountsService } from '@app/services/AccountsService';
 import { S3Service } from '@app/services/S3Service';
 import { Context } from '@app/services/Context';
 
-export type TemplateRequestBody = {
-    foregroundId: string;
-    backgroundId: string;
-    foregroundProps: Record<string, unknown>;
-    backgroundProps: Record<string, unknown>;
-};
-
 const bannerStreamUp: Feature<string> = async (context: Context): Promise<string> => {
     const { userId } = context;
 

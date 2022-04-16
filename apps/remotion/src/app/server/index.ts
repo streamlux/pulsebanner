@@ -13,6 +13,8 @@ import { getMimeType } from './image-types';
 import { getImageHash } from './make-hash';
 import { Browser } from 'puppeteer-core';
 import { logger } from './logger';
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import { RemotionRequestBody } from '@pulsebanner/remotion/types';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const queue = require('express-queue');
@@ -83,6 +85,20 @@ app.use(
     })
 );
 
+function verifyBody(body: unknown): body is RemotionRequestBody {
+    if (typeof body !== 'object' || !body) {
+        return false;
+    }
+
+    const { userId, contextId, props } = body as Record<string, unknown>;
+
+    if (typeof userId !== 'string' || typeof contextId !== 'string' || typeof props !== 'object') {
+        return false;
+    }
+
+    return true;
+}
+
 /**
  * Format for what we are going to pass in
  * Req Body
@@ -93,12 +109,30 @@ app.post(
     '/getTemplate',
     queueMw,
     handler(async (req, res) => {
-
-
         const startMs = Date.now();
-        const requestBody = req.body;
-        logger.info('Rendering banner', requestBody);
-        logger.info(`Request queue length: ${queueMw.queue.getLength()}`);
+
+        if (!verifyBody(req.body)) {
+            logger.error('Invalid request body', {
+                body: req.body,
+                path: '/getTemplate'
+            });
+            return res.status(400).send('Invalid request body');
+        }
+
+        const body: RemotionRequestBody = req.body;
+
+        const context = {
+            id: body.contextId,
+            userId: body.userId,
+        };
+
+        const queueLength = queueMw.queue.getLength();
+
+        logger.info(`Rendering banner`, {
+            context,
+            props: body.props,
+            queueLength
+        });
 
         // hard coded info as we only use one composition composer and generate different templates from there by passing the different props
         const imageFormat = 'png';
@@ -139,13 +173,13 @@ app.post(
                 .catch((err) => reject(err));
         });
 
-        logger.info(output);
         const imageBase64 = fs.readFileSync(output, { encoding: 'base64' });
 
         const endMs = Date.now();
 
-        logger.info(`Done rendering.`, {
-            duration: endMs - startMs
+        logger.info(`Done rendering banner in ${endMs - startMs}ms.`, {
+            duration: endMs - startMs,
+            context,
         });
 
         res.send(imageBase64);
@@ -162,16 +196,34 @@ app.post('/getProfilePic',
     queueMw,
     handler(async (req, res) => {
 
-
         const startMs = Date.now();
-        const requestBody = req.body;
-        logger.info('Rendering profile picture', requestBody);
-        logger.info(`Request queue length: ${queueMw.queue.getLength()}`);
+
+        if (!verifyBody(req.body)) {
+            logger.error('Invalid request body', {
+                body: req.body,
+                path: '/getProfilePic'
+            });
+            return res.status(400).send('Invalid request body');
+        }
+
+        const body: RemotionRequestBody = req.body;
 
         // hard coded info as we only use one composition composer and generate different templates from there by passing the different props
         const imageFormat = 'png';
         const compName = 'twitterProfilePic';
-        const inputProps = req.body;
+        const inputProps = req.body.props;
+
+        const context = {
+            id: body.contextId,
+            userId: body.userId,
+        };
+
+        const queueLength = queueMw.queue.getLength();
+        logger.info('Rendering profile picture', {
+            context,
+            props: req.body.props,
+            queueLength
+        });
 
         res.set('content-type', getMimeType(imageFormat));
 
@@ -207,13 +259,13 @@ app.post('/getProfilePic',
                 .catch((err) => reject(err));
         });
 
-        logger.info(output);
         const imageBase64 = fs.readFileSync(output, { encoding: 'base64' });
 
         const endMs = Date.now();
 
-        logger.info(`Done rendering.`, {
-            duration: endMs - startMs
+        logger.info(`Done rendering profile picture in ${endMs - startMs}ms.`, {
+            duration: endMs - startMs,
+            context,
         });
 
         res.send(imageBase64);

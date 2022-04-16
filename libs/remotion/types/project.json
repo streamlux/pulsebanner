@@ -1,0 +1,15 @@
+{
+    "root": "libs/remotion/types",
+    "sourceRoot": "libs/remotion/types/src",
+    "projectType": "library",
+    "targets": {
+        "lint": {
+            "executor": "@nrwl/linter:eslint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": ["libs/remotion/types/**/*.ts"]
+            }
+        }
+    },
+    "tags": []
+}
