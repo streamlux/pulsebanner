@@ -35,4 +35,4 @@ USER pptruser
 
 EXPOSE 8000
 
-CMD ["npx", "ts-node", "app/server/server.ts", '--transpileOnly']
+CMD ["npx", "ts-node", "app/server/server.ts", '--transpile-only']
