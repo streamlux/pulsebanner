@@ -13,8 +13,7 @@ import { getMimeType } from './image-types';
 import { getImageHash } from './make-hash';
 import { Browser } from 'puppeteer-core';
 import { logger } from './logger';
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
-import { RemotionRequestBody } from '@pulsebanner/remotion/types';
+import type { RemotionRequestBody } from '@pulsebanner/remotion/types';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const queue = require('express-queue');

@@ -13,6 +13,7 @@ async function main() {
     await fse.copy('apps/remotion/src/app', 'dist/apps/remotion/app');
 
     await fse.copy(componentsSrc, 'dist/apps/remotion/app/components');
+    await fse.copy(componentsSrc, 'dist/apps/remotion/app/types');
     await fse.copy('apps/remotion/src/environments/environment.prod.ts', 'dist/apps/remotion/environments/environment.ts');
     await fse.copy('apps/remotion/Dockerfile', 'dist/apps/remotion/Dockerfile');
     await fse.copy('apps/remotion/config/tsconfig.json', 'dist/apps/remotion/tsconfig.json');
