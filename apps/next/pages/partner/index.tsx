@@ -94,7 +94,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     props: {
                         partnerStatus: partnerInfo.acceptanceStatus as AcceptanceStatus,
                         partnerCode: partnerInfo.partnerCode,
-                        payment: payment,
+                        payment,
                     },
                 };
             } catch (e) {
