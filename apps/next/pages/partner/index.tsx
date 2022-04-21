@@ -63,7 +63,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         ctx: context,
     })) as any;
 
-
     if (session) {
         const payment = await productPlan(session.userId);
         const partnerStatus = await prisma.partnerInformation.findUnique({
@@ -85,24 +84,30 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 if (!partnerInfo) {
                     return {
                         props: {
-                            partnerStatus: AcceptanceStatus.None
-                        }
-                    }
+                            partnerStatus: AcceptanceStatus.None,
+                            payment: payment,
+                        },
+                    };
                 }
 
                 return {
                     props: {
                         partnerStatus: partnerInfo.acceptanceStatus as AcceptanceStatus,
                         partnerCode: partnerInfo.partnerCode,
-                        payment,
+                        payment: payment,
                     },
                 };
             } catch (e) {
                 logger.error('Error in partner page for getServerSideProps. ', { error: e });
             }
         }
+        return {
+            props: {
+                partnerStatus: AcceptanceStatus.None,
+                payment: payment,
+            },
+        };
     }
-
     return {
         props: {
             partnerStatus: AcceptanceStatus.None,
@@ -152,9 +157,10 @@ export default function Page({ partnerStatus, partnerCode, payment }: Props) {
         }
     );
 
+    console.log('payment: ', payment);
+
     // order of the if statements matter
     const availableForAccount = (): boolean => {
-
         // let legacy partners apply
         if (payment?.partner) {
             return true;
@@ -173,11 +179,11 @@ export default function Page({ partnerStatus, partnerCode, payment }: Props) {
         // let paid users apply
         return true;
     };
+    console.log('available: ', availableForAccount());
 
     const refreshData = () => {
         router.replace(router.asPath);
     };
-
 
     const onSubmit = async (formData: FormData) => {
         if (!ensureSignUp()) {
@@ -580,9 +586,8 @@ export default function Page({ partnerStatus, partnerCode, payment }: Props) {
                         </Center>
                         <Center w="full" textAlign={'center'}>
                             <Text>
-                                The PulseBanner Partner Program is currently in closed beta.{' '}
-                                <strong>We are not accepting applications during the beta.</strong>{' '}
-                                Applications will open up to PulseBanner Members once the beta concludes.
+                                The PulseBanner Partner Program is currently in closed beta. <strong>We are not accepting applications during the beta.</strong> Applications will
+                                open up to PulseBanner Members once the beta concludes.
                             </Text>
                         </Center>
                     </Box>
