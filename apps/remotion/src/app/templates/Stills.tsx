@@ -9,11 +9,10 @@ export const RemotionVideo: React.FC = () => {
                 id="pulsebanner"
                 component={Composer}
                 defaultProps={{
-                    backgroundId: 'CSSBackground',
+                    backgroundId: 'ColorBackground',
                     backgroundProps: {},
                     foregroundId: 'ImLive',
-                    foregroundProps: {},
-                    watermark: true,
+                    foregroundProps: {}
                 }}
                 height={500}
                 width={1500}
