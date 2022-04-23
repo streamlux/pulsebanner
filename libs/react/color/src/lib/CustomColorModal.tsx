@@ -1,4 +1,19 @@
-import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ButtonGroup, Button, useDisclosure, Center } from '@chakra-ui/react';
+import {
+    Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalBody,
+    ModalFooter,
+    ButtonGroup,
+    Button,
+    Center,
+    Input,
+    VStack,
+    FormControl,
+    FormLabel,
+    HStack,
+} from '@chakra-ui/react';
 import React, { ReactElement, FC, useState } from 'react';
 import { StarIcon } from '@chakra-ui/icons';
 import { HexColorPicker } from 'react-colorful';
@@ -27,6 +42,7 @@ export const CustomColorModal: FC<CustomColorModalProps> = ({ onSave, isOpen, on
         }
     };
 
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const initialRef = React.useRef<any>();
 
@@ -43,14 +59,24 @@ export const CustomColorModal: FC<CustomColorModalProps> = ({ onSave, isOpen, on
                     </Center>
                 </ModalHeader>
                 <ModalBody w="full">
-                    <HexColorPicker
-                        style={{ width: '100%' }}
-                        className="responsive"
-                        color={color}
-                        onChange={(newColor) => {
-                            setColor(newColor);
-                        }}
-                    />
+                    <VStack spacing={6}>
+                        <HexColorPicker
+                            style={{ width: '100%' }}
+                            className="responsive"
+                            color={color}
+                            onChange={(newColor) => {
+                                setColor(newColor);
+                            }}
+                        />
+                        <FormControl w='full'>
+                            <Center w='full'>
+                                <HStack>
+                                    <FormLabel htmlFor="email">Hex color</FormLabel>
+                                    <Input w="28" type="text" value={color} onChange={(e) => setColor(e.target.value)} placeholder="#ffffff" />
+                                </HStack>
+                            </Center>
+                        </FormControl>
+                    </VStack>
                 </ModalBody>
 
                 <ModalFooter>
