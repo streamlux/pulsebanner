@@ -3,6 +3,7 @@ import { sendErrorInternal } from '@app/util/discord/sendError';
 import { logger } from '@app/util/logger';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import prisma from '@app/util/ssr/prisma';
+import { Subscription } from '@prisma/client';
 
 const handler = createAuthApiHandler();
 
@@ -15,10 +16,20 @@ handler.post(async (req, res) => {
         return res.send(404);
     }
 
-    const subscriptionUser = await prisma.subscription.findUnique({
+    const subscriptions: Subscription[] = await prisma.subscription.findMany({
         where: {
-            userId: userId,
-        },
+            AND: [
+                {
+                    userId: userId,
+                },
+                {
+                    status: 'active',
+                },
+                {
+                    cancel_at: null
+                }
+            ]
+        }
     });
 
     const isPartner = await prisma.user.findUnique({
@@ -31,7 +42,7 @@ handler.post(async (req, res) => {
     });
 
     const validPartner = isPartner !== null && isPartner.partner;
-    const subscriber = subscriptionUser !== null;
+    const subscriber = subscriptions.length > 0;
 
     // if they aren't a partner or subscriber, we should not have shown them the page and we should not apply
     if (!validPartner && !subscriber) {

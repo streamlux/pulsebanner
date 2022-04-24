@@ -32,11 +32,20 @@ handler.post(async (req, res) => {
 
     // console.log(config);
 
-    const subscription: Subscription | null = await prisma.subscription.findUnique({
+    const subscriptions: Subscription[] | null = await prisma.subscription.findMany({
         where: {
-            userId: userId
-        },
-        rejectOnNotFound: false,
+            AND: [
+                {
+                    userId: userId,
+                },
+                {
+                    status: 'active',
+                },
+                {
+                    cancel_at: null
+                }
+            ]
+        }
     });
 
     const { url } = await stripe.billingPortal.sessions.create({
@@ -45,8 +54,8 @@ handler.post(async (req, res) => {
     });
 
     const body: any = { url };
-    if (subscription) {
-        body.subscriptionUrl = `${url}/subscriptions/${subscription.id}/update`;
+    if (subscriptions) {
+        body.subscriptionUrl = `${url}/subscriptions/${subscriptions[0].id}/update`;
     }
 
     return res.status(200).json(body);

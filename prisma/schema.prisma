@@ -252,7 +252,7 @@ model Price {
 
 model Subscription {
     id                   String             @id @default(cuid())
-    userId               String             @unique(map: "subscriptions_user_id_unique") @map("user_id")
+    userId               String             @map("user_id")
     priceId              String
     status               SubscriptionStatus
     start_date           DateTime?
