@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.11.7] - 2022-04-24
+
 ### Added
 
 - Hex color input on color picker modals
+
+### Changed
+
+- Account page styling for gift purchases
 
 ## [0.11.6]
 
