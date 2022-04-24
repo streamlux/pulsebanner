@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- Hex color input on color picker modals
+
 ## [0.11.6]
 
 ### Fixed
