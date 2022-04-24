@@ -11,18 +11,21 @@ type GiftSummaryProps = {
         createdAt: Date;
     }[];
     gifts?: GiftInfo[];
+    hideHeader?: boolean;
 };
 
-export const GiftSummary: FC<GiftSummaryProps> = ({ allGiftPurchases, gifts }): ReactElement => {
+export const GiftSummary: FC<GiftSummaryProps> = ({ allGiftPurchases, gifts, hideHeader }): ReactElement => {
     return (
         <Center w="full">
-            <Card props={{ maxW: 'full' }}>
+            <Card props={{ maxW: 'full', w: 'full' }}>
                 <VStack spacing={8} maxW={['auto', '2xl']} p="1">
                     <Box experimental_spaceY={4} w="full">
                         <VStack>
-                            <Heading size="lg" textAlign={'left'} w="full">
-                                All Gift Purchases
-                            </Heading>
+                            {!hideHeader && (
+                                <Heading size="lg" textAlign={'left'} w="full">
+                                    All Gift Purchases
+                                </Heading>
+                            )}
                             <Text size={'sm'} maxW="full">
                                 List of all your past gift purchases. Click View Summary to view the details of each purchase.
                             </Text>

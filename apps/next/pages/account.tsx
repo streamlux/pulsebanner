@@ -44,7 +44,7 @@ interface Props {
     allGiftPurchases: {
         createdAt: Date;
         checkoutSessionId: string;
-    }[]
+    }[];
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -189,8 +189,11 @@ const Page: NextPage<Props> = ({ enabledFeatures, plan, allGiftPurchases }) => {
                             </Card>
                         </Box>
 
-                        <Box w='full'>
-                            <GiftSummary allGiftPurchases={allGiftPurchases} />
+                        <Box w="full">
+                            <Heading as="p" fontSize="xl" mb="2">
+                                Gift Purchases
+                            </Heading>
+                            <GiftSummary allGiftPurchases={allGiftPurchases} hideHeader />
                         </Box>
 
                         <Box w="full">
