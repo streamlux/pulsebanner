@@ -72,7 +72,7 @@ export const CustomColorModal: FC<CustomColorModalProps> = ({ onSave, isOpen, on
                             <Center w='full'>
                                 <HStack>
                                     <FormLabel htmlFor="email">Hex color</FormLabel>
-                                    <Input w="28" type="text" value={color} onChange={(e) => setColor(e.target.value)} placeholder="#ffffff" />
+                                    <Input w="28" type="text" value={color} onChange={(e) => setColor(e.target.value)} placeholder="#00ffff" />
                                 </HStack>
                             </Center>
                         </FormControl>
