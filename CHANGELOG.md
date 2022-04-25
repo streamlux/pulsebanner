@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Use Stripe automatic payment methods
 - Added no-ops for some Stripe wehbooks
     - invoice.payment_succeeded no-op if billing_reason is subscription_cycle
     - customer.subscription.updated no-op if status is incomplete or incomplete_expired
