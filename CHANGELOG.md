@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+
+- Added no-ops for some Stripe wehbooks
+    - invoice.payment_succeeded no-op if billing_reason is subscription_cycle
+    - customer.subscription.updated no-op if status is incomplete or incomplete_expired
+
+## [0.11.7] - 2022-04-24
+
+### Added
+
+- Hex color input on color picker modals
+
+### Changed
+
+- Account page styling for gift purchases
+
+## [0.11.6]
+
+### Fixed
+
+ - Allow beta partners to fill out application
+
 ## [0.11.5]
 
 ### Added

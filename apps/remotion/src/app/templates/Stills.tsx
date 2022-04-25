@@ -12,7 +12,7 @@ export const RemotionVideo: React.FC = () => {
                     backgroundId: 'ColorBackground',
                     backgroundProps: {},
                     foregroundId: 'ImLive',
-                    foregroundProps: {},
+                    foregroundProps: {}
                 }}
                 height={500}
                 width={1500}

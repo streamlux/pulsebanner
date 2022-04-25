@@ -198,7 +198,10 @@ const Page: NextPage<Props> = ({ enabledFeatures, plan, allGiftPurchases }) => {
                         </Box>
 
                         <Box w="full">
-                            <GiftSummary allGiftPurchases={allGiftPurchases} />
+                            <Heading as="p" fontSize="xl" mb="2">
+                                Gift Purchases
+                            </Heading>
+                            <GiftSummary allGiftPurchases={allGiftPurchases} hideHeader />
                         </Box>
 
                         <Box w="full">

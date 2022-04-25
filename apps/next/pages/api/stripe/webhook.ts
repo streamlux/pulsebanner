@@ -257,7 +257,7 @@ handler.post(async (req, res) => {
                     const data = event.data.object as Stripe.Subscription;
 
                     // We don't insert the subscription into the db if it is not active.
-                    // so we don't handle customer.subscription.update events for 'incomplete' and 'incomplete' expired subscriptions
+                    // so we don't handle customer.subscription.update events if the status is 'incomplete' or 'incomplete_expired'.
                     // Read more: https://stripe.com/docs/api/subscriptions/object#subscription_object-status
                     if (data.collection_method === 'charge_automatically') {
                         if (data.status === 'incomplete' || data.status === 'incomplete_expired') {
