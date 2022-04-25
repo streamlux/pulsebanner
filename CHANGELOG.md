@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+
+- Added no-ops for some Stripe wehbooks
+    - invoice.payment_succeeded no-op if billing_reason is subscription_cycle
+    - customer.subscription.updated no-op if status is incomplete or incomplete_expired
+
 ## [0.11.7] - 2022-04-24
 
 ### Added
