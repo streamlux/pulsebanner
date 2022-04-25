@@ -361,6 +361,13 @@ handler.post(async (req, res) => {
                 case 'invoice.payment_succeeded': {
                     const data = event.data.object as Stripe.Invoice;
 
+                    // For now, don't process events for invoices that are just a recurring payment.
+                    // (aka not the first invoice for a subscription)
+                    // More info: https://stripe.com/docs/api/invoices/object#invoice_object-billing_reason
+                    if (data.billing_reason === 'subscription_cycle') {
+                        break;
+                    }
+
                     const invoiceInfo = await getInvoiceInformation(data);
 
                     // we need a way to get the partner (if they exist)
