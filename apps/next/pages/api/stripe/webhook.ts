@@ -251,6 +251,15 @@ handler.post(async (req, res) => {
                 case 'customer.subscription.updated': {
                     const data = event.data.object as Stripe.Subscription;
 
+                    // We don't insert the subscription into the db if it is not active.
+                    // so we don't handle customer.subscription.update events if the status is 'incomplete' or 'incomplete_expired'.
+                    // Read more: https://stripe.com/docs/api/subscriptions/object#subscription_object-status
+                    if (data.collection_method === 'charge_automatically') {
+                        if (data.status === 'incomplete' || data.status === 'incomplete_expired') {
+                            break;
+                        }
+                    }
+
                     await prisma.subscription.update({
                         where: {
                             id: data.id,
