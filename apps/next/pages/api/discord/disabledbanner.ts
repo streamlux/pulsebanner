@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (process.env.ENABLE_DISCORD_WEBHOOKS === 'true') {
         const response = await axios.post(env.DISCORD_BANNER_DISABLED_WEBHOOK_URL, {
-            content: `Reason for disabled: ${body.radioValue}.\nComment: ${body.inputValue}\n`,
+            content: `Reason for disabled: ${body.radioValue}.\nComment: ${body.inputValue}\nUserID: ${session.user.id}`,
         });
 
         return res.send(response.status);
