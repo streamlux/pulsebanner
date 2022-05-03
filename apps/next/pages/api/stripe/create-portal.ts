@@ -68,8 +68,9 @@ async function createBillingPortalConfiguration(options: {
                 enabled: true,
             },
             subscription_update: {
-                default_allowed_updates: ['price'],
                 enabled: true,
+                proration_behavior: 'always_invoice',
+                default_allowed_updates: ['price'],
                 products: await getProducts()
             },
         }
