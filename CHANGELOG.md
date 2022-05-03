@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Fixed
+
+- Users are actually able to upgrade their subscriptions
+
 ## [0.11.8] - 2022-05-02
 
 ### Changed
