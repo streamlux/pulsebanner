@@ -169,7 +169,7 @@ const Page: NextPage<Props> = ({ enabledFeatures, plan, allGiftPurchases }) => {
                                                         allowCancel: false,
                                                     });
                                                 }}
-                                                colorScheme={isPro ? 'green' : undefined}
+                                                colorScheme={isPro ? undefined : 'green'}
                                             >
                                                 {isPro ? 'Change Membership Plan' : 'Upgrade to Professional'}
                                             </Button>
