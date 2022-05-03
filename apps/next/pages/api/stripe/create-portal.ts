@@ -10,9 +10,13 @@ const handler = createAuthApiHandler();
 handler.post(async (req, res) => {
     const userId: string = req.session.userId;
 
+    const allowCancel = req.body.allow_cancel;
+
     const customerId: string = await getCustomerId(userId);
 
-    const billingConfiguration = await createBillingPortalConfiguration();
+    const billingConfiguration = await createBillingPortalConfiguration({
+        allowCancel
+    });
 
     const subscription: Subscription | null = await prisma.subscription.findUnique({
         where: {
@@ -36,7 +40,9 @@ handler.post(async (req, res) => {
 });
 
 
-async function createBillingPortalConfiguration(): Promise<Stripe.BillingPortal.Configuration> {
+async function createBillingPortalConfiguration(options: {
+    allowCancel?: boolean,
+}): Promise<Stripe.BillingPortal.Configuration> {
 
     return await stripe.billingPortal.configurations.create({
         business_profile: {
@@ -47,7 +53,7 @@ async function createBillingPortalConfiguration(): Promise<Stripe.BillingPortal.
         features: {
             payment_method_update: { enabled: true },
             subscription_cancel: {
-                enabled: true,
+                enabled: !!options.allowCancel,
                 cancellation_reason: {
                     enabled: true,
                     options: [
@@ -57,10 +63,6 @@ async function createBillingPortalConfiguration(): Promise<Stripe.BillingPortal.
                         'other',
                     ]
                 }
-            },
-            customer_update: {
-                enabled: true,
-                allowed_updates: ['email']
             },
             invoice_history: {
                 enabled: true,

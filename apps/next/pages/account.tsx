@@ -34,9 +34,11 @@ import { FeaturesService } from '@app/services/FeaturesService';
 import { useConnectToTwitch } from '@app/util/hooks/useConnectToTwitch';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 import { useRouter } from 'next/router';
-import { FaTwitch } from 'react-icons/fa';
+import { FaStar, FaTwitch } from 'react-icons/fa';
 import prisma from '@app/util/ssr/prisma';
 import { GiftSummary } from '@app/components/gifts/GiftSummary';
+import { StarIcon } from '@chakra-ui/icons';
+import Link from 'next/link';
 
 interface Props {
     enabledFeatures: Awaited<ReturnType<typeof FeaturesService.listEnabled>>;
@@ -93,16 +95,26 @@ const Page: NextPage<Props> = ({ enabledFeatures, plan, allGiftPurchases }) => {
 
     const hasTwitch = session?.accounts['twitch'];
 
-    const handleCreatePortal = async () => {
-        const res = await fetch('/api/stripe/create-portal', {
-            method: 'POST',
-            headers: {
-                'content-type': 'application/json',
-            },
-        });
+    const isPro = paymentPlan === 'Professional';
 
-        const data = await res.json();
-        window.location.assign(data.url);
+    const hasMembership = paymentPlan !== 'Free' || plan.partner;
+
+    const handleCreatePortal = async (options: { allowCancel?: boolean }) => {
+        const res = await axios.post(
+            '/api/stripe/create-portal',
+            {
+                allow_cancel: !!options.allowCancel,
+            },
+            {
+                method: 'POST',
+                headers: {
+                    'content-type': 'application/json',
+                },
+            }
+        );
+
+        const data = await res.data;
+        window.location.assign(data.subscriptionUrl ?? data.url);
     };
 
     // delete the account
@@ -146,16 +158,43 @@ const Page: NextPage<Props> = ({ enabledFeatures, plan, allGiftPurchases }) => {
                                                 <Tag colorScheme={paymentPlan === 'Free' ? 'gray' : 'blue'}>{paymentPlan === 'Free' ? 'None' : paymentPlan}</Tag>
                                             </Box>
                                         </HStack>
-                                        <Button
-                                            onClick={async () => {
-                                                await handleCreatePortal();
-                                            }}
-                                            colorScheme={paymentPlan === 'Free' || plan.partner ? 'green' : undefined}
-                                        >
-                                            {paymentPlan === 'Free' || plan.partner ? 'Become PulseBanner Member' : 'Change/Cancel PulseBanner Membership'}
-                                        </Button>
                                     </Stack>
                                 </VStack>
+                                <HStack justify={'end'} w="full">
+                                    {hasMembership && (
+                                        <>
+                                            <Button
+                                                onClick={async () => {
+                                                    await handleCreatePortal({
+                                                        allowCancel: false,
+                                                    });
+                                                }}
+                                                colorScheme={paymentPlan === 'Free' || plan.partner ? 'green' : undefined}
+                                            >
+                                                {isPro ? 'Change Membership Plan' : 'Upgrade to Professional'}
+                                            </Button>
+                                            <Button
+                                                onClick={async () => {
+                                                    await handleCreatePortal({
+                                                        allowCancel: true,
+                                                    });
+                                                }}
+                                            >
+                                                Cancel Membership
+                                            </Button>
+                                        </>
+                                    )}
+
+                                    {!hasMembership && (
+                                        <>
+                                            <Link href="/pricing" passHref>
+                                                <Button colorScheme={'green'} leftIcon={<StarIcon />} as="a">
+                                                    Upgrade to a PulseBanner Membership
+                                                </Button>
+                                            </Link>
+                                        </>
+                                    )}
+                                </HStack>
                             </Card>
                         </Box>
 
