@@ -99,7 +99,7 @@ const Page: NextPage<Props> = ({ enabledFeatures, plan, allGiftPurchases }) => {
 
     const hasMembership = paymentPlan !== 'Free' || plan.partner;
 
-    const handleCreatePortal = async (options: { allowCancel?: boolean }) => {
+    const handleCreatePortal = async (options: { allowCancel?: boolean, goHome?: boolean }) => {
         const res = await axios.post(
             '/api/stripe/create-portal',
             {
@@ -114,7 +114,7 @@ const Page: NextPage<Props> = ({ enabledFeatures, plan, allGiftPurchases }) => {
         );
 
         const data = await res.data;
-        window.location.assign(data.subscriptionUrl ?? data.url);
+        window.location.assign(options.goHome ? data.url : data.subscriptionUrl);
     };
 
     // delete the account
@@ -177,6 +177,7 @@ const Page: NextPage<Props> = ({ enabledFeatures, plan, allGiftPurchases }) => {
                                                 onClick={async () => {
                                                     await handleCreatePortal({
                                                         allowCancel: true,
+                                                        goHome: true,
                                                     });
                                                 }}
                                             >
