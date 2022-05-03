@@ -2,15 +2,14 @@ import prisma from '@app/util/ssr/prisma';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import { updateTwitchSubscriptions } from '@app/services/updateTwitchSubscriptions';
 import { validateTwitterAuthentication } from '@app/services/twitter/twitterHelpers';
+import { Context } from '@app/services/Context';
 
 const handler = createAuthApiHandler();
 
 // Create or update existing banner with url and templateId
 handler.post(async (req, res) => {
-    const userId = req.session?.userId;
-    if (!userId) {
-        return res.send(404);
-    }
+
+    const { userId } = req.context;
 
     // validate twitter here before saving
     const userInfo = await prisma.account.findFirst({
@@ -25,7 +24,7 @@ handler.post(async (req, res) => {
     });
 
     if (userInfo && userInfo.oauth_token && userInfo.oauth_token_secret) {
-        const valid = await validateTwitterAuthentication(userInfo.oauth_token, userInfo.oauth_token_secret);
+        const valid = await validateTwitterAuthentication(req.context, userInfo.oauth_token, userInfo.oauth_token_secret);
         if (!valid) {
             // send 401 if not authenticated
             return res.send(401);
@@ -36,10 +35,10 @@ handler.post(async (req, res) => {
 
     await prisma.banner.upsert({
         where: {
-            userId: req.session.userId,
+            userId,
         },
         create: {
-            userId: req.session.userId,
+            userId,
             backgroundId: req.body.backgroundId,
             foregroundId: req.body.foregroundId,
             backgroundProps: req.body.backgroundProps,
@@ -90,10 +89,6 @@ handler.delete(async (req, res) => {
 handler.put(async (req, res) => {
     const userId = req.session.userId;
 
-    if (!userId) {
-        return res.send(404);
-    }
-
     // validate twitter here before saving
     const userInfo = await prisma.account.findFirst({
         where: {
@@ -107,7 +102,7 @@ handler.put(async (req, res) => {
     });
 
     if (userInfo && userInfo.oauth_token && userInfo.oauth_token_secret) {
-        const valid = await validateTwitterAuthentication(userInfo.oauth_token, userInfo.oauth_token_secret);
+        const valid = await validateTwitterAuthentication(req.context, userInfo.oauth_token, userInfo.oauth_token_secret);
         if (!valid) {
             // send 401 if not authenticated
             return res.send(401);
@@ -136,7 +131,7 @@ handler.put(async (req, res) => {
         // Update twitch subscriptions since we might
         // need to delete subscriptions if they disabled the banner
         // or create subscriptions if they enabled the banner
-        await updateTwitchSubscriptions(userId);
+        await updateTwitchSubscriptions(req.context);
 
         res.send(200);
     } else {

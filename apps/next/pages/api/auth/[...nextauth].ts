@@ -15,6 +15,7 @@ import { buildSession } from '@app/services/auth/buildSession';
 import env from '@app/util/env';
 import { S3Service } from '@app/services/S3Service';
 import { AccountsService } from '@app/services/AccountsService';
+import { Context } from '@app/services/Context';
 
 // File contains options and hooks for next-auth, the authentication package
 // we are using to handle signup, signin, etc.
@@ -139,27 +140,33 @@ export default NextAuth({
             });
         },
         signIn: (message: { user: User; account: Account; isNewUser?: boolean }) => {
+
+            const context = new Context(message.user.id, {
+                action: 'Sign in',
+                isNewUser: message.isNewUser,
+            });
+
             // we automatically upload the user's banner to s3 storage on first sign in
             if (message.isNewUser === true && message.account.provider === 'twitter') {
                 const twitterProvider = message.account as any;
-                getBanner(message.user.id, twitterProvider.oauth_token, twitterProvider.oauth_token_secret, twitterProvider.providerAccountId).then((bannerUrl) => {
+                getBanner(context, twitterProvider.oauth_token, twitterProvider.oauth_token_secret, twitterProvider.providerAccountId).then((bannerUrl) => {
                     if (bannerUrl === 'empty') {
-                        S3Service.uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, 'empty')
+                        S3Service.uploadBase64(context, env.BANNER_BACKUP_BUCKET, message.user.id, 'empty')
                             .then(() => {
-                                logger.info('Uploaded empty banner on new user signup.', { userId: message.user.id });
+                                context.logger.info('Uploaded empty banner on new user signup.', { userId: message.user.id });
                             })
                             .catch((reason) => {
-                                logger.error('Error uploading empty banner to backup bucket on new user signup', reason, { userId: message.user.id });
+                                context.logger.error('Error uploading empty banner to backup bucket on new user signup', reason, { userId: message.user.id });
                                 sendError(reason, 'Error uploading empty banner to backup bucket on new user signup');
                             });
                     } else {
                         imageToBase64(bannerUrl).then((base64: string) => {
-                            S3Service.uploadBase64(env.BANNER_BACKUP_BUCKET, message.user.id, base64)
+                            S3Service.uploadBase64(context, env.BANNER_BACKUP_BUCKET, message.user.id, base64)
                                 .then(() => {
-                                    logger.info('Uploaded Twitter banner on new user signup.', { userId: message.user.id });
+                                    context.logger.info('Uploaded Twitter banner on new user signup.', { userId: message.user.id });
                                 })
                                 .catch((reason) => {
-                                    logger.error('Error uploading Twitter banner to backup bucket on new user signup', reason, { userId: message.user.id });
+                                    context.logger.error('Error uploading Twitter banner to backup bucket on new user signup', reason, { userId: message.user.id });
                                     sendError(reason, 'Error uploading Twitter banner to backup bucket on new user signup');
                                 });
                         });
@@ -170,10 +177,10 @@ export default NextAuth({
                     localAxios
                         .post('/api/newsletter/subscribe', { email: message.user.email })
                         .then((resp) => {
-                            logger.info(`Added user email ${message.user.email} to newsletter`, { userId: message.user.id });
+                            context.logger.info(`Added user email ${message.user.email} to newsletter`, { userId: message.user.id });
                         })
                         .catch((reason) => {
-                            logger.error('Not able to sign user up for newsletter: ', reason, { userId: message.user.id });
+                            context.logger.error('Not able to sign user up for newsletter: ', reason, { userId: message.user.id });
                         });
                 }
                 // we need to update the account info if twitter oauth isn't matching
@@ -195,15 +202,15 @@ export default NextAuth({
                                     },
                                 })
                                 .then((response) => {
-                                    logger.info('Successfully updated oauth info for application', { userId: message.user.id });
+                                    context.logger.info('Successfully updated oauth info for application', { userId: message.user.id });
                                 })
                                 .catch((err) => {
-                                    logger.error('error updating oauth info for account', err, { userId: message.user.id });
+                                    context.logger.error('error updating oauth info for account', err, { userId: message.user.id });
                                 });
                         }
                     })
                     .catch((err) => {
-                        logger.error('Error getting account info when updating Twitter auth', err, { userId: message.user.id });
+                        context.logger.error('Error getting account info when updating Twitter auth', err, { userId: message.user.id });
                     });
             }
         },
@@ -211,7 +218,7 @@ export default NextAuth({
 
     // You can set the theme to 'light', 'dark' or use 'auto' to default to the
     // whatever prefers-color-scheme is set to in the browser. Default is 'auto'
-    theme: 'auto',
+    theme: 'dark',
 
     // Enable debug messages in the console if you are having problems
     debug: false,

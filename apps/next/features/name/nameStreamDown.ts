@@ -3,13 +3,15 @@ import { logger } from '@app/util/logger';
 import { validateTwitterAuthentication, getCurrentTwitterName, updateTwitterName } from '@app/services/twitter/twitterHelpers';
 import { Feature } from '../Feature';
 import { AccountsService } from '@app/services/AccountsService';
+import { Context } from '@app/services/Context';
 
-const nameStreamDown: Feature<string> = async (userId: string): Promise<string> => {
+const nameStreamDown: Feature<string> = async (context: Context): Promise<string> => {
+    const { userId } = context;
     const twitterInfo = await AccountsService.getTwitterInfo(userId);
 
-    const validatedTwitter = twitterInfo && await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    const validatedTwitter = twitterInfo && await validateTwitterAuthentication(context, twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
     if (!validatedTwitter) {
-        await flipFeatureEnabled(userId, 'name');
+        await flipFeatureEnabled(context, 'name');
         logger.error('Unauthenticated Twitter. Disabling feature name and requiring re-auth.', { userId });
         return 'Unauthenticated Twitter. Disabling feature name and requiring re-auth.';
     }
@@ -17,7 +19,7 @@ const nameStreamDown: Feature<string> = async (userId: string): Promise<string> 
     if (twitterInfo) {
         // call our db to get the original twitter name
         const originalName = await getOriginalTwitterName(userId);
-        const currentTwitterName = await getCurrentTwitterName(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+        const currentTwitterName = await getCurrentTwitterName(context, twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
 
         // when received, post to twitter to update
         if (originalName) {
@@ -26,7 +28,7 @@ const nameStreamDown: Feature<string> = async (userId: string): Promise<string> 
                 originalName: originalName.originalName,
                 liveName: currentTwitterName,
             });
-            const response = await updateTwitterName(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, originalName.originalName);
+            const response = await updateTwitterName(context, twitterInfo.oauth_token, twitterInfo.oauth_token_secret, originalName.originalName);
 
             if (response === 200) {
                 // just return, we do not need to do anything to the db's on streamdown

@@ -7,9 +7,9 @@ import { NextApiResponse } from 'next';
 const handler = createAuthApiHandler();
 
 handler.post(async (req: AppNextApiRequest, res: NextApiResponse): Promise<void> => {
-    const userId = req.session.userId;
+    const { userId } = req.session;
 
-    const features = await FeaturesService.listEnabled(userId);
+    const features = await FeaturesService.listEnabled(req.context);
     if (features.length !== 0) {
         return res.status(400).send('User has features enabled');
     }

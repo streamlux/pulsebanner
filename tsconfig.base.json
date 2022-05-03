@@ -24,6 +24,7 @@
             "@pulsebanner/remotion/player": ["libs/remotion/player/src/index.ts"],
             "@pulsebanner/remotion/preview": ["libs/remotion/preview/src/index.ts"],
             "@pulsebanner/remotion/templates": ["libs/remotion/templates/src/index.ts"],
+            "@pulsebanner/remotion/types": ["libs/remotion/types/src/index.ts"],
             "@pulsebanner/templates": ["libs/templates/src/index.ts"]
         },
         "allowSyntheticDefaultImports": true

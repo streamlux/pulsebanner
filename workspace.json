@@ -9,6 +9,7 @@
         "remotion-components": "libs/remotion/components",
         "remotion-forms": "libs/remotion/forms",
         "remotion-preview": "libs/remotion/preview",
-        "remotion-templates": "libs/remotion/templates"
+        "remotion-templates": "libs/remotion/templates",
+        "remotion-types": "libs/remotion/types"
     }
 }

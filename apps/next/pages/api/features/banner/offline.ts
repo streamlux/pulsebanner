@@ -1,4 +1,3 @@
-import { logger } from '@app/util/logger';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
 import multer from 'multer';
 import { Request } from 'express';
@@ -21,21 +20,22 @@ const handler = createAuthApiHandler();
 
 // uploads image as base64 to the s3 bucket with userId as the key
 handler.post(async (req, res) => {
-    const userId = req.session.userId;
+    req.context.addMetadata({
+        action: 'Update offline banner'
+    });
+    const { userId } = req.context;
 
     try {
         upload.single("File")(req as unknown as Request, {} as any, async (err) => {
             const fileReq: Request = req as unknown as Request;
             if (err) {
-                console.log(err);
                 return res.status(500).end();
             }
-            console.log(fileReq.file);
             const base64 = await imageToBase64(fileReq.file?.path ?? '');
             try {
-                await S3Service.uploadBase64(env.IMAGE_BUCKET_NAME, userId, base64);
+                await S3Service.uploadBase64(req.context, env.IMAGE_BUCKET_NAME, userId, base64);
             } catch (e) {
-                logger.error('Error uplading banner to S3', { userId, error: e });
+                req.context.logger.error('Error uplading banner to S3', { error: e });
                 return res.status(500).end();
             }
             res.status(200).end();
@@ -46,7 +46,7 @@ handler.post(async (req, res) => {
         });
 
     } catch (e) {
-        logger.error('Error updating offline banner from current Twitter banner', { userId });
+        req.context.logger.error('Error updating offline banner from current Twitter banner');
         return res.status(500).end('S3 error');
     }
 });

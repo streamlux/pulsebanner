@@ -1,1 +1,3 @@
-export type Feature<T> = (userId: string) => Promise<T>;
+import { Context } from "@app/services/Context";
+
+export type Feature<T> = (context: Context) => Promise<T>;

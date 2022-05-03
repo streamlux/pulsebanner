@@ -1,4 +1,5 @@
 import { BannerRefreshService } from '@app/services/BannerRefreshService';
+import { ActionContext } from '@app/services/Context';
 import { ToadScheduler, SimpleIntervalJob, AsyncTask } from 'toad-scheduler';
 import { logger } from '../logger';
 import prisma from './prisma';
@@ -22,7 +23,8 @@ export class StartupService {
             const refreshProfessional = new AsyncTask(
                 'refresh professional',
                 async () => {
-                    const refreshService = new BannerRefreshService(prisma, logger);
+                    const context = new ActionContext('Refresh professional banners');
+                    const refreshService = new BannerRefreshService(prisma, context);
                     await refreshService.refreshBanners('Professional');
                 },
                 (err: Error) => {
@@ -33,7 +35,8 @@ export class StartupService {
 
             const refreshPersonal = new AsyncTask('refresh personal',
                 async () => {
-                    const refreshService = new BannerRefreshService(prisma, logger);
+                    const context = new ActionContext('Refresh personal banners');
+                    const refreshService = new BannerRefreshService(prisma, context);
                     await refreshService.refreshBanners('Personal');
                 },
                 (err: Error) => {

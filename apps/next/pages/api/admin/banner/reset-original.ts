@@ -1,3 +1,4 @@
+import { Context } from '@app/services/Context';
 import { S3Service } from '@app/services/S3Service';
 import env from '@app/util/env';
 import { createAuthApiHandler } from '@app/util/ssr/createApiHandler';
@@ -9,13 +10,22 @@ handler.post(async (req, res) => {
         res.send(401);
     }
 
-    const userId = req.query.userId;
-    console.log('resetting original image');
+    const userId = req.query.userId as string;
+
+    req.context.addMetadata({
+        action: 'Reset original banner image'
+    });
+
+    const context = new Context(userId, {
+        action: 'Reset original banner image',
+        admin: true,
+    });
+
     if (userId && typeof userId === 'string') {
         try {
-            const backup = await S3Service.download(env.BANNER_BACKUP_BUCKET, userId);
+            const backup = await S3Service.download(context, env.BANNER_BACKUP_BUCKET, userId);
             if (backup) {
-                await S3Service.uploadBase64(env.IMAGE_BUCKET_NAME, userId, backup);
+                await S3Service.uploadBase64(context, env.IMAGE_BUCKET_NAME, userId, backup);
                 return res.status(200).end();
             } else {
                 return res.status(500).end('No banner found');

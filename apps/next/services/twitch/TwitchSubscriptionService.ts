@@ -3,10 +3,14 @@ import { twitchAxios } from '@app/util/axios';
 import { TwitchClientAuthService } from './TwitchClientAuthService';
 import { execa } from 'execa';
 import { AxiosResponse } from 'axios';
+import { Context } from '../Context';
 
 export class TwitchSubscriptionService {
+
+    constructor(private readonly context: Context) {}
+
     public async getAccessToken(): Promise<string> {
-        return (await TwitchClientAuthService.getAccessToken()).accessToken;
+        return (await TwitchClientAuthService.getAccessToken(this.context)).accessToken;
     }
 
     /**
@@ -16,7 +20,8 @@ export class TwitchSubscriptionService {
      * @param type EventSub subscription type
      * @param twitchUserId Twitch userId`Account.providerId`
      */
-    public async createOne(userId: string, type: string, twitchUserId: string) {
+    public async createOne(type: string, twitchUserId: string) {
+        const { userId } = this.context;
         const reqBody = {
             type,
             version: '1',

@@ -1,4 +1,5 @@
 import { AccountsService } from '@app/services/AccountsService';
+import { Context } from '@app/services/Context';
 import { getTweetInfo } from '@app/services/postgresHelpers';
 import { tweetStreamStatusLive, TwitterResponseCode } from '@app/services/twitter/twitterHelpers';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -16,6 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     const userId: string = req.query.userId as string;
+    const context = new Context(userId);
 
     // use this when they upload their stream link, string they want to use, etc.
     const tweetInfo = await getTweetInfo(userId);
@@ -29,6 +31,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // get the twitch info from tweetInfo here, then feed into tweetStreamStatusLive
 
-    const tweetStatus: TwitterResponseCode = await tweetStreamStatusLive(userId, twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+    const tweetStatus: TwitterResponseCode = await tweetStreamStatusLive(context, twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
     return tweetStatus === 200 ? res.status(200).send('Tweet successfully published') : res.status(400).send('Unable to publish tweet');
 }

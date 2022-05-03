@@ -4,10 +4,10 @@ import crypto from 'crypto';
 import bodyParser from 'body-parser';
 import { FeaturesService } from '@app/services/FeaturesService';
 import prisma from '@app/util/ssr/prisma';
-import { logger } from '@app/util/logger';
 import { executeStreamDown, executeStreamUp } from '@app/features/executeFeatures';
 import env from '@app/util/env';
 import { LiveStreamService } from '@app/services/LiveStreamService';
+import { Context } from '@app/services/Context';
 
 type VerificationBody = {
     challenge: string;
@@ -57,22 +57,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const userId: string = param[1];
 
-    logger.info(`Recieved webhook ${messageType === MessageType.Notification ? 'notification' : 'verification request'} from Twitch`, {
+    const context: Context = new Context(userId);
+
+    context.logger.info(`Recieved webhook ${messageType === MessageType.Notification ? 'notification' : 'verification request'} from Twitch`, {
         messageId,
         messageSignature,
         messageTimestamp,
         messageType,
-        body: req.body,
-        userId,
+        body: req.body
     });
 
-    if (!verifySignature(messageSignature, messageId, messageTimestamp, (req as any)['rawBody'])) {
-        logger.error('Request verification failed.', { userId });
+    if (!verifySignature(context, messageSignature, messageId, messageTimestamp, (req as any)['rawBody'])) {
+        context.logger.error('Request verification failed.');
         res.status(403).send('Forbidden'); // Reject requests with invalid signatures
         res.end();
         return;
     }
-    logger.verbose('Signature verified.', { userId });
+    context.logger.verbose('Signature verified.');
 
     if (messageType === MessageType.Verification) {
         const challenge: string = (req.body as VerificationBody).challenge;
@@ -87,12 +88,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const userId = param[1];
 
         // get enabled features
-        const features = await FeaturesService.listEnabled(userId);
+        const features = await FeaturesService.listEnabled(context);
 
-        logger.info(`Received ${streamStatus} notification for user ${userId}`, { status: streamStatus, userId, enabledFeatures: features });
+        context.logger.info(`Received ${streamStatus} notification for user ${userId}`, { status: streamStatus, enabledFeatures: features });
 
         if (features.length !== 0) {
-            const userInfo = await LiveStreamService.getLiveUserInfo(userId);
+            const userInfo = await LiveStreamService.getLiveUserInfo(context);
 
             const liveUser = await prisma.liveStreams.findUnique({
                 where: {
@@ -106,8 +107,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 const storedStreamId = liveUser.twitchStreamId;
                 // remove from liveUser table if the stored live user does not have the same streamId
                 if (currentStreamId !== storedStreamId) {
-                    logger.error('User stored in liveUser table is invalid. Erasing from table because it is a new stream. ', {
-                        userId,
+                    context.logger.error('User stored in liveUser table is invalid. Erasing from table because it is a new stream. ', {
                         streamLink: userInfo.streamLink,
                         twitterLink: userInfo.twitterLink,
                     });
@@ -125,9 +125,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 // to mitigate this, we only process the notification if the stream started within the last 10 minutes
                 const minutesSinceStreamStart: number = (Date.now() - new Date(req.body.event.started_at).getTime()) / (60 * 1000);
                 if (minutesSinceStreamStart > 10) {
-                    logger.warn('Recieved streamup notification for stream that started more than 10 minutes ago. Will not process notification.', {
+                    context.logger.warn('Recieved streamup notification for stream that started more than 10 minutes ago. Will not process notification.', {
                         minutesSinceStreamStart,
-                        userId,
                     });
 
                     return res.status(200).end();
@@ -135,8 +134,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
                 // Check if we have an entry for this livestream in the table. Return and end request if true.
                 if (liveUser) {
-                    logger.warn('Recieved streamup notification for stream that is already stored in DB. Will not process notification.', {
-                        userId,
+                    context.logger.warn('Recieved streamup notification for stream that is already stored in DB. Will not process notification.', {
                         liveUserTableId: liveUser.id,
                         minutesSinceStreamStart
                     });
@@ -147,18 +145,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             if (userInfo !== undefined) {
                 if (streamStatus === 'stream.online') {
-                    await LiveStreamService.liveUserOnline(userId, userInfo);
+                    await LiveStreamService.liveUserOnline(context, userInfo);
                 }
                 if (streamStatus === 'stream.offline') {
-                    await LiveStreamService.liveUserOffline(userId, userInfo);
+                    await LiveStreamService.liveUserOffline(context, userInfo);
                 }
             }
         }
 
         if (streamStatus === 'stream.online') {
-            await executeStreamUp(userId);
+            await executeStreamUp(context);
         } else if (streamStatus === 'stream.offline') {
-            await executeStreamDown(userId);
+            await executeStreamDown(context);
         }
 
         res.status(200);
@@ -167,8 +165,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 }
 
-function verifySignature(messageSignature: string, id: string, timestamp: string, body: unknown): boolean {
-    logger.info('Verifying signature...');
+function verifySignature(context: Context, messageSignature: string, id: string, timestamp: string, body: unknown): boolean {
+    context.logger.verbose('Verifying signature...');
     const message = id + timestamp + body;
     const signature = crypto.createHmac('sha256', env.EVENTSUB_SECRET).update(message);
     const expectedSignatureHeader = 'sha256=' + signature.digest('hex');

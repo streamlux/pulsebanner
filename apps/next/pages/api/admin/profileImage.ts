@@ -1,16 +1,9 @@
-import { remotionAxios } from '@app/util/axios';
-import { Prisma } from '@prisma/client';
-import { AxiosResponse } from 'axios';
 import { createAuthApiHandler } from '../../../util/ssr/createApiHandler';
 import { AccountsService } from '@app/services/AccountsService';
 import { ProfilePicService } from '@app/services/ProfilePicService';
-
-type TemplateRequestBody = {
-    foregroundId: string;
-    backgroundId: string;
-    foregroundProps: Record<string, unknown>;
-    backgroundProps: Record<string, unknown>;
-};
+import { getProfileImageProps } from '@app/services/profileImage/getProfileImageProps';
+import { RenderProfilePicRequest, RenderResponse } from '@app/services/remotion/RemotionClient';
+import { RenderProps } from '@pulsebanner/remotion/types';
 
 const handler = createAuthApiHandler();
 
@@ -29,15 +22,10 @@ handler.get(async (req, res) => {
             res.status(400).send('Unable to get profilePicEntry or twitterInfo for user on streamup');
         }
 
-        const templateObj: TemplateRequestBody = {
-            backgroundId: profilePicEntry?.backgroundId ?? 'ColorBackground',
-            foregroundId: profilePicEntry?.foregroundId ?? 'ProfilePic',
-            foregroundProps: { ...(profilePicEntry?.foregroundProps as Prisma.JsonObject) } ?? {},
-            backgroundProps: { ...(profilePicEntry?.backgroundProps as Prisma.JsonObject) } ?? {},
-        };
+        const renderProps: RenderProps = await getProfileImageProps(req.context, { userId, twitterInfo });
+        const renderRequest: RenderProfilePicRequest = new RenderProfilePicRequest(req.context, renderProps);
+        const response: RenderResponse = await renderRequest.send();
 
-        // pass in the bannerEntry info
-        const response: AxiosResponse<string> = await remotionAxios.post('/getProfilePic', templateObj);
         const img = Buffer.from(response.data, 'base64');
 
         res.writeHead(200, {

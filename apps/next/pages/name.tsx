@@ -53,6 +53,8 @@ import { NextSeo } from 'next-seo';
 import NextLink from 'next/link';
 import { ReconnectTwitterModal } from '@app/modules/onboard/ReconnectTwitterModal';
 import { AccountsService } from '@app/services/AccountsService';
+import { CustomSession } from '@app/services/auth/CustomSession';
+import { Context } from '@app/services/Context';
 
 const nameEndpoint = '/api/features/twitterName';
 const maxNameLength = 50;
@@ -63,19 +65,23 @@ interface Props {
     reAuthRequired?: boolean;
 }
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
     const session = (await getSession({
-        ctx: context,
-    })) as any;
+        ctx,
+    }) as CustomSession);
 
-    if (session) {
+    if (session && session.userId) {
+        const { userId } = session;
+
+        const context = new Context(userId);
+
         const twitterName = await prisma.twitterName.findUnique({
             where: {
                 userId: session.userId,
             },
         });
 
-        const twitterInfo = await AccountsService.getTwitterInfo(session.userId, true);
+        const twitterInfo = await AccountsService.getTwitterInfo(userId, true);
 
         if (!twitterInfo) {
             return {
@@ -88,7 +94,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
         const client = createTwitterClient(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
 
-        const validate = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+        const validate = await validateTwitterAuthentication(context, twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
         if (!validate) {
             return {
                 props: {

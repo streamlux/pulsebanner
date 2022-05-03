@@ -5,7 +5,17 @@ import admin from '../../middlewares/admin';
 import NextCors from 'nextjs-cors';
 import { logger } from '../logger';
 
-export const onError: ErrorHandler<NextApiRequest, NextApiResponse> = (err, req, res, next) => {
+const onErrorAdminContext: ErrorHandler<AppNextApiRequest, NextApiResponse> = (err, req, res, next) => {
+    req.context.logger.error('Error handling admin API request', { error: err, method: req.method, url: req.url, query: req.query, body: req.body });
+    res.status(500).end(err.toString());
+};
+
+const onErrorContext: ErrorHandler<AppNextApiRequest, NextApiResponse> = (err, req, res, next) => {
+    req.context.logger.error('Error handling API request', { error: err, method: req.method, url: req.url, query: req.query, body: req.body });
+    res.status(500).end(err.toString());
+};
+
+const onError: ErrorHandler<NextApiRequest, NextApiResponse> = (err, req, res, next) => {
     logger.error('Error handling API request', { error: err, method: req.method, url: req.url, query: req.query, body: req.body });
     res.status(500).end(err.toString());
 };
@@ -16,15 +26,14 @@ interface CorsOptions {
     methods?: string[]
 }
 
-
 /**
  * Next.js API route handler that handles errors. When an error is thrown it responds with a status 500 and includes the error message.
  */
-export const createApiHandler = <T extends NextApiRequest>(cors?: CorsOptions) => {
+export const createApiHandler = <T extends NextApiRequest>(cors?: CorsOptions, err: ErrorHandler<T, NextApiResponse> = onError) => {
 
     if (cors) {
         return nc<T, NextApiResponse>({
-            onError,
+            onError: err,
         }).use(cors.route, async (req, res, next) => {
             await NextCors(req, res, {
                 // Options
@@ -37,7 +46,7 @@ export const createApiHandler = <T extends NextApiRequest>(cors?: CorsOptions) =
         });
     } else {
         return nc<T, NextApiResponse>({
-            onError,
+            onError: err,
         })
     }
 }
@@ -45,9 +54,9 @@ export const createApiHandler = <T extends NextApiRequest>(cors?: CorsOptions) =
 /**
  * Next.js API route handler that requires a session. Adds the session to the request object.
  */
-export const createAuthApiHandler = (cors?: CorsOptions) => createApiHandler<AppNextApiRequest>(cors).use(auth);
+export const createAuthApiHandler = (cors?: CorsOptions) => createApiHandler<AppNextApiRequest>(cors, onErrorContext).use(auth);
 
 /**
  * Next.js API route handler that requires a session. Adds the session to the request object.
  */
-export const createAdminApiHandler = (cors?: CorsOptions) => createApiHandler(cors).use(admin);
+export const createAdminApiHandler = (cors?: CorsOptions) => createApiHandler<AppNextApiRequest>(cors, onErrorAdminContext).use(admin);

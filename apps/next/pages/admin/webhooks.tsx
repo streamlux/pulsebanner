@@ -36,6 +36,7 @@ import { User } from '@prisma/client';
 import { TwitchSubscriptionService } from '@app/services/twitch/TwitchSubscriptionService';
 import { Subscription } from '@app/types/twitch';
 import { AccountsService } from '@app/services/AccountsService';
+import { Context } from '@app/services/Context';
 
 type PageProps = {
     userId?: string;
@@ -43,20 +44,23 @@ type PageProps = {
     subscriptions: Subscription[];
 };
 
-export const getServerSideProps: GetServerSideProps<PageProps | any> = async (context) => {
+export const getServerSideProps: GetServerSideProps<PageProps | any> = async (ctx) => {
     const session = (await getSession({
-        ctx: context,
+        ctx,
     })) as any;
 
-    const userId = context.query.userId;
-    const twitchSub = new TwitchSubscriptionService();
+    const userId = ctx.query.userId as string;
+
+    const context = new Context(userId);
+
+    const twitchSub = new TwitchSubscriptionService(context);
 
     if (typeof userId === 'string' && userId !== '') {
         try {
             const accounts = await AccountsService.getAccountsById(userId);
             const twitchUserId = accounts['twitch'].providerAccountId;
 
-            const twitchSub = new TwitchSubscriptionService();
+            const twitchSub = new TwitchSubscriptionService(context);
             const subscriptions = await twitchSub.getSubscriptions(twitchUserId);
 
             return {

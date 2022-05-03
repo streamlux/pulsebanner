@@ -1,5 +1,5 @@
 import { Role } from "@prisma/client";
-import { Session, User } from "next-auth";
+import type { Session, User } from "next-auth";
 
 export interface CustomSession extends Session {
     userId: string;
