@@ -1,5 +1,6 @@
 import prisma from '@app/util/ssr/prisma';
 import { Subscription } from '@prisma/client';
+import Stripe from 'stripe';
 import { createAuthApiHandler } from '../../../util/ssr/createApiHandler';
 import stripe from '../../../util/ssr/stripe';
 import { getCustomerId } from '../../../util/ssr/stripe';
@@ -9,28 +10,13 @@ const handler = createAuthApiHandler();
 handler.post(async (req, res) => {
     const userId: string = req.session.userId;
 
+    const allowCancel = req.body.allow_cancel;
+
     const customerId: string = await getCustomerId(userId);
 
-    // const config = await stripe.billingPortal.configurations.create({
-    //     business_profile: {
-    //         headline: 'PulseBanner',
-    //         privacy_policy_url: 'https://pulsebanner.com/privacy',
-    //         terms_of_service_url: 'https://pulsebanner.com/terms',
-    //     },
-    //     features: {
-    //         payment_method_update: { enabled: true},
-    //         subscription_update: {
-    //             default_allowed_updates: ['price'],
-    //             enabled: true,
-    //             products: [{
-    //                 product: 'prod_J1kpUjbr9VENK1',
-    //                 prices: ['price_1JwgPBJzF2VT0EeK31OQd0UG', 'price_1JwgShJzF2VT0EeKsIvKjFDc']
-    //             }]
-    //         },
-    //     }
-    // });
-
-    // console.log(config);
+    const billingConfiguration = await createBillingPortalConfiguration({
+        allowCancel
+    });
 
     const subscription: Subscription | null = await prisma.subscription.findUnique({
         where: {
@@ -41,6 +27,7 @@ handler.post(async (req, res) => {
 
     const { url } = await stripe.billingPortal.sessions.create({
         customer: customerId,
+        configuration: billingConfiguration.id,
         return_url: `${process.env.NEXTAUTH_URL}${req.body.return_url ?? '/account'}`
     });
 
@@ -51,5 +38,75 @@ handler.post(async (req, res) => {
 
     return res.status(200).json(body);
 });
+
+
+async function createBillingPortalConfiguration(options: {
+    allowCancel?: boolean,
+}): Promise<Stripe.BillingPortal.Configuration> {
+
+    return await stripe.billingPortal.configurations.create({
+        business_profile: {
+            headline: 'PulseBanner',
+            privacy_policy_url: `${process.env.NEXTAUTH_URL}/privacy`,
+            terms_of_service_url: `${process.env.NEXTAUTH_URL}/terms`,
+        },
+        features: {
+            payment_method_update: { enabled: true },
+            subscription_cancel: {
+                enabled: !!options.allowCancel,
+                cancellation_reason: {
+                    enabled: true,
+                    options: [
+                        'missing_features',
+                        'too_expensive',
+                        'too_complex',
+                        'other',
+                    ]
+                }
+            },
+            invoice_history: {
+                enabled: true,
+            },
+            subscription_update: {
+                enabled: true,
+                proration_behavior: 'always_invoice',
+                default_allowed_updates: ['price'],
+                products: await getProducts()
+            },
+        }
+    });
+}
+
+async function getProducts(): Promise<Stripe.BillingPortal.ConfigurationCreateParams.Features.SubscriptionUpdate.Product[]> {
+    const products = await prisma.product.findMany({
+        where: {
+            AND: [
+                { active: true }
+            ],
+            prices: {
+                some: {
+                    type: 'recurring',
+                }
+            }
+        },
+        include: {
+            prices: {
+                where: {
+                    AND: [
+                        { active: true },
+                        { type: 'recurring' }
+                    ],
+                }
+            }
+        }
+    });
+
+    return products.map(product => {
+        return {
+            product: product.id,
+            prices: product.prices.map(price => price.id)
+        }
+    });
+}
 
 export default handler;

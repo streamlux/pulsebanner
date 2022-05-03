@@ -111,30 +111,31 @@ const Page: NextPage<Props> = ({ products, priceMap, giftPriceIds }) => {
                             'content-type': 'application/json',
                         },
                         body: JSON.stringify({
-                            return_url: '/pricing'
-                        })
+                            return_url: '/pricing',
+                        }),
                     });
 
                     const data = await res.json();
-                    router.push(data.subscriptionUrl);
+                    router.push(data.subscriptionUrl ?? data.url);
+                    return;
+                } else {
+                    const res = await fetch('/api/stripe/create-checkout-session', {
+                        method: 'POST',
+                        headers: {
+                            'content-type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            price: priceId,
+                            isSubscription: true,
+                            quantity: 1, // quantity is always 1 for subscriptions
+                        }),
+                    });
+
+                    const data = await res.json();
+
+                    const stripe = await getStripe();
+                    stripe?.redirectToCheckout({ sessionId: data.sessionId });
                 }
-
-                const res = await fetch('/api/stripe/create-checkout-session', {
-                    method: 'POST',
-                    headers: {
-                        'content-type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        price: priceId,
-                        isSubscription: true,
-                        quantity: 1, // quantity is always 1 for subscriptions
-                    }),
-                });
-
-                const data = await res.json();
-
-                const stripe = await getStripe();
-                stripe?.redirectToCheckout({ sessionId: data.sessionId });
             }
         },
         [router, paymentPlan, ensureSignUp]
@@ -190,7 +191,7 @@ const Page: NextPage<Props> = ({ products, priceMap, giftPriceIds }) => {
                     </ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
-                        <Center h='full'>
+                        <Center h="full">
                             <Button
                                 onClick={() => {
                                     if (session?.accounts?.twitter) {
@@ -357,7 +358,6 @@ const Page: NextPage<Props> = ({ products, priceMap, giftPriceIds }) => {
 // aka this page is server-side rendered
 // This method is run on the server, then the return value is passed in as props to the component above
 export const getStaticProps: GetStaticProps<Props> = async (context) => {
-
     if (!env.BUILD_TARGET) {
         throw new Error('BUILD_TARGET is not defined. This should only be set at build time, and not at runtime.');
     }
