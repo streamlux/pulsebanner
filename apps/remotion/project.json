@@ -28,7 +28,7 @@
             "executor": "@nrwl/workspace:run-commands",
             "options": {
                 "commands": [
-                    "npx ts-node --transpileOnly --project=apps/remotion/tsconfig.json apps/remotion/src/app/server/server.ts",
+                    "npx ts-node --transpile-only --project=apps/remotion/tsconfig.json apps/remotion/src/app/server/server.ts",
                     "npx remotion preview --config=apps/remotion/remotion.config.ts apps/remotion/src/app/templates/index.tsx"
                 ]
             }
