@@ -1,5 +1,5 @@
 import { APIPaymentObject, PaymentPlan } from '@app/services/payment/paymentHelpers';
-import { WrapItem, Button, Tag} from '@chakra-ui/react';
+import { WrapItem, Button, Tag } from '@chakra-ui/react';
 import type { Price, PriceInterval, Product } from '@prisma/client';
 import React from 'react';
 import { FaArrowRight } from 'react-icons/fa';
@@ -54,7 +54,7 @@ export const ProductCardDesktop: React.FC<ProductProps> = ({ product, billingInt
         if (paymentPlan && paymentPlan !== 'Free') {
             return 'Change Subscription';
         }
-        return `Choose ${product.name}`;
+        return `Start Free 7 Day Trial`;
     };
 
     const yearly = billingInterval === 'year';

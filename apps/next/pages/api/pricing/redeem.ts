@@ -19,11 +19,10 @@ const purchaseSuccessUrl = '/gifts/redeem/success';
 const handler = createApiHandler();
 
 handler.get(async (req, res) => {
-
     // get the query param
     const giftPurchaseId: string = req.query[giftRedemptionLinkQueryParamName] as string;
 
-    const session: CustomSession | null = await getSession({req}) as CustomSession | null;
+    const session: CustomSession | null = (await getSession({ req })) as CustomSession | null;
     if (!session) {
         return res.redirect(`/gifts/redeem/signin?redirect=/redeem?${giftRedemptionLinkQueryParamName}=` + giftPurchaseId);
     }
@@ -31,7 +30,7 @@ handler.get(async (req, res) => {
     const subscription = await prisma.subscription.findFirst({
         where: {
             userId: session.userId,
-        }
+        },
     });
 
     // if the user already has a subscription, don't let them redeem a gift
@@ -49,7 +48,7 @@ handler.get(async (req, res) => {
     const giftPurchase: GiftPurchase | null = await prisma.giftPurchase.findUnique({
         where: {
             id: giftPurchaseId,
-        }
+        },
     });
 
     if (!giftPurchase) {
@@ -92,7 +91,6 @@ handler.get(async (req, res) => {
         subscription_data: {
             trial_from_plan: true,
             metadata: {},
-            trial_period_days: 7,
         },
         success_url: `${process.env.NEXTAUTH_URL}${purchaseSuccessUrl}`,
         cancel_url: `${process.env.NEXTAUTH_URL}/`,
@@ -102,7 +100,6 @@ handler.get(async (req, res) => {
             },
         ],
     });
-
 
     if (checkoutSession.url) {
         logger.info('Created Stripe checkout session for gift redemption. Redirecting to checkout session url.', { sessionId: checkoutSession.id });

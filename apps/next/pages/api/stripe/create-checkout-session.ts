@@ -43,6 +43,7 @@ handler.post(async (req, res) => {
             ? {
                   trial_from_plan: true,
                   metadata: {},
+                  trial_period_days: 7
               }
             : {},
         success_url: isSubscription ? `${process.env.NEXTAUTH_URL}/account` : `${process.env.NEXTAUTH_URL}${giftSummaryPath}`,
