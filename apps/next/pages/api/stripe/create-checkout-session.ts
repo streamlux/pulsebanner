@@ -30,19 +30,22 @@ handler.post(async (req, res) => {
                 price: price,
                 quantity,
                 // only set this if it's a subscription
-                adjustable_quantity: isSubscription ? undefined : {
-                    enabled: true,
-                    minimum: 1,
-                    maximum: 100,
-                }
+                adjustable_quantity: isSubscription
+                    ? undefined
+                    : {
+                          enabled: true,
+                          minimum: 1,
+                          maximum: 100,
+                      },
             },
         ],
         mode: isSubscription ? 'subscription' : 'payment',
         allow_promotion_codes: true,
         subscription_data: isSubscription
             ? {
-                  trial_from_plan: true,
+                  //   trial_from_plan: true,
                   metadata: {},
+                  trial_period_days: 7,
               }
             : {},
         success_url: isSubscription ? `${process.env.NEXTAUTH_URL}/account` : `${process.env.NEXTAUTH_URL}${giftSummaryPath}`,
