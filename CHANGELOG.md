@@ -7,217 +7,241 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.11.9]
+
+### Added
+
+-   Add free premium plan trial for 7 days
+
 ### Fixed
 
-- Users are actually able to upgrade their subscriptions
+-   Users are actually able to upgrade their subscriptions
 
 ## [0.11.8] - 2022-05-02
 
 ### Changed
 
-- Add more details to disable banner content
-- Use Stripe automatic payment methods
-- Added no-ops for some Stripe wehbooks
-    - invoice.payment_succeeded no-op if billing_reason is subscription_cycle
-    - customer.subscription.updated no-op if status is incomplete or incomplete_expired
+-   Add more details to disable banner content
+-   Use Stripe automatic payment methods
+-   Added no-ops for some Stripe wehbooks
+    -   invoice.payment_succeeded no-op if billing_reason is subscription_cycle
+    -   customer.subscription.updated no-op if status is incomplete or incomplete_expired
 
 ## [0.11.7] - 2022-04-24
 
 ### Added
 
-- Hex color input on color picker modals
+-   Hex color input on color picker modals
 
 ### Changed
 
-- Account page styling for gift purchases
+-   Account page styling for gift purchases
 
 ## [0.11.6]
 
 ### Fixed
 
- - Allow beta partners to fill out application
+-   Allow beta partners to fill out application
 
 ## [0.11.5]
 
 ### Added
- - Added merch release link
+
+-   Added merch release link
 
 ## [0.11.4] - 2022-04-01
 
 ### Added
- - Added PreGaming banner for partnership
+
+-   Added PreGaming banner for partnership
 
 ## [0.11.3] - 2022-03-30
 
 ### Fixed
-- Apply remotion rate limit on a per-user basis
-- Fix payment modal
+
+-   Apply remotion rate limit on a per-user basis
+-   Fix payment modal
 
 ## [0.11.2] - 2022-03-25
 
 ### Fixed
 
- - Added BUILD_TARGET environment variable so that we can properly generate static pages
+-   Added BUILD_TARGET environment variable so that we can properly generate static pages
 
 ## [0.11.1] - 2022-03-25
 
 ### Fixed
 
- - Updated deployment order so firewall opens before building nextjs image
+-   Updated deployment order so firewall opens before building nextjs image
 
 ## [0.11.0] - 2022-03-25
 
 ### Added
-- Gifts page
-- Gift pricing on pricing page
-- Gift summary page
-- Gift summary emails
+
+-   Gifts page
+-   Gift pricing on pricing page
+-   Gift summary page
+-   Gift summary emails
 
 ### Changed
-- Let users disconnect their Twitch account
-- Low effort UI improvement to account page
-- New mobile header
+
+-   Let users disconnect their Twitch account
+-   Low effort UI improvement to account page
+-   New mobile header
 
 ### Engineering
-- Organized code into services
-- Turn on TS strict mode
-- Upgrade to TypeScript ^4.6.0 to get access to the `Awaited` utility type.
-- 
+
+-   Organized code into services
+-   Turn on TS strict mode
+-   Upgrade to TypeScript ^4.6.0 to get access to the `Awaited` utility type.
+-
+
 ### Fixed
-- Improved Google lighthouse score
+
+-   Improved Google lighthouse score
 
 ## [0.10.7] - 2022-03-16
 
 ### Fixed
-- Another partner page bug
+
+-   Another partner page bug
 
 ## [0.10.6] - 2022-03-16
 
 ### Fixed
-- Partner page bug
+
+-   Partner page bug
 
 ## [0.10.5] - 2022-03-15
+
 ### Fixed
-- Let legacy partners apply for partner program
+
+-   Let legacy partners apply for partner program
 
 ## [0.10.4] - 2022-03-14
 
 ### Fixed
-- Handle Twitter names that are too long properly
+
+-   Handle Twitter names that are too long properly
 
 ## [0.10.3] - 2022-03-13
 
 ### Fixed
-- Don't show background page for locked presets.
+
+-   Don't show background page for locked presets.
 
 ## [0.10.2] - 2022-03-12
 
 ### Fixed
-- Fixed bug that gave everyone membership on frontend
+
+-   Fixed bug that gave everyone membership on frontend
 
 ## [0.10.1] - 2022-03-11
 
 ### Fixed
-- Sway banner font
+
+-   Sway banner font
 
 ## [0.10.0] - 2022-03-11
 
 ### Added
-- New navigation menu
-- Sway banner preset
+
+-   New navigation menu
+-   Sway banner preset
 
 ### Changed
-- Pricing page now properly allows customers to change subscriptions
-- Product card components are now compound components
+
+-   Pricing page now properly allows customers to change subscriptions
+-   Product card components are now compound components
 
 ## [0.9.5] - 2022-03-06
 
 ### Added
 
-- Dedicated admin page for partner applications
+-   Dedicated admin page for partner applications
 
 ### Changed
 
-- Removed sign in page
-- Made account page nofollow and noindex
-- Revamp partner dashboard
+-   Removed sign in page
+-   Made account page nofollow and noindex
+-   Revamp partner dashboard
 
 ## [0.9.4] - 2022-03-05
 
 ### Added
 
-- Upload a banner image directly to the website
+-   Upload a banner image directly to the website
 
 ## [0.9.3] - 2022-03-04
 
 ### Fixed
 
-- Remove partner block from landing page
+-   Remove partner block from landing page
 
 ### Changed
 
-- Handle suspended Twitter account errors
-- Better Discord webhooks for new subscriptions
+-   Handle suspended Twitter account errors
+-   Better Discord webhooks for new subscriptions
 
 ## [0.9.2] - 2022-03-03
 
 ### Fixed
 
-- Add production price IDs to commission map
+-   Add production price IDs to commission map
 
 ## [0.9.1] - 2022-03-03
 
 ### Fixed
 
-- Offline banner change option not showing up
+-   Offline banner change option not showing up
 
 ## [0.9.0] - 2022-03-03
 
 ### Added
 
- - Partner Program 🎉
+-   Partner Program 🎉
 
 ## [0.8.2] - 2022-02-24
 
 ### Added
 
-- Banner templates
+-   Banner templates
 
 ### Fixed
 
-- Missing avatars
+-   Missing avatars
 
 ## [0.8.1] - 2022-02-19
 
 ### Fixed
 
-- Refresh slider visual bug on mobile 
+-   Refresh slider visual bug on mobile
 
 ## [0.8.0] - 2022-02-19
 
 ### Added
 
-- Banner refreshing UI and pricing
+-   Banner refreshing UI and pricing
 
 ### Changed
 
-- Name in package.json is now "pulsebanner" instead of "streamlux-saas"
+-   Name in package.json is now "pulsebanner" instead of "streamlux-saas"
 
 ### Fixed
 
-- Locked remotion version to 2.6.6
+-   Locked remotion version to 2.6.6
 
 ## [0.7.11] - 2022-02-17
 
 ### Added
 
-- Banner refreshing for personal users
+-   Banner refreshing for personal users
 
 ## [0.7.10] - 2022-02-16
 
 ### Added
 
-- Banner refreshing for pro users
+-   Banner refreshing for pro users
 
 ## [0.7.9] - 2022-02-15
 
@@ -231,174 +255,174 @@ Patch release
 
 ### Added
 
-- Banner refreshing
+-   Banner refreshing
 
 ## [0.7.6] - 2022-02-02
 
 ### Changed
 
-- Banner feature is now static and we don't update original banner on streamup
+-   Banner feature is now static and we don't update original banner on streamup
 
 ### Fixed
 
-- Empty profile picture bug
+-   Empty profile picture bug
 
 ## [0.7.5] - 2022-01-30
 
 ### Changed
 
-- Cleaned up FAQ page code
-- Removed EMGG sale banners
+-   Cleaned up FAQ page code
+-   Removed EMGG sale banners
 
 ## [0.7.4] - 2022-01-29
 
 ### Added
 
-- FAQ sections and page
+-   FAQ sections and page
 
 ## [0.7.3] - 2022-01-28
 
 ### Added
 
-- EMGG sale
+-   EMGG sale
 
 ## [0.7.2] - 2022-01-28
 
 ### Fixed
 
-- Fix auth redirect from EMGG page
+-   Fix auth redirect from EMGG page
 
 ## [0.7.1] - 2022-01-28
 
 ### Fixed
 
-- Always show username on EMGG banner
+-   Always show username on EMGG banner
 
 ## [0.7.0] - 2022-01-28
 
 ### Added
 
-- EMGG Special Edition Live Banner
+-   EMGG Special Edition Live Banner
 
 ## [0.6.2] - 2022-01-24
 
 ### Added
 
- - Handle and reset accordingly on cancelled PulseBanner membership
- - Logging to go through datadog instead of using console logs
+-   Handle and reset accordingly on cancelled PulseBanner membership
+-   Logging to go through datadog instead of using console logs
 
 ### Changed
 
-- live_streams table soft check is now a hard check
+-   live_streams table soft check is now a hard check
 
 ## [0.6.1] - 2022-01-22
 
 ### Fixed
 
-- Remove hardcoded userId
+-   Remove hardcoded userId
 
 ## [0.6.0] - 2022-01-22
 
 ### Added
 
-- Secured feature endpoints
-- User and webhook admin pages
+-   Secured feature endpoints
+-   User and webhook admin pages
 
 ## [0.5.6] - 2022-01-22
 
 ### Fixed
 
- - Incorrect error log conditional
+-   Incorrect error log conditional
 
 ## [0.5.5] - 2022-01-22
 
 ### Fixed
 
- - Twitch stream link fix
+-   Twitch stream link fix
 
 ## [0.5.4] - 2022-01-22
 
 ### Added
 
- - Firm check of valid base64 image in DB and enable proper handling
- - Live stream and previous stream tables to track active streamers
+-   Firm check of valid base64 image in DB and enable proper handling
+-   Live stream and previous stream tables to track active streamers
 
 ### Fixed
 
-- Actually truncate Twitter name
+-   Actually truncate Twitter name
 
 ## [0.5.3] - 2022-01-16
 
 ### Added
 
-- Logging with Winston
-- Datadog log aggregation
+-   Logging with Winston
+-   Datadog log aggregation
 
 ### Fixed
 
-- If Twitter name with "🔴 Live now |" prepended is over 50 characters, then truncate the name.
-- Removed some unnecessary Discord error logs
+-   If Twitter name with "🔴 Live now |" prepended is over 50 characters, then truncate the name.
+-   Removed some unnecessary Discord error logs
 
 ## [0.5.2] - 2022-01-16
 
 ### Removed
 
- - Sale banner
+-   Sale banner
 
 ## [0.5.1] - 2022-01-14
 
 ### Added
 
-- Sale banners
+-   Sale banners
 
 ## [0.5.0] - 2022-01-14
 
 ### Added
 
-- Profile picture feature
-- Remotion queues responses
+-   Profile picture feature
+-   Remotion queues responses
 
 ## [0.4.3] - 2022-01-09
 
 ### Fix
 
-- Prevent umami script from being blocked by adblock
+-   Prevent umami script from being blocked by adblock
 
 ## [0.4.2] - 2022-01-09
 
 ### Fix
 
-- Fix Deploy to Production GitHub Action
+-   Fix Deploy to Production GitHub Action
 
 ## [0.4.1] - 2022-01-09
 
 ### Fix
 
-- GitHub action by locking `@prisma/client` and `prisma` to `3.1.1`.
+-   GitHub action by locking `@prisma/client` and `prisma` to `3.1.1`.
 
 ## [0.4.0] - 2022-01-09
 
 ### Added
 
- - Landing page
- - Code of conduct
+-   Landing page
+-   Code of conduct
 
 ### Changed
 
- - New OG image
+-   New OG image
 
 ## [0.3.3] - 2022-01-05
 
 ## Removed
 
- - Disable winter sale
- - Disable snow on website
+-   Disable winter sale
+-   Disable snow on website
 
 ## Fixed
 
- - Disable features if they are enabled and oauth fails
- - Prompt user to re-sign in to Twitter if oauth is failing
- - Logging to check user banner is properly stored base64
+-   Disable features if they are enabled and oauth fails
+-   Prompt user to re-sign in to Twitter if oauth is failing
+-   Logging to check user banner is properly stored base64
 
 ## [0.3.2] - 2021-12-31
 

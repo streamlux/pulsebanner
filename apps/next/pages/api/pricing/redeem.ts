@@ -92,6 +92,7 @@ handler.get(async (req, res) => {
         subscription_data: {
             trial_from_plan: true,
             metadata: {},
+            trial_period_days: 7,
         },
         success_url: `${process.env.NEXTAUTH_URL}${purchaseSuccessUrl}`,
         cancel_url: `${process.env.NEXTAUTH_URL}/`,
