@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+
+- No longer handle rerun streamup notifications
+
 ## [0.11.9]
 
 ### Added
