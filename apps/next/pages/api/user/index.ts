@@ -12,33 +12,38 @@ import { NextApiResponse } from 'next';
 const handler = createAuthApiHandler();
 
 handler.delete(async (req: AppNextApiRequest, res: NextApiResponse): Promise<void> => {
+    const userId = req.session.userId;
+    logger.info('Deleting user', { userId });
     try {
-        const userId = req.session.userId;
 
-        // delete all webhooks
-        await deleteTwitchSubscriptions(userId);
+        try {
+            // delete all webhooks
+            await deleteTwitchSubscriptions(userId);
+        } catch (e) {
+            logger.error('Error deleting Twitch subscriptions when deleting user', { userId });
+        }
 
         // delete objects from s3
         const s3 = S3Service.createS3();
 
         try {
-            const response = await s3.deleteObject({ Bucket: env.IMAGE_BUCKET_NAME, Key: userId }).promise();
-            const statusCode = response.$response.httpResponse.statusCode;
-            return res.status(statusCode).send('S3 deletion completed');
+            await s3.deleteObject({ Bucket: env.IMAGE_BUCKET_NAME, Key: userId }).promise();
         } catch (e) {
-            logger.error('Error deleting from S3', e);
+            logger.error('Error deleting from S3 when deleting user', { userId, error: e });
         }
 
-        // delete user from database
-        await prisma.user.deleteMany({
+        // delete user from database, which cascade deletes all related entities, including sessions
+        const deletedUser = await prisma.user.delete({
             where: {
                 id: userId,
             },
         });
 
-        return res.status(200).send('Deleted user.');
+        logger.info(`Deleted user ${deletedUser.name}`, { userId, name: deletedUser.name });
+        return res.status(200).json({ message: 'Deleted user' });
     } catch (e) {
-        return res.status(500).send('Error deleting user.');
+        logger.error(`Error deleting user`, { userId });
+        return res.status(500).json({ message: 'Error deleting user' });
     }
 });
 
