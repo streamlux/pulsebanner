@@ -139,13 +139,11 @@ app.post(
                 .catch((err) => reject(err));
         });
 
-        logger.info(output);
+        logger.verbose(output);
         const imageBase64 = fs.readFileSync(output, { encoding: 'base64' });
 
-        const endMs = Date.now();
-
         logger.info(`Done rendering.`, {
-            duration: endMs - startMs
+            duration: Date.now() - startMs
         });
 
         res.send(imageBase64);
@@ -207,13 +205,11 @@ app.post('/getProfilePic',
                 .catch((err) => reject(err));
         });
 
-        logger.info(output);
+        logger.verbose(output);
         const imageBase64 = fs.readFileSync(output, { encoding: 'base64' });
 
-        const endMs = Date.now();
-
         logger.info(`Done rendering.`, {
-            duration: endMs - startMs
+            duration: Date.now() - startMs
         });
 
         res.send(imageBase64);
