@@ -84,6 +84,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (messageType === MessageType.Notification) {
         const streamStatus = req.body.subscription.type;
 
+        // do not handle reruns
+        // https://dev.twitch.tv/docs/eventsub/eventsub-reference/#stream-online-event
+        if (streamStatus === 'stream.online' && req.body.event.type === 'rerun') {
+            return res.status(200).end();
+        }
+
         const userId = param[1];
 
         // get enabled features
