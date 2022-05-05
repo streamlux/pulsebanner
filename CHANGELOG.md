@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - No longer handle rerun streamup notifications
 
+### Fixed
+
+- Delete user endpoint
+
 ## [0.11.9]
 
 ### Added

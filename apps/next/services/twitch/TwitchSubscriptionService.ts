@@ -60,7 +60,7 @@ export class TwitchSubscriptionService {
      * @param subscriptionId Subscription to delete
      */
     public async deleteOne(subscriptionId: string): Promise<void> {
-        await twitchAxios.delete(`/helix/eventsub/subscriptions?id=${subscriptionId}`, {
+        await twitchAxios.delete(`helix/eventsub/subscriptions?id=${subscriptionId}`, {
             headers: {
                 'Client-ID': process.env.TWITCH_CLIENT_ID,
                 Authorization: `Bearer ${await this.getAccessToken()}`,
