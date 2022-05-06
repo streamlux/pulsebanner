@@ -129,10 +129,8 @@ const Page: NextPage<Props> = ({ enabledFeatures, plan, allGiftPurchases }) => {
     const deleteAccount = useCallback(async () => {
         // call api endpoint here to delete user and erase all data
         axios.delete(`/api/user`).then(() => {
-            // sign user out and redirect to home page
-            signOut({
-                callbackUrl: '/',
-            });
+            // redirect to home page
+            window.location.pathname = '/';
         });
     }, []);
 
