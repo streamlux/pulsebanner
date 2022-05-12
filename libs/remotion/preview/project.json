@@ -1,5 +1,4 @@
 {
-    "root": "libs/remotion/preview",
     "sourceRoot": "libs/remotion/preview/src",
     "projectType": "library",
     "tags": [],
@@ -15,7 +14,7 @@
             "executor": "@nrwl/jest:jest",
             "outputs": ["coverage/libs/remotion/preview"],
             "options": {
-                "jestConfig": "libs/remotion/preview/jest.config.js",
+                "jestConfig": "libs/remotion/preview/jest.config.ts",
                 "passWithNoTests": true
             }
         }

@@ -1,4 +1,5 @@
-module.exports = {
+/* eslint-disable */
+export default {
     displayName: 'remotion-templates',
     preset: '../../../jest.preset.js',
     transform: {

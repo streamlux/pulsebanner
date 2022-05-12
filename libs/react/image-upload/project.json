@@ -1,5 +1,4 @@
 {
-    "root": "libs/react/image-upload",
     "sourceRoot": "libs/react/image-upload/src",
     "projectType": "library",
     "tags": [],
@@ -15,7 +14,7 @@
             "executor": "@nrwl/jest:jest",
             "outputs": ["coverage/libs/react/image-upload"],
             "options": {
-                "jestConfig": "libs/react/image-upload/jest.config.js",
+                "jestConfig": "libs/react/image-upload/jest.config.ts",
                 "passWithNoTests": true
             }
         }

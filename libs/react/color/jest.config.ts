@@ -1,9 +1,10 @@
-module.exports = {
-    displayName: 'remotion-forms',
+/* eslint-disable */
+export default {
+    displayName: 'react-color',
     preset: '../../../jest.preset.js',
     transform: {
         '^.+\\.[tj]sx?$': 'babel-jest',
     },
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-    coverageDirectory: '../../../coverage/libs/remotion/forms',
+    coverageDirectory: '../../../coverage/libs/react/color',
 };

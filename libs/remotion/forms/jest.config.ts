@@ -1,9 +1,10 @@
-module.exports = {
-    displayName: 'remotion-preview',
+/* eslint-disable */
+export default {
+    displayName: 'remotion-forms',
     preset: '../../../jest.preset.js',
     transform: {
         '^.+\\.[tj]sx?$': 'babel-jest',
     },
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-    coverageDirectory: '../../../coverage/libs/remotion/preview',
+    coverageDirectory: '../../../coverage/libs/remotion/forms',
 };

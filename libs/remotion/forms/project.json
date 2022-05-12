@@ -1,5 +1,4 @@
 {
-    "root": "libs/remotion/forms",
     "sourceRoot": "libs/remotion/forms/src",
     "projectType": "library",
     "tags": [],
@@ -15,7 +14,7 @@
             "executor": "@nrwl/jest:jest",
             "outputs": ["coverage/libs/remotion/forms"],
             "options": {
-                "jestConfig": "libs/remotion/forms/jest.config.js",
+                "jestConfig": "libs/remotion/forms/jest.config.ts",
                 "passWithNoTests": true
             }
         }

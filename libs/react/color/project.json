@@ -1,5 +1,4 @@
 {
-    "root": "libs/react/color",
     "sourceRoot": "libs/react/color/src",
     "projectType": "library",
     "tags": [],
@@ -15,7 +14,7 @@
             "executor": "@nrwl/jest:jest",
             "outputs": ["coverage/libs/react/color"],
             "options": {
-                "jestConfig": "libs/react/color/jest.config.js",
+                "jestConfig": "libs/react/color/jest.config.ts",
                 "passWithNoTests": true
             }
         }

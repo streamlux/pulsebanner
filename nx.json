@@ -1,48 +1,53 @@
 {
-    "npmScope": "pulsebanner",
-    "affected": {
-        "defaultBase": "master"
+  "npmScope": "pulsebanner",
+  "affected": {
+    "defaultBase": "master"
+  },
+  "implicitDependencies": {
+    "package.json": {
+      "dependencies": "*",
+      "devDependencies": "*"
     },
-    "implicitDependencies": {
-        "package.json": {
-            "dependencies": "*",
-            "devDependencies": "*"
-        },
-        ".eslintrc.json": "*"
+    ".eslintrc.json": "*"
+  },
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "@nrwl/nx-cloud",
+      "options": {
+        "cacheableOperations": [
+          "build",
+          "lint",
+          "test",
+          "e2e"
+        ],
+        "accessToken": "NGEzNDc1ODgtYjhhYS00YTE0LWEzM2EtZDhjMDc4Zjg5MTIxfHJlYWQtd3JpdGU=",
+        "parallel": 1
+      }
+    }
+  },
+  "targetDependencies": {
+    "build": [
+      {
+        "target": "build",
+        "projects": "dependencies"
+      }
+    ]
+  },
+  "cli": {
+    "defaultCollection": "@nrwl/nest"
+  },
+  "generators": {
+    "@nrwl/react": {
+      "application": {
+        "babel": true
+      }
     },
-    "tasksRunnerOptions": {
-        "default": {
-            "runner": "@nrwl/nx-cloud",
-            "options": {
-                "cacheableOperations": ["build", "lint", "test", "e2e"],
-                "accessToken": "NGEzNDc1ODgtYjhhYS00YTE0LWEzM2EtZDhjMDc4Zjg5MTIxfHJlYWQtd3JpdGU=",
-                "parallel": 1
-            }
-        }
-    },
-    "targetDependencies": {
-        "build": [
-            {
-                "target": "build",
-                "projects": "dependencies"
-            }
-        ]
-    },
-    "cli": {
-        "defaultCollection": "@nrwl/nest"
-    },
-    "generators": {
-        "@nrwl/react": {
-            "application": {
-                "babel": true
-            }
-        },
-        "@nrwl/next": {
-            "application": {
-                "style": "css",
-                "linter": "eslint"
-            }
-        }
-    },
-    "defaultProject": "remotion"
+    "@nrwl/next": {
+      "application": {
+        "style": "css",
+        "linter": "eslint"
+      }
+    }
+  },
+  "defaultProject": "remotion"
 }

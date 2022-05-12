@@ -1,14 +1,14 @@
 {
-    "version": 2,
-    "projects": {
-        "next": "apps/next",
-        "next-e2e": "apps/next-e2e",
-        "react-color": "libs/react/color",
-        "react-image-upload": "libs/react/image-upload",
-        "remotion": "apps/remotion",
-        "remotion-components": "libs/remotion/components",
-        "remotion-forms": "libs/remotion/forms",
-        "remotion-preview": "libs/remotion/preview",
-        "remotion-templates": "libs/remotion/templates"
-    }
+  "version": 2,
+  "projects": {
+    "next": "apps/next",
+    "next-e2e": "apps/next-e2e",
+    "react-color": "libs/react/color",
+    "react-image-upload": "libs/react/image-upload",
+    "remotion": "apps/remotion",
+    "remotion-components": "libs/remotion/components",
+    "remotion-forms": "libs/remotion/forms",
+    "remotion-preview": "libs/remotion/preview",
+    "remotion-templates": "libs/remotion/templates"
+  }
 }

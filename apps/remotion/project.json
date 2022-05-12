@@ -1,5 +1,4 @@
 {
-    "root": "apps/remotion",
     "sourceRoot": "apps/remotion/src",
     "projectType": "application",
     "targets": {
@@ -42,7 +41,7 @@
             "executor": "@nrwl/jest:jest",
             "outputs": ["coverage/apps/remotion"],
             "options": {
-                "jestConfig": "apps/remotion/jest.config.js",
+                "jestConfig": "apps/remotion/jest.config.ts",
                 "passWithNoTests": true
             }
         }
