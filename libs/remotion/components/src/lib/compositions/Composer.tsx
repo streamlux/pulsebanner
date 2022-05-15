@@ -12,6 +12,7 @@ export const Composer: React.FC<{
 }> = ({ foregroundId, backgroundId, foregroundProps, backgroundProps }) => {
     const Background = Backgrounds[backgroundId];
     const Foreground = Foregrounds[foregroundId];
+
     return (
         <div style={{ width: '100%', height: '100%' }}>
             <AbsoluteFill>

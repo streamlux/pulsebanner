@@ -1,3 +1,4 @@
+import React from 'react';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 import { discordLink } from '@app/util/constants';
 import { APIPaymentObject, PaymentPlan } from '@app/services/payment/paymentHelpers';
@@ -44,6 +45,7 @@ import { getTwitterProfilePic, validateTwitterAuthentication } from '@app/servic
 import { FaqSection } from '@app/modules/faq/FaqSection';
 import { generalFaqItems, profileImageFaqItems } from '@app/modules/faq/faqData';
 import { AccountsService } from '@app/services/AccountsService';
+import { ClientOnly } from '@app/util/components/ClientOnly';
 
 interface Props {
     profilePic: ProfileImage;
@@ -87,7 +89,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 },
             };
         }
-            const isTwitterAuthValid: boolean = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
+        const isTwitterAuthValid: boolean = await validateTwitterAuthentication(twitterInfo.oauth_token, twitterInfo.oauth_token_secret);
 
         // if Twitter auth is invalid
         if (!isTwitterAuthValid) {
@@ -267,8 +269,6 @@ export default function Page({ profilePic, twitterPic }: Props) {
         </Text>
     );
 
-    console.log(fgProps);
-
     return (
         <>
             <NextSeo
@@ -323,32 +323,35 @@ export default function Page({ profilePic, twitterPic }: Props) {
                 <Flex w="full" rounded="md" direction="column">
                     <Center>
                         <Box w="30%" minW="150px">
-                            <RemotionProfilePreview compositionHeight={400} compositionWidth={400}>
-                                {' '}
-                                {/* Change this to be something different dimensions */}
-                                <Composer
-                                    {...{
-                                        backgroundId: bgId,
-                                        foregroundId: fgId,
-                                        backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
-                                        foregroundProps: { ...ForegroundTemplates[fgId].defaultProps, ...fgProps },
-                                    }}
-                                />
-                            </RemotionProfilePreview>
+                            <ClientOnly>
+                                <RemotionProfilePreview compositionHeight={400} compositionWidth={400}>
+                                    {' '}
+                                    {/* Change this to be something different dimensions */}
+                                    <Composer
+                                        {...{
+                                            backgroundId: bgId,
+                                            foregroundId: fgId,
+                                            backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
+                                            foregroundProps: { ...ForegroundTemplates[fgId].defaultProps, ...fgProps },
+                                        }}
+                                    />
+                                </RemotionProfilePreview>
+                            </ClientOnly>
                         </Box>
                     </Center>
 
                     <Center>
                         <Flex {...styles} grow={1} p="4" my="4" rounded="md" w="fit-content" direction="column">
-                            <FgForm
-                                setProps={(s) => {
-                                    console.log('set props', s);
-                                    setFgProps(s);
-                                }}
-                                props={{ ...ForegroundTemplates[fgId].defaultProps, ...fgProps }}
-                                showPricing={showPricing}
-                                accountLevel={paymentPlan}
-                            />
+                            <ClientOnly>
+                                <FgForm
+                                    setProps={(s) => {
+                                        setFgProps(s);
+                                    }}
+                                    props={{ ...ForegroundTemplates[fgId].defaultProps, ...fgProps }}
+                                    showPricing={showPricing}
+                                    accountLevel={paymentPlan}
+                                />
+                            </ClientOnly>
                             <Flex justifyContent="space-between" direction={['column', 'row']}>
                                 <Spacer />
                                 <HStack>
@@ -389,7 +392,9 @@ export default function Page({ profilePic, twitterPic }: Props) {
 
                 <Center>
                     <Stack direction={['column', 'row']}>
-                        <Text textAlign="center">Like Live Profile? Check out {breakpoint === 'base' ? '👇' : '👉'} </Text>
+                        <ClientOnly>
+                            <Text textAlign="center">Like Live Profile? Check out {breakpoint === 'base' ? '👇' : '👉'} </Text>
+                        </ClientOnly>
                         <NextLink passHref href="/banner">
                             <Link color="blue.300" fontWeight="bold" fontSize={['md', 'lg']}>
                                 PulseBanner Twitter Live Banner ✨

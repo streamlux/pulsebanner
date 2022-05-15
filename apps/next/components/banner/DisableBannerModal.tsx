@@ -5,6 +5,8 @@ import axios from 'axios';
 import React, { useState } from 'react';
 import { StringOrNumber } from '@chakra-ui/utils';
 import { ChatIcon } from '@chakra-ui/icons';
+import NextLink from 'next/link';
+import { discordLink } from '@app/util/constants';
 
 type Props = {
     isOpen: boolean;
@@ -52,11 +54,11 @@ export const DisableBannerModal: React.FC<Props> = ({ isOpen, onClose }) => {
                                 {!feedbackItems.includes('Live Banner was not working.') && feedbackItems.includes('PulseBanner is missing what I want') && (
                                     <Text>We can add it! 👉</Text>
                                 )}
-                                <Link href="/" isExternal passHref>
-                                    <Button as="a" variant={'solid'} size="sm">
+                                <NextLink href={discordLink} passHref>
+                                    <Button as="a" target='_blank' variant={'solid'} size="sm">
                                         Join our Discord
                                     </Button>
-                                </Link>
+                                </NextLink>
                             </HStack>
                         </Center>
                     </Box>

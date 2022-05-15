@@ -4,6 +4,7 @@ import { Card } from '@app/components/Card';
 
 interface PanelProps {
     name: string;
+    children?: React.ReactNode;
 }
 
 export const Panel: React.FC<PanelProps> = ({ name, children }) => (

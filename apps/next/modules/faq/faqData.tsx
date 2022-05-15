@@ -1,6 +1,4 @@
-import { Link, List, ListIcon, ListItem, Text } from '@chakra-ui/react';
-import { ReactNode } from 'react';
-import NextLink from 'next/link';
+import React, { ReactNode } from 'react';
 
 export interface FaqItem {
     id: string;

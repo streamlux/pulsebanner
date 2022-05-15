@@ -1,4 +1,19 @@
 {
-    "presets": ["@nrwl/next/babel"],
-    "plugins": ["superjson-next"]
+    "presets": [
+        "@nrwl/next/babel",
+        "@emotion/babel-preset-css-prop"
+    ],
+    "plugins": [
+        "superjson-next",
+        [
+            "@emotion",
+            {
+              // sourceMap is on by default but source maps are dead code eliminated in production
+              "sourceMap": true,
+              "autoLabel": "always",
+              "labelFormat": "[local]",
+              "cssPropOptimization": true
+            }
+          ]
+    ]
 }

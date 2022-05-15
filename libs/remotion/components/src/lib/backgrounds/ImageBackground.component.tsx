@@ -3,6 +3,7 @@ import { AbsoluteFill, Img } from 'remotion';
 
 type ImageBackgroundProps = {
     src?: string;
+    children?: React.ReactNode;
 };
 
 export const ImageBackground: React.FC<ImageBackgroundProps> = ({ src, children }) => (

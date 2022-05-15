@@ -39,7 +39,7 @@ export const HeaderMenuItem: FC<HeaderMenuItemProps> = ({ imageSrc, title, descr
                     </Box>
                     <Box w="full">
                         <HStack w="min" p="0" m="0" color={'blue.200'}>
-                            <Text textAlign={'left'} w="full" variant={'link'} rightIcon={<FaArrowRight />}>
+                            <Text textAlign={'left'} w="full" variant={'link'}>
                                 Learn more
                             </Text>
                             <FaArrowRight />

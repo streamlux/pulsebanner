@@ -46,6 +46,7 @@ import { GiftPricing } from '@app/modules/pricing/GiftPricing';
 import { useSession } from '@app/util/hooks/useSession';
 import { getGiftMap, GiftPriceMap } from '@app/services/stripe/gift/constants';
 import { env } from 'process';
+import { ClientOnly } from '@app/util/components/ClientOnly';
 
 type ProductType = Product & { prices: Price[] };
 type Products = ProductType[];
@@ -80,6 +81,11 @@ const Page: NextPage<Props> = ({ products, priceMap, giftPriceIds }) => {
 
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [billingInterval, setBillingInterval] = useState<PriceInterval>('year');
+
+    const [hasMounted, setHasMounted] = React.useState(false);
+    React.useEffect(() => {
+        setHasMounted(true);
+    }, []);
 
     /**
      * Checks if they are signed in with twitter, if not then show the modal
@@ -172,16 +178,16 @@ const Page: NextPage<Props> = ({ products, priceMap, giftPriceIds }) => {
     return (
         <>
             {PricingSEO}
-            {breakpoint !== 'base' && (
-                <div style={{ position: 'absolute', left: '220px', top: '700px' }}>
-                    <VStack>
-                        <Heading>🎁</Heading>
-                        <Box animation={`${arrowAnimation} alternate infinite 1.4s linear`}>
-                            <FaArrowDown fontSize={28} />
-                        </Box>
-                    </VStack>
-                </div>
-            )}
+
+            <Box display={breakpoint !== 'base' ? undefined : 'none'} style={{ position: 'absolute', left: '220px', top: '700px' }}>
+                <VStack>
+                    <Heading>🎁</Heading>
+                    <Box animation={`${arrowAnimation} alternate infinite 1.4s linear`}>
+                        <FaArrowDown fontSize={28} />
+                    </Box>
+                </VStack>
+            </Box>
+
             <Modal onClose={onClose} size={'xl'} isOpen={isOpen}>
                 <ModalOverlay />
                 <ModalContent>
@@ -245,11 +251,12 @@ const Page: NextPage<Props> = ({ products, priceMap, giftPriceIds }) => {
             <VStack spacing={[6, 12]} w="full">
                 <Container maxW="container.xl" position={'relative'} experimental_spaceY={24}>
                     <Container maxW="container.lg">
-                        {breakpoint !== 'base' && (
-                            <Box my="4">
+                        <ClientOnly>
+                            <Box my="4" display={breakpoint !== 'base' ? undefined : 'none'}>
                                 <FreeProductCard />
                             </Box>
-                        )}
+                        </ClientOnly>
+
                         <Center w={['auto', 'auto', 'auto', 'auto']}>
                             <SimpleGrid columns={[1, 1, 1, 3]} spacing="4" w="full">
                                 <WrapItem key={'free2'} w="full" h="full">
@@ -260,25 +267,30 @@ const Page: NextPage<Props> = ({ products, priceMap, giftPriceIds }) => {
                                                 <Heading>PulseBanner Membership.</Heading>
                                                 <Text my="4">Choose a plan and begin customizing in seconds. Then experience how PulseBanner can help you grow.</Text>
 
-                                                {breakpoint !== 'base' && (
+                                                <Box display={breakpoint !== 'base' ? undefined : 'none'}>
                                                     <HStack>
                                                         <Text fontWeight={'bold'} fontSize={'xl'}>
                                                             Select a plan
                                                         </Text>
                                                         <ArrowRightIcon />
                                                     </HStack>
-                                                )}
-                                                {breakpoint === 'base' && <Center mb="6">{AnnualBillingControl}</Center>}
-                                                {breakpoint === 'base' && (
-                                                    <HStack>
-                                                        <Text fontWeight={'bold'} fontSize={'xl'}>
-                                                            Select a plan
-                                                        </Text>
-                                                        <ArrowRightIcon transform={'rotate(90deg)'} />
-                                                    </HStack>
-                                                )}
+                                                </Box>
+                                                <Box display={breakpoint === 'base' ? undefined : 'none'}>
+                                                    <>
+                                                        <Center mb="6">{AnnualBillingControl}</Center>
+
+                                                        <HStack>
+                                                            <Text fontWeight={'bold'} fontSize={'xl'}>
+                                                                Select a plan
+                                                            </Text>
+                                                            <ArrowRightIcon transform={'rotate(90deg)'} />
+                                                        </HStack>
+                                                    </>
+                                                </Box>
                                             </Box>
-                                            {breakpoint !== 'base' && <Center mb="2">{AnnualBillingControl}</Center>}
+                                            <Box display={breakpoint !== 'base' ? undefined : 'none'}>
+                                                <Center mb="2">{AnnualBillingControl}</Center>
+                                            </Box>
                                         </Flex>
                                     </Card>
                                 </WrapItem>
@@ -292,11 +304,12 @@ const Page: NextPage<Props> = ({ products, priceMap, giftPriceIds }) => {
                                         paymentPlanResponse={paymentPlanResponse}
                                     />
                                 ))}
-                                {breakpoint === 'base' && (
-                                    <Box>
+
+                                <ClientOnly>
+                                    <Box my="4" display={breakpoint === 'base' ? undefined : 'none'}>
                                         <FreeProductCard modal />
                                     </Box>
-                                )}
+                                </ClientOnly>
                             </SimpleGrid>
                         </Center>
                         <Container centerContent maxW="container.lg" experimental_spaceY="4" pt="4">

@@ -12,7 +12,7 @@ type FaqSectionProps = {
 export const FaqSection: FC<FaqSectionProps> = ({ items }): ReactElement => {
     const router = useRouter();
     return (
-        <Box name="faq">
+        <Box id="faq">
             <VStack spacing={[2, 4]}>
                 <Heading fontSize="3xl" w="full" textAlign="left">
                     Frequently asked questions

@@ -1,3 +1,4 @@
+import { ClientOnly } from '@app/util/components/ClientOnly';
 import { CloseIcon } from '@chakra-ui/icons';
 import { Heading, List, ListItem, ListIcon, Button, Box, Flex, Center, Stack, useBreakpoint } from '@chakra-ui/react';
 import { signIn, useSession } from 'next-auth/react';
@@ -29,7 +30,7 @@ export const FreeProductCard: React.FC<Props> = ({ modal }) => {
                     <ProductCardTitle>Free</ProductCardTitle>
                     <ProductCardDescription>Use limited PulseBanner features for free!</ProductCardDescription>
                 </ProductCardHeading>
-                {modal && !mobile && (
+                <Box display={modal && !mobile ? undefined : 'none'}>
                     <ProductCardPricing
                         handlePriceClick={() => {
                             const url = new window.URL(window.location.href);
@@ -43,7 +44,7 @@ export const FreeProductCard: React.FC<Props> = ({ modal }) => {
                             <ProductCardPriceAmount>Free</ProductCardPriceAmount>
                         </ProductCardPrice>
                     </ProductCardPricing>
-                )}
+                </Box>
 
                 <Stack flexGrow={1} direction={modal ? 'column' : 'row'} spacing={2} justifyContent={'space-around'}>
                     <Box>
@@ -61,11 +62,11 @@ export const FreeProductCard: React.FC<Props> = ({ modal }) => {
                                 <ListIcon color="red.400" as={CloseIcon} />
                                 Live Twitter Profile Picture
                             </ListItem>
-                            <ListItem key="profile image">
+                            <ListItem key="banner refreshing">
                                 <ListIcon color="red.400" as={CloseIcon} />
                                 Banner refreshing
                             </ListItem>
-                            <ListItem key="profile image">
+                            <ListItem key="custom background image">
                                 <ListIcon color="red.400" as={CloseIcon} />
                                 Custom background image
                             </ListItem>
@@ -73,10 +74,10 @@ export const FreeProductCard: React.FC<Props> = ({ modal }) => {
                     </Box>
                 </Stack>
 
-                <Center>
-                    {!session && (
+                <ClientOnly>
+                    <Center display={session ? 'none' : undefined}>
                         <Button
-                            mt='4'
+                            mt="4"
                             fontWeight="bold"
                             colorScheme="green"
                             rightIcon={<FaArrowRight />}
@@ -90,8 +91,8 @@ export const FreeProductCard: React.FC<Props> = ({ modal }) => {
                         >
                             Sign up
                         </Button>
-                    )}
-                </Center>
+                    </Center>
+                </ClientOnly>
             </Flex>
         </Card>
     );

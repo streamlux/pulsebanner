@@ -1,7 +1,7 @@
 import { AccountsService } from '@app/services/AccountsService';
 import { TwitchClientAuthService } from '@app/services/twitch/TwitchClientAuthService';
 import { remotionAxios, twitchAxios } from '@app/util/axios';
-import { getBannerEntry, getTwitterInfo } from '@app/services/postgresHelpers';
+import { getBannerEntry } from '@app/services/postgresHelpers';
 import { Prisma } from '@prisma/client';
 import { AxiosResponse } from 'axios';
 import { createAuthApiHandler } from '../../../util/ssr/createApiHandler';
@@ -58,7 +58,7 @@ handler.get(async (req, res) => {
     };
 
     // pass in the bannerEntry info
-    const response: AxiosResponse<string> = await remotionAxios.post('/getTemplate', templateObj);
+    const response: AxiosResponse<string> = await remotionAxios.post('/getTemplate', { userId, props: templateObj });
     const img = Buffer.from(response.data, 'base64');
 
     res.writeHead(200, {

@@ -1,3 +1,4 @@
+import React from 'react';
 import { PaymentModal } from '@app/components/pricing/PaymentModal';
 import { ConnectTwitchModal } from '@app/modules/onboard/ConnectTwitchModal';
 import { discordLink } from '@app/util/constants';
@@ -326,11 +327,11 @@ export default function Page({ twitterName, twitterProfile }: Props) {
                             <Text textAlign={['center', 'left']} h="full">
                                 Need help? 👉{' '}
                             </Text>
-                            <Link isExternal href={discordLink}>
-                                <Button as="a" colorScheme="gray" rightIcon={<FaDiscord />}>
+                            <NextLink passHref href={discordLink}>
+                                <Button as="a" colorScheme="gray" target={'_blank'} rightIcon={<FaDiscord />}>
                                     Join our Discord
                                 </Button>
-                            </Link>
+                            </NextLink>
                         </HStack>
                     </Box>
                     {EnableButton}

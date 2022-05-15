@@ -36,7 +36,7 @@ export const Gift: React.FC<GiftInfo> = ({ redemptionUrl, redeemed }) => {
                         <Tag size="lg">Redeemed</Tag>
                     </Tooltip>
                 ) : (
-                    <Button colorScheme={'blue'} leftIcon={<CopyIcon />} aria-label="Copy redemption URL" onClick={() => onCopy()} icon={<CopyIcon />} size="sm">
+                    <Button colorScheme={'blue'} leftIcon={<CopyIcon />} aria-label="Copy redemption URL" onClick={() => onCopy()} size="sm">
                         {hasCopied ? 'Copied!' : 'Copy'}
                     </Button>
                 )}

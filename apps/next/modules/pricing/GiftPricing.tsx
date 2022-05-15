@@ -126,11 +126,11 @@ export const GiftPricing: React.FC<Props> = ({ priceMap, cancel_path, giftPriceI
 
     const refAnimationInstance = useRef(null as any);
 
-    const getInstance = useCallback((instance) => {
+    const getInstance = useCallback((instance: any) => {
         refAnimationInstance.current = instance;
     }, []);
 
-    const makeShot = useCallback((particleRatio, opts) => {
+    const makeShot = useCallback((particleRatio: number, opts: any) => {
         refAnimationInstance.current &&
             refAnimationInstance.current({
                 ...opts,
@@ -221,11 +221,11 @@ export const GiftPricing: React.FC<Props> = ({ priceMap, cancel_path, giftPriceI
     const gift = (duration: keyof typeof giftIds) => {
         if (!priceMap[giftIds[duration]]) {
             console.log('Error getting gift for duration: ', duration, giftIds[duration], priceMap[giftIds[duration]]);
-            return undefined as unknown as ({
+            return undefined as unknown as {
                 unitAmount: number;
             } & Price & {
-                product: Product;
-            });
+                    product: Product;
+                };
         } else {
             return priceMap[giftIds[duration]];
         }
@@ -243,7 +243,7 @@ export const GiftPricing: React.FC<Props> = ({ priceMap, cancel_path, giftPriceI
                     <ModalCloseButton />
                     <ModalBody minH="32" h="32" pb="4">
                         <Flex h="full" direction="column" justifyContent="space-between">
-                            <VStack grow={1}>
+                            <VStack flexGrow={1}>
                                 <Button
                                     onClick={() => {
                                         if (session?.accounts?.twitter) {
@@ -293,13 +293,13 @@ export const GiftPricing: React.FC<Props> = ({ priceMap, cancel_path, giftPriceI
                                             <HStack>
                                                 <Heading>
                                                     PulseBanner Membership Gifts
-                                                    {breakpoint !== 'base' && (
+                                                    <Box display={breakpoint !== 'base' ? undefined : 'none'}>
                                                         <Tooltip label="Click me!">
                                                             <Button zIndex={20} p="0" fontSize={28} variant="ghost" ml="2" onClick={fire}>
                                                                 🎁
                                                             </Button>
                                                         </Tooltip>
-                                                    )}
+                                                    </Box>
                                                 </Heading>
 
                                                 <ReactCanvasConfetti refConfetti={getInstance} style={canvasStyles} />
@@ -308,25 +308,23 @@ export const GiftPricing: React.FC<Props> = ({ priceMap, cancel_path, giftPriceI
                                             <Text my="4">Once purchased, gifts are easily shared using a unique link.</Text>
                                             <Text my="4">Perfect for giveaways, no shipping needed!</Text>
 
-                                            {breakpoint !== 'base' && (
-                                                <HStack>
-                                                    <Text fontWeight={'bold'} fontSize={'xl'}>
-                                                        Select a gift
-                                                    </Text>
-                                                    <ArrowRightIcon />
-                                                </HStack>
-                                            )}
-                                            {breakpoint === 'base' && GiftProductSwitch}
-                                            {breakpoint === 'base' && (
-                                                <HStack>
-                                                    <Text fontWeight={'bold'} fontSize={'xl'}>
-                                                        Select a gift
-                                                    </Text>
-                                                    <ArrowRightIcon transform={'rotate(90deg)'} />
-                                                </HStack>
-                                            )}
+                                            <HStack display={breakpoint !== 'base' ? undefined : 'none'}>
+                                                <Text fontWeight={'bold'} fontSize={'xl'}>
+                                                    Select a gift
+                                                </Text>
+                                                <ArrowRightIcon />
+                                            </HStack>
+
+                                            <Box display={breakpoint === 'base' ? undefined : 'none'}>{GiftProductSwitch}</Box>
+
+                                            <HStack display={breakpoint === 'base' ? undefined : 'none'}>
+                                                <Text fontWeight={'bold'} fontSize={'xl'}>
+                                                    Select a gift
+                                                </Text>
+                                                <ArrowRightIcon transform={'rotate(90deg)'} />
+                                            </HStack>
                                         </Box>
-                                        {breakpoint !== 'base' && GiftProductSwitch}
+                                        <Box display={breakpoint !== 'base' ? undefined : 'none'}>{GiftProductSwitch}</Box>
                                     </Flex>
                                 </Card>
                             </GridItem>

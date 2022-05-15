@@ -11,8 +11,9 @@ import { DefaultSeo } from 'next-seo';
 import seoOptions from '@app/util/seo/next-seo.config';
 import dynamic from 'next/dynamic';
 import { holidayDecor } from '@app/util/constants';
+import { SnowfallProps } from 'react-snowfall';
 
-const Snow = dynamic(() => import('react-snowfall'));
+const Snow: React.ComponentType<SnowfallProps> = dynamic(() => import('react-snowfall')) as React.ComponentType<SnowfallProps>;
 
 declare global {
     // eslint-disable-next-line no-var

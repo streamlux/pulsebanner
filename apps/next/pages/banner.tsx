@@ -71,6 +71,7 @@ import { usePaymentPlan } from '@app/util/hooks/usePaymentPlan';
 import env from '@app/util/env';
 import { AccountsService } from '@app/services/AccountsService';
 import { S3Service } from '@app/services/S3Service';
+import { ClientOnly } from '@app/util/components/ClientOnly';
 
 const bannerEndpoint = '/api/features/banner';
 const defaultForeground: keyof typeof BannerForegrounds = 'ImLive';
@@ -324,12 +325,6 @@ export default function Page({ banner, originalBanner }: Props) {
 
     const [isToggling, { on, off }] = useBoolean(false);
 
-    useEffect(() => {
-        axios.post('/').then(() => {
-            console.log('attempt to clear 301 redirect from cache');
-        });
-    }, []);
-
     const getUnsavedBanner = () => ({
         foregroundId: fgId,
         backgroundId: bgId,
@@ -539,167 +534,173 @@ export default function Page({ banner, originalBanner }: Props) {
                                 </ButtonGroup>
                             </HStack>
                         </Flex>
-                        <Center w="full">
-                            <RemotionPreview compositionHeight={500} compositionWidth={1500}>
-                                <Composer
-                                    {...{
-                                        backgroundId: bgId,
-                                        foregroundId: fgId,
-                                        backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
-                                        foregroundProps: { ...BannerForegrounds[fgId].defaultProps, ...fgProps },
-                                    }}
-                                />
-                            </RemotionPreview>
-                        </Center>
+                        <ClientOnly>
+                            <Center w="full">
+                                <RemotionPreview compositionHeight={500} compositionWidth={1500}>
+                                    <Composer
+                                        {...{
+                                            backgroundId: bgId,
+                                            foregroundId: fgId,
+                                            backgroundProps: { ...BackgroundTemplates[bgId].defaultProps, ...bgProps },
+                                            foregroundProps: { ...BannerForegrounds[fgId].defaultProps, ...fgProps },
+                                        }}
+                                    />
+                                </RemotionPreview>
+                            </Center>
 
-                        <Flex {...styles} grow={1} p="4" my="4" rounded="md" w="full" direction="column" minH="lg">
-                            <Tabs colorScheme="purple" flexGrow={1} size={breakpoint !== 'base' ? 'md' : 'sm'} index={tabIndex} onChange={setTabIndex}>
-                                <TabList>
-                                    <Tab className={trackEvent('click', 'banner-tab')}>Banner</Tab>
-                                    <Tab className={trackEvent('click', 'background-tab')}>Background</Tab>
-                                </TabList>
+                            <Flex {...styles} grow={1} p="4" my="4" rounded="md" w="full" direction="column" minH="lg">
+                                <Tabs colorScheme="purple" flexGrow={1} size={breakpoint !== 'base' ? 'md' : 'sm'} index={tabIndex} onChange={setTabIndex}>
+                                    <TabList>
+                                        <Tab className={trackEvent('click', 'banner-tab')}>Banner</Tab>
+                                        <Tab className={trackEvent('click', 'background-tab')}>Background</Tab>
+                                    </TabList>
 
-                                <TabPanels flexGrow={1}>
-                                    <TabPanel>
-                                        <VStack>
-                                            <FgForm
-                                                setProps={(s) => {
-                                                    setFgProps(s);
-                                                }}
-                                                props={{ ...BannerForegrounds[fgId].defaultProps, ...fgProps }}
-                                                showPricing={showPricing}
-                                                accountLevel={paymentPlan}
-                                            />
-                                            <FormControl>
-                                                <FormLabel>
-                                                    Refresh speed{' '}
-                                                    <Tooltip label="Banner refresh speed is how often your banner is re-generated and updated on Twitter." fontSize="md">
-                                                        <InfoIcon />
-                                                    </Tooltip>{' '}
-                                                    <Tag size="md" colorScheme="green">
-                                                        New!
-                                                    </Tag>
-                                                </FormLabel>
-
-                                                {sliderValue !== 0 ? (
-                                                    <Text>Your banner will refresh every {refreshSpeeds[sliderValue as keyof typeof refreshSpeeds]}.</Text>
-                                                ) : (
-                                                    <HStack>
-                                                        <Text>
-                                                            Become a PulseBanner Member to enable banner refreshing.{' '}
-                                                            <NextLink as="span" passHref href="/pricing">
-                                                                <Link colorScheme={'teal'} fontSize={['md']} textDecor="underline">
-                                                                    View pricing
-                                                                </Link>
-                                                            </NextLink>
-                                                        </Text>
-                                                    </HStack>
-                                                )}
-                                                <Slider
-                                                    defaultValue={0}
-                                                    max={99}
-                                                    ml={[0, '2']}
-                                                    step={33}
-                                                    colorScheme={'purple'}
-                                                    value={sliderValue}
-                                                    onClick={() => showPricingIfFree()}
-                                                    aria-label="slider-ex-6"
-                                                    maxW="lg"
-                                                    mb="8"
-                                                >
-                                                    <SliderMark value={0} mt="2" fontSize={['xs', 'sm']}>
-                                                        Never
-                                                    </SliderMark>
-                                                    <SliderMark value={33} mt="2" ml="-4" fontSize={['xs', 'sm']}>
-                                                        Slow <br />
-                                                        (60 min)
-                                                        <br />
-                                                        <Tag onClick={() => showPricingIfFree()} size="sm" colorScheme="green">
-                                                            Personal
+                                    <TabPanels flexGrow={1}>
+                                        <TabPanel>
+                                            <VStack>
+                                                <FgForm
+                                                    setProps={(s) => {
+                                                        setFgProps(s);
+                                                    }}
+                                                    props={{ ...BannerForegrounds[fgId].defaultProps, ...fgProps }}
+                                                    showPricing={showPricing}
+                                                    accountLevel={paymentPlan}
+                                                />
+                                                <FormControl>
+                                                    <FormLabel>
+                                                        Refresh speed{' '}
+                                                        <Tooltip label="Banner refresh speed is how often your banner is re-generated and updated on Twitter." fontSize="md">
+                                                            <InfoIcon />
+                                                        </Tooltip>{' '}
+                                                        <Tag size="md" colorScheme="green">
+                                                            New!
                                                         </Tag>
-                                                    </SliderMark>
-                                                    <SliderMark value={66} mt="2" ml="-4" fontSize={['xs', 'sm']}>
-                                                        Fast <br />
-                                                        (30 min)
-                                                    </SliderMark>
-                                                    <SliderMark value={99} mt="2" ml="-6" fontSize={['xs', 'sm']} w="24">
-                                                        Insanity <br /> (10 min)
-                                                        <br />
-                                                        <Tag size="sm" colorScheme="green" onClick={() => showPricingIfFree()}>
-                                                            Pro
-                                                        </Tag>
-                                                    </SliderMark>
-                                                    <SliderTrack h="3" rounded="full">
-                                                        <SliderFilledTrack />
-                                                    </SliderTrack>
-                                                    {paymentPlan === 'Free' && <SliderThumb />}
-                                                </Slider>
-                                            </FormControl>
-                                        </VStack>
-                                    </TabPanel>
-                                    <TabPanel>
-                                        {!lockedBanners.includes(fgId) ? (
-                                            <>
-                                                <FormControl id="country">
-                                                    <FormLabel>Background type</FormLabel>
-                                                    <RadioGroup
-                                                        onChange={(e) => {
-                                                            setBgId(e as keyof typeof BackgroundTemplates);
-                                                        }}
-                                                        value={bgId}
+                                                    </FormLabel>
+
+                                                    {sliderValue !== 0 ? (
+                                                        <Text>Your banner will refresh every {refreshSpeeds[sliderValue as keyof typeof refreshSpeeds]}.</Text>
+                                                    ) : (
+                                                        <HStack>
+                                                            <Text>
+                                                                Become a PulseBanner Member to enable banner refreshing.{' '}
+                                                                <NextLink as="span" passHref href="/pricing">
+                                                                    <Link colorScheme={'teal'} fontSize={['md']} textDecor="underline">
+                                                                        View pricing
+                                                                    </Link>
+                                                                </NextLink>
+                                                            </Text>
+                                                        </HStack>
+                                                    )}
+                                                    <Slider
+                                                        defaultValue={0}
+                                                        max={99}
+                                                        ml={[0, '2']}
+                                                        step={33}
+                                                        colorScheme={'purple'}
+                                                        value={sliderValue}
+                                                        onClick={() => showPricingIfFree()}
+                                                        aria-label="slider-ex-6"
+                                                        maxW="lg"
+                                                        mb="8"
                                                     >
-                                                        <Stack direction="column">
-                                                            {Object.entries(BackgroundTemplates).map(([key, value]) => (
-                                                                <Radio key={key} value={key} colorScheme="purple">
-                                                                    <Text fontSize="md">{value.name}</Text>
-                                                                    <Text fontSize="sm">{value.description}</Text>
-                                                                </Radio>
-                                                            ))}
-                                                        </Stack>
-                                                    </RadioGroup>
+                                                        <SliderMark value={0} mt="2" fontSize={['xs', 'sm']}>
+                                                            Never
+                                                        </SliderMark>
+                                                        <SliderMark value={33} mt="2" ml="-4" fontSize={['xs', 'sm']}>
+                                                            Slow <br />
+                                                            (60 min)
+                                                            <br />
+                                                            <Tag onClick={() => showPricingIfFree()} size="sm" colorScheme="green">
+                                                                Personal
+                                                            </Tag>
+                                                        </SliderMark>
+                                                        <SliderMark value={66} mt="2" ml="-4" fontSize={['xs', 'sm']}>
+                                                            Fast <br />
+                                                            (30 min)
+                                                        </SliderMark>
+                                                        <SliderMark value={99} mt="2" ml="-6" fontSize={['xs', 'sm']} w="24">
+                                                            Insanity <br /> (10 min)
+                                                            <br />
+                                                            <Tag size="sm" colorScheme="green" onClick={() => showPricingIfFree()}>
+                                                                Pro
+                                                            </Tag>
+                                                        </SliderMark>
+                                                        <SliderTrack h="3" rounded="full">
+                                                            <SliderFilledTrack />
+                                                        </SliderTrack>
+                                                        {paymentPlan === 'Free' && <SliderThumb />}
+                                                    </Slider>
                                                 </FormControl>
-                                                <Box py="4">
-                                                    <Form
-                                                        setProps={(p) => {
-                                                            setBgProps({ ...BackgroundTemplates[bgId].defaultProps, ...p });
-                                                        }}
-                                                        props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }}
-                                                        showPricing={showPricing}
-                                                        accountLevel={paymentPlan}
-                                                    />
-                                                </Box>
-                                            </>
-                                        ) : (
-                                            <Text pt="2">You cannot customize the background of this banner template. Choose another template to customize the background.</Text>
-                                        )}
-                                    </TabPanel>
-                                </TabPanels>
-                            </Tabs>
+                                            </VStack>
+                                        </TabPanel>
+                                        <TabPanel>
+                                            {!lockedBanners.includes(fgId) ? (
+                                                <>
+                                                    <FormControl id="country">
+                                                        <FormLabel>Background type</FormLabel>
+                                                        <RadioGroup
+                                                            onChange={(e) => {
+                                                                setBgId(e as keyof typeof BackgroundTemplates);
+                                                            }}
+                                                            value={bgId}
+                                                        >
+                                                            <Stack direction="column">
+                                                                {Object.entries(BackgroundTemplates).map(([key, value]) => (
+                                                                    <Radio key={key} value={key} colorScheme="purple">
+                                                                        <Text fontSize="md">{value.name}</Text>
+                                                                        <Text fontSize="sm">{value.description}</Text>
+                                                                    </Radio>
+                                                                ))}
+                                                            </Stack>
+                                                        </RadioGroup>
+                                                    </FormControl>
+                                                    <Box py="4">
+                                                        <Form
+                                                            setProps={(p) => {
+                                                                setBgProps({ ...BackgroundTemplates[bgId].defaultProps, ...p });
+                                                            }}
+                                                            props={{ ...BackgroundTemplates[bgId].defaultProps, ...bgProps }}
+                                                            showPricing={showPricing}
+                                                            accountLevel={paymentPlan}
+                                                        />
+                                                    </Box>
+                                                </>
+                                            ) : (
+                                                <Text pt="2">
+                                                    You cannot customize the background of this banner template. Choose another template to customize the background.
+                                                </Text>
+                                            )}
+                                        </TabPanel>
+                                    </TabPanels>
+                                </Tabs>
 
-                            <Flex justifyContent="space-between" direction={['column', 'row']}>
-                                <Spacer />
-                                <HStack>
-                                    <Button my="2" onClick={saveSettings} className={trackEvent('click', 'save-settings-button')}>
-                                        Save settings
-                                    </Button>
-                                </HStack>
+                                <Flex justifyContent="space-between" direction={['column', 'row']}>
+                                    <Spacer />
+                                    <HStack>
+                                        <Button my="2" onClick={saveSettings} className={trackEvent('click', 'save-settings-button')}>
+                                            Save settings
+                                        </Button>
+                                    </HStack>
+                                </Flex>
                             </Flex>
-                        </Flex>
+                        </ClientOnly>
+
                         <Flex w="full" flexDirection={['column-reverse', 'row']} justifyContent="space-between">
                             <HStack pt={['2', '2']} pb={['2', '0']} h="full">
                                 <Text textAlign={['center', 'left']} h="full">
                                     Have feedback? 👉{' '}
                                 </Text>
-                                <Link isExternal href={discordLink}>
+                                <NextLink passHref href={discordLink}>
                                     <Button as="a" size="sm" colorScheme="gray" rightIcon={<FaDiscord />}>
                                         Join our Discord
                                     </Button>
-                                </Link>
+                                </NextLink>
                             </HStack>
                             {EnableButton}
                         </Flex>
                     </Flex>
                 )}
+
                 {/*
                     only show this when after they have gone live once (and the originalBanner has been populated)
                     and when they are not selecting a preset
@@ -742,7 +743,9 @@ export default function Page({ banner, originalBanner }: Props) {
 
                 <Center>
                     <Stack direction={['column', 'row']}>
-                        <Text textAlign="center">Like Live Banner? Check out {breakpoint === 'base' ? '👇' : '👉'} </Text>
+                        <ClientOnly>
+                            <Text textAlign="center">Like Live Banner? Check out {breakpoint === 'base' ? '👇' : '👉'} </Text>
+                        </ClientOnly>
                         <NextLink passHref href="/profile">
                             <Link color="blue.300" fontWeight="bold" fontSize={['md', 'lg']}>
                                 Twitter Live Profile Picture ✨

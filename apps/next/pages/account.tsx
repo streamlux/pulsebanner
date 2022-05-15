@@ -99,7 +99,7 @@ const Page: NextPage<Props> = ({ enabledFeatures, plan, allGiftPurchases }) => {
 
     const hasMembership = paymentPlan !== 'Free' || plan.partner;
 
-    const handleCreatePortal = async (options: { allowCancel?: boolean, goHome?: boolean }) => {
+    const handleCreatePortal = async (options: { allowCancel?: boolean; goHome?: boolean }) => {
         const res = await axios.post(
             '/api/stripe/create-portal',
             {
@@ -185,13 +185,11 @@ const Page: NextPage<Props> = ({ enabledFeatures, plan, allGiftPurchases }) => {
                                     )}
 
                                     {!hasMembership && (
-                                        <>
-                                            <Link href="/pricing" passHref>
-                                                <Button colorScheme={'green'} leftIcon={<StarIcon />} as="a">
-                                                    Upgrade to a PulseBanner Membership
-                                                </Button>
-                                            </Link>
-                                        </>
+                                        <Link href="/pricing" passHref>
+                                            <Button colorScheme={'green'} leftIcon={<StarIcon />} as="a">
+                                                Upgrade to a PulseBanner Membership
+                                            </Button>
+                                        </Link>
                                     )}
                                 </HStack>
                             </Card>
@@ -261,7 +259,7 @@ const Page: NextPage<Props> = ({ enabledFeatures, plan, allGiftPurchases }) => {
                                                     <PopoverBody>
                                                         Are you sure you want to delete your account and erase all your data? This is permanent and cannot be undone.
                                                     </PopoverBody>
-                                                    <PopoverFooter d="flex" justifyContent="flex-end">
+                                                    <PopoverFooter display={'flex'} justifyContent="flex-end">
                                                         <ButtonGroup size="sm">
                                                             <Button colorScheme="red" onClick={async () => await deleteAccount()}>
                                                                 Confirm

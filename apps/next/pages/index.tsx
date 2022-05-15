@@ -69,13 +69,13 @@ export const landingPageAsset = (name: string) => `https://pb-static.sfo3.cdn.di
 
 export default function Page() {
     const { colorMode } = useColorMode();
-    const breakpoint = useBreakpoint('ssr');
+    const breakpoint = useBreakpoint('base');
 
     const [offline, setOffline] = useState(false);
 
     const tweetText = 'Stand out on Twitter with @PulseBanner!\n\nMagically ✨ sync your Twitter profile to #Twitch! Get it for free today at pulsebanner.com!\n\n#PulseBanner';
 
-    const SignUpButton = (
+    const SignUpButton = () => (
         <Box experimental_spaceY={2} pt={['6']} minW="12" color={colorMode === 'dark' ? 'gray.300' : 'gray.700'}>
             <Heading textAlign="left" color="gray.200">
                 1 minute setup.
@@ -204,7 +204,7 @@ export default function Page() {
                                                 </Text>
                                             </HStack>
                                         </SimpleGrid>
-                                        {breakpoint !== 'base' && SignUpButton}
+                                        <SignUpButton />
                                     </Box>
                                 </Center>
 
@@ -212,9 +212,9 @@ export default function Page() {
                                     <Center>
                                         <Box maxW="700px" p="2" rounded="lg" bg={offline ? 'gray.200' : undefined} className={!offline ? 'animated-gradient' : undefined}>
                                             {offline ? (
-                                                <Image rounded="lg" alt="showcase" htmlWidth='684' htmlHeight='596' src={staticAssets.showcaseOffline.src} />
+                                                <Image rounded="lg" alt="showcase" htmlWidth="684" htmlHeight="596" src={staticAssets.showcaseOffline.src} />
                                             ) : (
-                                                <Image rounded="lg" alt="showcase" src={staticAssets.showcase.src} htmlWidth='684' htmlHeight='596' loading="eager" />
+                                                <Image rounded="lg" alt="showcase" src={staticAssets.showcase.src} htmlWidth="684" htmlHeight="596" loading="eager" />
                                             )}
                                         </Box>
                                     </Center>
@@ -249,8 +249,6 @@ export default function Page() {
                                     </div>
                                 </div>
                             </div>
-
-                            {breakpoint === 'base' && SignUpButton}
 
                             <Center>
                                 <Box experimental_spaceY={4}>
@@ -424,11 +422,24 @@ export default function Page() {
                                 <ShareToTwitter
                                     tweetPreview={
                                         <Text>
-                                            Stand out on Twitter with <Link color="twitter.400" as='span'>@PulseBanner</Link>! <br />
-                                            Magically ✨ sync your Twitter profile with <Link as='span' color="twitter.400">#Twitch</Link>. Get it for free today at{' '}
-                                            <Link href='https://pulsebanner.com' color="twitter.500">pulsebanner.com</Link>!
+                                            Stand out on Twitter with{' '}
+                                            <Link color="twitter.400" as="span">
+                                                @PulseBanner
+                                            </Link>
+                                            ! <br />
+                                            Magically ✨ sync your Twitter profile with{' '}
+                                            <Link as="span" color="twitter.400">
+                                                #Twitch
+                                            </Link>
+                                            . Get it for free today at{' '}
+                                            <Link href="https://pulsebanner.com" color="twitter.500">
+                                                pulsebanner.com
+                                            </Link>
+                                            !
                                             <br />
-                                            <Link as='span' color="twitter.500">#PulseBanner</Link>
+                                            <Link as="span" color="twitter.500">
+                                                #PulseBanner
+                                            </Link>
                                         </Text>
                                     }
                                     tweetText={tweetText}

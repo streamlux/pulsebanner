@@ -1,7 +1,7 @@
 import { formatUsd } from '@app/util/stringUtils';
 import { AddIcon, MinusIcon } from '@chakra-ui/icons';
 import { Box, Button, Flex, Heading, HStack, IconButton, Spacer, Tag, useBreakpoint, VStack, Center } from '@chakra-ui/react';
-import React, { ReactElement, FC, useState } from 'react';
+import React, { ReactElement, FC, useState, Suspense } from 'react';
 import { FaArrowRight } from 'react-icons/fa';
 import { FiGift } from 'react-icons/fi';
 import { Card } from '../Card';
@@ -31,13 +31,13 @@ export const GiftCard: FC<GiftCardProps> = ({ onClickBuy, product, price, durati
                         <Heading fontSize={['2xl', '3xl']} whiteSpace={'nowrap'}>
                             {duration}
                         </Heading>
-                        {!mobile && discount && (
+                        <Box display={!mobile && discount ? undefined : 'none'}>
                             <Box flexShrink={0}>
                                 <Tag colorScheme={'green'} size="lg" fontWeight={'bold'}>
                                     15% off
                                 </Tag>
                             </Box>
-                        )}
+                        </Box>
                     </HStack>
                     <Box flexShrink={0}>
                         <GiftCardPrice>

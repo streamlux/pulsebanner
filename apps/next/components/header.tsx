@@ -26,7 +26,7 @@ import {
 import NextLink from 'next/link';
 import { signIn, signOut } from 'next-auth/react';
 import styles from './header.module.css';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowRightIcon, ChevronDownIcon, CloseIcon, HamburgerIcon } from '@chakra-ui/icons';
 import { useAdmin } from '../util/hooks/useAdmin';
 import favicon from '@app/public/logo.webp';
@@ -38,7 +38,6 @@ import { MobileHeaderMenuItem } from './header/MobileHeaderMenuItem';
 import { Card } from './Card';
 import { CustomSession } from '@app/services/auth/CustomSession';
 import { useSession } from '@app/util/hooks/useSession';
-import { Promotion } from './header/Promotion';
 
 const headerImages = {
     profile: 'https://pb-static.sfo3.cdn.digitaloceanspaces.com/assets/feature-nav/header_profile.svg',
@@ -54,7 +53,9 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
     const { data: session, status } = useSession({ required: false });
     const loading = status === 'loading';
     const [isAdmin] = useAdmin({ required: false });
-    const breakpoint = useBreakpoint();
+
+    const breakpoint = useBreakpoint('mobile');
+    // const ua = parse(window.navigator.userAgent)
 
     const { isOpen: mobileNavIsOpen, onToggle: mobileNavOnToggle, onClose: mobileNavOnClose } = useDisclosure();
 
@@ -84,100 +85,11 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                 gridSpacing: 10,
             },
         },
-        'base'
+        'ssr'
+        // ua.isMobile ? 'base' : 'md'
     );
 
     const showMobileNav = mobileNavIsOpen && breakpointValue?.mobile;
-
-    const NavLinks = () => (
-        <Center id="nav-links" fontSize="lg">
-            <Wrap spacing={['2', '4', '6', '6']}>
-                <Menu placement="bottom-start">
-                    <MenuButton size="md" as={Button} variant="ghost" rightIcon={<ChevronDownIcon />}>
-                        Features
-                    </MenuButton>
-                    <Portal containerRef={headerPortalRef}>
-                        <MenuList flexDirection={'row'} h="auto" mx="8" maxW="90vw" bg="gray.800">
-                            <SimpleGrid columns={[1, 2, 3]} spacing={[0, 4]} p="4" w='full'>
-                                <NextLink href={'/profile'} passHref>
-                                    <MenuItem rounded="md" p="0" _hover={{ bg: 'whiteAlpha.100' }} _focus={{ bg: 'whiteAlpha.100' }} w='full'>
-                                        <HeaderMenuItem
-                                            href="/profile"
-                                            description="Update your Twitter profile picture when you go live."
-                                            imageSrc={headerImages.profile}
-                                            title="Profile Picture"
-                                        />
-                                    </MenuItem>
-                                </NextLink>
-                                <NextLink href={'/banner'} passHref>
-                                    <MenuItem rounded="md" p="0" _hover={{ bg: 'whiteAlpha.100' }} _focus={{ bg: 'whiteAlpha.100' }}>
-                                        <HeaderMenuItem
-                                            href="/banner"
-                                            description="Update your Twitter profile picture when you go live."
-                                            imageSrc={headerImages.banner}
-                                            title="Live Banner"
-                                        />
-                                    </MenuItem>
-                                </NextLink>
-                                <NextLink href={'/name'} passHref>
-                                    <MenuItem rounded="md" p="0" _hover={{ bg: 'whiteAlpha.100' }} _focus={{ bg: 'whiteAlpha.100' }}>
-                                        <HeaderMenuItem
-                                            href="/name"
-                                            description="Update your Twitter profile picture when you go live."
-                                            imageSrc={headerImages.nameChangerDark}
-                                            title="Name Changer"
-                                        />
-                                    </MenuItem>
-                                </NextLink>
-                            </SimpleGrid>
-                            <NextLink href="/pricing" passHref>
-                                <LinkOverlay onClick={mobileNavOnClose} h="min" w="min" pos={'relative'}>
-                                    <Box mx="4" pb="2">
-                                        <Card
-                                            props={{
-                                                color: 'white',
-                                                p: '0',
-                                                border: 'none',
-                                                w: 'full',
-                                                h: 'full',
-                                                bgGradient: 'linear(to-tr, #9246FF, #2AA9E0)',
-                                                transition: 'all 0.1s ease-in-out',
-                                                _hover: {
-                                                    transform: 'scale(1.005)',
-                                                    bgGradient: 'linear(to-tr, #9846FF, #4AA9E0)',
-                                                },
-                                            }}
-                                        >
-                                            <Flex direction={'column'} justifyItems="stretch" h="full" rounded="md" w="full">
-                                                <Box p="4" px="6" flexGrow={1} w="full">
-                                                    <Text fontSize={'2xl'}>Level up with a</Text>
-                                                    <Heading>PulseBanner Membership.</Heading>
-                                                    {/* <Text my="4">Choose a plan and begin customizing in seconds. Then experience how PulseBanner can help you grow.</Text> */}
-
-                                                    <HStack>
-                                                        <Text fontWeight={'bold'} fontSize={'xl'}>
-                                                            Learn more
-                                                        </Text>
-                                                        <ArrowRightIcon />
-                                                    </HStack>
-                                                </Box>
-                                            </Flex>
-                                        </Card>
-                                    </Box>
-                                </LinkOverlay>
-                            </NextLink>
-                        </MenuList>
-                    </Portal>
-                </Menu>
-
-                <NextLink href="/pricing" passHref>
-                    <Button as="a" size="md" variant={'ghost'}>
-                        Pricing
-                    </Button>
-                </NextLink>
-            </Wrap>
-        </Center>
-    );
 
     return (
         <>
@@ -213,39 +125,115 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                         </HStack>
                                     </LinkBox>
                                 </HStack>
-                                {!breakpointValue?.mobile && <NavLinks />}
+                                <Center id="nav-links" fontSize="lg" display={breakpointValue?.mobile ? 'none' : undefined}>
+                                    <Menu placement="bottom-start">
+                                        <MenuButton size="md" as={Button} variant="ghost" rightIcon={<ChevronDownIcon />}>
+                                            Features
+                                        </MenuButton>
+                                        <Portal containerRef={headerPortalRef}>
+                                            <MenuList flexDirection={'row'} h="auto" mx="8" maxW="90vw" bg="gray.800">
+                                                <SimpleGrid columns={[1, 2, 3]} spacing={[0, 4]} p="4" w="full">
+                                                    <NextLink href={'/profile'} passHref>
+                                                        <MenuItem rounded="md" p="0" _hover={{ bg: 'whiteAlpha.100' }} _focus={{ bg: 'whiteAlpha.100' }} w="full">
+                                                            <HeaderMenuItem
+                                                                href="/profile"
+                                                                description="Update your Twitter profile picture when you go live."
+                                                                imageSrc={headerImages.profile}
+                                                                title="Profile Picture"
+                                                            />
+                                                        </MenuItem>
+                                                    </NextLink>
+                                                    <NextLink href={'/banner'} passHref>
+                                                        <MenuItem rounded="md" p="0" _hover={{ bg: 'whiteAlpha.100' }} _focus={{ bg: 'whiteAlpha.100' }}>
+                                                            <HeaderMenuItem
+                                                                href="/banner"
+                                                                description="Update your Twitter profile picture when you go live."
+                                                                imageSrc={headerImages.banner}
+                                                                title="Live Banner"
+                                                            />
+                                                        </MenuItem>
+                                                    </NextLink>
+                                                    <NextLink href={'/name'} passHref>
+                                                        <MenuItem rounded="md" p="0" _hover={{ bg: 'whiteAlpha.100' }} _focus={{ bg: 'whiteAlpha.100' }}>
+                                                            <HeaderMenuItem
+                                                                href="/name"
+                                                                description="Update your Twitter profile picture when you go live."
+                                                                imageSrc={headerImages.nameChangerDark}
+                                                                title="Name Changer"
+                                                            />
+                                                        </MenuItem>
+                                                    </NextLink>
+                                                </SimpleGrid>
+                                                <NextLink href="/pricing" passHref>
+                                                    <LinkOverlay onClick={mobileNavOnClose} h="min" w="min" pos={'relative'}>
+                                                        <Box mx="4" pb="2">
+                                                            <Card
+                                                                props={{
+                                                                    color: 'white',
+                                                                    p: '0',
+                                                                    border: 'none',
+                                                                    w: 'full',
+                                                                    h: 'full',
+                                                                    bgGradient: 'linear(to-tr, #9246FF, #2AA9E0)',
+                                                                    transition: 'all 0.1s ease-in-out',
+                                                                    _hover: {
+                                                                        transform: 'scale(1.005)',
+                                                                        bgGradient: 'linear(to-tr, #9846FF, #4AA9E0)',
+                                                                    },
+                                                                }}
+                                                            >
+                                                                <Flex direction={'column'} justifyItems="stretch" h="full" rounded="md" w="full">
+                                                                    <Box p="4" px="6" flexGrow={1} w="full">
+                                                                        <Text fontSize={'2xl'}>Level up with a</Text>
+                                                                        <Heading>PulseBanner Membership.</Heading>
+                                                                        {/* <Text my="4">Choose a plan and begin customizing in seconds. Then experience how PulseBanner can help you grow.</Text> */}
+
+                                                                        <HStack>
+                                                                            <Text fontWeight={'bold'} fontSize={'xl'}>
+                                                                                Learn more
+                                                                            </Text>
+                                                                            <ArrowRightIcon />
+                                                                        </HStack>
+                                                                    </Box>
+                                                                </Flex>
+                                                            </Card>
+                                                        </Box>
+                                                    </LinkOverlay>
+                                                </NextLink>
+                                            </MenuList>
+                                        </Portal>
+                                    </Menu>
+
+                                    <Box>
+                                        <NextLink href="/pricing" passHref>
+                                            <Button as="a" size="md" variant={'ghost'}>
+                                                Pricing
+                                            </Button>
+                                        </NextLink>
+                                    </Box>
+                                </Center>
                                 <Spacer />
                                 <Flex experimental_spaceX="2" alignItems="center" justifySelf="flex-end">
-                                    {!breakpointValue?.mobile && (
-                                        <>
-                                            <NextLink href={twitterLink} passHref>
-                                                <IconButton
-                                                    aria-label="Twitter"
-                                                    target={'_blank'}
-                                                    variant={'ghost'}
-                                                    size="sm"
-                                                    as="a"
-                                                    icon={<FaTwitter />}
-                                                    className={trackEvent('click', 'discord-button')}
-                                                />
-                                            </NextLink>
+                                    <Box display={breakpointValue?.mobile ? 'none' : undefined}>
+                                        <NextLink href={twitterLink} passHref>
+                                            <IconButton
+                                                aria-label="Twitter"
+                                                target={'_blank'}
+                                                variant={'ghost'}
+                                                size="sm"
+                                                as="a"
+                                                icon={<FaTwitter />}
+                                                className={trackEvent('click', 'discord-button')}
+                                            />
+                                        </NextLink>
 
-                                            <NextLink href={discordLink} passHref>
-                                                <Button
-                                                    as="a"
-                                                    target={'_blank'}
-                                                    variant={'ghost'}
-                                                    size="sm"
-                                                    leftIcon={<FaDiscord />}
-                                                    className={trackEvent('click', 'discord-button')}
-                                                >
-                                                    Join our Discord
-                                                </Button>
-                                            </NextLink>
-                                        </>
-                                    )}
-
-                                    {!session && (
+                                        <NextLink href={discordLink} passHref>
+                                            <Button as="a" target={'_blank'} variant={'ghost'} size="sm" leftIcon={<FaDiscord />} className={trackEvent('click', 'discord-button')}>
+                                                Join our Discord
+                                            </Button>
+                                        </NextLink>
+                                    </Box>
+                                    <Box display={session ? 'none' : undefined}>
                                         <NextLink href="/api/auth/signin" passHref>
                                             <Button
                                                 as="a"
@@ -261,7 +249,7 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                                 Sign In
                                             </Button>
                                         </NextLink>
-                                    )}
+                                    </Box>
 
                                     {session && (
                                         <Menu>
@@ -282,88 +270,85 @@ export default function Header({ headerPortalRef }: { headerPortalRef: React.Mut
                                         </Menu>
                                     )}
 
-                                    {breakpointValue?.mobile && (
-                                        <IconButton
-                                            size="md"
-                                            onClick={mobileNavOnToggle}
-                                            aria-label="Navigation Menu"
-                                            title="Navigation Menu"
-                                            variant="ghost"
-                                            icon={mobileNavIsOpen ? <CloseIcon /> : <HamburgerIcon />}
-                                        />
-                                    )}
+                                    <IconButton
+                                        display={breakpointValue?.mobile ? undefined : 'none'}
+                                        size="md"
+                                        onClick={mobileNavOnToggle}
+                                        aria-label="Navigation Menu"
+                                        title="Navigation Menu"
+                                        variant="ghost"
+                                        icon={mobileNavIsOpen ? <CloseIcon /> : <HamburgerIcon />}
+                                    />
                                 </Flex>
                             </Flex>
                         </Flex>
                     </Center>
                 </Box>
             </header>
-            {showMobileNav && (
-                <Box>
-                    <Flex
-                        direction={'column'}
-                        position={'absolute'}
-                        w="100vw"
-                        overflowY={'scroll'}
-                        maxH="100vh"
-                        bg="gray.800"
-                        alignItems={'center'}
-                        experimental_spaceY={4}
-                        py="4"
-                        pb="48"
-                        px="6"
-                    >
+
+            <Box display={showMobileNav ? 'block' : 'none'}>
+                <Flex
+                    direction={'column'}
+                    position={'absolute'}
+                    w="100vw"
+                    overflowY={'scroll'}
+                    maxH="100vh"
+                    bg="gray.800"
+                    alignItems={'center'}
+                    experimental_spaceY={4}
+                    py="4"
+                    pb="48"
+                    px="6"
+                >
+                    <MobileHeaderMenuItem
+                        onNavigate={mobileNavOnClose}
+                        href="/profile"
+                        description="Update your Twitter profile picture when you go live."
+                        imageSrc={headerImages.profile}
+                        title="Profile Picture"
+                    />
+
+                    <Box>
                         <MobileHeaderMenuItem
                             onNavigate={mobileNavOnClose}
-                            href="/profile"
+                            href="/banner"
                             description="Update your Twitter profile picture when you go live."
-                            imageSrc={headerImages.profile}
-                            title="Profile Picture"
+                            imageSrc={headerImages.banner}
+                            title="Live Banner"
                         />
+                    </Box>
+                    <Box>
+                        <MobileHeaderMenuItem
+                            onNavigate={mobileNavOnClose}
+                            href="/name"
+                            description="Update your Twitter profile picture when you go live."
+                            imageSrc={headerImages.nameChangerDark}
+                            title="Name Changer"
+                        />
+                    </Box>
 
-                        <Box>
-                            <MobileHeaderMenuItem
-                                onNavigate={mobileNavOnClose}
-                                href="/banner"
-                                description="Update your Twitter profile picture when you go live."
-                                imageSrc={headerImages.banner}
-                                title="Live Banner"
-                            />
-                        </Box>
-                        <Box>
-                            <MobileHeaderMenuItem
-                                onNavigate={mobileNavOnClose}
-                                href="/name"
-                                description="Update your Twitter profile picture when you go live."
-                                imageSrc={headerImages.nameChangerDark}
-                                title="Name Changer"
-                            />
-                        </Box>
+                    <NextLink href="/pricing">
+                        <LinkOverlay onClick={mobileNavOnClose} h="min" w="full" pos={'relative'}>
+                            <Card props={{ color: 'white', p: '0', border: 'none', w: 'full', h: 'full', bgGradient: 'linear(to-tr, #9246FF, #2AA9E0)' }}>
+                                <Flex direction={'column'} justifyItems="stretch" h="full" rounded="md" w="full">
+                                    <Box p="4" px="6" flexGrow={1} w="full">
+                                        <Text fontSize={'2xl'}>Level up with a</Text>
+                                        <Heading>PulseBanner Membership.</Heading>
+                                        <Text my="4">Choose a plan and begin customizing in seconds. Then experience how PulseBanner can help you grow.</Text>
 
-                        <NextLink href="/pricing">
-                            <LinkOverlay onClick={mobileNavOnClose} h="min" w="full" pos={'relative'}>
-                                <Card props={{ color: 'white', p: '0', border: 'none', w: 'full', h: 'full', bgGradient: 'linear(to-tr, #9246FF, #2AA9E0)' }}>
-                                    <Flex direction={'column'} justifyItems="stretch" h="full" rounded="md" w="full">
-                                        <Box p="4" px="6" flexGrow={1} w="full">
-                                            <Text fontSize={'2xl'}>Level up with a</Text>
-                                            <Heading>PulseBanner Membership.</Heading>
-                                            <Text my="4">Choose a plan and begin customizing in seconds. Then experience how PulseBanner can help you grow.</Text>
-
-                                            <HStack>
-                                                <Text fontWeight={'bold'} fontSize={'xl'}>
-                                                    Learn more
-                                                </Text>
-                                                <ArrowRightIcon />
-                                            </HStack>
-                                        </Box>
-                                    </Flex>
-                                </Card>
-                            </LinkOverlay>
-                        </NextLink>
-                    </Flex>
-                </Box>
-            )}
-            {/* <Promotion /> */}
+                                        <HStack>
+                                            <Text fontWeight={'bold'} fontSize={'xl'}>
+                                                Learn more
+                                            </Text>
+                                            <ArrowRightIcon />
+                                        </HStack>
+                                    </Box>
+                                </Flex>
+                            </Card>
+                        </LinkOverlay>
+                    </NextLink>
+                </Flex>
+            </Box>
         </>
     );
 }

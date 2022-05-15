@@ -1,6 +1,6 @@
 import { bundle } from '@remotion/bundler';
 import { getCompositions, renderStill } from '@remotion/renderer';
-import { openBrowser } from '@remotion/renderer/dist/open-browser';
+import { openBrowser } from '@remotion/renderer';
 import dotenv from 'dotenv';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
@@ -13,6 +13,7 @@ import { getMimeType } from './image-types';
 import { getImageHash } from './make-hash';
 import { Browser } from 'puppeteer-core';
 import { logger } from './logger';
+import { TCompMetadata } from 'remotion';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const queue = require('express-queue');
@@ -55,7 +56,7 @@ webpackBundling.then(() => {
 });
 
 const getComp = async (compName: string, inputProps: unknown) => {
-    const comps = await getCompositions(await webpackBundling, {
+    const comps: TCompMetadata[] = await getCompositions(await webpackBundling, {
         inputProps: inputProps as null,
     });
 
@@ -122,22 +123,20 @@ app.post(
         const webpackBundle = await webpackBundling;
         const puppeteerInstance = await getBrowser();
         const composition = await getComp(compName, inputProps);
-        await new Promise<void>((resolve, reject) => {
-            renderStill({
+        console.log(composition);
+        try {
+            await renderStill({
                 puppeteerInstance,
                 composition,
-                webpackBundle,
+                serveUrl: webpackBundle,
                 output,
                 inputProps,
                 imageFormat,
-                onError: (err) => {
-                    reject(err);
-                },
                 envVariables: {},
-            })
-                .then((res) => resolve(res))
-                .catch((err) => reject(err));
-        });
+            });
+        } catch (err) {
+            console.error("Error occured in browser", err);
+        }
 
         logger.info(output);
         const imageBase64 = fs.readFileSync(output, { encoding: 'base64' });
@@ -190,22 +189,20 @@ app.post('/getProfilePic',
         const webpackBundle = await webpackBundling;
         const puppeteerInstance = await getBrowser();
         const composition = await getComp(compName, inputProps);
-        await new Promise<void>((resolve, reject) => {
-            renderStill({
+
+        try {
+            await renderStill({
                 puppeteerInstance,
                 composition,
-                webpackBundle,
+                serveUrl: webpackBundle,
                 output,
                 inputProps,
                 imageFormat,
-                onError: (err) => {
-                    reject(err);
-                },
                 envVariables: {},
-            })
-                .then((res) => resolve(res))
-                .catch((err) => reject(err));
-        });
+            });
+        } catch (err) {
+            console.error("Error occured in browser", err);
+        }
 
         logger.info(output);
         const imageBase64 = fs.readFileSync(output, { encoding: 'base64' });

@@ -1,6 +1,7 @@
 import { Container, Center, Box, Heading, Text, OrderedList, ListItem, Tag, HStack, Link, Button, useColorMode, Wrap, WrapItem } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
+import React from 'react';
 
 export default function Page() {
     const { colorMode } = useColorMode();

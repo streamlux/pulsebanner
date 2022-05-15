@@ -1,6 +1,5 @@
 import React from 'react';
 import { Img } from 'remotion';
-import { LayerComponent } from '../LayerComponent';
 import './fonts.module.css';
 import arrowImg from '../../assets/arrow.jpeg';
 import { Watermark } from '../Watermark';

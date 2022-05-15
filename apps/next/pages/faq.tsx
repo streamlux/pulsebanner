@@ -2,6 +2,7 @@ import { NextSeo } from 'next-seo';
 import { FaqSection } from '@app/modules/faq/FaqSection';
 import { allFaqItems } from '@app/modules/faq/faqData';
 import { Container } from '@chakra-ui/react';
+import React from 'react';
 
 export default function Page() {
     return (

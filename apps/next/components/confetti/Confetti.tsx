@@ -13,11 +13,11 @@ const canvasStyles: React.CSSProperties = {
 export default function Confetti() {
   const refAnimationInstance = useRef(null as any);
 
-  const getInstance = useCallback((instance) => {
+  const getInstance = useCallback((instance: any) => {
     refAnimationInstance.current = instance;
   }, []);
 
-  const makeShot = useCallback((particleRatio, opts) => {
+  const makeShot = useCallback((particleRatio: number, opts: any) => {
     refAnimationInstance.current &&
       refAnimationInstance.current({
         ...opts,

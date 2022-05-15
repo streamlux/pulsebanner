@@ -1,18 +1,22 @@
 import React, { useRef } from 'react';
 import { Box, Button, chakra, Flex, Stack, Tag, Text, useColorMode, Portal, useDisclosure, CloseButton, Center, useBreakpoint, HStack } from '@chakra-ui/react';
-import Header from './header';
 import Footer from './footer';
 import { FaArrowRight } from 'react-icons/fa';
 import NextLink from 'next/link';
 import { emggLogoSrc, promo, promoCode } from '@app/util/constants';
 import { useRouter } from 'next/router';
 import { Promotion } from './header/Promotion';
+// import Header from './header';
+import styles from './header.module.css';
+import { useSession } from 'next-auth/react';
+
+import dynamic from 'next/dynamic';
+const Header = dynamic(
+    () => import('./header'),
+    { ssr: false }
+  )
 
 export default function Layout({ children }: any) {
-    const { colorMode, setColorMode } = useColorMode();
-    if (colorMode === 'light') {
-        setColorMode('dark');
-    }
     const { onClose, isOpen } = useDisclosure({
         defaultIsOpen: true,
     });
@@ -24,9 +28,17 @@ export default function Layout({ children }: any) {
     const showPromo = promo && isOpen && breakpoint !== 'base' && !pagesWithoutPromo.includes(router.asPath);
     const headerPortalRef = useRef();
 
+    const { data: session, status } = useSession({ required: false });
+    const loading = status === 'loading';
+
     return (
         <Flex direction="column" as={chakra.div} maxH="100%" overflow="hidden" minH="100vh" bg={emgg ? 'black' : 'transparent'}>
-            <Box as={chakra.header} zIndex={10} position={breakpoint !== undefined ? 'fixed' : undefined} w="full">
+            <noscript>
+                <style>{`.nojs-show { opacity: 1; top: 0; }`}</style>
+            </noscript>
+            <Box as={chakra.header} zIndex={10} position={breakpoint !== undefined ? 'fixed' : undefined} w="full"
+                            className={`nojs-show ${!session && loading ? styles.loading : styles.loaded}`}
+            >
                 <Header headerPortalRef={headerPortalRef} />
                 <Box ref={headerPortalRef as any} />
             </Box>
@@ -60,7 +72,7 @@ export default function Layout({ children }: any) {
                         px="4"
                         py="2"
                         mx="4"
-                        color={colorMode === 'dark' ? 'black' : 'black'}
+                        color={'black'}
                         bg="green.200"
                         rounded="lg"
                     >
@@ -68,7 +80,7 @@ export default function Layout({ children }: any) {
                             <HStack>
                                 <Text textAlign="center" fontSize={['sm', 'md']}>
                                     {'Code'}{' '}
-                                    <Tag color="black" fontWeight="bold" colorScheme="green" bg={colorMode === 'dark' ? 'green.100' : undefined}>
+                                    <Tag color="black" fontWeight="bold" colorScheme="green" bg={'green.100'}>
                                         {promoCode}
                                     </Tag>{' '}
                                     {'at checkout to save 10% on your first month! Ends 11:59 PT Jan 30'}

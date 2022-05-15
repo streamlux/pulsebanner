@@ -1,3 +1,4 @@
+import React from 'react';
 import { Center, Spacer, Stack, Text } from '@chakra-ui/layout';
 
 export default function Page() {

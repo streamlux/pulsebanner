@@ -1,6 +1,6 @@
 /* eslint-disable no-native-reassign */
 /* eslint-disable no-global-assign */
-import React, { useMemo, useRef } from 'react';
+import React, { ReactNode, useMemo, useRef } from 'react';
 import { calculateScale } from './calculateSize';
 import { calculatePlayerSize } from './getPlayerSize';
 import { useElementSize } from './useElementSize';
@@ -9,6 +9,7 @@ import { useElementSize } from './useElementSize';
 export interface RemotionPreviewProps {
     compositionHeight: number;
     compositionWidth: number;
+    children: ReactNode;
 }
 
 if (typeof window === 'undefined') {

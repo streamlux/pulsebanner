@@ -5,6 +5,10 @@ import prisma from './prisma';
 
 export class StartupService {
 
+    constructor() {
+        logger.info('StartupService constructor called');
+    }
+
     private static hasLoaded = false;
 
     // Function is called when prisma is loaded, which hopefully will be almost right at startup
@@ -52,6 +56,10 @@ export class StartupService {
             logger.error('Error occured within onLoad function.',
                 { error: e }
             );
+        } finally {
+            this.onLoad = () => {
+                console.log('onLoad no-op custom');
+            }
         }
     }
 }

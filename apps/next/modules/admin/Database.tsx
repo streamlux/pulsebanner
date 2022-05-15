@@ -18,7 +18,7 @@ export const Database: React.FC = () => (
                         Seed database
                     </Button>
                     <Link href="/api/admin/adminer">
-                        <Button rightIcon={<ExternalLinkIcon mx="2px" />} isFullWidth={true}>
+                        <Button rightIcon={<ExternalLinkIcon mx="2px" />}>
                             Open Adminer
                         </Button>
                     </Link>

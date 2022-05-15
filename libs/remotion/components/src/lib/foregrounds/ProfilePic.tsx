@@ -1,3 +1,4 @@
+import React from 'react';
 import { AbsoluteFill, Img } from 'remotion';
 
 type ProfilePicProps = {
