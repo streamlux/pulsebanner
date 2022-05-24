@@ -19,9 +19,13 @@ const queue = require('express-queue');
 const queueMw = queue({ activeLimit: 1, queuedLimit: -1 });
 
 let browser: Browser | undefined;
-const getBrowser = async (): Promise<Browser> => {
-    browser ||= await openBrowser('chrome');
-    return browser as Browser;
+async function getBrowser(): Promise<Browser> {
+    if (browser?.isConnected()) {
+        return browser;
+    } else {
+        logger.info('Opening browser');
+        return browser = await openBrowser('chrome');
+    }
 };
 
 dotenv.config();
