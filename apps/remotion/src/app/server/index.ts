@@ -21,8 +21,26 @@ const queueMw = queue({ activeLimit: 1, queuedLimit: -1 });
 
 let browser: Browser | undefined;
 const getBrowser = async (): Promise<Browser> => {
-    browser ||= await openBrowser('chrome');
-    return browser as Browser;
+
+    const openRemotionBrowser = async () => await openBrowser('chrome', {
+        chromiumOptions: {
+            gl: 'angle'
+        }
+    });
+
+    // Open browser if it's not already open
+    browser ||= await openRemotionBrowser();
+
+    if (browser?.isConnected()) {
+        // return browser if it's connected
+        return browser;
+    } else {
+        // try to open a new browser if it's not connected
+        logger.warn('Browser is disconnected, attempting to open new');
+        browser = await openRemotionBrowser();
+        logger.info('Opened new browser successfully');
+        return browser;
+    }
 };
 
 dotenv.config();
@@ -123,7 +141,7 @@ app.post(
         const webpackBundle = await webpackBundling;
         const puppeteerInstance = await getBrowser();
         const composition = await getComp(compName, inputProps);
-        console.log(composition);
+
         try {
             await renderStill({
                 puppeteerInstance,
@@ -135,7 +153,7 @@ app.post(
                 envVariables: {},
             });
         } catch (err) {
-            console.error("Error occured in browser", err);
+            logger.error("Error occured in browser while rendering banner", { err });
         }
 
         logger.info(output);
