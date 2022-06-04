@@ -19,12 +19,22 @@ const queue = require('express-queue');
 const queueMw = queue({ activeLimit: 1, queuedLimit: -1 });
 
 let browser: Browser | undefined;
-async function getBrowser(): Promise<Browser> {
+const getBrowser = async (): Promise<Browser> => {
+
+    const openRemotionBrowser = async () => await openBrowser('chrome');
+
+    // open browser if it's not already open
+    browser ||= await openRemotionBrowser();
+
     if (browser?.isConnected()) {
+        // return browser if it's connected
         return browser;
     } else {
-        logger.info('Opening browser');
-        return browser = await openBrowser('chrome');
+        // try to open a new browser if it's not connected
+        logger.warn('Browser is disconnected, attempting to open new');
+        browser = await openRemotionBrowser();
+        logger.info('Opened new browser successfully');
+        return browser;
     }
 };
 
