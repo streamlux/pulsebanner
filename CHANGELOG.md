@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- Reopen puppeteer if it is closed 
+
 ### Fixed
 
 - Delete user endpoint
+- Admin banner api endpoint
 
 ## [0.11.9]
 
