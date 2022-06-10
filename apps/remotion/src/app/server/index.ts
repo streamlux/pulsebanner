@@ -112,7 +112,10 @@ app.post(
         const startMs = Date.now();
         const requestBody = req.body;
         logger.info('Rendering banner', requestBody);
-        logger.info(`Request queue length: ${queueMw.queue.getLength()}`);
+        const queueLength = queueMw.queue.getLength();
+        if (queueLength > 0) {
+            logger.info(`Request queue length: ${queueLength}`);
+        }
 
         // hard coded info as we only use one composition composer and generate different templates from there by passing the different props
         const imageFormat = 'png';
@@ -153,7 +156,6 @@ app.post(
                 .catch((err) => reject(err));
         });
 
-        logger.info(output);
         const imageBase64 = fs.readFileSync(output, { encoding: 'base64' });
 
         const endMs = Date.now();
@@ -180,7 +182,11 @@ app.post('/getProfilePic',
         const startMs = Date.now();
         const requestBody = req.body;
         logger.info('Rendering profile picture', requestBody);
-        logger.info(`Request queue length: ${queueMw.queue.getLength()}`);
+
+        const queueLength = queueMw.queue.getLength();
+        if (queueLength > 0) {
+            logger.info(`Request queue length: ${queueLength}`);
+        }
 
         // hard coded info as we only use one composition composer and generate different templates from there by passing the different props
         const imageFormat = 'png';
@@ -221,7 +227,6 @@ app.post('/getProfilePic',
                 .catch((err) => reject(err));
         });
 
-        logger.info(output);
         const imageBase64 = fs.readFileSync(output, { encoding: 'base64' });
 
         const endMs = Date.now();
