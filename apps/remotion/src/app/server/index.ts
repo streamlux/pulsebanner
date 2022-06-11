@@ -13,6 +13,7 @@ import { getMimeType } from './image-types';
 import { getImageHash } from './make-hash';
 import { Browser } from 'puppeteer-core';
 import { logger } from './logger';
+import { TCompMetadata } from 'remotion';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const queue = require('express-queue');
@@ -68,8 +69,9 @@ webpackBundling.then(() => {
     logger.info('Done bundling.');
 });
 
+let comps: TCompMetadata[] | undefined;
 const getComp = async (compName: string, inputProps: unknown) => {
-    const comps = await getCompositions(await webpackBundling, {
+    comps ||= await getCompositions(await webpackBundling, {
         inputProps: inputProps as null,
     });
 
