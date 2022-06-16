@@ -167,6 +167,8 @@ app.post(
         });
 
         res.send(imageBase64);
+
+        fs.unlinkSync(output);
     })
 );
 
@@ -238,6 +240,8 @@ app.post('/getProfilePic',
         });
 
         res.send(imageBase64);
+
+        fs.unlinkSync(output);
     })
 );
 
