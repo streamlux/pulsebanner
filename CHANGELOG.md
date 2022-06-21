@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+
+- Use `--gl=angle` option when rendering banner
+
 ## [0.12.1] 2022-06-10
 
 ### Changed
